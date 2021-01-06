@@ -1,0 +1,5 @@
+(function() {var implementors = {};
+implementors["calypso_base"] = [{"text":"impl Clone for Span","synthetic":false,"types":[]},{"text":"impl&lt;T:&nbsp;Clone&gt; Clone for Spanned&lt;T&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: Debug,&nbsp;</span>","synthetic":false,"types":[]},{"text":"impl&lt;'s&gt; Clone for StringStream&lt;'s&gt;","synthetic":false,"types":[]}];
+implementors["calypso_diagnostic"] = [{"text":"impl Clone for Diagnostic","synthetic":false,"types":[]},{"text":"impl&lt;'a&gt; Clone for Builder&lt;'a&gt;","synthetic":false,"types":[]},{"text":"impl Clone for GlobalReportingCtxt","synthetic":false,"types":[]}];
+implementors["calypso_parsing"] = [{"text":"impl Clone for TokenType","synthetic":false,"types":[]},{"text":"impl Clone for Keyword","synthetic":false,"types":[]},{"text":"impl Clone for Radix","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

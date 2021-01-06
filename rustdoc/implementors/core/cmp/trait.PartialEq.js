@@ -1,0 +1,4 @@
+(function() {var implementors = {};
+implementors["calypso_base"] = [{"text":"impl PartialEq&lt;Span&gt; for Span","synthetic":false,"types":[]},{"text":"impl&lt;T:&nbsp;PartialEq&gt; PartialEq&lt;Spanned&lt;T&gt;&gt; for Spanned&lt;T&gt; <span class=\"where fmt-newline\">where<br>&nbsp;&nbsp;&nbsp;&nbsp;T: Debug,&nbsp;</span>","synthetic":false,"types":[]},{"text":"impl&lt;T:&nbsp;PartialEq + Debug&gt; PartialEq&lt;T&gt; for Spanned&lt;T&gt;","synthetic":false,"types":[]}];
+implementors["calypso_parsing"] = [{"text":"impl PartialEq&lt;TokenType&gt; for TokenType","synthetic":false,"types":[]},{"text":"impl PartialEq&lt;Keyword&gt; for Keyword","synthetic":false,"types":[]},{"text":"impl PartialEq&lt;Radix&gt; for Radix","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

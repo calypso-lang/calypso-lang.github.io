@@ -1,0 +1,1 @@
+initSidebarItems({"macro":[["gen_error","Generate errors or report synchronized errors."]],"mod":[["diagnostic",""],["error",""],["prelude",""],["report",""],["types",""]],"type":[["FileMgr",""]]});

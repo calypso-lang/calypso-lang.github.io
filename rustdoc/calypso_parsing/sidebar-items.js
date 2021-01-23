@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["lexer",""]]});
+initSidebarItems({"mod":[["lexer",""],["pretty",""]]});

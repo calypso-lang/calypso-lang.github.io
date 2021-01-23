@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["StringStream","A stream emitting tuples of byte locations and characters from a string slice."]]});

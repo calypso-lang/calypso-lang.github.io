@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["calypso_parsing"] = [{"text":"impl&lt;'lex&gt; DerefMut for Lexer&lt;'lex&gt;","synthetic":false,"types":[]}];
+implementors["calypso_parsing"] = [{"text":"impl&lt;'lex&gt; <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/ops/deref/trait.DerefMut.html\" title=\"trait core::ops::deref::DerefMut\">DerefMut</a> for <a class=\"struct\" href=\"calypso_parsing/lexer/struct.Lexer.html\" title=\"struct calypso_parsing::lexer::Lexer\">Lexer</a>&lt;'lex&gt;","synthetic":false,"types":["calypso_parsing::lexer::Lexer"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

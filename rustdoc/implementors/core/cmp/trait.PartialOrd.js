@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["calypso_base"] = [{"text":"impl PartialOrd&lt;Span&gt; for Span","synthetic":false,"types":[]}];
+implementors["calypso_base"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html\" title=\"trait core::cmp::PartialOrd\">PartialOrd</a>&lt;<a class=\"struct\" href=\"calypso_base/span/struct.Span.html\" title=\"struct calypso_base::span::Span\">Span</a>&gt; for <a class=\"struct\" href=\"calypso_base/span/struct.Span.html\" title=\"struct calypso_base::span::Span\">Span</a>","synthetic":false,"types":["calypso_base::span::Span"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

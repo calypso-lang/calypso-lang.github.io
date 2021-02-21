@@ -1,5 +1,5 @@
 (function() {var implementors = {};
-implementors["calypso_base"] = [{"text":"impl Default for Span","synthetic":false,"types":[]}];
-implementors["calypso_diagnostic"] = [{"text":"impl Default for GlobalReportingCtxt","synthetic":false,"types":[]}];
-implementors["odysseus"] = [{"text":"impl Default for Context","synthetic":false,"types":[]}];
+implementors["calypso_base"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"calypso_base/span/struct.Span.html\" title=\"struct calypso_base::span::Span\">Span</a>","synthetic":false,"types":["calypso_base::span::Span"]}];
+implementors["calypso_diagnostic"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"calypso_diagnostic/report/struct.GlobalReportingCtxt.html\" title=\"struct calypso_diagnostic::report::GlobalReportingCtxt\">GlobalReportingCtxt</a>","synthetic":false,"types":["calypso_diagnostic::report::GlobalReportingCtxt"]}];
+implementors["odysseus"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/default/trait.Default.html\" title=\"trait core::default::Default\">Default</a> for <a class=\"struct\" href=\"odysseus/context/struct.Context.html\" title=\"struct odysseus::context::Context\">Context</a>","synthetic":false,"types":["odysseus::context::Context"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

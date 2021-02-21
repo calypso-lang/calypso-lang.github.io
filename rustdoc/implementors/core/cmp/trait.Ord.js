@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["calypso_base"] = [{"text":"impl Ord for Span","synthetic":false,"types":[]}];
+implementors["calypso_base"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html\" title=\"trait core::cmp::Ord\">Ord</a> for <a class=\"struct\" href=\"calypso_base/span/struct.Span.html\" title=\"struct calypso_base::span::Span\">Span</a>","synthetic":false,"types":["calypso_base::span::Span"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

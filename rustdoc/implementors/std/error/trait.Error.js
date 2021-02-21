@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["calypso_diagnostic"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
+implementors["calypso_diagnostic"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/std/error/trait.Error.html\" title=\"trait std::error::Error\">Error</a> for <a class=\"struct\" href=\"calypso_diagnostic/error/struct.Error.html\" title=\"struct calypso_diagnostic::error::Error\">Error</a>","synthetic":false,"types":["calypso_diagnostic::error::Error"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

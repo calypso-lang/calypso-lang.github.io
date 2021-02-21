@@ -1,3 +1,0 @@
-(function() {var implementors = {};
-implementors["calypso_diagnostic"] = [{"text":"impl <a class=\"trait\" href=\"calypso_diagnostic/prelude/trait.ChainedError.html\" title=\"trait calypso_diagnostic::prelude::ChainedError\">ChainedError</a> for <a class=\"struct\" href=\"calypso_diagnostic/error/struct.Error.html\" title=\"struct calypso_diagnostic::error::Error\">Error</a>","synthetic":false,"types":["calypso_diagnostic::error::Error"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

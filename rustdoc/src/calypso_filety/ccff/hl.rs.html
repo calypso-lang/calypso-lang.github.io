@@ -314,15 +314,14 @@
 <span id="311">311</span>
 <span id="312">312</span>
 <span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryInto</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">SeekFrom</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">IOError</span>, <span class="ident">ErrorKind</span> <span class="kw">as</span> <span class="ident">IOErrorKind</span>, <span class="prelude-ty">Result</span> <span class="kw">as</span> <span class="ident">IOResult</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::{<span class="ident">Error</span> <span class="kw">as</span> <span class="ident">IOError</span>, <span class="ident">ErrorKind</span> <span class="kw">as</span> <span class="ident">IOErrorKind</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">ll</span>::{<span class="ident">CcffHeader</span>, <span class="ident">CcffSectionHeader</span>};
+<span class="kw">use</span> <span class="ident">calypso_error</span>::<span class="ident">CalResult</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Default</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ContainerFile</span> {
@@ -456,7 +455,7 @@
     <span class="doccomment">/// the section data was too large to read, if the section header had a</span>
     <span class="doccomment">/// malformed size, or if the size was not provided (this will not happen</span>
     <span class="doccomment">/// if you load from a file).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_all</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">Read</span> <span class="op">+</span> <span class="ident">Seek</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IOResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_all</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">Read</span> <span class="op">+</span> <span class="ident">Seek</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CalResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">for</span> <span class="ident">section</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">sections</span> {
             <span class="ident">section</span>.<span class="ident">read_data</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
         }
@@ -545,7 +544,7 @@
     <span class="doccomment">/// This function will return an error if the section data had a malformed</span>
     <span class="doccomment">/// size, or if the offset was not set (this will not happen if you load</span>
     <span class="doccomment">/// from a file).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">seek_to_data</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">Seek</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IOResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">seek_to_data</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">Seek</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CalResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="ident">input</span>
             .<span class="ident">seek</span>(<span class="ident">SeekFrom</span>::<span class="ident">Start</span>(
                 <span class="self">self</span>.<span class="ident">offset</span>
@@ -579,7 +578,7 @@
     <span class="doccomment">/// the section data was too large to read, if the section header had a</span>
     <span class="doccomment">/// malformed size, or if the size was not provided (this will not happen</span>
     <span class="doccomment">/// if you load from a file).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_data</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">Read</span> <span class="op">+</span> <span class="ident">Seek</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IOResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_data</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">Read</span> <span class="op">+</span> <span class="ident">Seek</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CalResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">seek_to_data</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">size</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">size</span>
@@ -594,10 +593,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">size</span>);
         <span class="kw">let</span> <span class="ident">n_read</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">take</span>(<span class="ident">size</span> <span class="kw">as</span> <span class="ident">u64</span>).<span class="ident">read_to_end</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buf</span>)<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="ident">n_read</span> <span class="op">&lt;</span> <span class="ident">size</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">IOError</span>::<span class="ident">new</span>(
-                <span class="ident">IOErrorKind</span>::<span class="ident">WriteZero</span>,
-                <span class="string">&quot;could not read section data&quot;</span>,
-            ));
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">IOError</span>::<span class="ident">new</span>(<span class="ident">IOErrorKind</span>::<span class="ident">WriteZero</span>, <span class="string">&quot;could not read section data&quot;</span>).<span class="ident">into</span>());
         }
         <span class="self">self</span>.<span class="ident">data</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">buf</span>);
         <span class="prelude-val">Ok</span>(())

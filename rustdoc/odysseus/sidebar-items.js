@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["context",""],["module",""]]});
+initSidebarItems({"mod":[["arena",""],["bc",""]],"static":[["GLOBAL",""]]});

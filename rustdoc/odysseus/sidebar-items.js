@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["arena",""],["bc",""]],"static":[["GLOBAL",""]]});
+initSidebarItems({"mod":[["arena",""],["bc",""]]});

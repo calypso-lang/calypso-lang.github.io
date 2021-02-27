@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["Container",""],["Entry",""],["Parent",""]]});
+initSidebarItems({"trait":[["Element","A bytecode element, i.e. a single element in the bytecode, whether high-level or low-level."],["Entry","A trait used for “entries” of a bytecode [`Parent`], similar to a [`std::collections::hash_map::Entry`]."],["Parent","A bytecode parent, i.e. a structure that contains one or more types of bytecode elements."]]});

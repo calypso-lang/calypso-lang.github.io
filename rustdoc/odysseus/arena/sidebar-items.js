@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Arena",""]]});
+initSidebarItems({"struct":[["Arena","A simple arena for use within Odysseus, built with a `Vec`, using `usize`s for IDs."]]});

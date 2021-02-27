@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["arena",""],["bc",""]]});
+initSidebarItems({"mod":[["arena","A simple arena for use within Odysseus, built with a `Vec`, using `usize`s for IDs."],["bc",""]]});

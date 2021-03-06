@@ -8,5 +8,5 @@ sourcesIndex["calypso_opt"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["calypso_parsing"] = {"name":"","dirs":[{"name":"lexer","files":["helpers.rs","ident_kw.rs","lit.rs","scan.rs","types.rs","ws.rs"]},{"name":"pretty","files":["lexer.rs","mod.rs"]}],"files":["lexer.rs","lib.rs"]};
 sourcesIndex["calypso_repl"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["calypso_util"] = {"name":"","files":["lib.rs"]};
-sourcesIndex["odysseus"] = {"name":"","dirs":[{"name":"bc","files":["context.rs","mod.rs","module.rs","traits.rs"]}],"files":["arena.rs","lib.rs"]};
+sourcesIndex["odysseus"] = {"name":"","dirs":[{"name":"bc","files":["context.rs","mod.rs","module.rs","traits.rs"]},{"name":"ccff","files":["types.rs"]}],"files":["arena.rs","ccff.rs","lib.rs"]};
 createSourceSidebar();

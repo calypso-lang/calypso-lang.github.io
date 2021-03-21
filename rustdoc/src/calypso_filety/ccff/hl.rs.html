@@ -621,15 +621,6 @@
 <span id="618">618</span>
 <span id="619">619</span>
 <span id="620">620</span>
-<span id="621">621</span>
-<span id="622">622</span>
-<span id="623">623</span>
-<span id="624">624</span>
-<span id="625">625</span>
-<span id="626">626</span>
-<span id="627">627</span>
-<span id="628">628</span>
-<span id="629">629</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryInto</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">io</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
@@ -661,14 +652,12 @@
 
     <span class="doccomment">/// Set the ABI of the container file. This can be any arbitrary value you</span>
     <span class="doccomment">/// choose.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">abi</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">abi</span>: <span class="ident">u64</span>) {
         <span class="self">self</span>.<span class="ident">abi</span> <span class="op">=</span> <span class="ident">abi</span>;
     }
 
     <span class="doccomment">/// Set the file type of the container file. This can be any arbitrary</span>
     <span class="doccomment">/// value you choose.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">filety</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">filety</span>: <span class="ident">u64</span>) {
         <span class="self">self</span>.<span class="ident">filety</span> <span class="op">=</span> <span class="ident">filety</span>;
     }
@@ -804,6 +793,7 @@
     }
 
     <span class="doccomment">/// Get the name of the section.</span>
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">str</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
     }
@@ -833,6 +823,7 @@
     }
 
     <span class="doccomment">/// Set the data of the section. This can be any arbitrary data you choose.</span>
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">data</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">data</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">data</span>);
         <span class="self">self</span>
@@ -864,19 +855,9 @@
     <span class="doccomment">/// from a file).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">seek_to_data</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">Seek</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CalResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="ident">input</span>
-            .<span class="ident">seek</span>(<span class="ident">SeekFrom</span>::<span class="ident">Start</span>(
-                <span class="self">self</span>.<span class="ident">offset</span>
-                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> {
-                        <span class="ident">IOError</span>::<span class="ident">new</span>(<span class="ident">IOErrorKind</span>::<span class="ident">InvalidInput</span>, <span class="string">&quot;offset was not provided&quot;</span>)
-                    })<span class="question-mark">?</span>
-                    .<span class="ident">try_into</span>()
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
-                        <span class="ident">IOError</span>::<span class="ident">new</span>(
-                            <span class="ident">IOErrorKind</span>::<span class="ident">InvalidData</span>,
-                            <span class="string">&quot;section data had a malformed size&quot;</span>,
-                        )
-                    })<span class="question-mark">?</span>,
-            ))
+            .<span class="ident">seek</span>(<span class="ident">SeekFrom</span>::<span class="ident">Start</span>(<span class="self">self</span>.<span class="ident">offset</span>.<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> {
+                <span class="ident">IOError</span>::<span class="ident">new</span>(<span class="ident">IOErrorKind</span>::<span class="ident">InvalidInput</span>, <span class="string">&quot;offset was not provided&quot;</span>)
+            })<span class="question-mark">?</span>))
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
                 <span class="ident">IOError</span>::<span class="ident">new</span>(
                     <span class="ident">IOErrorKind</span>::<span class="ident">InvalidData</span>,
@@ -919,6 +900,7 @@
 
     <span class="doccomment">/// Get the offset of the data. This is only present if loading from a file</span>
     <span class="doccomment">/// and cannot be manually set to prevent errors.</span>
+    <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">offset</span>
     }

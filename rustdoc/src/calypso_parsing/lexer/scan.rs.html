@@ -158,30 +158,8 @@
 <span id="155">155</span>
 <span id="156">156</span>
 <span id="157">157</span>
-<span id="158">158</span>
-<span id="159">159</span>
-<span id="160">160</span>
-<span id="161">161</span>
-<span id="162">162</span>
-<span id="163">163</span>
-<span id="164">164</span>
-<span id="165">165</span>
-<span id="166">166</span>
-<span id="167">167</span>
-<span id="168">168</span>
-<span id="169">169</span>
-<span id="170">170</span>
-<span id="171">171</span>
-<span id="172">172</span>
-<span id="173">173</span>
-<span id="174">174</span>
-<span id="175">175</span>
-<span id="176">176</span>
-<span id="177">177</span>
-<span id="178">178</span>
-<span id="179">179</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">helpers</span>::<span class="ident">is_ident_start</span>;
+<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">helpers</span>::<span class="ident">is_ident_start</span>, <span class="ident">Radix</span>};
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Lexer</span>, <span class="ident">Token</span>, <span class="ident">TokenType</span>};
 
 <span class="kw">use</span> <span class="ident">calypso_base</span>::<span class="ident">streams</span>::<span class="ident">Stream</span>;
@@ -223,12 +201,24 @@
             <span class="kw">return</span> <span class="self">self</span>.<span class="ident">handle_string_literal</span>();
         }
 
+        <span class="kw">if</span> <span class="ident">ch</span> <span class="op">=</span><span class="op">=</span> <span class="string">&#39;0&#39;</span> {
+            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_at_end</span>() {
+                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">new_token</span>(<span class="ident">TokenType</span>::<span class="ident">Int</span> {
+                    <span class="ident">suffix</span>: <span class="prelude-val">None</span>,
+                    <span class="ident">radix</span>: <span class="ident">Radix</span>::<span class="ident">Decimal</span>,
+                }));
+            }
+            <span class="kw">return</span> <span class="self">self</span>.<span class="ident">handle_int_leading_zero</span>();
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">ch</span>.<span class="ident">is_ascii_digit</span>() {
+            <span class="kw">return</span> <span class="self">self</span>.<span class="ident">handle_number</span>();
+        }
+
         <span class="kw">let</span> <span class="ident">token_type</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ch</span> {
             <span class="string">&#39;&lt;&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;&lt;&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() {
-                    <span class="ident">TokenType</span>::<span class="ident">LtLtEq</span>
+                    <span class="macro">unimplemented</span><span class="macro">!</span>() <span class="comment">// TokenType::LtLtEq</span>
                 } <span class="kw">else</span> {
-                    <span class="ident">TokenType</span>::<span class="ident">Lt</span>
+                    <span class="ident">TokenType</span>::<span class="ident">LtLt</span>
                 }
             }
             <span class="string">&#39;&lt;&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">LtEq</span>,
@@ -236,7 +226,7 @@
 
             <span class="string">&#39;&gt;&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;&gt;&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() {
-                    <span class="ident">TokenType</span>::<span class="ident">GtGtEq</span>
+                    <span class="macro">unimplemented</span><span class="macro">!</span>() <span class="comment">// TokenType::GtGtEq</span>
                 } <span class="kw">else</span> {
                     <span class="ident">TokenType</span>::<span class="ident">GtGt</span>
                 }
@@ -245,73 +235,69 @@
             <span class="string">&#39;&gt;&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Gt</span>,
 
             <span class="string">&#39;=&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">EqEq</span>,
-            <span class="string">&#39;=&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Eq</span>,
-
+            <span class="comment">// &#39;=&#39; =&gt; TokenType::Eq,</span>
             <span class="string">&#39;!&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">BangEq</span>,
             <span class="string">&#39;!&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Bang</span>,
 
-            <span class="string">&#39;|&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;&gt;&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">PipeGt</span>,
+            <span class="comment">// &#39;|&#39; if self.next_if_eq(&amp;&#39;&gt;&#39;).is_some() =&gt; TokenType::PipeGt,</span>
             <span class="string">&#39;|&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;|&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">PipePipe</span>,
-            <span class="string">&#39;|&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">PipeEq</span>,
+            <span class="comment">// &#39;|&#39; if self.next_if_eq(&amp;&#39;=&#39;).is_some() =&gt; TokenType::PipeEq,</span>
             <span class="string">&#39;|&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Pipe</span>,
-
             <span class="string">&#39;&amp;&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;&amp;&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">AndAnd</span>,
-            <span class="string">&#39;&amp;&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">AndEq</span>,
+            <span class="comment">// &#39;&amp;&#39; if self.next_if_eq(&amp;&#39;=&#39;).is_some() =&gt; TokenType::AndEq,</span>
             <span class="string">&#39;&amp;&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">And</span>,
 
-            <span class="string">&#39;+&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">PlusEq</span>,
+            <span class="comment">// &#39;+&#39; if self.next_if_eq(&amp;&#39;=&#39;).is_some() =&gt; TokenType::PlusEq,</span>
             <span class="string">&#39;+&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Plus</span>,
 
-            <span class="string">&#39;-&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">MinusEq</span>,
-            <span class="string">&#39;-&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;&gt;&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Arrow</span>,
+            <span class="comment">// &#39;-&#39; if self.next_if_eq(&amp;&#39;=&#39;).is_some() =&gt; TokenType::MinusEq,</span>
+            <span class="comment">// &#39;-&#39; if self.next_if_eq(&amp;&#39;&gt;&#39;).is_some() =&gt; TokenType::Arrow,</span>
             <span class="string">&#39;-&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Minus</span>,
 
             <span class="string">&#39;*&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;*&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() {
-                    <span class="ident">TokenType</span>::<span class="ident">StarStarEq</span>
+                    <span class="macro">unimplemented</span><span class="macro">!</span>() <span class="comment">// TokenType::StarStarEq</span>
                 } <span class="kw">else</span> {
                     <span class="ident">TokenType</span>::<span class="ident">StarStar</span>
                 }
             }
-            <span class="string">&#39;*&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">StarEq</span>,
+            <span class="comment">// &#39;*&#39; if self.next_if_eq(&amp;&#39;=&#39;).is_some() =&gt; TokenType::StarEq,</span>
             <span class="string">&#39;*&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Star</span>,
 
-            <span class="string">&#39;/&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">SlashEq</span>,
+            <span class="comment">// &#39;/&#39; if self.next_if_eq(&amp;&#39;=&#39;).is_some() =&gt; TokenType::SlashEq,</span>
             <span class="string">&#39;/&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Slash</span>,
 
-            <span class="string">&#39;%&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">PercentEq</span>,
+            <span class="comment">// &#39;%&#39; if self.next_if_eq(&amp;&#39;=&#39;).is_some() =&gt; TokenType::PercentEq,</span>
             <span class="string">&#39;%&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Percent</span>,
 
-            <span class="string">&#39;^&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">CaretEq</span>,
+            <span class="comment">// &#39;^&#39; if self.next_if_eq(&amp;&#39;=&#39;).is_some() =&gt; TokenType::CaretEq,</span>
             <span class="string">&#39;^&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Caret</span>,
-
-            <span class="string">&#39;~&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">TildeEq</span>,
-            <span class="string">&#39;~&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Tilde</span>,
 
             <span class="string">&#39;(&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">LParen</span>,
             <span class="string">&#39;)&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">RParen</span>,
 
-            <span class="string">&#39;{&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">LBrace</span>,
-            <span class="string">&#39;}&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">RBrace</span>,
+            <span class="comment">// &#39;{&#39; =&gt; TokenType::LBrace,</span>
+            <span class="comment">// &#39;}&#39; =&gt; TokenType::RBrace,</span>
 
-            <span class="string">&#39;[&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">LBracket</span>,
-            <span class="string">&#39;]&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">RBracket</span>,
+            <span class="comment">// &#39;[&#39; =&gt; TokenType::LBracket,</span>
+            <span class="comment">// &#39;]&#39; =&gt; TokenType::RBracket,</span>
 
-            <span class="string">&#39;,&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Comma</span>,
-            <span class="string">&#39;;&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Semi</span>,
+            <span class="comment">// &#39;,&#39; =&gt; TokenType::Comma,</span>
+            <span class="comment">// &#39;;&#39; =&gt; TokenType::Semi,</span>
+            <span class="string">&#39;:&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Colon</span>,
 
-            <span class="string">&#39;.&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;.&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;=&#39;</span>).<span class="ident">is_some</span>() {
-                    <span class="ident">TokenType</span>::<span class="ident">DotDotEq</span>
-                } <span class="kw">else</span> {
-                    <span class="ident">TokenType</span>::<span class="ident">DotDot</span>
-                }
-            }
-            <span class="string">&#39;.&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Dot</span>,
+            <span class="comment">// &#39;.&#39; if self.next_if_eq(&amp;&#39;.&#39;).is_some() =&gt; {</span>
+            <span class="comment">//     if self.next_if_eq(&amp;&#39;=&#39;).is_some() {</span>
+            <span class="comment">//         TokenType::DotDotEq</span>
+            <span class="comment">//     } else {</span>
+            <span class="comment">//         TokenType::DotDot</span>
+            <span class="comment">//     }</span>
+            <span class="comment">// }</span>
+            <span class="comment">// &#39;.&#39; =&gt; TokenType::Dot,</span>
 
-            <span class="comment">// `&#39;_&#39; =&gt; Under` is already taken care of by idents</span>
-            <span class="string">&#39;#&#39;</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;!&#39;</span>).<span class="ident">is_some</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">HashBang</span>,
-            <span class="string">&#39;#&#39;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">TokenType</span>::<span class="ident">Hash</span>,
+            <span class="comment">// // `&#39;_&#39; =&gt; Under` is already taken care of by idents</span>
+            <span class="comment">// &#39;#&#39; if self.next_if_eq(&amp;&#39;!&#39;).is_some() =&gt; TokenType::HashBang,</span>
+            <span class="comment">// &#39;#&#39; =&gt; TokenType::Hash,</span>
 
             <span class="comment">// Unexpected character</span>
             <span class="ident">ch</span> <span class="op">=</span><span class="op">&gt;</span> {
@@ -329,36 +315,6 @@
 
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">new_token</span>(<span class="ident">token_type</span>))
     }
-
-    <span class="comment">/*
-    pub fn scan(&amp;mut self) -&gt; CalResult&lt;Token&lt;&#39;lex&gt;&gt; {
-        // _T_O_D_O_: literals
-        /*if ch == &#39;0&#39; {
-            let peek = self.peek();
-            if peek.is_some() {
-                self.advance();
-            }
-            let radix = match peek {
-                Some(&#39;x&#39;) =&gt; Radix::Hexadecimal,
-                Some(&#39;o&#39;) =&gt; Radix::Octal,
-                Some(&#39;b&#39;) =&gt; Radix::Binary,
-                Some(&#39;E&#39;) | Some(&#39;e&#39;) =&gt; Radix::Decimal,
-                None =&gt; Radix::Decimal,
-                _ =&gt; {
-                    let diagnostic = Diagnostic::new(
-                        Span::new(self.start(), self.current() - self.start()),
-                        self.buffer(),
-                        self.source_name.clone(),
-                        format!(&quot;invalid string base `{}`&quot;, peek.unwrap()),
-                        4, // Invalid string base.
-                    );
-                    return Err(diagnostic.into());
-                }
-            };
-            ch = self.advance();
-        }*/
-    }
-    */</span>
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="calypso_parsing" data-search-js="../../../search-index.js"></div>

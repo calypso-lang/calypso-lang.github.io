@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Keyword",""],["Radix","Number radixes."],["TokenType","Types of Calypso tokens"]]});
+initSidebarItems({"enum":[["Keyword",""],["Radix","Number radixes."],["Suffix","Number suffixes."],["TokenType","Types of Calypso tokens"]]});

@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["DiagnosticError","An extension of [`CalError`] used for diagnostics."]]});

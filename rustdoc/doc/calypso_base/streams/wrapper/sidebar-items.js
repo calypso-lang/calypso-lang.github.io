@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["StreamedIter","A generic stream that wraps an existing iterator."]]});

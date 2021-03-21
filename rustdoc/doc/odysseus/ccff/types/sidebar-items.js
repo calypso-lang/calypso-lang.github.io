@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["FileType","The type of the file."],["SectionType","The type of the section."]],"struct":[["SectionFlags","The flags for a section. These currently just apply to permissions and lifetime information (i.e. static vs non-static)."]]});

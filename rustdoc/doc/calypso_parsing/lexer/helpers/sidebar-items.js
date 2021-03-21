@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["is_ident_continue",""],["is_ident_end",""],["is_ident_start",""],["is_valid_for",""],["is_valid_for_char_literal",""],["is_whitespace",""],["is_whitespace_ch",""]],"static":[["WHITESPACE",""]]});

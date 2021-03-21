@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ContainerFile","A higher-level interface to a CCFF container file."],["Section","A higher-level interface to a CCFF section."]]});

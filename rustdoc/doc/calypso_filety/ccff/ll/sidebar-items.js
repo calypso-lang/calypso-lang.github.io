@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["CcffHeader","The header for a CCFF file"],["CcffSectionHeader","The header for a CCFF section. This does not include the associated data."]]});

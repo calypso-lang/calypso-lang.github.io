@@ -1,0 +1,13 @@
+var N = null;var sourcesIndex = {};
+sourcesIndex["calypso"] = {"name":"","dirs":[{"name":"commands","files":["explain.rs","internal.rs","mod.rs"]}],"files":["main.rs","messages.rs"]};
+sourcesIndex["calypso_ast"] = {"name":"","dirs":[{"name":"expr","files":["mod.rs"]}],"files":["lib.rs","visitor.rs"]};
+sourcesIndex["calypso_base"] = {"name":"","dirs":[{"name":"streams","files":["generic.rs","str.rs","wrapper.rs"]}],"files":["lib.rs","macros.rs","span.rs","streams.rs"]};
+sourcesIndex["calypso_diagnostic"] = {"name":"","files":["diagnostic.rs","error.rs","lib.rs","report.rs","types.rs"]};
+sourcesIndex["calypso_error"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["calypso_filety"] = {"name":"","dirs":[{"name":"ccff","files":["hl.rs","ll.rs"]}],"files":["ccff.rs","lib.rs"]};
+sourcesIndex["calypso_opt"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["calypso_parsing"] = {"name":"","dirs":[{"name":"lexer","files":["helpers.rs","ident_kw.rs","lit.rs","num.rs","scan.rs","types.rs","ws.rs"]},{"name":"parser","files":["expr.rs","grammar.rs","tokens.rs"]},{"name":"pretty","files":["lexer.rs","mod.rs"]}],"files":["lexer.rs","lib.rs","parser.rs"]};
+sourcesIndex["calypso_repl"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["calypso_util"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["odysseus"] = {"name":"","dirs":[{"name":"bc","files":["context.rs","mod.rs","module.rs","traits.rs"]},{"name":"ccff","files":["types.rs"]}],"files":["arena.rs","ccff.rs","lib.rs"]};
+createSourceSidebar();

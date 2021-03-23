@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Arena","A simple arena for use within SaturnVM, built with a `Vec`, using `usize`s for IDs."]]});

@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["odysseus"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Binary.html\" title=\"trait core::fmt::Binary\">Binary</a> for <a class=\"struct\" href=\"odysseus/ccff/types/struct.SectionFlags.html\" title=\"struct odysseus::ccff::types::SectionFlags\">SectionFlags</a>","synthetic":false,"types":["odysseus::ccff::types::SectionFlags"]}];
+implementors["saturnvm"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/fmt/trait.Binary.html\" title=\"trait core::fmt::Binary\">Binary</a> for <a class=\"struct\" href=\"saturnvm/ccff/types/struct.SectionFlags.html\" title=\"struct saturnvm::ccff::types::SectionFlags\">SectionFlags</a>","synthetic":false,"types":["saturnvm::ccff::types::SectionFlags"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

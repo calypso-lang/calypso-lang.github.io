@@ -254,6 +254,8 @@
 <span id="251">251</span>
 <span id="252">252</span>
 <span id="253">253</span>
+<span id="254">254</span>
+<span id="255">255</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">helpers</span>::{<span class="ident">is_valid_for</span>, <span class="ident">is_whitespace</span>};
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Lexer</span>, <span class="ident">Token</span>, <span class="ident">TokenType</span>};
@@ -294,6 +296,10 @@
                 <span class="self">self</span>.<span class="ident">next</span>();
                 <span class="self">self</span>.<span class="ident">handle_int</span>(<span class="ident">Radix</span>::<span class="ident">Binary</span>)
             }
+            <span class="string">&#39;.&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="self">self</span>.<span class="ident">handle_float_part</span>()<span class="question-mark">?</span>;
+                <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">new_token</span>(<span class="ident">TokenType</span>::<span class="ident">Float</span>))
+            }
             <span class="ident">ch</span> <span class="kw">if</span> <span class="ident">ch</span>.<span class="ident">is_ascii_digit</span>() <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">current_to_start</span>();
                 <span class="self">self</span>.<span class="ident">gorge_digits</span>();
@@ -332,7 +338,7 @@
                     },
                 ))
             }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unimplemented</span><span class="macro">!</span>(),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
         }
     }
 
@@ -356,10 +362,9 @@
         <span class="self">self</span>.<span class="ident">handle_unexpected_underscore</span>()<span class="question-mark">?</span>;
 
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">next_if</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">value_owned</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&#39;.&#39;</span>).<span class="ident">is_some</span>() {
-            <span class="self">self</span>.<span class="ident">inval_float_decimal</span>(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">inval_float_decimal</span>()<span class="question-mark">?</span>;
             <span class="self">self</span>.<span class="ident">gorge_digits</span>();
             <span class="self">self</span>.<span class="ident">handle_unexpected_underscore</span>()<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">inval_float_decimal</span>(<span class="bool-val">true</span>)<span class="question-mark">?</span>;
         }
 
         <span class="kw">if</span> <span class="self">self</span>
@@ -368,18 +373,17 @@
         {
             <span class="comment">// +/- are optional</span>
             <span class="self">self</span>.<span class="ident">next_if</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">value_owned</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&#39;+&#39;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">value_owned</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&#39;-&#39;</span>);
-            <span class="self">self</span>.<span class="ident">inval_float_exponent</span>(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">inval_float_exponent</span>()<span class="question-mark">?</span>;
             <span class="self">self</span>.<span class="ident">gorge_digits</span>();
             <span class="self">self</span>.<span class="ident">handle_unexpected_underscore</span>()<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">inval_float_exponent</span>(<span class="bool-val">true</span>)<span class="question-mark">?</span>
         }
 
         <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">inval_float_decimal</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">opt</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CalResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">inval_float_decimal</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CalResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start</span>;
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">opt</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">peek_cond</span>(<span class="ident">is_whitespace</span>) <span class="op">=</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">peek_cond</span>(<span class="ident">is_whitespace</span>) <span class="op">=</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
             <span class="self">self</span>.<span class="ident">current_to_start</span>();
             <span class="macro">gen_error</span><span class="macro">!</span>(<span class="ident">sync</span> <span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow_mut</span>(), <span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">E0028</span>;
@@ -404,7 +408,7 @@
                         <span class="string">&quot;expected a decimal part of this float here&quot;</span>
                 ]
             });
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">opt</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">is_at_end</span>() {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_at_end</span>() {
             <span class="self">self</span>.<span class="ident">current_to_start</span>();
             <span class="macro">gen_error</span><span class="macro">!</span>(<span class="ident">sync</span> <span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow_mut</span>(), <span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">E0029</span>;
@@ -419,9 +423,9 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">inval_float_exponent</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">opt</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CalResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">inval_float_exponent</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CalResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start</span>;
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">opt</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">peek_cond</span>(<span class="ident">is_whitespace</span>) <span class="op">=</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">peek_cond</span>(<span class="ident">is_whitespace</span>) <span class="op">=</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
             <span class="self">self</span>.<span class="ident">current_to_start</span>();
             <span class="macro">gen_error</span><span class="macro">!</span>(<span class="ident">sync</span> <span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow_mut</span>(), <span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">E0031</span>;
@@ -442,7 +446,7 @@
                         <span class="string">&quot;expected an exponent of this float here&quot;</span>
                 ]
             });
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">opt</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">is_at_end</span>() {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_at_end</span>() {
             <span class="self">self</span>.<span class="ident">current_to_start</span>();
             <span class="macro">gen_error</span><span class="macro">!</span>(<span class="ident">sync</span> <span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow_mut</span>(), <span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">E0032</span>;

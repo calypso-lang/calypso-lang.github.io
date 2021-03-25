@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["init",""]],"struct":[["EMPTY",""],["FALSE",""],["NULL",""],["TRUE",""],["UNDERSCORE",""]]});
+initSidebarItems({"enum":[["Keyword",""]],"fn":[["init",""]],"struct":[["EMPTY",""],["FALSE",""],["NULL",""],["TRUE",""],["UNDERSCORE",""]]});

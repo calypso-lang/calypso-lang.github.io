@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["KEYWORD_TRIE",""]]});
+initSidebarItems({});

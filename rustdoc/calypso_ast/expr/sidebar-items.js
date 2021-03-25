@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["BinOpKind",""],["Expr",""],["Primary",""],["UnOpKind",""]]});
+initSidebarItems({"enum":[["BinOpKind",""],["Expr",""],["Primary",""],["Radix","Number radixes."],["Suffix","Number suffixes."],["UnOpKind",""]]});

@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["static_list","Initialize a `static` list with the values specified."]],"mod":[["macros","Common macros for ease of use in other parts of the program."],["span","`Span` and `Spanned` types."],["streams","Utilities for handling streams of data"],["symbol","Utilities for interned strings (symbols)"]]});
+initSidebarItems({"mod":[["span","`Span` and `Spanned` types."],["streams","Utilities for handling streams of data"],["symbol","Utilities for interned strings (symbols)"]]});

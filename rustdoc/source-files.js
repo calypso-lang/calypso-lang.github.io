@@ -1,7 +1,7 @@
 var N = null;var sourcesIndex = {};
 sourcesIndex["calypso"] = {"name":"","dirs":[{"name":"commands","files":["explain.rs","internal.rs","mod.rs"]}],"files":["main.rs","messages.rs"]};
 sourcesIndex["calypso_ast"] = {"name":"","dirs":[{"name":"expr","files":["mod.rs"]}],"files":["lib.rs","visitor.rs"]};
-sourcesIndex["calypso_base"] = {"name":"","dirs":[{"name":"streams","files":["generic.rs","str.rs","wrapper.rs"]}],"files":["lib.rs","span.rs","streams.rs","symbol.rs"]};
+sourcesIndex["calypso_base"] = {"name":"","dirs":[{"name":"streams","files":["generic.rs","str.rs"]}],"files":["lib.rs","span.rs","streams.rs","symbol.rs"]};
 sourcesIndex["calypso_diagnostic"] = {"name":"","files":["diagnostic.rs","error.rs","lib.rs","report.rs","types.rs"]};
 sourcesIndex["calypso_error"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["calypso_filety"] = {"name":"","dirs":[{"name":"ccff","files":["hl.rs","ll.rs"]}],"files":["ccff.rs","lib.rs"]};

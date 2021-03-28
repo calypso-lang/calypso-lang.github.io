@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["span","`Span` and `Spanned` types."],["streams","Utilities for handling streams of data"],["symbol","Utilities for interned strings (symbols)"]]});
+initSidebarItems({"externcrate":[["tracing",""]],"mod":[["span","`Span` and `Spanned` types."],["streams","Utilities for handling streams of data"],["symbol","Utilities for interned strings (symbols)"]]});

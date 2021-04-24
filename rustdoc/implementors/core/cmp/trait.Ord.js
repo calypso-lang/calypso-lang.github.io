@@ -1,4 +1,3 @@
 (function() {var implementors = {};
 implementors["calypso_base"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html\" title=\"trait core::cmp::Ord\">Ord</a> for <a class=\"struct\" href=\"calypso_base/span/struct.Span.html\" title=\"struct calypso_base::span::Span\">Span</a>","synthetic":false,"types":["calypso_base::span::Span"]}];
-implementors["saturnvm"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/core/cmp/trait.Ord.html\" title=\"trait core::cmp::Ord\">Ord</a> for <a class=\"struct\" href=\"saturnvm/ccff/types/struct.SectionFlags.html\" title=\"struct saturnvm::ccff::types::SectionFlags\">SectionFlags</a>","synthetic":false,"types":["saturnvm::ccff::types::SectionFlags"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

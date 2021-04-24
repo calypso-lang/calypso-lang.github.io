@@ -1,1 +1,1 @@
-window.ALL_CRATES = ["calypso","calypso_ast","calypso_base","calypso_diagnostic","calypso_error","calypso_filety","calypso_opt","calypso_parsing","calypso_repl","calypso_util","saturnvm"];
+window.ALL_CRATES = ["calypso","calypso_ast","calypso_base","calypso_diagnostic","calypso_error","calypso_filety","calypso_parsing","calypso_repl","calypso_util","saturnvm"];

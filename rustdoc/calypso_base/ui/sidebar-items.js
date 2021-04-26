@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["error",""],["error_to",""],["info",""],["info_to",""],["message_general",""],["note",""],["note_to",""],["parse_color_pref","Parse a color preference (`always`, `ansi`, `auto`, anything else: auto) to a color preference. Uses [`atty`] internally to test if the output stream is a TTY."],["warn",""],["warn_to",""]]});

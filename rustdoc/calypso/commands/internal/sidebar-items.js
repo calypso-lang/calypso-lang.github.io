@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["internal",""],["lexer",""],["lexer_stdin",""],["lexer_stdin_repl",""]]});
+initSidebarItems({"fn":[["buildinfo",""],["internal",""],["lexer",""],["lexer_stdin",""],["lexer_stdin_repl",""]]});

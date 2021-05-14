@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Tok",""]],"fn":[["process",""],["process_iter",""]]});
+initSidebarItems({"enum":[["Tok",""]],"fn":[["process",""],["process_iter",""],["trim_number",""]]});

@@ -20,6 +20,8 @@ const config = {
 			enabled: true,
 			pages: ["*"]
 		},
+		hydrate: false,
+		router: false,
 		adapter: adapter({})
 	}
 };

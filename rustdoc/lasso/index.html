@@ -1,0 +1,340 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="CI Security Audit Coverage LoC Docs.rs Crates.io"><meta name="keywords" content="rust, rustlang, rust-lang, lasso"><title>lasso - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../ayu.css" disabled ><script id="default-settings"></script><script src="../storage.js"></script><script src="../crates.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../lasso/index.html'><div class='logo-container rust-logo'><img src='../rust-logo.png' alt='logo'></div></a><p class="location">Crate lasso</p><div class="block version"><p>Version 0.5.1</p></div><div class="sidebar-elems"><a id="all-types" href="all.html"><p>See all lasso's items</p></a><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#traits">Traits</a></li><li><a href="#types">Type Definitions</a></li></ul></div><div id="sidebar-vars" data-name="lasso" data-ty="mod" data-relpath=""></div><script defer src="sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../settings.html" title="settings"><img src="../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="in-band">Crate <a class="mod" href="#">lasso</a><button id="copy-path" onclick="copy_path(this)" title="copy path"><img src="../clipboard.svg" width="19" height="18" alt="Copy item import" title="Copy item import to clipboard"></button></span><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../src/lasso/lib.rs.html#1-476" title="goto source code">[src]</a></span></h1><details class="rustdoc-toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p><a href="https://github.com/Kixiron/lasso"><img src="https://github.com/Kixiron/lasso/workflows/CI/badge.svg" alt="CI" /></a>
+<a href="https://github.com/Kixiron/lasso"><img src="https://github.com/Kixiron/lasso/workflows/Security%20Audit/badge.svg" alt="Security Audit" /></a>
+<a href="https://coveralls.io/github/Kixiron/lasso?branch=master"><img src="https://coveralls.io/repos/github/Kixiron/lasso/badge.svg?branch=master" alt="Coverage" /></a>
+<a href="https://github.com/Kixiron/lasso"><img src="https://tokei.rs/b1/github/Kixiron/lasso" alt="LoC" /></a>
+<a href="https://docs.rs/lasso"><img src="https://docs.rs/lasso/badge.svg" alt="Docs.rs" /></a>
+<a href="https://crates.io/crates/lasso"><img src="https://img.shields.io/crates/v/lasso.svg" alt="Crates.io" /></a></p>
+<p>A multithreaded and single threaded string interner that allows strings to be cached with a minimal memory footprint,
+associating them with a unique <a href="trait.Key.html">key</a> that can be used to retrieve them at any time. A <a href="struct.Rodeo.html" title="Rodeo"><code>Rodeo</code></a> allows <code>O(1)</code>
+internment and resolution and can be turned into a <a href="struct.RodeoReader.html" title="RodeoReader"><code>RodeoReader</code></a> to allow for contention-free resolutions
+with both key to str and str to key operations. It can also be turned into a <a href="struct.RodeoResolver.html" title="RodeoResolver"><code>RodeoResolver</code></a> with only
+key to str operations for the lowest possible memory usage.</p>
+<h2 id="which-interner-do-i-use" class="section-header"><a href="#which-interner-do-i-use">Which interner do I use?</a></h2>
+<p>For single-threaded workloads <a href="struct.Rodeo.html" title="Rodeo"><code>Rodeo</code></a> is encouraged, while multi-threaded applications should use <a href="struct.ThreadedRodeo.html" title="ThreadedRodeo"><code>ThreadedRodeo</code></a>.
+Both of these are the only way to intern strings, but most applications will hit a stage where they are done interning
+strings, and at that point is where the choice between <a href="struct.RodeoReader.html" title="RodeoReader"><code>RodeoReader</code></a> and <a href="struct.RodeoResolver.html" title="RodeoResolver"><code>RodeoResolver</code></a>. If the user needs to get
+keys for strings still, then they must use the <a href="struct.RodeoReader.html" title="RodeoReader"><code>RodeoReader</code></a> (although they can still transfer into a  <a href="struct.RodeoResolver.html" title="RodeoResolver"><code>RodeoResolver</code></a>)
+at this point. For users who just need key to string resolution, the <a href="struct.RodeoResolver.html" title="RodeoResolver"><code>RodeoResolver</code></a> gives contention-free access at the
+minimum possible memory usage. Note that to gain access to <a href="struct.ThreadedRodeo.html" title="ThreadedRodeo"><code>ThreadedRodeo</code></a> the <code>multi-threaded</code> feature is required.</p>
+<table><thead><tr><th>Interner</th><th align="center">Thread-safe</th><th align="center">Intern String</th><th align="center">str to key</th><th align="center">key to str</th><th align="center">Contention Free</th><th align="center">Memory Usage</th></tr></thead><tbody>
+<tr><td><a href="struct.Rodeo.html" title="Rodeo"><code>Rodeo</code></a></td><td align="center">❌</td><td align="center">✅</td><td align="center">✅</td><td align="center">✅</td><td align="center">N/A</td><td align="center">Medium</td></tr>
+<tr><td><a href="struct.ThreadedRodeo.html" title="ThreadedRodeo"><code>ThreadedRodeo</code></a></td><td align="center">✅</td><td align="center">✅</td><td align="center">✅</td><td align="center">✅</td><td align="center">❌</td><td align="center">Most</td></tr>
+<tr><td><a href="struct.RodeoReader.html" title="RodeoReader"><code>RodeoReader</code></a></td><td align="center">✅</td><td align="center">❌</td><td align="center">✅</td><td align="center">✅</td><td align="center">✅</td><td align="center">Medium</td></tr>
+<tr><td><a href="struct.RodeoResolver.html" title="RodeoResolver"><code>RodeoResolver</code></a></td><td align="center">✅</td><td align="center">❌</td><td align="center">❌</td><td align="center">✅</td><td align="center">✅</td><td align="center">Least</td></tr>
+</tbody></table>
+<h2 id="cargo-features" class="section-header"><a href="#cargo-features">Cargo Features</a></h2>
+<p>By default <code>lasso</code> has one dependency, <code>hashbrown</code>, and only <a href="struct.Rodeo.html" title="Rodeo"><code>Rodeo</code></a> is exposed. Hashbrown is used since the
+<a href="https://github.com/rust-lang/rust/issues/56167"><code>raw_entry</code> api</a> is currently unstable in the standard library’s hashmap.
+The raw hashmap API is used for custom hashing within the hashmaps, which works to dramatically reduce memory usage
+To make use of <a href="struct.ThreadedRodeo.html" title="ThreadedRodeo"><code>ThreadedRodeo</code></a>, you must enable the <code>multi-threaded</code> feature.</p>
+<ul>
+<li><code>multi-threaded</code> - Enables <a href="struct.ThreadedRodeo.html" title="ThreadedRodeo"><code>ThreadedRodeo</code></a>, the interner for multi-threaded tasks</li>
+<li><code>ahasher</code> - Use <a href="https://crates.io/crates/ahash"><code>ahash</code></a>’s <code>RandomState</code> as the default hasher</li>
+<li><code>no-std</code> - Enables <code>no_std</code> + <code>alloc</code> support for <a href="struct.Rodeo.html" title="Rodeo"><code>Rodeo</code></a> and <a href="struct.ThreadedRodeo.html" title="ThreadedRodeo"><code>ThreadedRodeo</code></a>
+<ul>
+<li>Automatically enables the following required features:
+<ul>
+<li><code>ahasher</code> - <code>no_std</code> hashing function</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><code>serialize</code> - Implements <code>Serialize</code> and <code>Deserialize</code> for all <a href="struct.Spur.html" title="Spur"><code>Spur</code></a> types and all interners</li>
+<li><code>inline-more</code> - Annotate external apis with <code>#[inline]</code></li>
+</ul>
+<h2 id="example-using-rodeo" class="section-header"><a href="#example-using-rodeo">Example: Using Rodeo</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">lasso::Rodeo</span>;
+
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> <span class="op">=</span> <span class="ident">Rodeo::default</span>();
+<span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+
+<span class="comment">// Easily retrieve the value of a key and find the key for values</span>
+<span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+<span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">key</span>), <span class="ident">rodeo</span>.<span class="ident">get</span>(<span class="string">&quot;Hello, world!&quot;</span>));
+
+<span class="comment">// Interning the same string again will yield the same key</span>
+<span class="kw">let</span> <span class="ident">key2</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+
+<span class="macro">assert_eq!</span>(<span class="ident">key</span>, <span class="ident">key2</span>);</pre></div>
+<h2 id="example-using-threadedrodeo" class="section-header"><a href="#example-using-threadedrodeo">Example: Using ThreadedRodeo</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">lasso::ThreadedRodeo</span>;
+<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">thread</span>, <span class="ident">sync::Arc</span>};
+
+<span class="kw">let</span> <span class="ident">rodeo</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">ThreadedRodeo::default</span>());
+<span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+
+<span class="comment">// Easily retrieve the value of a key and find the key for values</span>
+<span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+<span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">key</span>), <span class="ident">rodeo</span>.<span class="ident">get</span>(<span class="string">&quot;Hello, world!&quot;</span>));
+
+<span class="comment">// Interning the same string again will yield the same key</span>
+<span class="kw">let</span> <span class="ident">key2</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+
+<span class="macro">assert_eq!</span>(<span class="ident">key</span>, <span class="ident">key2</span>);
+
+<span class="comment">// ThreadedRodeo can be shared across threads</span>
+<span class="kw">let</span> <span class="ident">moved</span> <span class="op">=</span> <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>);
+<span class="kw">let</span> <span class="ident">hello</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
+    <span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">moved</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+    <span class="ident">moved</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello from the thread!&quot;</span>)
+})
+.<span class="ident">join</span>()
+.<span class="ident">unwrap</span>();
+
+<span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+<span class="macro">assert_eq!</span>(<span class="string">&quot;Hello from the thread!&quot;</span>, <span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">hello</span>));</pre></div>
+<h2 id="example-creating-a-rodeoreader" class="section-header"><a href="#example-creating-a-rodeoreader">Example: Creating a RodeoReader</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">lasso::Rodeo</span>;
+
+<span class="comment">// Rodeo and ThreadedRodeo are interchangeable here</span>
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> <span class="op">=</span> <span class="ident">Rodeo::default</span>();
+
+<span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+<span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+
+<span class="kw">let</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+
+<span class="comment">// Reader keeps all the strings from the parent</span>
+<span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">reader</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+<span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">key</span>), <span class="ident">reader</span>.<span class="ident">get</span>(<span class="string">&quot;Hello, world!&quot;</span>));
+
+<span class="comment">// The Reader can now be shared across threads, no matter what kind of Rodeo created it</span></pre></div>
+<h2 id="example-creating-a-rodeoresolver" class="section-header"><a href="#example-creating-a-rodeoresolver">Example: Creating a RodeoResolver</a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">lasso::Rodeo</span>;
+
+<span class="comment">// Rodeo and ThreadedRodeo are interchangeable here</span>
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> <span class="op">=</span> <span class="ident">Rodeo::default</span>();
+
+<span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+<span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+
+<span class="kw">let</span> <span class="ident">resolver</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">into_resolver</span>();
+
+<span class="comment">// Resolver keeps all the strings from the parent</span>
+<span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">resolver</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+
+<span class="comment">// The Resolver can now be shared across threads, no matter what kind of Rodeo created it</span></pre></div>
+<h2 id="example-making-a-custom-ranged-key" class="section-header"><a href="#example-making-a-custom-ranged-key">Example: Making a custom-ranged key</a></h2>
+<p>Sometimes you want your keys to only inhabit (or <em>not</em> inhabit) a certain range of values so that you can have custom <a href="https://rust-lang.github.io/unsafe-code-guidelines/layout/enums.html#discriminant-elision-on-option-like-enums">niches</a>,
+meaning that an <a href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="Option"><code>Option</code></a><code>&lt;</code><a href="struct.Spur.html" title="Spur"><code>Spur</code></a><code>&gt;</code> is the same size as a <a href="struct.Spur.html" title="Spur"><code>Spur</code></a>. This allows you to pack more data into
+what would otherwise be unused space, which can be critical for memory-sensitive applications.</p>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">lasso</span>::{<span class="ident">Key</span>, <span class="ident">Rodeo</span>};
+
+<span class="comment">// First make our key type, this will be what we use as handles into our interner</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
+<span class="kw">struct</span> <span class="ident">NicheKey</span>(<span class="ident">u32</span>);
+
+<span class="comment">// This will reserve the upper 255 values for us to use as niches</span>
+<span class="kw">const</span> <span class="ident">NICHE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0xFF000000</span>;
+
+<span class="comment">// Implementing `Key` is unsafe and requires that anything given to `try_from_usize` must produce the</span>
+<span class="comment">// same `usize` when `into_usize` is later called</span>
+<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Key</span> <span class="kw">for</span> <span class="ident">NicheKey</span> {
+    <span class="kw">fn</span> <span class="ident">into_usize</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
+        <span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">usize</span>
+    }
+
+    <span class="kw">fn</span> <span class="ident">try_from_usize</span>(<span class="ident">int</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">int</span> <span class="op">&lt;</span> <span class="ident">NICHE</span> {
+            <span class="comment">// The value isn&#39;t in our niche range, so we&#39;re good to go</span>
+            <span class="prelude-val">Some</span>(<span class="self">Self</span>(<span class="ident">int</span> <span class="kw">as</span> <span class="ident">u32</span>))
+        } <span class="kw">else</span> {
+            <span class="comment">// The value interferes with our niche, so we return `None`</span>
+            <span class="prelude-val">None</span>
+        }
+    }
+}
+
+<span class="comment">// To make sure we&#39;re upholding `Key`&#39;s safety contract, let&#39;s make two small tests</span>
+<span class="attribute">#[<span class="ident">test</span>]</span>
+<span class="kw">fn</span> <span class="ident">value_in_range</span>() {
+    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">NicheKey::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
+    <span class="macro">assert_eq!</span>(<span class="ident">key</span>.<span class="ident">into_usize</span>(), <span class="number">0</span>);
+
+    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">NicheKey::try_from_usize</span>(<span class="ident">NICHE</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
+    <span class="macro">assert_eq!</span>(<span class="ident">key</span>.<span class="ident">into_usize</span>(), <span class="ident">NICHE</span> <span class="op">-</span> <span class="number">1</span>);
+}
+
+<span class="attribute">#[<span class="ident">test</span>]</span>
+<span class="kw">fn</span> <span class="ident">value_out_of_range</span>() {
+    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">NicheKey::try_from_usize</span>(<span class="ident">NICHE</span>);
+    <span class="macro">assert!</span>(<span class="ident">key</span>.<span class="ident">is_none</span>());
+
+    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">NicheKey::try_from_usize</span>(<span class="ident">u32::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span>);
+    <span class="macro">assert!</span>(<span class="ident">key</span>.<span class="ident">is_none</span>());
+}
+
+<span class="comment">// And now we&#39;re done and can make `Rodeo`s or `ThreadedRodeo`s that use our custom key!</span>
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span>: <span class="ident">Rodeo</span><span class="op">&lt;</span><span class="ident">NicheKey</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Rodeo::new</span>();
+<span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;It works!&quot;</span>);
+<span class="macro">assert_eq!</span>(<span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>), <span class="string">&quot;It works!&quot;</span>);</pre></div>
+<h2 id="example-creation-using-fromiterator" class="section-header"><a href="#example-creation-using-fromiterator">Example: Creation using <code>FromIterator</code></a></h2>
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">lasso::Rodeo</span>;
+<span class="kw">use</span> <span class="ident">core::iter::FromIterator</span>;
+
+<span class="comment">// Works for both `Rodeo` and `ThreadedRodeo`</span>
+<span class="kw">let</span> <span class="ident">rodeo</span>: <span class="ident">Rodeo</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="string">&quot;one string&quot;</span>, <span class="string">&quot;two string&quot;</span>, <span class="string">&quot;red string&quot;</span>, <span class="string">&quot;blue string&quot;</span>]
+    .<span class="ident">into_iter</span>()
+    .<span class="ident">collect</span>();
+
+<span class="macro">assert!</span>(<span class="ident">rodeo</span>.<span class="ident">contains</span>(<span class="string">&quot;one string&quot;</span>));
+<span class="macro">assert!</span>(<span class="ident">rodeo</span>.<span class="ident">contains</span>(<span class="string">&quot;two string&quot;</span>));
+<span class="macro">assert!</span>(<span class="ident">rodeo</span>.<span class="ident">contains</span>(<span class="string">&quot;red string&quot;</span>));
+<span class="macro">assert!</span>(<span class="ident">rodeo</span>.<span class="ident">contains</span>(<span class="string">&quot;blue string&quot;</span>));</pre></div>
+
+<div class="example-wrap"><pre class="rust rust-example-rendered">
+<span class="kw">use</span> <span class="ident">lasso::Rodeo</span>;
+<span class="kw">use</span> <span class="ident">core::iter::FromIterator</span>;
+
+<span class="comment">// Works for both `Rodeo` and `ThreadedRodeo`</span>
+<span class="kw">let</span> <span class="ident">rodeo</span>: <span class="ident">Rodeo</span> <span class="op">=</span> <span class="ident">Rodeo::from_iter</span>(<span class="macro">vec!</span>[
+    <span class="string">&quot;one string&quot;</span>,
+    <span class="string">&quot;two string&quot;</span>,
+    <span class="string">&quot;red string&quot;</span>,
+    <span class="string">&quot;blue string&quot;</span>,
+]);
+
+<span class="macro">assert!</span>(<span class="ident">rodeo</span>.<span class="ident">contains</span>(<span class="string">&quot;one string&quot;</span>));
+<span class="macro">assert!</span>(<span class="ident">rodeo</span>.<span class="ident">contains</span>(<span class="string">&quot;two string&quot;</span>));
+<span class="macro">assert!</span>(<span class="ident">rodeo</span>.<span class="ident">contains</span>(<span class="string">&quot;red string&quot;</span>));
+<span class="macro">assert!</span>(<span class="ident">rodeo</span>.<span class="ident">contains</span>(<span class="string">&quot;blue string&quot;</span>));</pre></div>
+<h2 id="benchmarks" class="section-header"><a href="#benchmarks">Benchmarks</a></h2>
+<p>Benchmarks were gathered with <a href="https://github.com/bheisler/criterion.rs">Criterion.rs</a><br />
+OS: Windows 10<br />
+CPU: Ryzen 9 3900X at 3800Mhz<br />
+RAM: 3200Mhz<br />
+Rustc: Stable 1.44.1</p>
+<h3 id="rodeo" class="section-header"><a href="#rodeo">Rodeo</a></h3><h4 id="std-randomstate" class="section-header"><a href="#std-randomstate">STD RandomState</a></h4><table><thead><tr><th align="left">Method</th><th align="center">Time</th><th align="center">Throughput</th></tr></thead><tbody>
+<tr><td align="left"><code>resolve</code></td><td align="center">1.9251 μs</td><td align="center">13.285 GiB/s</td></tr>
+<tr><td align="left"><code>try_resolve</code></td><td align="center">1.9214 μs</td><td align="center">13.311 GiB/s</td></tr>
+<tr><td align="left"><code>resolve_unchecked</code></td><td align="center">1.4356 μs</td><td align="center">17.816 GiB/s</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (empty)</td><td align="center">60.350 μs</td><td align="center">433.96 MiB/s</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (filled)</td><td align="center">57.415 μs</td><td align="center">456.15 MiB/s</td></tr>
+<tr><td align="left"><code>try_get_or_intern</code> (empty)</td><td align="center">58.978 μs</td><td align="center">444.06 MiB/s</td></tr>
+<tr><td align="left"><code>try_get_or_intern (filled)</code></td><td align="center">57.421 μs</td><td align="center">456.10 MiB/s</td></tr>
+<tr><td align="left"><code>get</code> (empty)</td><td align="center">37.288 μs</td><td align="center">702.37 MiB/s</td></tr>
+<tr><td align="left"><code>get</code> (filled)</td><td align="center">55.095 μs</td><td align="center">475.36 MiB/s</td></tr>
+</tbody></table>
+<h4 id="ahash" class="section-header"><a href="#ahash">AHash</a></h4><table><thead><tr><th align="left">Method</th><th align="center">Time</th><th align="center">Throughput</th></tr></thead><tbody>
+<tr><td align="left"><code>try_resolve</code></td><td align="center">1.9282 μs</td><td align="center">13.264 GiB/s</td></tr>
+<tr><td align="left"><code>resolve</code></td><td align="center">1.9404 μs</td><td align="center">13.181 GiB/s</td></tr>
+<tr><td align="left"><code>resolve_unchecked</code></td><td align="center">1.4328 μs</td><td align="center">17.851 GiB/s</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (empty)</td><td align="center">38.029 μs</td><td align="center">688.68 MiB/s</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (filled)</td><td align="center">33.650 μs</td><td align="center">778.30 MiB/s</td></tr>
+<tr><td align="left"><code>try_get_or_intern</code> (empty)</td><td align="center">39.392 μs</td><td align="center">664.84 MiB/s</td></tr>
+<tr><td align="left"><code>try_get_or_intern (filled)</code></td><td align="center">33.435 μs</td><td align="center">783.31 MiB/s</td></tr>
+<tr><td align="left"><code>get</code> (empty)</td><td align="center">12.565 μs</td><td align="center">2.0356 GiB/s</td></tr>
+<tr><td align="left"><code>get</code> (filled)</td><td align="center">26.545 μs</td><td align="center">986.61 MiB/s</td></tr>
+</tbody></table>
+<h4 id="fxhash" class="section-header"><a href="#fxhash">FXHash</a></h4><table><thead><tr><th align="left">Method</th><th align="center">Time</th><th align="center">Throughput</th></tr></thead><tbody>
+<tr><td align="left"><code>resolve</code></td><td align="center">1.9014 μs</td><td align="center">13.451 GiB/s</td></tr>
+<tr><td align="left"><code>try_resolve</code></td><td align="center">1.9278 μs</td><td align="center">13.267 GiB/s</td></tr>
+<tr><td align="left"><code>resolve_unchecked</code></td><td align="center">1.4449 μs</td><td align="center">17.701 GiB/s</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (empty)</td><td align="center">32.523 μs</td><td align="center">805.27 MiB/s</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (filled)</td><td align="center">30.281 μs</td><td align="center">864.88 MiB/s</td></tr>
+<tr><td align="left"><code>try_get_or_intern</code> (empty)</td><td align="center">31.630 μs</td><td align="center">828.00 MiB/s</td></tr>
+<tr><td align="left"><code>try_get_or_intern (filled)</code></td><td align="center">31.002 μs</td><td align="center">844.78 MiB/s</td></tr>
+<tr><td align="left"><code>get</code> (empty)</td><td align="center">12.699 μs</td><td align="center">2.0141 GiB/s</td></tr>
+<tr><td align="left"><code>get</code> (filled)</td><td align="center">29.220 μs</td><td align="center">896.28 MiB/s</td></tr>
+</tbody></table>
+<h3 id="threadedrodeo" class="section-header"><a href="#threadedrodeo">ThreadedRodeo</a></h3><h4 id="std-randomstate-1" class="section-header"><a href="#std-randomstate-1">STD RandomState</a></h4><table><thead><tr><th align="left">Method</th><th align="center">Time (1 Thread)</th><th align="center">Throughput (1 Thread)</th><th align="center">Time (24 Threads)</th><th align="center">Throughput (24 Threads)</th></tr></thead><tbody>
+<tr><td align="left"><code>resolve</code></td><td align="center">54.336 μs</td><td align="center">482.00 MiB/s</td><td align="center">364.27 μs</td><td align="center">71.897 MiB/s</td></tr>
+<tr><td align="left"><code>try_resolve</code></td><td align="center">54.582 μs</td><td align="center">479.82 MiB/s</td><td align="center">352.67 μs</td><td align="center">74.261 MiB/s</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (empty)</td><td align="center">266.03 μs</td><td align="center">98.447 MiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (filled)</td><td align="center">103.04 μs</td><td align="center">254.17 MiB/s</td><td align="center">441.42 μs</td><td align="center">59.331 MiB/s</td></tr>
+<tr><td align="left"><code>try_get_or_intern</code> (empty)</td><td align="center">261.80 μs</td><td align="center">100.04 MiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>try_get_or_intern</code> (filled)</td><td align="center">102.61 μs</td><td align="center">255.25 MiB/s</td><td align="center">447.42 μs</td><td align="center">58.535 MiB/s</td></tr>
+<tr><td align="left"><code>get</code> (empty)</td><td align="center">80.346 μs</td><td align="center">325.96 MiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>get</code> (filled)</td><td align="center">92.669 μs</td><td align="center">282.62 MiB/s</td><td align="center">439.24 μs</td><td align="center">59.626 MiB/s</td></tr>
+</tbody></table>
+<h4 id="ahash-1" class="section-header"><a href="#ahash-1">AHash</a></h4><table><thead><tr><th align="left">Method</th><th align="center">Time (1 Thread)</th><th align="center">Throughput (1 Thread)</th><th align="center">Time (24 Threads)</th><th align="center">Throughput (24 Threads)</th></tr></thead><tbody>
+<tr><td align="left"><code>resolve</code></td><td align="center">22.261 μs</td><td align="center">1.1489 GiB/s</td><td align="center">265.46 μs</td><td align="center">98.658 MiB/s</td></tr>
+<tr><td align="left"><code>try_resolve</code></td><td align="center">22.378 μs</td><td align="center">1.1429 GiB/s</td><td align="center">268.58 μs</td><td align="center">97.513 MiB/s</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (empty)</td><td align="center">157.86 μs</td><td align="center">165.91 MiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (filled)</td><td align="center">56.320 μs</td><td align="center">465.02 MiB/s</td><td align="center">357.13 μs</td><td align="center">73.335 MiB/s</td></tr>
+<tr><td align="left"><code>try_get_or_intern</code> (empty)</td><td align="center">161.46 μs</td><td align="center">162.21 MiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>try_get_or_intern</code> (filled)</td><td align="center">55.874 μs</td><td align="center">468.73 MiB/s</td><td align="center">360.25 μs</td><td align="center">72.698 MiB/s</td></tr>
+<tr><td align="left"><code>get</code> (empty)</td><td align="center">43.520 μs</td><td align="center">601.79 MiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>get</code> (filled)</td><td align="center">53.720 μs</td><td align="center">487.52 MiB/s</td><td align="center">360.66 μs</td><td align="center">72.616 MiB/s</td></tr>
+</tbody></table>
+<h4 id="fxhash-1" class="section-header"><a href="#fxhash-1">FXHash</a></h4><table><thead><tr><th align="left">Method</th><th align="center">Time (1 Thread)</th><th align="center">Throughput (1 Thread)</th><th align="center">Time (24 Threads)</th><th align="center">Throughput (24 Threads)</th></tr></thead><tbody>
+<tr><td align="left"><code>try_resolve</code></td><td align="center">17.289 μs</td><td align="center">1.4794 GiB/s</td><td align="center">238.29 μs</td><td align="center">109.91 MiB/s</td></tr>
+<tr><td align="left"><code>resolve</code></td><td align="center">19.833 μs</td><td align="center">1.2896 GiB/s</td><td align="center">237.05 μs</td><td align="center">110.48 MiB/s</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (empty)</td><td align="center">130.97 μs</td><td align="center">199.97 MiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>get_or_intern</code> (filled)</td><td align="center">42.630 μs</td><td align="center">614.35 MiB/s</td><td align="center">301.60 μs</td><td align="center">86.837 MiB/s</td></tr>
+<tr><td align="left"><code>try_get_or_intern</code> (empty)</td><td align="center">129.30 μs</td><td align="center">202.55 MiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>try_get_or_intern</code> (filled)</td><td align="center">42.508 μs</td><td align="center">616.12 MiB/s</td><td align="center">337.29 μs</td><td align="center">77.648 MiB/s</td></tr>
+<tr><td align="left"><code>get</code> (empty)</td><td align="center">28.001 μs</td><td align="center">935.30 MiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>get</code> (filled)</td><td align="center">37.700 μs</td><td align="center">694.68 MiB/s</td><td align="center">292.15 μs</td><td align="center">89.645 MiB/s</td></tr>
+</tbody></table>
+<h3 id="rodeoreader" class="section-header"><a href="#rodeoreader">RodeoReader</a></h3><h4 id="std-randomstate-2" class="section-header"><a href="#std-randomstate-2">STD RandomState</a></h4><table><thead><tr><th align="left">Method</th><th align="center">Time (1 Thread)</th><th align="center">Throughput (1 Thread)</th><th align="center">Time (24 Threads)</th><th align="center">Throughput  (24 Threads)</th></tr></thead><tbody>
+<tr><td align="left"><code>resolve</code></td><td align="center">1.9398 μs</td><td align="center">13.185 GiB/s</td><td align="center">4.3153 μs</td><td align="center">5.9269 GiB/s</td></tr>
+<tr><td align="left"><code>try_resolve</code></td><td align="center">1.9315 μs</td><td align="center">13.242 GiB/s</td><td align="center">4.1956 μs</td><td align="center">6.0959 GiB/s</td></tr>
+<tr><td align="left"><code>resolve_unchecked</code></td><td align="center">1.4416 μs</td><td align="center">17.741 GiB/s</td><td align="center">3.1204 μs</td><td align="center">8.1964 GiB/s</td></tr>
+<tr><td align="left"><code>get</code> (empty)</td><td align="center">38.886 μs</td><td align="center">673.50 MiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>get</code> (filled)</td><td align="center">56.271 μs</td><td align="center">465.42 MiB/s</td><td align="center">105.12 μs</td><td align="center">249.14 MiB/s</td></tr>
+</tbody></table>
+<h4 id="ahash-2" class="section-header"><a href="#ahash-2">AHash</a></h4><table><thead><tr><th align="left">Method</th><th align="center">Time (1 Thread)</th><th align="center">Throughput (1 Thread)</th><th align="center">Time (24 Threads)</th><th align="center">Throughput (24 Threads)</th></tr></thead><tbody>
+<tr><td align="left"><code>resolve</code></td><td align="center">1.9404 μs</td><td align="center">13.181 GiB/s</td><td align="center">4.1881 μs</td><td align="center">6.1069 GiB/s</td></tr>
+<tr><td align="left"><code>try_resolve</code></td><td align="center">1.8932 μs</td><td align="center">13.509 GiB/s</td><td align="center">4.2410 μs</td><td align="center">6.0306 GiB/s</td></tr>
+<tr><td align="left"><code>resolve_unchecked</code></td><td align="center">1.4128 μs</td><td align="center">18.103 GiB/s</td><td align="center">3.1691 μs</td><td align="center">8.0703 GiB/s</td></tr>
+<tr><td align="left"><code>get</code> (empty)</td><td align="center">11.952 μs</td><td align="center">2.1399 GiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>get</code> (filled)</td><td align="center">27.093 μs</td><td align="center">966.65 MiB/s</td><td align="center">56.269 μs</td><td align="center">465.44 MiB/s</td></tr>
+</tbody></table>
+<h4 id="fxhash-2" class="section-header"><a href="#fxhash-2">FXHash</a></h4><table><thead><tr><th align="left">Method</th><th align="center">Time (1 Thread)</th><th align="center">Throughput (1 Thread)</th><th align="center">Time (24 Threads)</th><th align="center">Throughput (24 Threads)</th></tr></thead><tbody>
+<tr><td align="left"><code>resolve</code></td><td align="center">1.8987 μs</td><td align="center">13.471 GiB/s</td><td align="center">4.2117 μs</td><td align="center">6.0727 GiB/s</td></tr>
+<tr><td align="left"><code>try_resolve</code></td><td align="center">1.9103 μs</td><td align="center">13.389 GiB/s</td><td align="center">4.2254 μs</td><td align="center">6.0529 GiB/s</td></tr>
+<tr><td align="left"><code>resolve_unchecked</code></td><td align="center">1.4469 μs</td><td align="center">17.677 GiB/s</td><td align="center">3.0923 μs</td><td align="center">8.2709 GiB/s</td></tr>
+<tr><td align="left"><code>get</code> (empty)</td><td align="center">12.994 μs</td><td align="center">1.9682 GiB/s</td><td align="center">N\A</td><td align="center">N\A</td></tr>
+<tr><td align="left"><code>get</code> (filled)</td><td align="center">29.745 μs</td><td align="center">880.49 MiB/s</td><td align="center">52.387 μs</td><td align="center">499.93 MiB/s</td></tr>
+</tbody></table>
+<h3 id="rodeoresolver" class="section-header"><a href="#rodeoresolver">RodeoResolver</a></h3><table><thead><tr><th align="left">Method</th><th align="center">Time (1 Thread)</th><th align="center">Throughput (1 Thread)</th><th align="center">Time (24 Threads)</th><th align="center">Throughput (24 Threads)</th></tr></thead><tbody>
+<tr><td align="left"><code>resolve</code></td><td align="center">1.9416 μs</td><td align="center">13.172 GiB/s</td><td align="center">3.9114 μs</td><td align="center">6.5387 GiB/s</td></tr>
+<tr><td align="left"><code>try_resolve</code></td><td align="center">1.9264 μs</td><td align="center">13.277 GiB/s</td><td align="center">3.9289 μs</td><td align="center">6.5097 GiB/s</td></tr>
+<tr><td align="left"><code>resolve_unchecked</code></td><td align="center">1.6638 μs</td><td align="center">15.372 GiB/s</td><td align="center">3.1741 μs</td><td align="center">8.0578 GiB/s</td></tr>
+</tbody></table>
+</div></details><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<table><tr class="module-item"><td><a class="struct" href="struct.Capacity.html" title="lasso::Capacity struct">Capacity</a></td><td class="docblock-short"><p>The amount of strings and bytes that an interner can hold before reallocating</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Iter.html" title="lasso::Iter struct">Iter</a></td><td class="docblock-short"><p>An iterator over an interner’s strings and keys</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.LargeSpur.html" title="lasso::LargeSpur struct">LargeSpur</a></td><td class="docblock-short"><p>A key type taking up <code>size_of::&lt;usize&gt;()</code> bytes of space (generally 4 or 8 bytes)</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.LassoError.html" title="lasso::LassoError struct">LassoError</a></td><td class="docblock-short"><p>An error encountered while using an interner</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.MemoryLimits.html" title="lasso::MemoryLimits struct">MemoryLimits</a></td><td class="docblock-short"><p>Settings for the memory consumption of an interner</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.MicroSpur.html" title="lasso::MicroSpur struct">MicroSpur</a></td><td class="docblock-short"><p>A miniature Key utilizing only 8 bits of space</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.MiniSpur.html" title="lasso::MiniSpur struct">MiniSpur</a></td><td class="docblock-short"><p>A miniature Key utilizing only 16 bits of space</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Rodeo.html" title="lasso::Rodeo struct">Rodeo</a></td><td class="docblock-short"><p>A string interner that caches strings quickly with a minimal memory footprint,
+returning a unique key to re-access it with <code>O(1)</code> times.</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.RodeoReader.html" title="lasso::RodeoReader struct">RodeoReader</a></td><td class="docblock-short"><p>A read-only view of a <a href="struct.Rodeo.html"><code>Rodeo</code></a> or <a href="struct.ThreadedRodeo.html"><code>ThreadedRodeo</code></a> that allows contention-free access to interned strings,
+both key to string resolution and string to key lookups</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.RodeoResolver.html" title="lasso::RodeoResolver struct">RodeoResolver</a></td><td class="docblock-short"><p>A read-only view of a <a href="struct.Rodeo.html"><code>Rodeo</code></a> or <a href="struct.ThreadedRodeo.html"><code>ThreadedRodeo</code></a> that allows contention-free access to interned strings
+with only key to string resolution</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Spur.html" title="lasso::Spur struct">Spur</a></td><td class="docblock-short"><p>The default key for every Rodeo, uses only 32 bits of space</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Strings.html" title="lasso::Strings struct">Strings</a></td><td class="docblock-short"><p>An iterator over an interner’s strings</p>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.ThreadedRodeo.html" title="lasso::ThreadedRodeo struct">ThreadedRodeo</a></td><td class="docblock-short"><p>A concurrent string interner that caches strings quickly with a minimal memory footprint,
+returning a unique key to re-access it with <code>O(1)</code> internment and resolution.</p>
+</td></tr></table><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2>
+<table><tr class="module-item"><td><a class="enum" href="enum.LassoErrorKind.html" title="lasso::LassoErrorKind enum">LassoErrorKind</a></td><td class="docblock-short"><p>The kind of error that occurred</p>
+</td></tr></table><h2 id="traits" class="section-header"><a href="#traits">Traits</a></h2>
+<table><tr class="module-item"><td><a class="trait" href="trait.Interner.html" title="lasso::Interner trait">Interner</a></td><td class="docblock-short"><p>A generic interface over any underlying interner, allowing storing and accessing
+interned strings</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.IntoReader.html" title="lasso::IntoReader trait">IntoReader</a></td><td class="docblock-short"><p>A generic interface over interners that can be turned into a <a href="trait.Reader.html" title="Reader"><code>Reader</code></a>.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.IntoReaderAndResolver.html" title="lasso::IntoReaderAndResolver trait">IntoReaderAndResolver</a></td><td class="docblock-short"><p>A generic interface over interners that can be turned into both a <a href="trait.Reader.html" title="Reader"><code>Reader</code></a> and a <a href="trait.Resolver.html" title="Resolver"><code>Resolver</code></a>
+directly.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.IntoResolver.html" title="lasso::IntoResolver trait">IntoResolver</a></td><td class="docblock-short"><p>A generic interface over <a href="trait.Reader.html" title="Reader"><code>Reader</code></a>s that can be turned into a <a href="trait.Resolver.html" title="Resolver"><code>Resolver</code></a>.</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.Key.html" title="lasso::Key trait">Key</a></td><td class="docblock-short"><p>Types implementing this trait can be used as keys for all Rodeos</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.Reader.html" title="lasso::Reader trait">Reader</a></td><td class="docblock-short"><p>A generic interface that allows using any underlying interner for
+both its reading and resolution capabilities, allowing both
+<code>str -&gt; key</code> and <code>key -&gt; str</code> lookups</p>
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.Resolver.html" title="lasso::Resolver trait">Resolver</a></td><td class="docblock-short"><p>A generic interface that allows using any underlying interner only
+for its resolution capabilities, allowing only <code>key -&gt; str</code> lookups</p>
+</td></tr></table><h2 id="types" class="section-header"><a href="#types">Type Definitions</a></h2>
+<table><tr class="module-item"><td><a class="type" href="type.LassoResult.html" title="lasso::LassoResult type">LassoResult</a></td><td class="docblock-short"><p>A continence type for an error from an interner</p>
+</td></tr></table></section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../" data-current-crate="lasso" data-search-index-js="../search-index.js" data-search-js="../search.js"></div><script src="../main.js"></script></body></html>

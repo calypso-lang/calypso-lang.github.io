@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["LabelStyle",""],["Severity","A severity level for diagnostic messages."]],"struct":[["Builder",""],["Diagnostic",""]]});
+initSidebarItems({"enum":[["LabelStyle",""],["Severity","A severity level for diagnostic messages."]],"struct":[["Builder",""],["Diagnostic",""]],"type":[["SourceMgr",""]]});

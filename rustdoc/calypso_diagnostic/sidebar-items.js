@@ -1,1 +1,1 @@
-initSidebarItems({"externcrate":[["calypso_error",""],["reporting",""],["strfmt",""]],"macro":[["gen_error","Generate errors or report synchronized errors."]],"mod":[["diagnostic",""],["error",""],["prelude",""],["report",""],["types",""]],"type":[["FileMgr",""]]});
+initSidebarItems({"externcrate":[["calypso_error",""],["reporting",""],["strfmt",""]],"macro":[["gen_error",""]],"mod":[["diagnostic",""],["error",""],["prelude",""],["report",""],["types",""]]});

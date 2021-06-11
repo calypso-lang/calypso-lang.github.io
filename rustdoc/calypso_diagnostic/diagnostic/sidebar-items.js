@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["LabelStyle",""],["Severity","A severity level for diagnostic messages."]],"struct":[["Builder",""],["Diagnostic",""]],"type":[["SourceMgr",""]]});
+initSidebarItems({"enum":[["EnsembleDiagnostic","One or more diagnostics in a specific order, in order to form an “ensemble diagnostic” which is emitted all at once."],["LabelStyle",""],["Severity","A severity level for diagnostic messages."]],"mod":[["builder",""]],"struct":[["Diagnostic",""]],"type":[["SourceMgr",""]]});

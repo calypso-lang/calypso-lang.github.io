@@ -1,1 +1,1 @@
-initSidebarItems({"externcrate":[["calypso_error",""],["reporting",""]],"macro":[["gen_error",""]],"mod":[["diagnostic",""],["error",""],["prelude",""],["report",""],["types",""]]});
+initSidebarItems({"macro":[["diagnostic_fmt",""],["err",""]],"mod":[["diagnostic",""],["error",""],["prelude",""],["report",""],["types",""]]});

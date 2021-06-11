@@ -81,6 +81,8 @@
 <span id="79">79</span>
 <span id="80">80</span>
 <span id="81">81</span>
+<span id="82">82</span>
+<span id="83">83</span>
 </pre><pre class="rust">
 <span class="comment">// # Note to Contributors</span>
 <span class="comment">// Please follow Rust&#39;s RFC 1567 (https://github.com/rust-lang/rfcs/blob/master/text/1567-long-error-codes-explanation-normalization.md).</span>
@@ -93,6 +95,7 @@
 <span class="comment">//   convert this to compile-time format strings using hacky macro stuff</span>
 <span class="macro">macro_rules!</span> <span class="ident">register_diagnostics</span> {
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ecode</span>:<span class="ident">ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">format</span>:<span class="ident">expr</span>),<span class="op">*</span> $(,)<span class="question-mark">?</span> ; $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ecode_no_msg</span>:<span class="ident">ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">format_no_msg</span>:<span class="ident">expr</span>),<span class="op">*</span> $(,)<span class="question-mark">?</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="attribute">#[<span class="ident">macro_export</span>]</span>
         <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_macros</span>)]</span>
         <span class="macro">macro_rules!</span> <span class="ident">diagnostic_fmt</span> {
             $((<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ecode</span>) <span class="op">=</span><span class="op">&gt;</span> {<span class="macro-nonterminal">$</span><span class="macro-nonterminal">format</span>};)<span class="op">*</span>
@@ -112,10 +115,11 @@
     };
 }
 
+<span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_macros</span>)]</span>
 <span class="macro">macro_rules!</span> <span class="ident">err</span> {
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ecode</span>:<span class="ident">ident</span>$(, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>)<span class="question-mark">?</span>) <span class="op">=</span><span class="op">&gt;</span> {{
-        <span class="macro">format!</span>(<span class="macro">diagnostic_fmt!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ecode</span>)$(, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>)<span class="kw-2">*</span>)<span class="question-mark">?</span>)
+        <span class="ident">::std::format</span>(<span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro">::types::diagnostic_fmt!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ecode</span>)$(, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rest</span>)<span class="kw-2">*</span>)<span class="question-mark">?</span>)
     }}
 }
 

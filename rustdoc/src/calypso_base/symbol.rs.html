@@ -186,6 +186,23 @@
 <span id="184">184</span>
 <span id="185">185</span>
 <span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
+<span id="201">201</span>
+<span id="202">202</span>
+<span id="203">203</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="ident">std::convert::AsRef</span>;
 <span class="kw">use</span> <span class="ident">std::fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Display</span>};
@@ -195,15 +212,18 @@
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">lasso</span>;
 
+<span class="doccomment">/// An interned string.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Symbol</span>(<span class="ident">Spur</span>);
 
 <span class="kw">impl</span> <span class="ident">Symbol</span> {
+    <span class="doccomment">/// Intern a string and return the symbol.</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">intern</span>(<span class="ident">string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span>(<span class="ident">get_interner</span>().<span class="ident">get_or_intern</span>(<span class="ident">string</span>))
     }
 
+    <span class="doccomment">/// Intern a static string and return the symbol.</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">intern_static</span>(<span class="ident">string</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span>(<span class="ident">get_interner</span>().<span class="ident">get_or_intern_static</span>(<span class="ident">string</span>))
@@ -217,6 +237,7 @@
         )
     }
 
+    <span class="doccomment">/// Get the raw index of a symbol.</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="comment">// we know that `Spur` is 32 bits</span>
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::cast_possible_truncation</span>)]</span>
@@ -224,16 +245,19 @@
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">into_usize</span>() <span class="kw">as</span> <span class="ident">u32</span>
     }
 
+    <span class="doccomment">/// Resolve a symbol to a static string.</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_str</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
         <span class="ident">get_interner</span>().<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>)
     }
 
+    <span class="doccomment">/// Check if a symbol is equal to [`static@kw::EMPTY`].</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="ident">kw::EMPTY</span>
     }
 
+    <span class="doccomment">/// Check if a symbol is a keyword.</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_keyword</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="ident">kw::TRUE</span> <span class="op">|</span><span class="op">|</span> <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="ident">kw::FALSE</span>
@@ -252,9 +276,12 @@
     }
 }
 
+<span class="doccomment">/// A string that is potentially interned.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PotentiallyInterned</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Uninterned string.</span>
     <span class="ident">Uninterned</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>),
+    <span class="doccomment">/// Interned string.</span>
     <span class="ident">Interned</span>(<span class="ident">Symbol</span>),
 }
 
@@ -271,6 +298,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">PotentiallyInterned</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Potentially intern a string, if it is shorter than 255 characters.</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">potentially_intern</span>(<span class="ident">string</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">if</span> <span class="ident">string</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">255</span> {
@@ -296,6 +324,7 @@
 <span class="comment">// Also it&#39;s easy. Ish.</span>
 <span class="kw">static</span> <span class="ident">GLOBAL_INTERNER</span>: <span class="ident">OnceCell</span><span class="op">&lt;</span><span class="ident">ThreadedRodeo</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">OnceCell::new</span>();
 
+<span class="doccomment">/// Get the global interner.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_interner</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">ThreadedRodeo</span> {
     <span class="kw">let</span> <span class="ident">int</span> <span class="op">=</span> <span class="ident">GLOBAL_INTERNER</span>.<span class="ident">get_or_init</span>(<span class="ident">ThreadedRodeo::new</span>);
     <span class="ident">kw::init</span>();
@@ -303,23 +332,28 @@
 }
 
 <span class="macro">macro_rules!</span> <span class="ident">intern_static</span> {
-    (<span class="macro-nonterminal">$</span><span class="kw">mod</span>:<span class="macro-nonterminal">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span> <span class="op">=</span><span class="op">&gt;</span> {$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">enum_ident</span>:<span class="ident">ident</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>:<span class="ident">ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>:<span class="ident">expr</span>),<span class="kw-2">*</span>$(,)<span class="question-mark">?</span>}) <span class="op">=</span><span class="op">&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="kw">mod</span>:<span class="macro-nonterminal">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">mod_doc</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span> <span class="op">=</span><span class="op">&gt;</span> {$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">enum_ident</span>:<span class="ident">ident</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>:<span class="ident">ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>:<span class="ident">expr</span>),<span class="kw-2">*</span>$(,)<span class="question-mark">?</span>}) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="attribute">#[<span class="ident">doc</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">mod_doc</span>]</span>
         <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
         <span class="kw">pub</span> <span class="kw">mod</span> <span class="macro-nonterminal">$</span><span class="kw">mod</span> {
             <span class="macro">::lazy_static::lazy_static!</span> {
                 $(
+                    <span class="attribute">#[<span class="macro-nonterminal">doc</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>]</span>
                     <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>: <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::symbol::Symbol</span>
                         <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span><span class="macro-nonterminal">::symbol::Symbol::intern_static_2</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>);
                 )<span class="op">*</span>
             }
 
+            <span class="doccomment">/// Initialize all of the symbols in this module.</span>
             <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">init</span>() {
                 $(<span class="ident">::lazy_static::initialize</span>(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>);)<span class="op">*</span>
             }
 
+            <span class="doccomment">/// An enum containing all of the statically interned values in this module.</span>
             <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
             <span class="kw">pub</span> <span class="kw">enum</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span> {
                 $(
+                    <span class="attribute">#[<span class="ident">doc</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>]</span>
                     <span class="macro-nonterminal">$</span><span class="macro-nonterminal">enum_ident</span>,
                 )<span class="op">*</span>
             }
@@ -366,12 +400,12 @@
     }
 }
 
-<span class="macro">intern_static!</span> {<span class="ident">kw</span>, <span class="ident">Keyword</span> <span class="op">=</span><span class="op">&gt;</span> {
-    <span class="ident">Empty</span>; <span class="ident">EMPTY</span>: <span class="string">&quot;&quot;</span>,
-    <span class="ident">Under</span>; <span class="ident">UNDERSCORE</span>: <span class="string">&quot;_&quot;</span>,
+<span class="macro">intern_static!</span> {<span class="ident">kw</span>, <span class="string">&quot;Keywords&quot;</span>, <span class="ident">Keyword</span> <span class="op">=</span><span class="op">&gt;</span> {
+    <span class="ident">Empty</span>; <span class="ident">EMPTY</span>: <span class="string">&quot;&quot;</span>; <span class="string">&quot;Empty string (`\&quot;\&quot;`)&quot;</span>,
+    <span class="ident">Under</span>; <span class="ident">UNDERSCORE</span>: <span class="string">&quot;_&quot;</span>; <span class="string">&quot;Underscore (`_`)&quot;</span>,
 
-    <span class="ident">True</span>; <span class="ident">TRUE</span>: <span class="string">&quot;true&quot;</span>,
-    <span class="ident">False</span>; <span class="ident">FALSE</span>: <span class="string">&quot;false&quot;</span>
+    <span class="ident">True</span>; <span class="ident">TRUE</span>: <span class="string">&quot;true&quot;</span>; <span class="string">&quot;True (`true`)&quot;</span>,
+    <span class="ident">False</span>; <span class="ident">FALSE</span>: <span class="string">&quot;false&quot;</span>; <span class="string">&quot;False (`false`)&quot;</span>
 }}
 </pre></div>
 </section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_base" data-search-index-js="../../search-index.js" data-search-js="../../search.js"></div><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>

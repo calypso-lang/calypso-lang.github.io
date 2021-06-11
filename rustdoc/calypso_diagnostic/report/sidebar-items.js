@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["GlobalReportingCtxt",""]]});
+initSidebarItems({"struct":[["GlobalReportingCtxt","The global reporting context for diagnostics."]]});

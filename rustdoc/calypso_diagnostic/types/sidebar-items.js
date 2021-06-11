@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["DIAGNOSTICS",""]]});
+initSidebarItems({"struct":[["DIAGNOSTICS","A map from error codes to optional extended information."]]});

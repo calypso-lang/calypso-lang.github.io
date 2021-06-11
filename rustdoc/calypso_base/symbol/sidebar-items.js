@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["PotentiallyInterned",""]],"fn":[["get_interner",""]],"mod":[["kw",""]],"static":[["GLOBAL_INTERNER",""]],"struct":[["Symbol",""]]});
+initSidebarItems({"enum":[["PotentiallyInterned","A string that is potentially interned."]],"fn":[["get_interner","Get the global interner."]],"mod":[["kw","Keywords"]],"static":[["GLOBAL_INTERNER",""]],"struct":[["Symbol","An interned string."]]});

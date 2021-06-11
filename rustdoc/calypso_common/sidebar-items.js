@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["gcx",""]]});
+initSidebarItems({"mod":[["gcx","The global context of the Calypso compiler."]]});

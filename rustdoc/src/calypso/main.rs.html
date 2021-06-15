@@ -108,9 +108,6 @@
 <span id="106">106</span>
 <span id="107">107</span>
 <span id="108">108</span>
-<span id="109">109</span>
-<span id="110">110</span>
-<span id="111">111</span>
 </pre><pre class="rust">
 <span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://calypso-lang.github.io/rustdoc/calypso/index.html&quot;</span>)]</span>
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">clippy::pedantic</span>)]</span>
@@ -123,7 +120,6 @@
 <span class="kw">use</span> <span class="ident">tracing_subscriber::EnvFilter</span>;
 
 <span class="kw">use</span> <span class="ident">calypso_base::ui</span>::{<span class="self">self</span>, <span class="ident">atty::Stream</span>, <span class="ident">Emitters</span>};
-<span class="kw">use</span> <span class="ident">calypso_common::parking_lot::Mutex</span>;
 <span class="kw">use</span> <span class="ident">calypso_common</span>::{<span class="ident">gcx::GlobalCtxt</span>, <span class="ident">parking_lot::RwLock</span>};
 <span class="kw">use</span> <span class="ident">calypso_diagnostic::prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">calypso_diagnostic</span>::{<span class="ident">diagnostic::SourceMgr</span>, <span class="ident">report::GlobalReportingCtxt</span>};
@@ -167,30 +163,28 @@
     <span class="comment">// optionally a backtrace</span>
     <span class="ident">DEFAULT_HOOK</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>()(<span class="ident">info</span>);
 
-    <span class="comment">// Separate the output with an empty line</span>
-    <span class="macro">eprintln!</span>();
-
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">emit</span> <span class="op">=</span> <span class="ident">gcx</span>.<span class="ident">emit</span>.<span class="ident">lock</span>();
-    <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">emit</span>.<span class="ident">err</span>;
-
-    <span class="ident">err</span>.<span class="ident">error</span>(
-        <span class="prelude-val">None</span>,
-        <span class="string">&quot;the compiler unexpectedly crashed. this is a bug.&quot;</span>,
-        <span class="prelude-val">None</span>,
-    )<span class="question-mark">?</span>
-    .<span class="ident">note</span>(<span class="string">&quot;we would appreciate a bug report at&quot;</span>, <span class="prelude-val">Some</span>(<span class="ident">report_url</span>))<span class="question-mark">?</span>
-    .<span class="ident">note</span>(
-        <span class="string">&quot;build information&quot;</span>,
-        <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
-            <span class="string">&quot;calypso {} ({}) running on {}&quot;</span>,
-            <span class="ident">BUILD_INFO</span>.<span class="ident">version</span>, <span class="ident">BUILD_INFO</span>.<span class="ident">git_commit</span>, <span class="ident">BUILD_INFO</span>.<span class="ident">cargo_target_triple</span>
-        )),
-    )<span class="question-mark">?</span>
-    .<span class="ident">note</span>(
-        <span class="string">&quot;for further information, run&quot;</span>,
-        <span class="prelude-val">Some</span>(<span class="string">&quot;`calypso internal buildinfo`&quot;</span>),
-    )<span class="question-mark">?</span>
-    .<span class="ident">flush</span>()<span class="question-mark">?</span>;
+    <span class="ident">gcx</span>.<span class="ident">emit</span>
+        .<span class="ident">write</span>()
+        .<span class="ident">err</span>
+        .<span class="ident">newline</span>()<span class="question-mark">?</span>
+        .<span class="ident">error</span>(
+            <span class="prelude-val">None</span>,
+            <span class="string">&quot;the compiler unexpectedly crashed. this is a bug.&quot;</span>,
+            <span class="prelude-val">None</span>,
+        )<span class="question-mark">?</span>
+        .<span class="ident">note</span>(<span class="string">&quot;we would appreciate a bug report at&quot;</span>, <span class="prelude-val">Some</span>(<span class="ident">report_url</span>))<span class="question-mark">?</span>
+        .<span class="ident">note</span>(
+            <span class="string">&quot;build information&quot;</span>,
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
+                <span class="string">&quot;calypso {} ({}) running on {}&quot;</span>,
+                <span class="ident">BUILD_INFO</span>.<span class="ident">version</span>, <span class="ident">BUILD_INFO</span>.<span class="ident">git_commit</span>, <span class="ident">BUILD_INFO</span>.<span class="ident">cargo_target_triple</span>
+            )),
+        )<span class="question-mark">?</span>
+        .<span class="ident">note</span>(
+            <span class="string">&quot;for further information, run&quot;</span>,
+            <span class="prelude-val">Some</span>(<span class="string">&quot;`calypso internal buildinfo`&quot;</span>),
+        )<span class="question-mark">?</span>
+        .<span class="ident">flush</span>()<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(())
 }
@@ -206,7 +200,7 @@
     <span class="kw">let</span> <span class="ident">color_pref_stderr</span> <span class="op">=</span> <span class="ident">ui::parse_color_pref</span>(<span class="ident">color_pref</span>, <span class="ident">Stream::Stderr</span>);
 
     <span class="kw">let</span> <span class="ident">gcx</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">GlobalCtxt</span> {
-        <span class="ident">emit</span>: <span class="ident">Mutex::new</span>(<span class="ident">Emitters::new</span>(<span class="ident">color_pref_stdout</span>, <span class="ident">color_pref_stderr</span>)),
+        <span class="ident">emit</span>: <span class="ident">RwLock::new</span>(<span class="ident">Emitters::new</span>(<span class="ident">color_pref_stdout</span>, <span class="ident">color_pref_stderr</span>)),
         <span class="ident">grcx</span>: <span class="ident">RwLock::new</span>(<span class="ident">GlobalReportingCtxt::new</span>()),
         <span class="ident">sourcemgr</span>: <span class="ident">RwLock::new</span>(<span class="ident">SourceMgr::new</span>()),
     });

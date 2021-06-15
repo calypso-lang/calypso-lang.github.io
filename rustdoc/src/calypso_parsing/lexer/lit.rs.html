@@ -1,7 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `libs/calypso_parsing/src/lexer/lit.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lit.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../calypso_parsing/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button">?</button>
-                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../calypso_parsing/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img src="../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -332,12 +331,102 @@
 <span id="329">329</span>
 <span id="330">330</span>
 <span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
+<span id="362">362</span>
+<span id="363">363</span>
+<span id="364">364</span>
+<span id="365">365</span>
+<span id="366">366</span>
+<span id="367">367</span>
+<span id="368">368</span>
+<span id="369">369</span>
+<span id="370">370</span>
+<span id="371">371</span>
+<span id="372">372</span>
+<span id="373">373</span>
+<span id="374">374</span>
+<span id="375">375</span>
+<span id="376">376</span>
+<span id="377">377</span>
+<span id="378">378</span>
+<span id="379">379</span>
+<span id="380">380</span>
+<span id="381">381</span>
+<span id="382">382</span>
+<span id="383">383</span>
+<span id="384">384</span>
+<span id="385">385</span>
+<span id="386">386</span>
+<span id="387">387</span>
+<span id="388">388</span>
+<span id="389">389</span>
+<span id="390">390</span>
+<span id="391">391</span>
+<span id="392">392</span>
+<span id="393">393</span>
+<span id="394">394</span>
+<span id="395">395</span>
+<span id="396">396</span>
+<span id="397">397</span>
+<span id="398">398</span>
+<span id="399">399</span>
+<span id="400">400</span>
+<span id="401">401</span>
+<span id="402">402</span>
+<span id="403">403</span>
+<span id="404">404</span>
+<span id="405">405</span>
+<span id="406">406</span>
+<span id="407">407</span>
+<span id="408">408</span>
+<span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
 </pre><pre class="rust">
 <span class="kw">use</span> <span class="kw">super</span><span class="ident">::helpers</span>::{<span class="ident">is_valid_for_char_literal</span>, <span class="ident">is_whitespace</span>, <span class="ident">is_whitespace_ch</span>};
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Lexer</span>, <span class="ident">Token</span>, <span class="ident">TokenType</span>};
 
 <span class="kw">use</span> <span class="ident">calypso_base::span::Span</span>;
 <span class="kw">use</span> <span class="ident">calypso_base::streams::Stream</span>;
+<span class="kw">use</span> <span class="ident">calypso_diagnostic::diagnostic</span>::{<span class="ident">EnsembleBuilder</span>, <span class="ident">LabelStyle</span>};
 <span class="kw">use</span> <span class="ident">calypso_diagnostic::prelude</span>::<span class="kw-2">*</span>;
 
 <span class="comment">// todo(@ThePuzzlemaker: parse):</span>
@@ -356,33 +445,50 @@
                 <span class="prelude-val">Some</span>(<span class="string">&#39;u&#39;</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">handle_unicode_escape</span>()<span class="question-mark">?</span>,
                 <span class="prelude-val">Some</span>(<span class="ident">ch</span>) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">if</span> <span class="ident">is_whitespace_ch</span>(<span class="ident">ch</span>) {
-                        <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                            <span class="ident">E0008</span>;
-                            <span class="ident">labels</span>: [
-                                <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                                    (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                                    <span class="string">&quot;expected an escape sequence here&quot;</span>
-                            ]
-                        }) <span class="kw">as</span> ())<span class="question-mark">?</span>
+                        <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_syncd</span>(
+                            <span class="ident">EnsembleBuilder::new</span>()
+                                .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                                    <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0008&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0008</span>)).<span class="ident">label</span>(
+                                        <span class="ident">LabelStyle::Primary</span>,
+                                        <span class="prelude-val">None</span>,
+                                        <span class="self">self</span>.<span class="ident">file_id</span>,
+                                        <span class="self">self</span>.<span class="ident">new_span</span>(),
+                                    )
+                                })
+                                .<span class="ident">build</span>(),
+                        );
+                        <span class="self">self</span>.<span class="ident">next</span>();
+                    } <span class="kw">else</span> {
+                        <span class="self">self</span>.<span class="ident">next</span>();
+                        <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_syncd</span>(
+                            <span class="ident">EnsembleBuilder::new</span>()
+                                .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                                    <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0006&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0006</span>, <span class="ident">ch</span> <span class="op">=</span> <span class="ident">ch</span>)).<span class="ident">label</span>(
+                                        <span class="ident">LabelStyle::Primary</span>,
+                                        <span class="prelude-val">Some</span>(<span class="string">&quot;this escape sequence is invalid&quot;</span>),
+                                        <span class="self">self</span>.<span class="ident">file_id</span>,
+                                        <span class="self">self</span>.<span class="ident">new_span</span>(),
+                                    )
+                                })
+                                .<span class="ident">build</span>(),
+                        );
                     }
-                    <span class="self">self</span>.<span class="ident">next</span>();
-                    <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                        <span class="ident">E0006</span>, <span class="ident">ch</span> <span class="op">=</span> <span class="ident">ch</span>;
-                        <span class="ident">labels</span>: [
-                            <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                                (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                                <span class="string">&quot;this escape sequence is unknown&quot;</span>
-                        ]
-                    }) <span class="kw">as</span> ())<span class="question-mark">?</span>
                 }
-                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                        <span class="ident">E0007</span>;
-                        <span class="ident">labels</span>: [
-                            <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                                (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                                <span class="string">&quot;expected an escape sequence here&quot;</span>
-                        ]
-                    }) <span class="kw">as</span> ())<span class="question-mark">?</span>,
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                        <span class="ident">EnsembleBuilder::new</span>()
+                            .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                                <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0007&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0007</span>)).<span class="ident">label</span>(
+                                    <span class="ident">LabelStyle::Primary</span>,
+                                    <span class="prelude-val">None</span>,
+                                    <span class="self">self</span>.<span class="ident">file_id</span>,
+                                    <span class="self">self</span>.<span class="ident">new_span</span>(),
+                                )
+                            })
+                            .<span class="ident">build</span>(),
+                    );
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
+                }
             }
             <span class="self">self</span>.<span class="ident">set_start</span>(<span class="ident">saved_start</span>);
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>);
@@ -399,33 +505,40 @@
         <span class="self">self</span>.<span class="ident">current_to_start</span>();
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="op">=</span><span class="number">2</span> {
             <span class="kw">let</span> <span class="ident">sp</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">peek</span>();
-            <span class="kw">if</span> <span class="ident">sp</span>.<span class="ident">is_none</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">is_whitespace</span>(<span class="ident">sp</span>.<span class="ident">unwrap</span>()) {
+            <span class="kw">if</span> <span class="ident">sp</span>.<span class="ident">is_none</span>()
+                <span class="op">|</span><span class="op">|</span> <span class="ident">is_whitespace</span>(<span class="ident">sp</span>.<span class="ident">unwrap</span>())
+                <span class="op">|</span><span class="op">|</span> <span class="ident">sp</span>.<span class="ident">unwrap</span>().<span class="ident">value_owned</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&#39;\&#39;&#39;</span>
+                <span class="op">|</span><span class="op">|</span> <span class="ident">sp</span>.<span class="ident">unwrap</span>().<span class="ident">value_owned</span>() <span class="op">=</span><span class="op">=</span> <span class="string">&#39;\&quot;&#39;</span>
+            {
                 <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
-                    <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                        <span class="ident">E0004</span>;
-                        <span class="ident">labels</span>: [
-                            <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                                (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                                <span class="string">&quot;expected two hexadecimal digits here&quot;</span>
-                        ]
-                    }) <span class="kw">as</span> ())<span class="question-mark">?</span>
+                    <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                        <span class="ident">EnsembleBuilder::new</span>()
+                            .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                                <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0004&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0004</span>)).<span class="ident">label</span>(
+                                    <span class="ident">LabelStyle::Primary</span>,
+                                    <span class="prelude-val">None</span>,
+                                    <span class="self">self</span>.<span class="ident">file_id</span>,
+                                    <span class="self">self</span>.<span class="ident">new_span</span>(),
+                                )
+                            })
+                            .<span class="ident">build</span>(),
+                    );
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
                 } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="number">2</span> {
-                    <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                        <span class="ident">E0009</span>;
-                        <span class="ident">labels</span>: [
-                            <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                                (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                                <span class="string">&quot;found only one hexadecimal digit here&quot;</span>
-                        ],
-                        <span class="ident">notes</span>: [
-                            <span class="macro">format!</span>(
-                                <span class="string">&quot;perhaps you meant to use `\\x0{}`?&quot;</span>,
-                                <span class="self">self</span>.<span class="ident">prev</span>().<span class="ident">unwrap</span>().<span class="ident">value_owned</span>()
-                            )
-                        ]
-                    }) <span class="kw">as</span> ())<span class="question-mark">?</span>
-                } <span class="kw">else</span> {
-                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+                    <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                        <span class="ident">EnsembleBuilder::new</span>()
+                            .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                                <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0009&quot;</span>)
+                                    .<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0009</span>))
+                                    .<span class="ident">label</span>(<span class="ident">LabelStyle::Primary</span>, <span class="prelude-val">None</span>, <span class="self">self</span>.<span class="ident">file_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>())
+                                    .<span class="ident">note</span>(<span class="macro">format!</span>(
+                                        <span class="string">&quot;perhaps you meant to use `\\x0{}`?&quot;</span>,
+                                        <span class="self">self</span>.<span class="ident">prev</span>().<span class="ident">unwrap</span>().<span class="ident">value_owned</span>()
+                                    ))
+                            })
+                            .<span class="ident">build</span>(),
+                    );
+                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
                 }
             }
             <span class="kw">let</span> <span class="ident">sp</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">sp</span>.<span class="ident">unwrap</span>();
@@ -435,50 +548,72 @@
                 <span class="self">self</span>.<span class="ident">next</span>();
             } <span class="kw">else</span> {
                 <span class="self">self</span>.<span class="ident">set_start</span>(<span class="ident">sp</span>.<span class="ident">span</span>());
-                <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="ident">E0005</span>, <span class="ident">ch</span> <span class="op">=</span> <span class="ident">ch</span>;
-                    <span class="ident">labels</span>: [
-                        <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                            (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                            <span class="string">&quot;found an invalid digit here&quot;</span>
-                    ]
-                }) <span class="kw">as</span> ())<span class="question-mark">?</span>
+                <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_syncd</span>(
+                    <span class="ident">EnsembleBuilder::new</span>()
+                        .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                            <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0005&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0005</span>, <span class="ident">ch</span> <span class="op">=</span> <span class="ident">ch</span>)).<span class="ident">label</span>(
+                                <span class="ident">LabelStyle::Primary</span>,
+                                <span class="prelude-val">None</span>,
+                                <span class="self">self</span>.<span class="ident">file_id</span>,
+                                <span class="self">self</span>.<span class="ident">new_span</span>(),
+                            )
+                        })
+                        .<span class="ident">build</span>(),
+                );
+                <span class="self">self</span>.<span class="ident">next</span>();
             }
         }
         <span class="prelude-val">Ok</span>(())
     }
 
+    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::too_many_lines</span>)]</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">handle_unicode_escape</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CalResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
         <span class="comment">// Handle the `u` in `\u{1234}`</span>
         <span class="self">self</span>.<span class="ident">next</span>();
         <span class="self">self</span>.<span class="ident">current_to_start</span>();
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">peek</span>().<span class="ident">copied</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">sp</span>) <span class="kw">if</span> <span class="ident">is_whitespace</span>(<span class="kw-2">&amp;</span><span class="ident">sp</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="ident">E0012</span>;
-                    <span class="ident">labels</span>: [
-                        <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                            (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                            <span class="string">&quot;this should be an opening curly bracket&quot;</span>
-                    ]
-                }) <span class="kw">as</span> ())<span class="question-mark">?</span>,
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">E0011</span>;
-                <span class="ident">labels</span>: [
-                    <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                        (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                        <span class="string">&quot;this should be an opening curly bracket&quot;</span>
-                ]
-            }) <span class="kw">as</span> ())<span class="question-mark">?</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">sp</span>) <span class="kw">if</span> <span class="ident">is_whitespace</span>(<span class="kw-2">&amp;</span><span class="ident">sp</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                    <span class="ident">EnsembleBuilder::new</span>()
+                        .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                            <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0012&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0012</span>)).<span class="ident">label</span>(
+                                <span class="ident">LabelStyle::Primary</span>,
+                                <span class="prelude-val">None</span>,
+                                <span class="self">self</span>.<span class="ident">file_id</span>,
+                                <span class="self">self</span>.<span class="ident">new_span</span>(),
+                            )
+                        })
+                        .<span class="ident">build</span>(),
+                );
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
+            }
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                    <span class="ident">EnsembleBuilder::new</span>()
+                        .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                            <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0011&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0011</span>)).<span class="ident">label</span>(
+                                <span class="ident">LabelStyle::Primary</span>,
+                                <span class="prelude-val">None</span>,
+                                <span class="self">self</span>.<span class="ident">file_id</span>,
+                                <span class="self">self</span>.<span class="ident">new_span</span>(),
+                            )
+                        })
+                        .<span class="ident">build</span>(),
+                );
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
+            }
             <span class="prelude-val">Some</span>(<span class="ident">sp</span>) <span class="kw">if</span> <span class="ident">sp</span> <span class="op">!</span><span class="op">=</span> <span class="string">&#39;{&#39;</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="self">self</span>.<span class="ident">next</span>();
-                <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="ident">E0010</span>, <span class="ident">ch</span> <span class="op">=</span> <span class="ident">sp</span>.<span class="ident">value_owned</span>();
-                    <span class="ident">labels</span>: [
-                        <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                            (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                            <span class="string">&quot;this should be an opening curly bracket&quot;</span>
-                    ]
-                }) <span class="kw">as</span> ())<span class="question-mark">?</span>
+                <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                    <span class="ident">EnsembleBuilder::new</span>()
+                        .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                            <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0010&quot;</span>)
+                                .<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0010</span>, <span class="ident">ch</span> <span class="op">=</span> <span class="ident">sp</span>.<span class="ident">value_owned</span>()))
+                                .<span class="ident">label</span>(<span class="ident">LabelStyle::Primary</span>, <span class="prelude-val">None</span>, <span class="self">self</span>.<span class="ident">file_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>())
+                        })
+                        .<span class="ident">build</span>(),
+                );
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
             }
             <span class="prelude-val">Some</span>(..) <span class="op">=</span><span class="op">&gt;</span> (),
         }
@@ -488,51 +623,60 @@
 
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_at_end</span>() {
             <span class="self">self</span>.<span class="ident">current_to_start</span>();
-            <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">E0015</span>;
-                <span class="ident">labels</span>: [
-                    <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                        (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                        <span class="string">&quot;expected a closing curly bracket here&quot;</span>
-                ]
-            }) <span class="kw">as</span> ())<span class="question-mark">?</span>
+            <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                <span class="ident">EnsembleBuilder::new</span>()
+                    .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                        <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0015&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0015</span>)).<span class="ident">label</span>(
+                            <span class="ident">LabelStyle::Primary</span>,
+                            <span class="prelude-val">None</span>,
+                            <span class="self">self</span>.<span class="ident">file_id</span>,
+                            <span class="self">self</span>.<span class="ident">new_span</span>(),
+                        )
+                    })
+                    .<span class="ident">build</span>(),
+            );
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
         }
 
         <span class="kw">let</span> <span class="ident">sp</span> <span class="op">=</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">peek</span>().<span class="ident">unwrap</span>();
         <span class="kw">if</span> <span class="ident">is_whitespace</span>(<span class="kw-2">&amp;</span><span class="ident">sp</span>) {
             <span class="self">self</span>.<span class="ident">current_to_start</span>();
-            <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">E0017</span>;
-                <span class="ident">labels</span>: [
-                    <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                        (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                        <span class="string">&quot;expected a closing curly bracket here&quot;</span>
-                ]
-            }) <span class="kw">as</span> ())<span class="question-mark">?</span>
+            <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_syncd</span>(
+                <span class="ident">EnsembleBuilder::new</span>()
+                    .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                        <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0017&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0017</span>)).<span class="ident">label</span>(
+                            <span class="ident">LabelStyle::Primary</span>,
+                            <span class="prelude-val">None</span>,
+                            <span class="self">self</span>.<span class="ident">file_id</span>,
+                            <span class="self">self</span>.<span class="ident">new_span</span>(),
+                        )
+                    })
+                    .<span class="ident">build</span>(),
+            );
         } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">peek_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;}&#39;</span>) <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
-            <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">E0016</span>, <span class="ident">ch</span> <span class="op">=</span> <span class="ident">sp</span>.<span class="ident">value_owned</span>();
-                <span class="ident">labels</span>: [
-                    <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                        (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                        <span class="string">&quot;expected a closing curly bracket here&quot;</span>
-                ]
-            }) <span class="kw">as</span> ())<span class="question-mark">?</span>
+            <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_syncd</span>(
+                <span class="ident">EnsembleBuilder::new</span>()
+                    .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                        <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0016&quot;</span>)
+                            .<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0016</span>, <span class="ident">ch</span> <span class="op">=</span> <span class="ident">sp</span>.<span class="ident">value_owned</span>()))
+                            .<span class="ident">label</span>(<span class="ident">LabelStyle::Primary</span>, <span class="prelude-val">None</span>, <span class="self">self</span>.<span class="ident">file_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>())
+                    })
+                    .<span class="ident">build</span>(),
+            );
         }
 
         <span class="comment">// We need to check for this after curly bracket checks</span>
         <span class="kw">if</span> <span class="ident">count</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">E0019</span>;
-                <span class="ident">labels</span>: [
-                    <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                        (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                        <span class="string">&quot;expected at least one hex digit here&quot;</span>
-                ],
-                <span class="ident">notes</span>: [
-                    <span class="string">&quot;help: if you wanted a null byte, you can use `\\u{0}` or `\\0`&quot;</span>
-                ]
-            }) <span class="kw">as</span> ())<span class="question-mark">?</span>
+            <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_syncd</span>(
+                <span class="ident">EnsembleBuilder::new</span>()
+                    .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                        <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0019&quot;</span>)
+                            .<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0019</span>))
+                            .<span class="ident">label</span>(<span class="ident">LabelStyle::Primary</span>, <span class="prelude-val">None</span>, <span class="self">self</span>.<span class="ident">file_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>())
+                            .<span class="ident">note</span>(<span class="string">&quot;help: if you wanted a null byte, you can use `\\u{0}` or `\\0`.&quot;</span>)
+                    })
+                    .<span class="ident">build</span>(),
+            );
         }
         <span class="comment">// Handle closing `}`</span>
         <span class="self">self</span>.<span class="ident">next</span>();
@@ -548,23 +692,33 @@
             <span class="kw">if</span> <span class="ident">count</span> <span class="op">=</span><span class="op">=</span> <span class="number">6</span> {
                 <span class="kw">break</span>;
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">is_whitespace</span>(<span class="kw-2">&amp;</span><span class="ident">sp</span>) {
-                <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="ident">E0018</span>;
-                    <span class="ident">labels</span>: [
-                        <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                            (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                            <span class="string">&quot;expected a hexadecimal digit here&quot;</span>
-                    ]
-                }) <span class="kw">as</span> ())<span class="question-mark">?</span>
+                <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                    <span class="ident">EnsembleBuilder::new</span>()
+                        .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                            <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0018&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0018</span>)).<span class="ident">label</span>(
+                                <span class="ident">LabelStyle::Primary</span>,
+                                <span class="prelude-val">None</span>,
+                                <span class="self">self</span>.<span class="ident">file_id</span>,
+                                <span class="self">self</span>.<span class="ident">new_span</span>(),
+                            )
+                        })
+                        .<span class="ident">build</span>(),
+                );
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
             } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">ch</span>.<span class="ident">is_ascii_hexdigit</span>() {
-                <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="ident">E0014</span>, <span class="ident">ch</span> <span class="op">=</span> <span class="ident">ch</span>;
-                    <span class="ident">labels</span>: [
-                        <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                            (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                            <span class="string">&quot;found an invalid digit here. perhaps you meant to put a `}` here?&quot;</span>
-                    ]
-                }) <span class="kw">as</span> ())<span class="question-mark">?</span>
+                <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                    <span class="ident">EnsembleBuilder::new</span>()
+                        .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                            <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0014&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0014</span>, <span class="ident">ch</span> <span class="op">=</span> <span class="ident">ch</span>)).<span class="ident">label</span>(
+                                <span class="ident">LabelStyle::Secondary</span>,
+                                <span class="prelude-val">Some</span>(<span class="string">&quot;help: perhaps you meant to put a `}` here?&quot;</span>),
+                                <span class="self">self</span>.<span class="ident">file_id</span>,
+                                <span class="self">self</span>.<span class="ident">new_span</span>(),
+                            )
+                        })
+                        .<span class="ident">build</span>(),
+                );
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
             }
             <span class="self">self</span>.<span class="ident">next</span>();
             <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
@@ -577,62 +731,80 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">chs_found</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expected_quote_here</span> <span class="op">=</span> <span class="ident">Span::new_dummy</span>();
         <span class="kw">while</span> <span class="self">self</span>.<span class="ident">peek_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;\&#39;&#39;</span>) <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">is_at_end</span>() {
+            <span class="kw">if</span> <span class="ident">chs_found</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
+                <span class="ident">expected_quote_here</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">current</span>();
+            }
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">handle_escape_character</span>()<span class="question-mark">?</span> {
                 <span class="ident">chs_found</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">is_valid_for_char_literal</span>(<span class="self">self</span>.<span class="ident">peek</span>().<span class="ident">unwrap</span>()) {
                 <span class="self">self</span>.<span class="ident">next</span>();
                 <span class="ident">chs_found</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             } <span class="kw">else</span> {
+                <span class="kw">if</span> <span class="ident">chs_found</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">1</span> {
+                    <span class="ident">chs_found</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                    <span class="kw">break</span>;
+                }
+                <span class="self">self</span>.<span class="ident">current_to_start</span>();
                 <span class="kw">let</span> <span class="ident">ch</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>().<span class="ident">value_owned</span>();
-                <span class="macro">gen_error!</span>(<span class="ident">sync</span> <span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow_mut</span>(), <span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                    <span class="ident">E0020</span>;
-                    <span class="ident">labels</span>: [
-                        <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                            (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                            <span class="macro">format!</span>(
-                                <span class="string">&quot;this character ({:?}) is invalid here; it must be escaped&quot;</span>,
-                                <span class="ident">ch</span>
+                <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_syncd</span>(
+                    <span class="ident">EnsembleBuilder::new</span>()
+                        .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                            <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0020&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0020</span>)).<span class="ident">label</span>(
+                                <span class="ident">LabelStyle::Secondary</span>,
+                                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;help: try escaping this character: `{:?}`&quot;</span>, <span class="ident">ch</span>)),
+                                <span class="self">self</span>.<span class="ident">file_id</span>,
+                                <span class="self">self</span>.<span class="ident">new_span</span>().<span class="ident">shrink_to_lo</span>(),
                             )
-                    ]
-                });
+                        })
+                        .<span class="ident">build</span>(),
+                );
                 <span class="ident">chs_found</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-            }
-            <span class="kw">if</span> <span class="ident">chs_found</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
-                <span class="ident">expected_quote_here</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">current</span>();
             }
         }
 
         <span class="kw">if</span> <span class="ident">chs_found</span> <span class="op">&gt;</span> <span class="number">1</span> {
             <span class="self">self</span>.<span class="ident">set_start</span>(<span class="ident">expected_quote_here</span>);
-            <span class="macro">gen_error!</span>(<span class="ident">sync</span> <span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow_mut</span>(), <span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">E0021</span>;
-                <span class="ident">labels</span>: [
-                    <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                        (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                        <span class="string">&quot;expected a `&#39;` here&quot;</span>
-                ]
-            });
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">chs_found</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-            <span class="macro">gen_error!</span>(<span class="ident">sync</span> <span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow_mut</span>(), <span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">E0022</span>;
-                <span class="ident">labels</span>: [
-                    <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                        (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                        <span class="string">&quot;expected one character here&quot;</span>
-                ]
-            });
+            <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                <span class="ident">EnsembleBuilder::new</span>()
+                    .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                        <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0021&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0021</span>)).<span class="ident">label</span>(
+                            <span class="ident">LabelStyle::Primary</span>,
+                            <span class="prelude-val">Some</span>(<span class="string">&quot;expected a `&#39;` here&quot;</span>),
+                            <span class="self">self</span>.<span class="ident">file_id</span>,
+                            <span class="self">self</span>.<span class="ident">new_span</span>(),
+                        )
+                    })
+                    .<span class="ident">build</span>(),
+            );
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">chs_found</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">is_at_end</span>() {
+            <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_syncd</span>(
+                <span class="ident">EnsembleBuilder::new</span>()
+                    .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                        <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0022&quot;</span>)
+                            .<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0022</span>))
+                            .<span class="ident">label</span>(<span class="ident">LabelStyle::Primary</span>, <span class="prelude-val">None</span>, <span class="self">self</span>.<span class="ident">file_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>())
+                            .<span class="ident">note</span>(<span class="string">&quot;help: if you wanted an empty string, try `\&quot;\&quot;`.&quot;</span>)
+                    })
+                    .<span class="ident">build</span>(),
+            );
         }
 
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_at_end</span>() {
             <span class="self">self</span>.<span class="ident">current_to_start</span>();
-            <span class="macro">gen_error!</span>(<span class="ident">sync</span> <span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow_mut</span>(), <span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">E0023</span>;
-                <span class="ident">labels</span>: [
-                    <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                        (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                        <span class="string">&quot;expected a `&#39;` here&quot;</span>
-                ]
-            });
+            <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                <span class="ident">EnsembleBuilder::new</span>()
+                    .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                        <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0023&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0023</span>)).<span class="ident">label</span>(
+                            <span class="ident">LabelStyle::Primary</span>,
+                            <span class="prelude-val">None</span>,
+                            <span class="self">self</span>.<span class="ident">file_id</span>,
+                            <span class="self">self</span>.<span class="ident">new_span</span>(),
+                        )
+                    })
+                    .<span class="ident">build</span>(),
+            );
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
         }
         <span class="self">self</span>.<span class="ident">next</span>();
 
@@ -649,14 +821,19 @@
 
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">peek_eq</span>(<span class="kw-2">&amp;</span><span class="string">&#39;&quot;&#39;</span>) <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="bool-val">true</span>) {
             <span class="self">self</span>.<span class="ident">current_to_start</span>();
-            <span class="macro">gen_error!</span>(<span class="self">self</span>.<span class="ident">grcx</span>.<span class="ident">borrow</span>(), <span class="prelude-val">Err</span>(<span class="self">self</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">E0024</span>;
-                <span class="ident">labels</span>: [
-                    <span class="ident">LabelStyle::Primary</span> <span class="op">=</span><span class="op">&gt;</span>
-                        (<span class="self">self</span>.<span class="ident">source_id</span>, <span class="self">self</span>.<span class="ident">new_span</span>());
-                        <span class="string">&quot;expected a `\&quot;` here&quot;</span>
-                ]
-            }) <span class="kw">as</span> ())<span class="question-mark">?</span>
+            <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
+                <span class="ident">EnsembleBuilder::new</span>()
+                    .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                        <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0024&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0024</span>)).<span class="ident">label</span>(
+                            <span class="ident">LabelStyle::Primary</span>,
+                            <span class="prelude-val">None</span>,
+                            <span class="self">self</span>.<span class="ident">file_id</span>,
+                            <span class="self">self</span>.<span class="ident">new_span</span>(),
+                        )
+                    })
+                    .<span class="ident">build</span>(),
+            );
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">DiagnosticError::Diagnostic</span>.<span class="ident">into</span>());
         }
 
         <span class="self">self</span>.<span class="ident">next</span>();
@@ -665,5 +842,4 @@
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="calypso_parsing" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="calypso_parsing" data-search-index-js="../../../search-index.js" data-search-js="../../../search.js"></div><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script></body></html>

@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["expr",""],["grammar",""],["tokens","Processed versions of [`crate::lexer::TokenType`] for use with LALRPOP."]]});
+initSidebarItems({"mod":[["grammar",""]]});

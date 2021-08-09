@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["CalError","The Calypso error type."],["LabelStyle",""]],"type":[["CalResult","A handy alias for [`Result<T, CalError>`], genericized over `T`."]]});
+initSidebarItems({"enum":[["CalError","The Calypso error type."],["LabelStyle",""]],"trait":[["Files","A minimal interface for accessing source files when rendering diagnostics."]],"type":[["CalResult","A handy alias for [`Result<T, CalError>`], genericized over `T`."]]});

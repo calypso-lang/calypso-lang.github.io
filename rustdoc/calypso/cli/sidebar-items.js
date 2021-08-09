@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Command",""],["InternalCmd",""],["LogFormat",""],["UnprettyFormat",""]],"fn":[["parse_color_prefs",""],["parse_log_format",""],["parse_unpretty",""]],"struct":[["Args",""]]});

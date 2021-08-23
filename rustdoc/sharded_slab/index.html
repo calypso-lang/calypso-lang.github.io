@@ -7,7 +7,7 @@ creating and removing new items can be very cheap.</p>
 <p>This crate implements a lock-free concurrent slab, indexed by <code>usize</code>s.</p>
 <h2 id="usage" class="section-header"><a href="#usage">Usage</a></h2>
 <p>First, add this to your <code>Cargo.toml</code>:</p>
-<div class="example-wrap"><pre class="language-toml">sharded-slab = &quot;0.1.1&quot;</pre></div>
+<div class="example-wrap"><pre class="language-toml"><code>sharded-slab = &quot;0.1.1&quot;</code></pre></div>
 <p>This crate provides two  types, <a href="struct.Slab.html"><code>Slab</code></a> and <a href="struct.Pool.html"><code>Pool</code></a>, which provide
 slightly different APIs for using a sharded slab.</p>
 <p><a href="struct.Slab.html"><code>Slab</code></a> implements a slab for <em>storing</em> small types, sharing them between
@@ -28,15 +28,13 @@ allocator load.</p>
 <h1 id="examples" class="section-header"><a href="#examples">Examples</a></h1>
 <p>Inserting an item into the slab, returning an index:</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered">
-<span class="kw">let</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab::new</span>();
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Slab::new</span>();
 
 <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="string">&quot;hello world&quot;</span>).<span class="ident">unwrap</span>();
-<span class="macro">assert_eq!</span>(<span class="ident">slab</span>.<span class="ident">get</span>(<span class="ident">key</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;hello world&quot;</span>);</pre></div>
+<span class="macro">assert_eq!</span>(<span class="ident">slab</span>.<span class="ident">get</span>(<span class="ident">key</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;hello world&quot;</span>);</code></pre></div>
 <p>To share a slab across threads, it may be wrapped in an <code>Arc</code>:</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered">
-<span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
 <span class="kw">let</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Slab::new</span>());
 
 <span class="kw">let</span> <span class="ident">slab2</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">clone</span>();
@@ -53,12 +51,11 @@ allocator load.</p>
 <span class="kw">let</span> <span class="ident">key2</span> <span class="op">=</span> <span class="ident">thread2</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
 
 <span class="comment">// The item inserted by thread 2 remains in the slab.</span>
-<span class="macro">assert_eq!</span>(<span class="ident">slab</span>.<span class="ident">get</span>(<span class="ident">key2</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;hello from thread two&quot;</span>);</pre></div>
+<span class="macro">assert_eq!</span>(<span class="ident">slab</span>.<span class="ident">get</span>(<span class="ident">key2</span>).<span class="ident">unwrap</span>(), <span class="string">&quot;hello from thread two&quot;</span>);</code></pre></div>
 <p>If items in the slab must be mutated, a <code>Mutex</code> or <code>RwLock</code> may be used for
 each item, providing granular locking of items rather than of the slab:</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered">
-<span class="kw">use</span> <span class="ident">std::sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">std::sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
 <span class="kw">let</span> <span class="ident">slab</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Slab::new</span>());
 
 <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">insert</span>(<span class="ident">Mutex::new</span>(<span class="ident">String::from</span>(<span class="string">&quot;hello world&quot;</span>))).<span class="ident">unwrap</span>();
@@ -74,7 +71,7 @@ each item, providing granular locking of items rather than of the slab:</p>
 
 <span class="kw">let</span> <span class="ident">hello</span> <span class="op">=</span> <span class="ident">slab</span>.<span class="ident">get</span>(<span class="ident">key</span>).<span class="ident">expect</span>(<span class="string">&quot;item missing&quot;</span>);
 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hello</span> <span class="op">=</span> <span class="ident">hello</span>.<span class="ident">lock</span>().<span class="ident">expect</span>(<span class="string">&quot;mutex poisoned&quot;</span>);
-<span class="macro">assert_eq!</span>(<span class="ident">hello</span>.<span class="ident">as_str</span>(), <span class="string">&quot;hello everyone!&quot;</span>);</pre></div>
+<span class="macro">assert_eq!</span>(<span class="ident">hello</span>.<span class="ident">as_str</span>(), <span class="string">&quot;hello everyone!&quot;</span>);</code></pre></div>
 <h1 id="configuration" class="section-header"><a href="#configuration">Configuration</a></h1>
 <p>For performance reasons, several values used by the slab are calculated as
 constants. In order to allow users to tune the slab’s parameters, we provide

@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["read","Specialized ways to read data into bincode."]],"struct":[["Deserializer","A Deserializer that reads bytes from a buffer."]]});
+initSidebarItems({"macro":[["impl_deserialize_int",""],["impl_deserialize_literal",""]],"mod":[["read","Specialized ways to read data into bincode."]],"struct":[["Deserializer","A Deserializer that reads bytes from a buffer."]]});

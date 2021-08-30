@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["DIAGNOSTICS","A map from error codes to optional extended information."]]});
+initSidebarItems({"macro":[["register_diagnostics","A helper macro to generate a list of diagnostics."]],"struct":[["DIAGNOSTICS","A map from error codes to optional extended information."]]});

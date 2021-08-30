@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["BitMemory","Description of an integer type."]]});
+initSidebarItems({"macro":[["memory",""]],"trait":[["BitMemory","Description of an integer type."]]});

@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["BitStore","Common interface for memory regions."]]});
+initSidebarItems({"macro":[["store","Batch implementation of `BitStore` for appropriate types."]],"trait":[["BitStore","Common interface for memory regions."]]});

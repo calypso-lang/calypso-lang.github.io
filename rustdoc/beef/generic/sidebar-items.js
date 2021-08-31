@@ -1,1 +1,1 @@
-initSidebarItems({"macro":[["impl_eq",""]],"struct":[["Cow","A clone-on-write smart pointer, mostly compatible with `std::borrow::Cow`."]]});
+initSidebarItems({"struct":[["Cow","A clone-on-write smart pointer, mostly compatible with `std::borrow::Cow`."]]});

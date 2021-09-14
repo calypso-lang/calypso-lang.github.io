@@ -284,7 +284,7 @@ but only when <code>about</code> explicitly mentioned.</p>
 Do you want optional positional argument? Use <code>Option&lt;T&gt;</code>! Or perhaps optional argument
 that optionally takes value (<code>[--opt=[val]]</code>)? Use <code>Option&lt;Option&lt;T&gt;&gt;</code>!</p>
 <p>Here is the table of types and <code>clap</code> methods they correspond to:</p>
-<table><thead><tr><th>Type</th><th>Effect</th><th>Added method call to <code>clap::Arg</code></th></tr></thead><tbody>
+<div><table><thead><tr><th>Type</th><th>Effect</th><th>Added method call to <code>clap::Arg</code></th></tr></thead><tbody>
 <tr><td><code>bool</code></td><td><code>true</code> if the flag is present</td><td><code>.takes_value(false).multiple(false)</code></td></tr>
 <tr><td><code>Option&lt;T: FromStr&gt;</code></td><td>optional positional argument or option</td><td><code>.takes_value(true).multiple(false)</code></td></tr>
 <tr><td><code>Option&lt;Option&lt;T: FromStr&gt;&gt;</code></td><td>optional option with optional value</td><td><code>.takes_value(true).multiple(false).min_values(0).max_values(1)</code></td></tr>
@@ -292,6 +292,7 @@ that optionally takes value (<code>[--opt=[val]]</code>)? Use <code>Option&lt;Op
 <tr><td><code>Option&lt;Vec&lt;T: FromStr&gt;</code></td><td>optional list of options</td><td><code>.takes_values(true).multiple(true).min_values(0)</code></td></tr>
 <tr><td><code>T: FromStr</code></td><td>required option or positional argument</td><td><code>.takes_value(true).multiple(false).required(!has_default)</code></td></tr>
 </tbody></table>
+</div>
 <p>The <code>FromStr</code> trait is used to convert the argument to the given
 type, and the <code>Arg::validator</code> method is set to a method using
 <code>to_string()</code> (<code>FromStr::Err</code> must implement <code>std::fmt::Display</code>).
@@ -834,7 +835,7 @@ provide a custom string parser using <code>parse(...)</code> like this:</p>
     <span class="ident">output</span>: <span class="ident">PathBuf</span>,
 }</code></pre></div>
 <p>There are five kinds of custom parsers:</p>
-<table><thead><tr><th>Kind</th><th>Signature</th><th>Default</th></tr></thead><tbody>
+<div><table><thead><tr><th>Kind</th><th>Signature</th><th>Default</th></tr></thead><tbody>
 <tr><td><code>from_str</code></td><td><code>fn(&amp;str) -&gt; T</code></td><td><code>::std::convert::From::from</code></td></tr>
 <tr><td><code>try_from_str</code></td><td><code>fn(&amp;str) -&gt; Result&lt;T, E&gt;</code></td><td><code>::std::str::FromStr::from_str</code></td></tr>
 <tr><td><code>from_os_str</code></td><td><code>fn(&amp;OsStr) -&gt; T</code></td><td><code>::std::convert::From::from</code></td></tr>
@@ -842,6 +843,7 @@ provide a custom string parser using <code>parse(...)</code> like this:</p>
 <tr><td><code>from_occurrences</code></td><td><code>fn(u64) -&gt; T</code></td><td><code>value as T</code></td></tr>
 <tr><td><code>from_flag</code></td><td><code>fn(bool) -&gt; T</code></td><td><code>::std::convert::From::from</code></td></tr>
 </tbody></table>
+</div>
 <p>The <code>from_occurrences</code> parser is special. Using <code>parse(from_occurrences)</code>
 results in the <em>number of flags occurrences</em> being stored in the relevant
 field or being passed to the supplied function. In other words, it converts
@@ -852,11 +854,12 @@ be used with fields of integer types (<code>u8</code>, <code>usize</code>, <code
 <code>parse(from_flag = some_func)</code> will result in the field being treated as a
 flag even if it does not have type <code>bool</code>.</p>
 <p>When supplying a custom string parser, <code>bool</code> will not be treated specially:</p>
-<table><thead><tr><th>Type</th><th>Effect</th><th>Added method call to <code>clap::Arg</code></th></tr></thead><tbody>
+<div><table><thead><tr><th>Type</th><th>Effect</th><th>Added method call to <code>clap::Arg</code></th></tr></thead><tbody>
 <tr><td><code>Option&lt;T&gt;</code></td><td>optional argument</td><td><code>.takes_value(true).multiple(false)</code></td></tr>
 <tr><td><code>Vec&lt;T&gt;</code></td><td>list of arguments</td><td><code>.takes_value(true).multiple(true)</code></td></tr>
 <tr><td><code>T</code></td><td>required argument</td><td><code>.takes_value(true).multiple(false).required(!has_default)</code></td></tr>
 </tbody></table>
+</div>
 <p>In the <code>try_from_*</code> variants, the function will run twice on valid input:
 once to validate, and once to parse. Hence, make sure the function is
 side-effect-free.</p>

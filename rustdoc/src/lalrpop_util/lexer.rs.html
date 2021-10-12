@@ -133,7 +133,7 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Token</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">usize</span>, <span class="kw">pub</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;input</span> <span class="ident">str</span>);
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Token</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">fmt::Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">fmt::Error</span><span class="op">&gt;</span> {
         <span class="ident">fmt::Display::fmt</span>(<span class="self">self</span>.<span class="number">1</span>, <span class="ident">formatter</span>)
     }
 }
@@ -151,7 +151,7 @@
 <span class="kw">impl</span> <span class="ident">MatcherBuilder</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(
         <span class="ident">exprs</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="ident">S</span>, <span class="ident">bool</span>)<span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">MatcherBuilder</span>, <span class="ident">regex::Error</span><span class="op">&gt;</span>
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">MatcherBuilder</span>, <span class="ident">regex::Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>,
     {
@@ -160,8 +160,8 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">first_error</span> <span class="op">=</span> <span class="prelude-val">None</span>;
         <span class="kw">let</span> <span class="ident">regex_set_result</span> <span class="op">=</span> <span class="ident">regex::RegexSet::new</span>(<span class="ident">exprs</span>.<span class="ident">scan</span>((), <span class="op">|</span><span class="kw">_</span>, (<span class="ident">s</span>, <span class="ident">skip</span>)<span class="op">|</span> {
             <span class="ident">regex_vec</span>.<span class="ident">push</span>(<span class="kw">match</span> <span class="ident">regex::Regex::new</span>(<span class="ident">s</span>.<span class="ident">as_ref</span>()) {
-                <span class="prelude-val">Ok</span>(<span class="ident">regex</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RegexEntry</span> { <span class="ident">regex</span>, <span class="ident">skip</span> },
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="prelude-val">Ok</span>(<span class="ident">regex</span>) =&gt; <span class="ident">RegexEntry</span> { <span class="ident">regex</span>, <span class="ident">skip</span> },
+                <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
                     <span class="ident">first_error</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">err</span>);
                     <span class="kw">return</span> <span class="prelude-val">None</span>;
                 }
@@ -182,7 +182,7 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">matcher</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;builder</span>, <span class="ident">E</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="lifetime">&#39;builder</span> <span class="self">self</span>,
         <span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;input</span> <span class="ident">str</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;builder</span>, <span class="ident">E</span><span class="op">&gt;</span> {
+    ) -&gt; <span class="ident">Matcher</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;builder</span>, <span class="ident">E</span><span class="op">&gt;</span> {
         <span class="ident">Matcher</span> {
             <span class="ident">text</span>: <span class="ident">s</span>,
             <span class="ident">consumed</span>: <span class="number">0</span>,
@@ -198,13 +198,13 @@
     <span class="ident">consumed</span>: <span class="ident">usize</span>,
     <span class="ident">regex_set</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;builder</span> <span class="ident">regex::RegexSet</span>,
     <span class="ident">regex_vec</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;builder</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">RegexEntry</span><span class="op">&gt;</span>,
-    <span class="ident">_marker</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw">fn</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">E</span><span class="op">&gt;</span>,
+    <span class="ident">_marker</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw">fn</span>() -&gt; <span class="ident">E</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;builder</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Matcher</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span>, <span class="lifetime">&#39;builder</span>, <span class="ident">E</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">Token</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span><span class="op">&gt;</span>, <span class="ident">usize</span>), <span class="ident">ParseError</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">Token</span><span class="op">&lt;</span><span class="lifetime">&#39;input</span><span class="op">&gt;</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
         <span class="kw">loop</span> {
             <span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">text</span>;
             <span class="kw">let</span> <span class="ident">start_offset</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">consumed</span>;
@@ -240,7 +240,7 @@
 
                     <span class="comment">// Skip any whitespace matches</span>
                     <span class="kw">if</span> <span class="ident">skip</span> {
-                        <span class="kw">if</span> <span class="ident">longest_match</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+                        <span class="kw">if</span> <span class="ident">longest_match</span> <span class="op">==</span> <span class="number">0</span> {
                             <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">ParseError::InvalidToken</span> {
                                 <span class="ident">location</span>: <span class="ident">start_offset</span>,
                             }));

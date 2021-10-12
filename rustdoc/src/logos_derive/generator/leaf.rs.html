@@ -59,7 +59,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util::MaybeVoid</span>;
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Generator</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_leaf</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">leaf</span>: <span class="kw-2">&amp;</span><span class="ident">Leaf</span>, <span class="kw-2">mut</span> <span class="ident">ctx</span>: <span class="ident">Context</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TokenStream</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_leaf</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">leaf</span>: <span class="kw-2">&amp;</span><span class="ident">Leaf</span>, <span class="kw-2">mut</span> <span class="ident">ctx</span>: <span class="ident">Context</span>) -&gt; <span class="ident">TokenStream</span> {
         <span class="kw">let</span> <span class="ident">bump</span> <span class="op">=</span> <span class="ident">ctx</span>.<span class="ident">bump</span>();
 
         <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">leaf</span>.<span class="ident">ident</span>;
@@ -68,16 +68,16 @@
         <span class="kw">let</span> <span class="ident">ty</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">leaf</span>.<span class="ident">field</span>;
 
         <span class="kw">let</span> <span class="ident">constructor</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">leaf</span>.<span class="ident">field</span> {
-            <span class="ident">MaybeVoid::Some</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">quote!</span>(#<span class="ident">name</span>::#<span class="ident">ident</span>),
-            <span class="ident">MaybeVoid::Void</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">quote!</span>(<span class="op">|</span>()<span class="op">|</span> #<span class="ident">name</span>::#<span class="ident">ident</span>),
+            <span class="ident">MaybeVoid::Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">quote!</span>(#<span class="ident">name</span>::#<span class="ident">ident</span>),
+            <span class="ident">MaybeVoid::Void</span> =&gt; <span class="macro">quote!</span>(<span class="op">|</span>()<span class="op">|</span> #<span class="ident">name</span>::#<span class="ident">ident</span>),
         };
 
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">leaf</span>.<span class="ident">callback</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">Callback::Label</span>(<span class="ident">callback</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">quote!</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">Callback::Label</span>(<span class="ident">callback</span>)) =&gt; <span class="macro">quote!</span> {
                 #<span class="ident">bump</span>
                 #<span class="ident">callback</span>(<span class="ident">lex</span>).<span class="ident">construct</span>(#<span class="ident">constructor</span>, <span class="ident">lex</span>);
             },
-            <span class="prelude-val">Some</span>(<span class="ident">Callback::Inline</span>(<span class="ident">inline</span>)) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">Callback::Inline</span>(<span class="ident">inline</span>)) =&gt; {
                 <span class="kw">let</span> <span class="ident">arg</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">inline</span>.<span class="ident">arg</span>;
                 <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">inline</span>.<span class="ident">body</span>;
 
@@ -85,18 +85,18 @@
                     #<span class="ident">bump</span>
 
                     <span class="attribute">#[<span class="ident">inline</span>]</span>
-                    <span class="kw">fn</span> <span class="ident">callback</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(#<span class="ident">arg</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Lexer</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">CallbackResult</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, #<span class="ident">ty</span>, #<span class="ident">this</span><span class="op">&gt;</span> {
+                    <span class="kw">fn</span> <span class="ident">callback</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>(#<span class="ident">arg</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Lexer</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span>) -&gt; <span class="kw">impl</span> <span class="ident">CallbackResult</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span>, #<span class="ident">ty</span>, #<span class="ident">this</span><span class="op">&gt;</span> {
                         #<span class="ident">body</span>
                     }
 
                     <span class="ident">callback</span>(<span class="ident">lex</span>).<span class="ident">construct</span>(#<span class="ident">constructor</span>, <span class="ident">lex</span>);
                 }
             }
-            <span class="prelude-val">None</span> <span class="kw">if</span> <span class="macro">matches!</span>(<span class="ident">leaf</span>.<span class="ident">field</span>, <span class="ident">MaybeVoid::Void</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">quote!</span> {
+            <span class="prelude-val">None</span> <span class="kw">if</span> <span class="macro">matches!</span>(<span class="ident">leaf</span>.<span class="ident">field</span>, <span class="ident">MaybeVoid::Void</span>) =&gt; <span class="macro">quote!</span> {
                 #<span class="ident">bump</span>
                 <span class="ident">lex</span>.<span class="ident">set</span>(#<span class="ident">name</span>::#<span class="ident">ident</span>);
             },
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">quote!</span> {
+            <span class="prelude-val">None</span> =&gt; <span class="macro">quote!</span> {
                 #<span class="ident">bump</span>
                 <span class="kw">let</span> <span class="ident">token</span> <span class="op">=</span> #<span class="ident">name</span>::#<span class="ident">ident</span>(<span class="ident">lex</span>.<span class="ident">slice</span>());
                 <span class="ident">lex</span>.<span class="ident">set</span>(<span class="ident">token</span>);

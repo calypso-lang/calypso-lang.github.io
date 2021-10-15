@@ -38,12 +38,8 @@
 <span id="38">38</span>
 <span id="39">39</span>
 <span id="40">40</span>
-<span id="41">41</span>
-<span id="42">42</span>
-<span id="43">43</span>
-<span id="44">44</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">super</span>::Printer</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::lexer</span>::{<span class="ident">Lexeme</span>, <span class="ident">Token</span>};
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::lexer::Lexeme</span>;
 
 <span class="kw">use</span> <span class="ident">calypso_diagnostic::prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="ident">calypso_diagnostic::reporting::files::Files</span>;
@@ -62,20 +58,16 @@
 
         <span class="kw">let</span> <span class="ident">sourcemgr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">sourcemgr</span>.<span class="ident">read</span>();
         <span class="kw">let</span> <span class="ident">lo_loc</span> <span class="op">=</span> <span class="ident">sourcemgr</span>
-            .<span class="ident">location</span>(<span class="self">self</span>.<span class="ident">file_id</span>, <span class="ident">lo</span>)
+            .<span class="ident">location</span>(<span class="self">self</span>.<span class="ident">file_id</span>, <span class="ident">lo</span> <span class="kw">as</span> <span class="ident">usize</span>)
             .<span class="ident">map_err</span>(<span class="ident">DiagnosticError::from</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">hi_loc</span> <span class="op">=</span> <span class="ident">sourcemgr</span>
-            .<span class="ident">location</span>(<span class="self">self</span>.<span class="ident">file_id</span>, <span class="ident">hi</span>)
+            .<span class="ident">location</span>(<span class="self">self</span>.<span class="ident">file_id</span>, <span class="ident">hi</span> <span class="kw">as</span> <span class="ident">usize</span>)
             .<span class="ident">map_err</span>(<span class="ident">DiagnosticError::from</span>)<span class="question-mark">?</span>;
         <span class="ident">drop</span>(<span class="ident">sourcemgr</span>);
 
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
-            <span class="string">&quot;text: {} @ {}..{} (a.k.a. {}:{}..{}:{}), type: {:?}&quot;</span>,
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Token::Nl</span>(<span class="kw">_</span>) <span class="op">=</span> <span class="ident">value</span>.<span class="number">0</span> {
-                <span class="string">&quot;omitted&quot;</span>.<span class="ident">to_string</span>()
-            } <span class="kw">else</span> {
-                <span class="macro">format!</span>(<span class="string">&quot;`{}`&quot;</span>, <span class="ident">value</span>.<span class="number">1</span>)
-            },
+            <span class="string">&quot;text: `{}` @ {}..{} (a.k.a. {}:{}..{}:{}), type: {:?}&quot;</span>,
+            <span class="ident">value</span>.<span class="number">1</span>,
             <span class="ident">lo</span>,
             <span class="ident">hi</span>,
             <span class="ident">lo_loc</span>.<span class="ident">line_number</span>,

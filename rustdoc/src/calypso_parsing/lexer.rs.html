@@ -315,6 +315,15 @@
 <span id="315">315</span>
 <span id="316">316</span>
 <span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">convert::TryFrom</span>, <span class="ident">ops::Range</span>, <span class="ident">sync::Arc</span>};
 
 <span class="kw">use</span> <span class="ident">itertools::Itertools</span>;
@@ -438,6 +447,8 @@
     <span class="ident">Colon</span>,
     <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;_&quot;</span>)]</span>
     <span class="ident">Under</span>,
+    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;.&quot;</span>)]</span>
+    <span class="ident">Dot</span>,
 
     <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;_[A-Za-z0-9_]+|[A-Za-z][A-Za-z0-9_]*&quot;</span>, <span class="ident">ident</span>)]</span>
     <span class="ident">IdentLike</span>(<span class="ident">IdentLike</span>),
@@ -447,8 +458,8 @@
     <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;//(.*)\n?&quot;</span>,  <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">CommentProps::default</span>())]</span>
     <span class="ident">Comment</span>(<span class="ident">CommentProps</span>),
 
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[\n]+&quot;</span>, <span class="op">|</span><span class="ident">lex</span><span class="op">|</span> <span class="ident">lex</span>.<span class="ident">span</span>().<span class="ident">len</span>())]</span>
-    <span class="ident">Nl</span>(<span class="ident">usize</span>),
+    <span class="comment">// #[regex(&quot;[\n]+&quot;, |lex| lex.span().len())]</span>
+    <span class="comment">// Nl(usize),</span>
 
     <span class="comment">// this hurts.</span>
     <span class="comment">// cc https://github.com/maciejhirsz/logos/issues/126</span>
@@ -468,11 +479,11 @@
     <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0d[0-9][0-9_]*[su]?&quot;</span>, <span class="op">|</span><span class="ident">lex</span><span class="op">|</span> <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Decimal</span>))]</span>
     <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*\\.[0-9][0-9_]*(e[+-]?[0-9][0-9_]*)?&quot;</span>, <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Numeral::Float</span> { <span class="ident">from_integer</span>: <span class="bool-val">false</span> })]</span>
     <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*e[+-]?[0-9][0-9_]*&quot;</span>, <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Numeral::Float</span> { <span class="ident">from_integer</span>: <span class="bool-val">false</span> })]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[1-9][0-9_]*[suf]?&quot;</span>, <span class="op">|</span><span class="ident">lex</span><span class="op">|</span> <span class="ident">integer_numeral</span>(<span class="ident">lex</span>))]</span>
+    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*[suf]?&quot;</span>, <span class="op">|</span><span class="ident">lex</span><span class="op">|</span> <span class="ident">integer_numeral</span>(<span class="ident">lex</span>))]</span>
     <span class="ident">Numeral</span>(<span class="ident">Numeral</span>),
 
     <span class="attribute">#[<span class="ident">regex</span>(
-        <span class="string">&quot;[\t\u{000B}\u{000C}\r \u{0085}\u{200E}\u{200F}\u{2028}\u{2029}]+&quot;</span>,
+        <span class="string">&quot;[\t\u{000B}\u{000C}\r \u{0085}\u{200E}\u{200F}\u{2028}\u{2029}\n]+&quot;</span>,
         <span class="ident">logos::skip</span>
     )]</span>
     <span class="attribute">#[<span class="ident">error</span>]</span>
@@ -562,6 +573,13 @@
     <span class="kw">let</span> <span class="ident">lex</span> <span class="op">=</span> <span class="ident">Token::lexer_with_extras</span>(<span class="ident">source</span>, (<span class="ident">file_id</span>, <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>)));
     <span class="kw">let</span> <span class="ident">gcx2</span> <span class="op">=</span> <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>);
     <span class="ident">lex</span>.<span class="ident">spanned</span>()
+        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">tok</span>, <span class="ident">span</span>)<span class="op">|</span> {
+            (
+                <span class="ident">tok</span>,
+                <span class="ident">u32::try_from</span>(<span class="ident">span</span>.<span class="ident">start</span>).<span class="ident">expect</span>(<span class="string">&quot;span.start &lt;= u32::MAX&quot;</span>)
+                    ..<span class="ident">u32::try_from</span>(<span class="ident">span</span>.<span class="ident">end</span>).<span class="ident">expect</span>(<span class="string">&quot;span.end &lt;= u32::MAX&quot;</span>),
+            )
+        })
         .<span class="ident">map</span>(<span class="ident">Spanned::from</span>)
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> (<span class="ident">x</span>, <span class="bool-val">false</span>))
         .<span class="ident">coalesce</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">a</span>, <span class="kw-2">mut</span> <span class="ident">b</span><span class="op">|</span> {

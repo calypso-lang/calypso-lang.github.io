@@ -1,1 +1,1 @@
-initSidebarItems({"externcrate":[["tracing",""]],"mod":[["span","`Span` and `Spanned` types."],["streams","Utilities for handling streams of data"],["symbol","Utilities for interned strings (symbols)"],["ui","User interface utilities (i.e. color)"]]});
+initSidebarItems({"externcrate":[["tracing",""]],"mod":[["span","`Span` and `Spanned` types."],["symbol","Utilities for interned strings (symbols)"],["ui","User interface utilities (i.e. color)"]]});

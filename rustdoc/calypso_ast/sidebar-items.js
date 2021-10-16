@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["expr",""],["pretty",""],["stmt",""],["traverse",""]]});
+initSidebarItems({"mod":[["expr",""],["pretty",""],["traverse",""]]});

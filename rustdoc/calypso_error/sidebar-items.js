@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["CalError","The Calypso error type."]],"type":[["CalResult","A handy alias for [`Result<T, CalError>`], genericized over `T`."]]});
+initSidebarItems({"derive":[["Error",""]],"enum":[["CalError","The Calypso error type."]],"macro":[["Debug","Derive macro generating an impl of the trait `Debug`."]],"trait":[["Debug","`?` formatting."],["Display","Format trait for an empty format, `{}`."]],"type":[["CalResult","A handy alias for [`Result<T, CalError>`], genericized over `T`."]]});

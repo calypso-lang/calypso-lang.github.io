@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["calypso_error"] = [{"text":"impl <a class=\"trait\" href=\"calypso_error/trait.Debug.html\" title=\"trait calypso_error::Debug\">Debug</a> for <a class=\"enum\" href=\"calypso_error/enum.CalError.html\" title=\"enum calypso_error::CalError\">CalError</a>","synthetic":false,"types":["calypso_error::CalError"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -1,0 +1,1 @@
+initSidebarItems({"macro":[["cargo_bin","The absolute path to a binary target’s executable."]],"mod":[["cargo","Interact with `cargo`"],["schema","`cmd.toml` Schema"]],"struct":[["Error",""],["TestCases","Entry point for running tests"]]});

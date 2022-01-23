@@ -184,7 +184,7 @@
 <span id="178">178</span>
 <span id="179">179</span>
 <span id="180">180</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">clap::StructOpt</span>;
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">Parser</span>, <span class="ident">Subcommand</span>};
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Display</span>},
     <span class="ident">path::PathBuf</span>,
@@ -192,7 +192,7 @@
 
 <span class="kw">use</span> <span class="ident">calypso_base::ui</span>::{<span class="self">self</span>, <span class="ident">atty::Stream</span>, <span class="ident">termcolor::ColorChoice</span>};
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">StructOpt</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Parser</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Args</span> {
     <span class="doccomment">/// Set how color is displayed, if at all. By default this is set to</span>
     <span class="doccomment">/// `auto`.</span>
@@ -207,7 +207,7 @@
     <span class="doccomment">/// - `auto`: Use color if stdout/stderr is a TTY, don&#39;t if it is not.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// - `never`: Never use color, even if stdout/stderr is a TTY.</span>
-    <span class="attribute">#[<span class="ident">structopt</span>(
+    <span class="attribute">#[<span class="ident">clap</span>(
         <span class="ident">long</span>,
         <span class="ident">parse</span>(<span class="ident">from_str</span> <span class="op">=</span> <span class="ident">parse_color_prefs</span>),
         <span class="ident">possible_values</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[
@@ -225,7 +225,7 @@
     <span class="doccomment">/// See tracing-subscriber&#39;s EnvFilter type for an explanation of the format:</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// https://docs.rs/tracing-subscriber/*/tracing_subscriber/filter/struct.EnvFilter.html</span>
-    <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">long</span>, <span class="ident">env</span> <span class="op">=</span> <span class="string">&quot;CALYPSO_LOG&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">env</span> <span class="op">=</span> <span class="string">&quot;CALYPSO_LOG&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">log</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 
     <span class="doccomment">/// The logging format to use.</span>
@@ -238,7 +238,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// - `json`: Intended for machine interpretation.</span>
     <span class="doccomment">/// (see https://docs.rs/tracing-subscriber/*/tracing_subscriber/fmt/format/struct.Json.html)</span>
-    <span class="attribute">#[<span class="ident">structopt</span>(
+    <span class="attribute">#[<span class="ident">clap</span>(
         <span class="ident">long</span>,
         <span class="ident">env</span> <span class="op">=</span> <span class="string">&quot;CALYPSO_LOG_FORMAT&quot;</span>,
         <span class="ident">possible_values</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[
@@ -251,43 +251,43 @@
     )]
     <span class="kw">pub</span> <span class="ident">log_format</span>: <span class="ident">LogFormat</span>,
 
-    <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">subcommand</span>)]</span>
+    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">subcommand</span>)]</span>
     <span class="kw">pub</span> <span class="ident">cmd</span>: <span class="ident">Command</span>,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">StructOpt</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Subcommand</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Command</span> {
     <span class="doccomment">/// Explain an error that has detailed information on troubleshooting.</span>
-    <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">visible_aliases</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="string">&quot;expl&quot;</span>, <span class="string">&quot;exp&quot;</span>, <span class="string">&quot;ex&quot;</span>]</span>)]
+    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">visible_aliases</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="string">&quot;expl&quot;</span>, <span class="string">&quot;exp&quot;</span>, <span class="string">&quot;ex&quot;</span>]</span>)]
     <span class="ident">Explain</span> {
         <span class="doccomment">/// The error to get information for. This must be the error code of</span>
         <span class="doccomment">/// the error, which is of the form `EXXXX` (e.g. E0591).</span>
-        <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;EXXXX&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">name</span> <span class="op">=</span> <span class="string">&quot;EXXXX&quot;</span>)]</span>
         <span class="ident">ecode</span>: <span class="ident">String</span>,
     },
     <span class="doccomment">/// Commands used for debugging Calypso&#39;s internals and implementation.</span>
-    <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">visible_alias</span> <span class="op">=</span> <span class="string">&quot;int&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">visible_alias</span> <span class="op">=</span> <span class="string">&quot;int&quot;</span>)]</span>
     <span class="ident">Internal</span> {
-        <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">subcommand</span>)]</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">subcommand</span>)]</span>
         <span class="ident">cmd</span>: <span class="ident">InternalCmd</span>,
     },
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">StructOpt</span>)]</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Subcommand</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">InternalCmd</span> {
     <span class="doccomment">/// Show information about the environment where this executable was built.</span>
-    <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">visible_aliases</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="string">&quot;bi&quot;</span>, <span class="string">&quot;buildinfo&quot;</span>]</span>)]
+    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">visible_aliases</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[<span class="string">&quot;bi&quot;</span>, <span class="string">&quot;buildinfo&quot;</span>]</span>)]
     <span class="ident">BuildInfo</span>,
     <span class="doccomment">/// Intentionally panic in order to test out handling of ICEs (internal</span>
     <span class="doccomment">/// compiler errors).</span>
     <span class="ident">Panic</span>,
     <span class="doccomment">/// Run analyses on Calypso source files and return the result in an</span>
     <span class="doccomment">/// &quot;unpretty&quot; format, e.g. AST (abstract syntax tree) or token list.</span>
-    <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">visible_alias</span> <span class="op">=</span> <span class="string">&quot;up&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">visible_alias</span> <span class="op">=</span> <span class="string">&quot;up&quot;</span>)]</span>
     <span class="ident">Unpretty</span> {
         <span class="doccomment">/// Use a REPL-like interface when using standard input. This does not</span>
         <span class="doccomment">/// affect behaviour when using file input.</span>
-        <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">short</span>, <span class="ident">long</span>)]</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">short</span>, <span class="ident">long</span>)]</span>
         <span class="ident">repl</span>: <span class="ident">bool</span>,
         <span class="doccomment">/// The &quot;unpretty&quot; format to output.</span>
         <span class="doccomment">///</span>
@@ -296,14 +296,14 @@
         <span class="doccomment">/// - `toks`: Token list</span>
         <span class="doccomment">///</span>
         <span class="doccomment">/// - `ast`: Abstract syntax tree (AST)</span>
-        <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">possible_values</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">possible_values</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[
             <span class="string">&quot;toks&quot;</span>,
             <span class="string">&quot;ast&quot;</span>
         ]</span>, <span class="ident">parse</span>(<span class="ident">from_str</span> <span class="op">=</span> <span class="ident">parse_unpretty</span>))]
         <span class="ident">format</span>: <span class="ident">UnprettyFormat</span>,
         <span class="doccomment">/// The input file to run transformations on. Use the file name `-`</span>
         <span class="doccomment">/// (without backticks) to use standard input.</span>
-        <span class="attribute">#[<span class="ident">structopt</span>(<span class="ident">parse</span>(<span class="ident">from_os_str</span>))]</span>
+        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">parse</span>(<span class="ident">from_os_str</span>))]</span>
         <span class="ident">input</span>: <span class="ident">PathBuf</span>,
     },
 }
@@ -361,7 +361,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">verify_app</span>() {
         <span class="kw">use</span> <span class="ident">clap::IntoApp</span>;
-        <span class="ident">Args::into_app</span>().<span class="ident">debug_assert</span>()
+        <span class="ident">Args::into_app</span>().<span class="ident">debug_assert</span>();
     }
 }
 </code></pre></div>

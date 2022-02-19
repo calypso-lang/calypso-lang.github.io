@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/tracing-subscriber-0.3.8/src/fmt/format/json.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>json.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><script defer src="../../../../main.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/tracing-subscriber-0.3.9/src/fmt/format/json.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>json.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><script defer src="../../../../main.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script>
     <noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../tracing_subscriber/index.html"><div class="logo-container"><img src="https://raw.githubusercontent.com/tokio-rs/tracing/master/assets/logo-type.png" alt="logo"></div>
         </a><h2 class="location"></h2>
     </nav>
@@ -876,6 +876,23 @@
 <span id="869">869</span>
 <span id="870">870</span>
 <span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Format</span>, <span class="ident">FormatEvent</span>, <span class="ident">FormatFields</span>, <span class="ident">FormatTime</span>, <span class="ident">Writer</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{
     <span class="ident">field</span>::{<span class="ident">RecordFields</span>, <span class="ident">VisitOutput</span>},
@@ -901,24 +918,41 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;tracing-log&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">tracing_log::NormalizeEvent</span>;
 
-<span class="doccomment">/// Marker for `Format` that indicates that the verbose JSON log format should be used.</span>
+<span class="doccomment">/// Marker for [`Format`] that indicates that the newline-delimited JSON log</span>
+<span class="doccomment">/// format should be used.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// The full format includes fields from all entered spans.</span>
+<span class="doccomment">/// This formatter is intended for production use with systems where structured</span>
+<span class="doccomment">/// logs are consumed as JSON by analysis and viewing tools. The JSON output is</span>
+<span class="doccomment">/// not optimized for human readability; instead, it should be pretty-printed</span>
+<span class="doccomment">/// using external JSON tools such as `jq`, or using a JSON log viewer.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Example Output</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// ```json</span>
-<span class="doccomment">/// {</span>
-<span class="doccomment">///     &quot;timestamp&quot;:&quot;Feb 20 11:28:15.096&quot;,</span>
-<span class="doccomment">///     &quot;level&quot;:&quot;INFO&quot;,</span>
-<span class="doccomment">///     &quot;fields&quot;:{&quot;message&quot;:&quot;some message&quot;,&quot;key&quot;:&quot;value&quot;}</span>
-<span class="doccomment">///     &quot;target&quot;:&quot;mycrate&quot;,</span>
-<span class="doccomment">///     &quot;span&quot;:{name&quot;:&quot;leaf&quot;},</span>
-<span class="doccomment">///     &quot;spans&quot;:[{&quot;name&quot;:&quot;root&quot;},{&quot;name&quot;:&quot;leaf&quot;}],</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// ```</span>
+<span class="doccomment">/// &lt;pre&gt;&lt;font color=&quot;#4E9A06&quot;&gt;&lt;b&gt;:;&lt;/b&gt;&lt;/font&gt; &lt;font color=&quot;#4E9A06&quot;&gt;cargo&lt;/font&gt; run --example fmt-json</span>
+<span class="doccomment">/// &lt;font color=&quot;#4E9A06&quot;&gt;&lt;b&gt;    Finished&lt;/b&gt;&lt;/font&gt; dev [unoptimized + debuginfo] target(s) in 0.08s</span>
+<span class="doccomment">/// &lt;font color=&quot;#4E9A06&quot;&gt;&lt;b&gt;     Running&lt;/b&gt;&lt;/font&gt; `target/debug/examples/fmt-json`</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821315Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;INFO&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;message&amp;quot;:&amp;quot;preparing to shave yaks&amp;quot;,&amp;quot;number_of_yaks&amp;quot;:3},&amp;quot;target&amp;quot;:&amp;quot;fmt_json&amp;quot;}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821422Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;INFO&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;message&amp;quot;:&amp;quot;shaving yaks&amp;quot;},&amp;quot;target&amp;quot;:&amp;quot;fmt_json::yak_shave&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821495Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;TRACE&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;message&amp;quot;:&amp;quot;hello! I&amp;apos;m gonna shave a yak&amp;quot;,&amp;quot;excitement&amp;quot;:&amp;quot;yay!&amp;quot;},&amp;quot;target&amp;quot;:&amp;quot;fmt_json::yak_shave&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;},{&amp;quot;yak&amp;quot;:1,&amp;quot;name&amp;quot;:&amp;quot;shave&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821546Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;TRACE&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;message&amp;quot;:&amp;quot;yak shaved successfully&amp;quot;},&amp;quot;target&amp;quot;:&amp;quot;fmt_json::yak_shave&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;},{&amp;quot;yak&amp;quot;:1,&amp;quot;name&amp;quot;:&amp;quot;shave&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821598Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;DEBUG&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;yak&amp;quot;:1,&amp;quot;shaved&amp;quot;:true},&amp;quot;target&amp;quot;:&amp;quot;yak_events&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821637Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;TRACE&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;yaks_shaved&amp;quot;:1},&amp;quot;target&amp;quot;:&amp;quot;fmt_json::yak_shave&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821684Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;TRACE&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;message&amp;quot;:&amp;quot;hello! I&amp;apos;m gonna shave a yak&amp;quot;,&amp;quot;excitement&amp;quot;:&amp;quot;yay!&amp;quot;},&amp;quot;target&amp;quot;:&amp;quot;fmt_json::yak_shave&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;},{&amp;quot;yak&amp;quot;:2,&amp;quot;name&amp;quot;:&amp;quot;shave&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821727Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;TRACE&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;message&amp;quot;:&amp;quot;yak shaved successfully&amp;quot;},&amp;quot;target&amp;quot;:&amp;quot;fmt_json::yak_shave&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;},{&amp;quot;yak&amp;quot;:2,&amp;quot;name&amp;quot;:&amp;quot;shave&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821773Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;DEBUG&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;yak&amp;quot;:2,&amp;quot;shaved&amp;quot;:true},&amp;quot;target&amp;quot;:&amp;quot;yak_events&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821806Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;TRACE&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;yaks_shaved&amp;quot;:2},&amp;quot;target&amp;quot;:&amp;quot;fmt_json::yak_shave&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821909Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;TRACE&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;message&amp;quot;:&amp;quot;hello! I&amp;apos;m gonna shave a yak&amp;quot;,&amp;quot;excitement&amp;quot;:&amp;quot;yay!&amp;quot;},&amp;quot;target&amp;quot;:&amp;quot;fmt_json::yak_shave&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;},{&amp;quot;yak&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shave&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.821956Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;WARN&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;message&amp;quot;:&amp;quot;could not locate yak&amp;quot;},&amp;quot;target&amp;quot;:&amp;quot;fmt_json::yak_shave&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;},{&amp;quot;yak&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shave&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.822006Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;DEBUG&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;yak&amp;quot;:3,&amp;quot;shaved&amp;quot;:false},&amp;quot;target&amp;quot;:&amp;quot;yak_events&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.822041Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;ERROR&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;message&amp;quot;:&amp;quot;failed to shave yak&amp;quot;,&amp;quot;yak&amp;quot;:3,&amp;quot;error&amp;quot;:&amp;quot;missing yak&amp;quot;},&amp;quot;target&amp;quot;:&amp;quot;fmt_json::yak_shave&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.822079Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;TRACE&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;yaks_shaved&amp;quot;:2},&amp;quot;target&amp;quot;:&amp;quot;fmt_json::yak_shave&amp;quot;,&amp;quot;spans&amp;quot;:[{&amp;quot;yaks&amp;quot;:3,&amp;quot;name&amp;quot;:&amp;quot;shaving_yaks&amp;quot;}]}</span>
+<span class="doccomment">/// {&amp;quot;timestamp&amp;quot;:&amp;quot;2022-02-15T18:47:10.822117Z&amp;quot;,&amp;quot;level&amp;quot;:&amp;quot;INFO&amp;quot;,&amp;quot;fields&amp;quot;:{&amp;quot;message&amp;quot;:&amp;quot;yak shaving completed&amp;quot;,&amp;quot;all_yaks_shaved&amp;quot;:false},&amp;quot;target&amp;quot;:&amp;quot;fmt_json&amp;quot;}</span>
+<span class="doccomment">/// &lt;/pre&gt;</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Options</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This formatter exposes additional options to configure the structure of the</span>
+<span class="doccomment">/// output JSON objects:</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// - [`Json::flatten_event`] can be used to enable flattening event fields into</span>
 <span class="doccomment">/// the root</span>
@@ -1748,5 +1782,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="tracing_subscriber" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (75d9a0ae2 2022-02-16)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="tracing_subscriber" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (b17226fcc 2022-02-18)" ></div>
 </body></html>

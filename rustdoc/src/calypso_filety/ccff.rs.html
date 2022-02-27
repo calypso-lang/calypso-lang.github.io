@@ -302,6 +302,9 @@
 <span id="297">297</span>
 <span id="298">298</span>
 <span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::mem</span>;
 
 <span class="kw">use</span> <span class="ident">calypso_base::symbol::Symbol</span>;
@@ -315,13 +318,14 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This will contain all the sections of data (somewhat</span>
 <span class="doccomment">/// similar in theory to ELF sections) as well as some basic metadata about the</span>
-<span class="doccomment">/// file: its [ABI version](ContainerFile::set_abiver) and</span>
-<span class="doccomment">/// [file type](ContainerFile::set_filety), both of which are user-defined.</span>
+<span class="doccomment">/// file: its [ABI version](Self::set_abiver) and</span>
+<span class="doccomment">/// [file type](Self::set_filety), both of which are user-defined.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// It also stores a list of [`Section`]s, which can be accessed and modified</span>
-<span class="doccomment">/// via methods on this structure such as [`get_section`] and [`add_section`].</span>
-<span class="doccomment">/// The order of these sections is stored, however this is not guaranteed or</span>
-<span class="doccomment">/// required and may be changed in the future.</span>
+<span class="doccomment">/// via methods on this structure such as [`get_section`][Self::get_section]</span>
+<span class="doccomment">/// and [`add_section`][Self::add_section]. The order of these sections is</span>
+<span class="doccomment">/// stored, however this is not guaranteed or required and may be changed in</span>
+<span class="doccomment">/// the future.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ContainerFile</span> {
     <span class="ident">abiver</span>: <span class="ident">u16</span>,
@@ -433,8 +437,9 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Errors</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// This function will return an error (specifically, a [`nom::Error`]</span>
-    <span class="doccomment">/// boxed in an [`eyre::Report`]) when the input fails to parse.</span>
+    <span class="doccomment">/// This function will return an error (specifically, a [`nom::Err`] boxed</span>
+    <span class="doccomment">/// in an [`eyre::Report`][calypso_error::eyre::Report]) if the input fails</span>
+    <span class="doccomment">/// to parse.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">decode</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> [<span class="ident">u8</span>]) -&gt; <span class="ident">CalResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">parse::container_file</span>(<span class="ident">buf</span>)
             .<span class="ident">map_err</span>(
@@ -520,8 +525,9 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// It stores some basic metadata: a [section type](Section::set_type) and</span>
 <span class="doccomment">/// [flags](Section::set_flags), both of which are user-defined. The data can</span>
-<span class="doccomment">/// be accessed and modified via the [`get_data`], [`get_data_mut`], and</span>
-<span class="doccomment">/// [`set_data`] functions.</span>
+<span class="doccomment">/// be accessed and modified via the [`get_data`](Self::get_data),</span>
+<span class="doccomment">/// [`get_data_mut`](Self::get_data_mut), and [`set_data`](Self::set_data)</span>
+<span class="doccomment">/// functions.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Section</span> {
     <span class="ident">stype</span>: <span class="ident">u8</span>,

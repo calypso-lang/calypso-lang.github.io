@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["ccff","Calypso Container File Format. See the module-level docs for more information."],["ccff_new",""]]});
+initSidebarItems({"mod":[["ccff","Calypso Container File Format. See the module-level docs for more information."]]});

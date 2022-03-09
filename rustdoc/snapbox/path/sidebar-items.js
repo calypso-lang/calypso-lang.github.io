@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["FileType",""],["PathDiff",""]],"fn":[["copy_template","Copy a template into a [`PathFixture`]"],["resolve_dir",""],["strip_trailing_slash",""]],"struct":[["PathFixture","Working directory for tests"],["Walk","Recursively walk a path"]]});

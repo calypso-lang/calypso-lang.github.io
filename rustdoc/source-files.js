@@ -123,7 +123,6 @@ sourcesIndex["trycmd"] = {"name":"","files":["cargo.rs","cases.rs","lib.rs","reg
 sourcesIndex["unicode_segmentation"] = {"name":"","files":["grapheme.rs","lib.rs","sentence.rs","tables.rs","word.rs"]};
 sourcesIndex["unicode_width"] = {"name":"","files":["lib.rs","tables.rs"]};
 sourcesIndex["unicode_xid"] = {"name":"","files":["lib.rs","tables.rs"]};
-sourcesIndex["utf8_ranges"] = {"name":"","files":["char_utf8.rs","lib.rs"]};
 sourcesIndex["utf8parse"] = {"name":"","files":["lib.rs","types.rs"]};
 sourcesIndex["wait_timeout"] = {"name":"","files":["lib.rs","unix.rs"]};
 sourcesIndex["walkdir"] = {"name":"","files":["dent.rs","error.rs","lib.rs","util.rs"]};

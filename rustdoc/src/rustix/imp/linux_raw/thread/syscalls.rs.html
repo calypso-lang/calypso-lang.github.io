@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustix-0.33.3/src/imp/linux_raw/thread/syscalls.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>syscalls.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script src="../../../../../crates.js"></script><script defer src="../../../../../main.js"></script><script defer src="../../../../../source-script.js"></script><script defer src="../../../../../source-files.js"></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustix-0.34.8/src/imp/linux_raw/thread/syscalls.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>syscalls.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script src="../../../../../crates.js"></script><script defer src="../../../../../main.js"></script><script defer src="../../../../../source-script.js"></script><script defer src="../../../../../source-files.js"></script>
     <noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../rustix/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div>
         </a><h2 class="location"></h2>
     </nav>
@@ -295,6 +295,15 @@
 <span id="288">288</span>
 <span id="289">289</span>
 <span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
 </pre><pre class="rust"><code><span class="doccomment">//! linux_raw syscalls supporting `rustix::thread`.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! # Safety</span>
@@ -324,6 +333,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)]</span>
 <span class="kw">use</span> {
     <span class="ident">core::convert::TryInto</span>,
+    <span class="ident">core::ptr</span>,
     <span class="ident">linux_raw_sys::general::timespec</span> <span class="kw">as</span> <span class="ident">__kernel_old_timespec</span>,
     <span class="ident">linux_raw_sys::general</span>::{<span class="ident">__NR_clock_nanosleep_time64</span>, <span class="ident">__NR_futex_time64</span>},
 };
@@ -385,19 +395,23 @@
         <span class="ident">tv_nsec</span>: <span class="ident">req</span>.<span class="ident">tv_nsec</span>.<span class="ident">try_into</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">io::Error::INVAL</span>)<span class="question-mark">?</span>,
     };
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">old_rem</span> <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="op">&lt;</span><span class="ident">__kernel_old_timespec</span><span class="op">&gt;</span><span class="ident">::uninit</span>();
-    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">ret</span>(<span class="ident">syscall4</span>(
+    <span class="ident">ret</span>(<span class="ident">syscall4</span>(
         <span class="ident">nr</span>(<span class="ident">__NR_clock_nanosleep</span>),
         <span class="ident">clockid_t</span>(<span class="ident">id</span>),
         <span class="ident">c_int</span>(<span class="number">0</span>),
         <span class="ident">by_ref</span>(<span class="kw-2">&amp;</span><span class="ident">old_req</span>),
         <span class="ident">out</span>(<span class="kw-2">&amp;mut</span> <span class="ident">old_rem</span>),
-    ));
+    ))<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">old_rem</span> <span class="op">=</span> <span class="ident">old_rem</span>.<span class="ident">assume_init</span>();
-    <span class="kw-2">*</span><span class="ident">rem</span>.<span class="ident">as_mut_ptr</span>() <span class="op">=</span> <span class="ident">__kernel_timespec</span> {
-        <span class="ident">tv_sec</span>: <span class="ident">old_rem</span>.<span class="ident">tv_sec</span>.<span class="ident">into</span>(),
-        <span class="ident">tv_nsec</span>: <span class="ident">old_rem</span>.<span class="ident">tv_nsec</span>.<span class="ident">into</span>(),
-    };
-    <span class="ident">res</span>
+    <span class="comment">// TODO: With Rust 1.55, we can use MaybeUninit::write here.</span>
+    <span class="ident">ptr::write</span>(
+        <span class="ident">rem</span>.<span class="ident">as_mut_ptr</span>(),
+        <span class="ident">__kernel_timespec</span> {
+            <span class="ident">tv_sec</span>: <span class="ident">old_rem</span>.<span class="ident">tv_sec</span>.<span class="ident">into</span>(),
+            <span class="ident">tv_nsec</span>: <span class="ident">old_rem</span>.<span class="ident">tv_nsec</span>.<span class="ident">into</span>(),
+        },
+    );
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -495,17 +509,21 @@
         <span class="ident">tv_nsec</span>: <span class="ident">req</span>.<span class="ident">tv_nsec</span>.<span class="ident">try_into</span>().<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">io::Error::INVAL</span>)<span class="question-mark">?</span>,
     };
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">old_rem</span> <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="op">&lt;</span><span class="ident">__kernel_old_timespec</span><span class="op">&gt;</span><span class="ident">::uninit</span>();
-    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">ret</span>(<span class="ident">syscall2</span>(
+    <span class="ident">ret</span>(<span class="ident">syscall2</span>(
         <span class="ident">nr</span>(<span class="ident">__NR_nanosleep</span>),
         <span class="ident">by_ref</span>(<span class="kw-2">&amp;</span><span class="ident">old_req</span>),
         <span class="ident">out</span>(<span class="kw-2">&amp;mut</span> <span class="ident">old_rem</span>),
-    ));
+    ))<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">old_rem</span> <span class="op">=</span> <span class="ident">old_rem</span>.<span class="ident">assume_init</span>();
-    <span class="kw-2">*</span><span class="ident">rem</span>.<span class="ident">as_mut_ptr</span>() <span class="op">=</span> <span class="ident">__kernel_timespec</span> {
-        <span class="ident">tv_sec</span>: <span class="ident">old_rem</span>.<span class="ident">tv_sec</span>.<span class="ident">into</span>(),
-        <span class="ident">tv_nsec</span>: <span class="ident">old_rem</span>.<span class="ident">tv_nsec</span>.<span class="ident">into</span>(),
-    };
-    <span class="ident">res</span>
+    <span class="comment">// TODO: With Rust 1.55, we can use MaybeUninit::write here.</span>
+    <span class="ident">ptr::write</span>(
+        <span class="ident">rem</span>.<span class="ident">as_mut_ptr</span>(),
+        <span class="ident">__kernel_timespec</span> {
+            <span class="ident">tv_sec</span>: <span class="ident">old_rem</span>.<span class="ident">tv_sec</span>.<span class="ident">into</span>(),
+            <span class="ident">tv_nsec</span>: <span class="ident">old_rem</span>.<span class="ident">tv_nsec</span>.<span class="ident">into</span>(),
+        },
+    );
+    <span class="prelude-val">Ok</span>(())
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -586,5 +604,5 @@
     ))
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (cacc75c82 2022-06-16)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (21e9336fe 2022-06-18)" ></div>
 </body></html>

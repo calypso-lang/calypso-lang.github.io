@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustix-0.33.3/src/imp/linux_raw/net/send_recv.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>send_recv.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script src="../../../../../crates.js"></script><script defer src="../../../../../main.js"></script><script defer src="../../../../../source-script.js"></script><script defer src="../../../../../source-files.js"></script>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustix-0.34.8/src/imp/linux_raw/net/send_recv.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>send_recv.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script src="../../../../../crates.js"></script><script defer src="../../../../../main.js"></script><script defer src="../../../../../source-script.js"></script><script defer src="../../../../../source-files.js"></script>
     <noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../../rustix/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div>
         </a><h2 class="location"></h2>
     </nav>
@@ -46,25 +46,27 @@
 <span id="39">39</span>
 <span id="40">40</span>
 <span id="41">41</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">bitflags::bitflags</span>;
+<span id="42">42</span>
+</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">super</span>::<span class="kw">super</span>::c</span>;
+<span class="kw">use</span> <span class="ident">bitflags::bitflags</span>;
 
 <span class="macro">bitflags!</span> {
     <span class="doccomment">/// `MSG_*`</span>
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SendFlags</span>: <span class="ident">u32</span> {
         <span class="doccomment">/// `MSG_CONFIRM`</span>
-        <span class="kw">const</span> <span class="ident">CONFIRM</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_CONFIRM</span>;
+        <span class="kw">const</span> <span class="ident">CONFIRM</span> <span class="op">=</span> <span class="ident">c::MSG_CONFIRM</span>;
         <span class="doccomment">/// `MSG_DONTROUTE`</span>
-        <span class="kw">const</span> <span class="ident">DONTROUTE</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_DONTROUTE</span>;
+        <span class="kw">const</span> <span class="ident">DONTROUTE</span> <span class="op">=</span> <span class="ident">c::MSG_DONTROUTE</span>;
         <span class="doccomment">/// `MSG_DONTWAIT`</span>
-        <span class="kw">const</span> <span class="ident">DONTWAIT</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_DONTWAIT</span>;
+        <span class="kw">const</span> <span class="ident">DONTWAIT</span> <span class="op">=</span> <span class="ident">c::MSG_DONTWAIT</span>;
         <span class="doccomment">/// `MSG_EOT`</span>
-        <span class="kw">const</span> <span class="ident">EOT</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_EOR</span>;
+        <span class="kw">const</span> <span class="ident">EOT</span> <span class="op">=</span> <span class="ident">c::MSG_EOR</span>;
         <span class="doccomment">/// `MSG_MORE`</span>
-        <span class="kw">const</span> <span class="ident">MORE</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_MORE</span>;
+        <span class="kw">const</span> <span class="ident">MORE</span> <span class="op">=</span> <span class="ident">c::MSG_MORE</span>;
         <span class="doccomment">/// `MSG_NOSIGNAL`</span>
-        <span class="kw">const</span> <span class="ident">NOSIGNAL</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_NOSIGNAL</span>;
+        <span class="kw">const</span> <span class="ident">NOSIGNAL</span> <span class="op">=</span> <span class="ident">c::MSG_NOSIGNAL</span>;
         <span class="doccomment">/// `MSG_OOB`</span>
-        <span class="kw">const</span> <span class="ident">OOB</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_OOB</span>;
+        <span class="kw">const</span> <span class="ident">OOB</span> <span class="op">=</span> <span class="ident">c::MSG_OOB</span>;
     }
 }
 
@@ -72,21 +74,21 @@
     <span class="doccomment">/// `MSG_*`</span>
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RecvFlags</span>: <span class="ident">u32</span> {
         <span class="doccomment">/// `MSG_CMSG_CLOEXEC`</span>
-        <span class="kw">const</span> <span class="ident">CMSG_CLOEXEC</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_CMSG_CLOEXEC</span>;
+        <span class="kw">const</span> <span class="ident">CMSG_CLOEXEC</span> <span class="op">=</span> <span class="ident">c::MSG_CMSG_CLOEXEC</span>;
         <span class="doccomment">/// `MSG_DONTWAIT`</span>
-        <span class="kw">const</span> <span class="ident">DONTWAIT</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_DONTWAIT</span>;
+        <span class="kw">const</span> <span class="ident">DONTWAIT</span> <span class="op">=</span> <span class="ident">c::MSG_DONTWAIT</span>;
         <span class="doccomment">/// `MSG_ERRQUEUE`</span>
-        <span class="kw">const</span> <span class="ident">ERRQUEUE</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_ERRQUEUE</span>;
+        <span class="kw">const</span> <span class="ident">ERRQUEUE</span> <span class="op">=</span> <span class="ident">c::MSG_ERRQUEUE</span>;
         <span class="doccomment">/// `MSG_OOB`</span>
-        <span class="kw">const</span> <span class="ident">OOB</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_OOB</span>;
+        <span class="kw">const</span> <span class="ident">OOB</span> <span class="op">=</span> <span class="ident">c::MSG_OOB</span>;
         <span class="doccomment">/// `MSG_PEEK`</span>
-        <span class="kw">const</span> <span class="ident">PEEK</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_PEEK</span>;
+        <span class="kw">const</span> <span class="ident">PEEK</span> <span class="op">=</span> <span class="ident">c::MSG_PEEK</span>;
         <span class="doccomment">/// `MSG_TRUNC`</span>
-        <span class="kw">const</span> <span class="ident">TRUNC</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_TRUNC</span>;
+        <span class="kw">const</span> <span class="ident">TRUNC</span> <span class="op">=</span> <span class="ident">c::MSG_TRUNC</span>;
         <span class="doccomment">/// `MSG_WAITALL`</span>
-        <span class="kw">const</span> <span class="ident">WAITALL</span> <span class="op">=</span> <span class="ident">linux_raw_sys::general::MSG_WAITALL</span>;
+        <span class="kw">const</span> <span class="ident">WAITALL</span> <span class="op">=</span> <span class="ident">c::MSG_WAITALL</span>;
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (cacc75c82 2022-06-16)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (21e9336fe 2022-06-18)" ></div>
 </body></html>

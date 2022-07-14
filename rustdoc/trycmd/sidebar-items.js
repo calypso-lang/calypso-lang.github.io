@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["cargo","Interact with `cargo`"],["schema","`cmd.toml` Schema"]],"struct":[["Error",""],["TestCases","Entry point for running tests"]]});
+window.SIDEBAR_ITEMS = {"mod":[["cargo","Interact with `cargo`"],["schema","`cmd.toml` Schema"]],"struct":[["Error",""],["TestCases","Entry point for running tests"]]};

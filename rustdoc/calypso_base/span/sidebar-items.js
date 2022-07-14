@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Span","The location in a slice in which some object spans."],["Spanned","An object that’s associated with a `Span`"]]});
+window.SIDEBAR_ITEMS = {"struct":[["Span","The location in a slice in which some object spans."],["Spanned","An object that’s associated with a `Span`"]]};

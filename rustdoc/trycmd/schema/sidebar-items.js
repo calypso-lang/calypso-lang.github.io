@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["Bin","Target under test"],["CommandStatus","Expected status for command"]],"struct":[["Env","Describe command’s environment"],["Filesystem","Describe command’s the filesystem context"],["OneShot","Top-level data in `cmd.toml` files"]]});
+window.SIDEBAR_ITEMS = {"enum":[["Bin","Target under test"],["CommandStatus","Expected status for command"]],"struct":[["Env","Describe command’s environment"],["Filesystem","Describe command’s the filesystem context"],["OneShot","Top-level data in `cmd.toml` files"]]};

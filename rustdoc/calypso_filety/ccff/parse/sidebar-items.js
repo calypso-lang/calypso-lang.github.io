@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["container_file",""],["magic",""],["section_header",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["container_file",""],["magic",""],["section_header",""]]};

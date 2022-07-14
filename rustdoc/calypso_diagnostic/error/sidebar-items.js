@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["DiagnosticError","An extension of [`CalError`] used for diagnostics."]]});
+window.SIDEBAR_ITEMS = {"enum":[["DiagnosticError","An extension of [`CalError`] used for diagnostics."]]};

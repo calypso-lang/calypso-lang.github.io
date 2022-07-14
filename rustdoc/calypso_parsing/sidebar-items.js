@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["lexer",""],["parser",""],["pretty",""]]});
+window.SIDEBAR_ITEMS = {"mod":[["lexer",""],["parser",""],["pretty",""]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["PrettyPrinter",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["PrettyPrinter",""]]};

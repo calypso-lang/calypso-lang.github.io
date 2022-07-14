@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["RwLock",""],["RwLockReadGuard",""],["RwLockUpgradeableGuard",""],["RwLockWriteGuard",""]]});
+window.SIDEBAR_ITEMS = {"struct":[["RwLock",""],["RwLockReadGuard",""],["RwLockUpgradeableGuard",""],["RwLockWriteGuard",""]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["write_diff",""]],"struct":[["Palette",""],["Styled",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["write_diff",""]],"struct":[["Palette",""],["Styled",""]]};

@@ -1,1 +1,1 @@
-initSidebarItems({"externcrate":[["tracing",""]],"mod":[["span","`Span` and `Spanned` types."],["symbol","Utilities for interned strings (symbols)"],["ui","User interface utilities (i.e. color)"]]});
+window.SIDEBAR_ITEMS = {"externcrate":[["tracing",""]],"mod":[["span","`Span` and `Spanned` types."],["symbol","Utilities for interned strings (symbols)"],["ui","User interface utilities (i.e. color)"]]};

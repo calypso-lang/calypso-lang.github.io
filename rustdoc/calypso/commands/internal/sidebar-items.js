@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["buildinfo",""],["internal",""]],"mod":[["unpretty",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["buildinfo",""],["internal",""]],"mod":[["unpretty",""]]};

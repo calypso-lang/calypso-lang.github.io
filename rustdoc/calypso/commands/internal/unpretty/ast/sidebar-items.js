@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["run_parser",""]]});
+window.SIDEBAR_ITEMS = {"fn":[["run_parser",""]]};

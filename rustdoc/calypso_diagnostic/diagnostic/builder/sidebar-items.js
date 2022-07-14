@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Builder","A builder for a single diagnostic."],["EnsembleBuilder","A builder for an ensemble diagnostic."]]});
+window.SIDEBAR_ITEMS = {"struct":[["Builder","A builder for a single diagnostic."],["EnsembleBuilder","A builder for an ensemble diagnostic."]]};

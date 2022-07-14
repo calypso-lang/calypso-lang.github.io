@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["CalError","The Calypso error type."]],"type":[["CalResult","A handy alias for [`Result<T, CalError>`], genericized over `T`."]]});
+window.SIDEBAR_ITEMS = {"enum":[["CalError","The Calypso error type."]],"type":[["CalResult","A handy alias for [`Result<T, CalError>`], genericized over `T`."]]};

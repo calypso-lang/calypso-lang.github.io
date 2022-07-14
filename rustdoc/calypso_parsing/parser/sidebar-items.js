@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["grammar",""]]});
+window.SIDEBAR_ITEMS = {"mod":[["grammar",""]]};

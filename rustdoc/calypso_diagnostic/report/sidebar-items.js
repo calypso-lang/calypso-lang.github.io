@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["GlobalReportingCtxt","The global reporting context for diagnostics."]]});
+window.SIDEBAR_ITEMS = {"struct":[["GlobalReportingCtxt","The global reporting context for diagnostics."]]};

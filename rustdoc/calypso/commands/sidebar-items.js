@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["explain",""],["internal",""]]});
+window.SIDEBAR_ITEMS = {"mod":[["explain",""],["internal",""]]};

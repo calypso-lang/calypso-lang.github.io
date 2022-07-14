@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["lexer",""]],"struct":[["Printer",""]]});
+window.SIDEBAR_ITEMS = {"mod":[["lexer",""]],"struct":[["Printer",""]]};

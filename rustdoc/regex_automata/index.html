@@ -27,9 +27,9 @@ and then use it to find matches in a byte string:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">regex_automata::Regex</span>;
 
-<span class="kw">let</span> <span class="ident">re</span> <span class="op">=</span> <span class="ident">Regex::new</span>(<span class="string">r&quot;[0-9]{4}-[0-9]{2}-[0-9]{2}&quot;</span>).<span class="ident">unwrap</span>();
-<span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="string">b&quot;2018-12-24 2016-10-08&quot;</span>;
-<span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">re</span>.<span class="ident">find_iter</span>(<span class="ident">text</span>).<span class="ident">collect</span>();
+<span class="kw">let</span> <span class="ident">re</span> = <span class="ident">Regex::new</span>(<span class="string">r&quot;[0-9]{4}-[0-9]{2}-[0-9]{2}&quot;</span>).<span class="ident">unwrap</span>();
+<span class="kw">let</span> <span class="ident">text</span> = <span class="string">b&quot;2018-12-24 2016-10-08&quot;</span>;
+<span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span>&lt;(<span class="ident">usize</span>, <span class="ident">usize</span>)&gt; = <span class="ident">re</span>.<span class="ident">find_iter</span>(<span class="ident">text</span>).<span class="ident">collect</span>();
 <span class="macro">assert_eq!</span>(<span class="ident">matches</span>, <span class="macro">vec!</span>[(<span class="number">0</span>, <span class="number">10</span>), (<span class="number">11</span>, <span class="number">21</span>)]);</code></pre></div>
 <h2 id="example-use-sparse-dfas"><a href="#example-use-sparse-dfas">Example: use sparse DFAs</a></h2>
 <p>By default, compiling a regex will use dense DFAs internally. This uses more
@@ -41,22 +41,22 @@ use significantly less space.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">regex_automata::Regex</span>;
 
-<span class="kw">let</span> <span class="ident">re</span> <span class="op">=</span> <span class="ident">Regex::new_sparse</span>(<span class="string">r&quot;[0-9]{4}-[0-9]{2}-[0-9]{2}&quot;</span>).<span class="ident">unwrap</span>();
-<span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="string">b&quot;2018-12-24 2016-10-08&quot;</span>;
-<span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">re</span>.<span class="ident">find_iter</span>(<span class="ident">text</span>).<span class="ident">collect</span>();
+<span class="kw">let</span> <span class="ident">re</span> = <span class="ident">Regex::new_sparse</span>(<span class="string">r&quot;[0-9]{4}-[0-9]{2}-[0-9]{2}&quot;</span>).<span class="ident">unwrap</span>();
+<span class="kw">let</span> <span class="ident">text</span> = <span class="string">b&quot;2018-12-24 2016-10-08&quot;</span>;
+<span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span>&lt;(<span class="ident">usize</span>, <span class="ident">usize</span>)&gt; = <span class="ident">re</span>.<span class="ident">find_iter</span>(<span class="ident">text</span>).<span class="ident">collect</span>();
 <span class="macro">assert_eq!</span>(<span class="ident">matches</span>, <span class="macro">vec!</span>[(<span class="number">0</span>, <span class="number">10</span>), (<span class="number">11</span>, <span class="number">21</span>)]);</code></pre></div>
 <p>If you already have dense DFAs for some reason, they can be converted to sparse
 DFAs and used to build a new <code>Regex</code>. For example:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">regex_automata::Regex</span>;
 
-<span class="kw">let</span> <span class="ident">dense_re</span> <span class="op">=</span> <span class="ident">Regex::new</span>(<span class="string">r&quot;[0-9]{4}-[0-9]{2}-[0-9]{2}&quot;</span>).<span class="ident">unwrap</span>();
-<span class="kw">let</span> <span class="ident">sparse_re</span> <span class="op">=</span> <span class="ident">Regex::from_dfas</span>(
+<span class="kw">let</span> <span class="ident">dense_re</span> = <span class="ident">Regex::new</span>(<span class="string">r&quot;[0-9]{4}-[0-9]{2}-[0-9]{2}&quot;</span>).<span class="ident">unwrap</span>();
+<span class="kw">let</span> <span class="ident">sparse_re</span> = <span class="ident">Regex::from_dfas</span>(
     <span class="ident">dense_re</span>.<span class="ident">forward</span>().<span class="ident">to_sparse</span>()<span class="question-mark">?</span>,
     <span class="ident">dense_re</span>.<span class="ident">reverse</span>().<span class="ident">to_sparse</span>()<span class="question-mark">?</span>,
 );
-<span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="string">b&quot;2018-12-24 2016-10-08&quot;</span>;
-<span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">sparse_re</span>.<span class="ident">find_iter</span>(<span class="ident">text</span>).<span class="ident">collect</span>();
+<span class="kw">let</span> <span class="ident">text</span> = <span class="string">b&quot;2018-12-24 2016-10-08&quot;</span>;
+<span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span>&lt;(<span class="ident">usize</span>, <span class="ident">usize</span>)&gt; = <span class="ident">sparse_re</span>.<span class="ident">find_iter</span>(<span class="ident">text</span>).<span class="ident">collect</span>();
 <span class="macro">assert_eq!</span>(<span class="ident">matches</span>, <span class="macro">vec!</span>[(<span class="number">0</span>, <span class="number">10</span>), (<span class="number">11</span>, <span class="number">21</span>)]);</code></pre></div>
 <h2 id="example-deserialize-a-dfa"><a href="#example-deserialize-a-dfa">Example: deserialize a DFA</a></h2>
 <p>This shows how to first serialize a DFA into raw bytes, and then deserialize
@@ -68,19 +68,19 @@ time operation.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">regex_automata</span>::{<span class="ident">DenseDFA</span>, <span class="ident">Regex</span>};
 
-<span class="kw">let</span> <span class="ident">re1</span> <span class="op">=</span> <span class="ident">Regex::new</span>(<span class="string">r&quot;[0-9]{4}-[0-9]{2}-[0-9]{2}&quot;</span>).<span class="ident">unwrap</span>();
+<span class="kw">let</span> <span class="ident">re1</span> = <span class="ident">Regex::new</span>(<span class="string">r&quot;[0-9]{4}-[0-9]{2}-[0-9]{2}&quot;</span>).<span class="ident">unwrap</span>();
 <span class="comment">// serialize both the forward and reverse DFAs, see note below</span>
-<span class="kw">let</span> <span class="ident">fwd_bytes</span> <span class="op">=</span> <span class="ident">re1</span>.<span class="ident">forward</span>().<span class="ident">to_u16</span>()<span class="question-mark">?</span>.<span class="ident">to_bytes_native_endian</span>()<span class="question-mark">?</span>;
-<span class="kw">let</span> <span class="ident">rev_bytes</span> <span class="op">=</span> <span class="ident">re1</span>.<span class="ident">reverse</span>().<span class="ident">to_u16</span>()<span class="question-mark">?</span>.<span class="ident">to_bytes_native_endian</span>()<span class="question-mark">?</span>;
+<span class="kw">let</span> <span class="ident">fwd_bytes</span> = <span class="ident">re1</span>.<span class="ident">forward</span>().<span class="ident">to_u16</span>()<span class="question-mark">?</span>.<span class="ident">to_bytes_native_endian</span>()<span class="question-mark">?</span>;
+<span class="kw">let</span> <span class="ident">rev_bytes</span> = <span class="ident">re1</span>.<span class="ident">reverse</span>().<span class="ident">to_u16</span>()<span class="question-mark">?</span>.<span class="ident">to_bytes_native_endian</span>()<span class="question-mark">?</span>;
 <span class="comment">// now deserialize both---we need to specify the correct type!</span>
-<span class="kw">let</span> <span class="ident">fwd</span>: <span class="ident">DenseDFA</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u16</span>], <span class="ident">u16</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">DenseDFA::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">fwd_bytes</span>) };
-<span class="kw">let</span> <span class="ident">rev</span>: <span class="ident">DenseDFA</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u16</span>], <span class="ident">u16</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">DenseDFA::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">rev_bytes</span>) };
+<span class="kw">let</span> <span class="ident">fwd</span>: <span class="ident">DenseDFA</span>&lt;<span class="kw-2">&amp;</span>[<span class="ident">u16</span>], <span class="ident">u16</span>&gt; = <span class="kw">unsafe</span> { <span class="ident">DenseDFA::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">fwd_bytes</span>) };
+<span class="kw">let</span> <span class="ident">rev</span>: <span class="ident">DenseDFA</span>&lt;<span class="kw-2">&amp;</span>[<span class="ident">u16</span>], <span class="ident">u16</span>&gt; = <span class="kw">unsafe</span> { <span class="ident">DenseDFA::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">rev_bytes</span>) };
 <span class="comment">// finally, reconstruct our regex</span>
-<span class="kw">let</span> <span class="ident">re2</span> <span class="op">=</span> <span class="ident">Regex::from_dfas</span>(<span class="ident">fwd</span>, <span class="ident">rev</span>);
+<span class="kw">let</span> <span class="ident">re2</span> = <span class="ident">Regex::from_dfas</span>(<span class="ident">fwd</span>, <span class="ident">rev</span>);
 
 <span class="comment">// we can use it like normal</span>
-<span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="string">b&quot;2018-12-24 2016-10-08&quot;</span>;
-<span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">re2</span>.<span class="ident">find_iter</span>(<span class="ident">text</span>).<span class="ident">collect</span>();
+<span class="kw">let</span> <span class="ident">text</span> = <span class="string">b&quot;2018-12-24 2016-10-08&quot;</span>;
+<span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span>&lt;(<span class="ident">usize</span>, <span class="ident">usize</span>)&gt; = <span class="ident">re2</span>.<span class="ident">find_iter</span>(<span class="ident">text</span>).<span class="ident">collect</span>();
 <span class="macro">assert_eq!</span>(<span class="ident">matches</span>, <span class="macro">vec!</span>[(<span class="number">0</span>, <span class="number">10</span>), (<span class="number">11</span>, <span class="number">21</span>)]);</code></pre></div>
 <p>There are a few points worth noting here:</p>
 <ul>
@@ -116,19 +116,19 @@ unsafety.</li>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">regex_automata</span>::{<span class="ident">SparseDFA</span>, <span class="ident">Regex</span>};
 
-<span class="kw">let</span> <span class="ident">re1</span> <span class="op">=</span> <span class="ident">Regex::new</span>(<span class="string">r&quot;[0-9]{4}-[0-9]{2}-[0-9]{2}&quot;</span>).<span class="ident">unwrap</span>();
+<span class="kw">let</span> <span class="ident">re1</span> = <span class="ident">Regex::new</span>(<span class="string">r&quot;[0-9]{4}-[0-9]{2}-[0-9]{2}&quot;</span>).<span class="ident">unwrap</span>();
 <span class="comment">// serialize both</span>
-<span class="kw">let</span> <span class="ident">fwd_bytes</span> <span class="op">=</span> <span class="ident">re1</span>.<span class="ident">forward</span>().<span class="ident">to_u16</span>()<span class="question-mark">?</span>.<span class="ident">to_sparse</span>()<span class="question-mark">?</span>.<span class="ident">to_bytes_native_endian</span>()<span class="question-mark">?</span>;
-<span class="kw">let</span> <span class="ident">rev_bytes</span> <span class="op">=</span> <span class="ident">re1</span>.<span class="ident">reverse</span>().<span class="ident">to_u16</span>()<span class="question-mark">?</span>.<span class="ident">to_sparse</span>()<span class="question-mark">?</span>.<span class="ident">to_bytes_native_endian</span>()<span class="question-mark">?</span>;
+<span class="kw">let</span> <span class="ident">fwd_bytes</span> = <span class="ident">re1</span>.<span class="ident">forward</span>().<span class="ident">to_u16</span>()<span class="question-mark">?</span>.<span class="ident">to_sparse</span>()<span class="question-mark">?</span>.<span class="ident">to_bytes_native_endian</span>()<span class="question-mark">?</span>;
+<span class="kw">let</span> <span class="ident">rev_bytes</span> = <span class="ident">re1</span>.<span class="ident">reverse</span>().<span class="ident">to_u16</span>()<span class="question-mark">?</span>.<span class="ident">to_sparse</span>()<span class="question-mark">?</span>.<span class="ident">to_bytes_native_endian</span>()<span class="question-mark">?</span>;
 <span class="comment">// now deserialize both---we need to specify the correct type!</span>
-<span class="kw">let</span> <span class="ident">fwd</span>: <span class="ident">SparseDFA</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">u16</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">SparseDFA::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">fwd_bytes</span>) };
-<span class="kw">let</span> <span class="ident">rev</span>: <span class="ident">SparseDFA</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">u16</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">SparseDFA::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">rev_bytes</span>) };
+<span class="kw">let</span> <span class="ident">fwd</span>: <span class="ident">SparseDFA</span>&lt;<span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">u16</span>&gt; = <span class="kw">unsafe</span> { <span class="ident">SparseDFA::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">fwd_bytes</span>) };
+<span class="kw">let</span> <span class="ident">rev</span>: <span class="ident">SparseDFA</span>&lt;<span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">u16</span>&gt; = <span class="kw">unsafe</span> { <span class="ident">SparseDFA::from_bytes</span>(<span class="kw-2">&amp;</span><span class="ident">rev_bytes</span>) };
 <span class="comment">// finally, reconstruct our regex</span>
-<span class="kw">let</span> <span class="ident">re2</span> <span class="op">=</span> <span class="ident">Regex::from_dfas</span>(<span class="ident">fwd</span>, <span class="ident">rev</span>);
+<span class="kw">let</span> <span class="ident">re2</span> = <span class="ident">Regex::from_dfas</span>(<span class="ident">fwd</span>, <span class="ident">rev</span>);
 
 <span class="comment">// we can use it like normal</span>
-<span class="kw">let</span> <span class="ident">text</span> <span class="op">=</span> <span class="string">b&quot;2018-12-24 2016-10-08&quot;</span>;
-<span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">re2</span>.<span class="ident">find_iter</span>(<span class="ident">text</span>).<span class="ident">collect</span>();
+<span class="kw">let</span> <span class="ident">text</span> = <span class="string">b&quot;2018-12-24 2016-10-08&quot;</span>;
+<span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span>&lt;(<span class="ident">usize</span>, <span class="ident">usize</span>)&gt; = <span class="ident">re2</span>.<span class="ident">find_iter</span>(<span class="ident">text</span>).<span class="ident">collect</span>();
 <span class="macro">assert_eq!</span>(<span class="ident">matches</span>, <span class="macro">vec!</span>[(<span class="number">0</span>, <span class="number">10</span>), (<span class="number">11</span>, <span class="number">21</span>)]);</code></pre></div>
 <p>Note that unlike dense DFAs, sparse DFAs have no alignment requirements.
 Conversely, dense DFAs must be be aligned to the same alignment as their
@@ -252,4 +252,4 @@ searching.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.SparseDFA.html" title="regex_automata::SparseDFA enum">SparseDFA</a></div><div class="item-right docblock-short"><p>A sparse table-based deterministic finite automaton (DFA).</p>
 </div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.DFA.html" title="regex_automata::DFA trait">DFA</a></div><div class="item-right docblock-short"><p>A trait describing the interface of a deterministic finite automaton (DFA).</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.StateID.html" title="regex_automata::StateID trait">StateID</a></div><div class="item-right docblock-short"><p>A trait describing the representation of a DFA’s state identifier.</p>
-</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="regex_automata" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="regex_automata" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

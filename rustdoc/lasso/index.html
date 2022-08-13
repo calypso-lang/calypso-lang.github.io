@@ -45,36 +45,36 @@ To make use of <a href="struct.ThreadedRodeo.html" title="ThreadedRodeo"><code>T
 <h3 id="example-using-rodeo"><a href="#example-using-rodeo">Example: Using Rodeo</a></h3>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">lasso::Rodeo</span>;
 
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> <span class="op">=</span> <span class="ident">Rodeo::default</span>();
-<span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
+<span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
 
 <span class="comment">// Easily retrieve the value of a key and find the key for values</span>
 <span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
 <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">key</span>), <span class="ident">rodeo</span>.<span class="ident">get</span>(<span class="string">&quot;Hello, world!&quot;</span>));
 
 <span class="comment">// Interning the same string again will yield the same key</span>
-<span class="kw">let</span> <span class="ident">key2</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+<span class="kw">let</span> <span class="ident">key2</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
 
 <span class="macro">assert_eq!</span>(<span class="ident">key</span>, <span class="ident">key2</span>);</code></pre></div>
 <h3 id="example-using-threadedrodeo"><a href="#example-using-threadedrodeo">Example: Using ThreadedRodeo</a></h3>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">lasso::ThreadedRodeo</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">thread</span>, <span class="ident">sync::Arc</span>};
 
-<span class="kw">let</span> <span class="ident">rodeo</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">ThreadedRodeo::default</span>());
-<span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+<span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">Arc::new</span>(<span class="ident">ThreadedRodeo::default</span>());
+<span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
 
 <span class="comment">// Easily retrieve the value of a key and find the key for values</span>
 <span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
 <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">key</span>), <span class="ident">rodeo</span>.<span class="ident">get</span>(<span class="string">&quot;Hello, world!&quot;</span>));
 
 <span class="comment">// Interning the same string again will yield the same key</span>
-<span class="kw">let</span> <span class="ident">key2</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+<span class="kw">let</span> <span class="ident">key2</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
 
 <span class="macro">assert_eq!</span>(<span class="ident">key</span>, <span class="ident">key2</span>);
 
 <span class="comment">// ThreadedRodeo can be shared across threads</span>
-<span class="kw">let</span> <span class="ident">moved</span> <span class="op">=</span> <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>);
-<span class="kw">let</span> <span class="ident">hello</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
+<span class="kw">let</span> <span class="ident">moved</span> = <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>);
+<span class="kw">let</span> <span class="ident">hello</span> = <span class="ident">thread::spawn</span>(<span class="kw">move</span> || {
     <span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">moved</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
     <span class="ident">moved</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello from the thread!&quot;</span>)
 })
@@ -87,12 +87,12 @@ To make use of <a href="struct.ThreadedRodeo.html" title="ThreadedRodeo"><code>T
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">lasso::Rodeo</span>;
 
 <span class="comment">// Rodeo and ThreadedRodeo are interchangeable here</span>
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> <span class="op">=</span> <span class="ident">Rodeo::default</span>();
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
 
-<span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+<span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
 <span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
 
-<span class="kw">let</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+<span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
 
 <span class="comment">// Reader keeps all the strings from the parent</span>
 <span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">reader</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
@@ -103,12 +103,12 @@ To make use of <a href="struct.ThreadedRodeo.html" title="ThreadedRodeo"><code>T
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">lasso::Rodeo</span>;
 
 <span class="comment">// Rodeo and ThreadedRodeo are interchangeable here</span>
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> <span class="op">=</span> <span class="ident">Rodeo::default</span>();
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
 
-<span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
+<span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;Hello, world!&quot;</span>);
 <span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
 
-<span class="kw">let</span> <span class="ident">resolver</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">into_resolver</span>();
+<span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_resolver</span>();
 
 <span class="comment">// Resolver keeps all the strings from the parent</span>
 <span class="macro">assert_eq!</span>(<span class="string">&quot;Hello, world!&quot;</span>, <span class="ident">resolver</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
@@ -126,7 +126,7 @@ what would otherwise be unused space, which can be critical for memory-sensitive
 <span class="kw">struct</span> <span class="ident">NicheKey</span>(<span class="ident">u32</span>);
 
 <span class="comment">// This will reserve the upper 255 values for us to use as niches</span>
-<span class="kw">const</span> <span class="ident">NICHE</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0xFF000000</span>;
+<span class="kw">const</span> <span class="ident">NICHE</span>: <span class="ident">usize</span> = <span class="number">0xFF000000</span>;
 
 <span class="comment">// Implementing `Key` is unsafe and requires that anything given to `try_from_usize` must produce the</span>
 <span class="comment">// same `usize` when `into_usize` is later called</span>
@@ -135,8 +135,8 @@ what would otherwise be unused space, which can be critical for memory-sensitive
         <span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">usize</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">try_from_usize</span>(<span class="ident">int</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">int</span> <span class="op">&lt;</span> <span class="ident">NICHE</span> {
+    <span class="kw">fn</span> <span class="ident">try_from_usize</span>(<span class="ident">int</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">if</span> <span class="ident">int</span> &lt; <span class="ident">NICHE</span> {
             <span class="comment">// The value isn&#39;t in our niche range, so we&#39;re good to go</span>
             <span class="prelude-val">Some</span>(<span class="self">Self</span>(<span class="ident">int</span> <span class="kw">as</span> <span class="ident">u32</span>))
         } <span class="kw">else</span> {
@@ -149,32 +149,32 @@ what would otherwise be unused space, which can be critical for memory-sensitive
 <span class="comment">// To make sure we&#39;re upholding `Key`&#39;s safety contract, let&#39;s make two small tests</span>
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">value_in_range</span>() {
-    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">NicheKey::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">NicheKey::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
     <span class="macro">assert_eq!</span>(<span class="ident">key</span>.<span class="ident">into_usize</span>(), <span class="number">0</span>);
 
-    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">NicheKey::try_from_usize</span>(<span class="ident">NICHE</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">unwrap</span>();
-    <span class="macro">assert_eq!</span>(<span class="ident">key</span>.<span class="ident">into_usize</span>(), <span class="ident">NICHE</span> <span class="op">-</span> <span class="number">1</span>);
+    <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">NicheKey::try_from_usize</span>(<span class="ident">NICHE</span> - <span class="number">1</span>).<span class="ident">unwrap</span>();
+    <span class="macro">assert_eq!</span>(<span class="ident">key</span>.<span class="ident">into_usize</span>(), <span class="ident">NICHE</span> - <span class="number">1</span>);
 }
 
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">value_out_of_range</span>() {
-    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">NicheKey::try_from_usize</span>(<span class="ident">NICHE</span>);
+    <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">NicheKey::try_from_usize</span>(<span class="ident">NICHE</span>);
     <span class="macro">assert!</span>(<span class="ident">key</span>.<span class="ident">is_none</span>());
 
-    <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">NicheKey::try_from_usize</span>(<span class="ident">u32::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span>);
+    <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">NicheKey::try_from_usize</span>(<span class="ident">u32::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span>);
     <span class="macro">assert!</span>(<span class="ident">key</span>.<span class="ident">is_none</span>());
 }
 
 <span class="comment">// And now we&#39;re done and can make `Rodeo`s or `ThreadedRodeo`s that use our custom key!</span>
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span>: <span class="ident">Rodeo</span><span class="op">&lt;</span><span class="ident">NicheKey</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Rodeo::new</span>();
-<span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;It works!&quot;</span>);
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span>: <span class="ident">Rodeo</span>&lt;<span class="ident">NicheKey</span>&gt; = <span class="ident">Rodeo::new</span>();
+<span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;It works!&quot;</span>);
 <span class="macro">assert_eq!</span>(<span class="ident">rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>), <span class="string">&quot;It works!&quot;</span>);</code></pre></div>
 <h3 id="example-creation-using-fromiterator"><a href="#example-creation-using-fromiterator">Example: Creation using <code>FromIterator</code></a></h3>
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">lasso::Rodeo</span>;
 <span class="kw">use</span> <span class="ident">core::iter::FromIterator</span>;
 
 <span class="comment">// Works for both `Rodeo` and `ThreadedRodeo`</span>
-<span class="kw">let</span> <span class="ident">rodeo</span>: <span class="ident">Rodeo</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="string">&quot;one string&quot;</span>, <span class="string">&quot;two string&quot;</span>, <span class="string">&quot;red string&quot;</span>, <span class="string">&quot;blue string&quot;</span>]
+<span class="kw">let</span> <span class="ident">rodeo</span>: <span class="ident">Rodeo</span> = <span class="macro">vec!</span>[<span class="string">&quot;one string&quot;</span>, <span class="string">&quot;two string&quot;</span>, <span class="string">&quot;red string&quot;</span>, <span class="string">&quot;blue string&quot;</span>]
     .<span class="ident">into_iter</span>()
     .<span class="ident">collect</span>();
 
@@ -187,7 +187,7 @@ what would otherwise be unused space, which can be critical for memory-sensitive
 <span class="kw">use</span> <span class="ident">core::iter::FromIterator</span>;
 
 <span class="comment">// Works for both `Rodeo` and `ThreadedRodeo`</span>
-<span class="kw">let</span> <span class="ident">rodeo</span>: <span class="ident">Rodeo</span> <span class="op">=</span> <span class="ident">Rodeo::from_iter</span>(<span class="macro">vec!</span>[
+<span class="kw">let</span> <span class="ident">rodeo</span>: <span class="ident">Rodeo</span> = <span class="ident">Rodeo::from_iter</span>(<span class="macro">vec!</span>[
     <span class="string">&quot;one string&quot;</span>,
     <span class="string">&quot;two string&quot;</span>,
     <span class="string">&quot;red string&quot;</span>,
@@ -324,4 +324,4 @@ both its reading and resolution capabilities, allowing both
 </div></div><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.Resolver.html" title="lasso::Resolver trait">Resolver</a></div><div class="item-right docblock-short"><p>A generic interface that allows using any underlying interner only
 for its resolution capabilities, allowing only <code>key -&gt; str</code> lookups</p>
 </div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.LassoResult.html" title="lasso::LassoResult type">LassoResult</a></div><div class="item-right docblock-short"><p>A continence type for an error from an interner</p>
-</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

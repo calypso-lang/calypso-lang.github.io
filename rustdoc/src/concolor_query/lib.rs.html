@@ -107,7 +107,7 @@
 <span id="107">107</span>
 <span id="108">108</span>
 <span id="109">109</span>
-</pre><pre class="rust"><code><span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>)]</span>
+</pre><pre class="rust"><code><span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;windows&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">windows</span>;
 
 <span class="doccomment">/// Check [CLICOLOR] status</span>
@@ -121,11 +121,11 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [CLICOLOR]: https://bixense.com/clicolors/</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clicolor</span>() -&gt; <span class="ident">bool</span> {
-    <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">std::env::var_os</span>(<span class="string">&quot;CLICOLOR&quot;</span>);
+    <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">std::env::var_os</span>(<span class="string">&quot;CLICOLOR&quot;</span>);
     <span class="ident">value</span>
         .<span class="ident">as_deref</span>()
-        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;1&quot;</span>))
-        <span class="op">!</span><span class="op">=</span> <span class="string">&quot;0&quot;</span>
+        .<span class="ident">unwrap_or_else</span>(|| <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;1&quot;</span>))
+        != <span class="string">&quot;0&quot;</span>
 }
 
 <span class="doccomment">/// Check [CLICOLOR_FORCE] status</span>
@@ -134,11 +134,11 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [CLICOLOR_FORCE]: https://bixense.com/clicolors/</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clicolor_force</span>() -&gt; <span class="ident">bool</span> {
-    <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">std::env::var_os</span>(<span class="string">&quot;CLICOLOR_FORCE&quot;</span>);
+    <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">std::env::var_os</span>(<span class="string">&quot;CLICOLOR_FORCE&quot;</span>);
     <span class="ident">value</span>
         .<span class="ident">as_deref</span>()
-        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;0&quot;</span>))
-        <span class="op">!</span><span class="op">=</span> <span class="string">&quot;0&quot;</span>
+        .<span class="ident">unwrap_or_else</span>(|| <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;0&quot;</span>))
+        != <span class="string">&quot;0&quot;</span>
 }
 
 <span class="doccomment">/// Check [NO_COLOR] status</span>
@@ -161,7 +161,7 @@
         <span class="comment">// probably doesn&#39;t support colors.</span>
         <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="bool-val">false</span>,
         <span class="prelude-val">Some</span>(<span class="ident">k</span>) =&gt; {
-            <span class="kw">if</span> <span class="ident">k</span> <span class="op">==</span> <span class="string">&quot;dumb&quot;</span> {
+            <span class="kw">if</span> <span class="ident">k</span> == <span class="string">&quot;dumb&quot;</span> {
                 <span class="kw">return</span> <span class="bool-val">false</span>;
             }
         }
@@ -175,8 +175,8 @@
     <span class="comment">// On Windows, if TERM isn&#39;t set, then we shouldn&#39;t automatically</span>
     <span class="comment">// assume that colors aren&#39;t allowed. This is unlike Unix environments</span>
     <span class="comment">// where TERM is more rigorously set.</span>
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">k</span>) <span class="op">=</span> <span class="ident">std::env::var_os</span>(<span class="string">&quot;TERM&quot;</span>) {
-        <span class="kw">if</span> <span class="ident">k</span> <span class="op">==</span> <span class="string">&quot;dumb&quot;</span> {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">k</span>) = <span class="ident">std::env::var_os</span>(<span class="string">&quot;TERM&quot;</span>) {
+        <span class="kw">if</span> <span class="ident">k</span> == <span class="string">&quot;dumb&quot;</span> {
             <span class="kw">return</span> <span class="bool-val">false</span>;
         }
     }
@@ -200,7 +200,7 @@
             <span class="comment">// cygwin doesn&#39;t seem to support ANSI escape sequences</span>
             <span class="comment">// and instead has its own variety. However, the Windows</span>
             <span class="comment">// console API may be available.</span>
-            <span class="kw">if</span> <span class="ident">k</span> <span class="op">==</span> <span class="string">&quot;dumb&quot;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">k</span> <span class="op">==</span> <span class="string">&quot;cygwin&quot;</span> {
+            <span class="kw">if</span> <span class="ident">k</span> == <span class="string">&quot;dumb&quot;</span> || <span class="ident">k</span> == <span class="string">&quot;cygwin&quot;</span> {
                 <span class="kw">return</span> <span class="bool-val">false</span>;
             }
         }
@@ -212,9 +212,9 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [COLORTERM]: https://github.com/termstandard/colors</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">truecolor</span>() -&gt; <span class="ident">bool</span> {
-    <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">std::env::var_os</span>(<span class="string">&quot;COLORTERM &quot;</span>);
-    <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">value</span>.<span class="ident">as_deref</span>().<span class="ident">unwrap_or_default</span>();
-    <span class="ident">value</span> <span class="op">==</span> <span class="string">&quot;truecolor&quot;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">value</span> <span class="op">==</span> <span class="string">&quot;24bit&quot;</span>
+    <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">std::env::var_os</span>(<span class="string">&quot;COLORTERM &quot;</span>);
+    <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">value</span>.<span class="ident">as_deref</span>().<span class="ident">unwrap_or_default</span>();
+    <span class="ident">value</span> == <span class="string">&quot;truecolor&quot;</span> || <span class="ident">value</span> == <span class="string">&quot;24bit&quot;</span>
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="concolor_query" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="concolor_query" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

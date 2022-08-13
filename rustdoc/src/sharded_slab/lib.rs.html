@@ -1289,7 +1289,7 @@
 <span class="doccomment">//! See [this page](crate::implementation) for details on this crate&#39;s design</span>
 <span class="doccomment">//! and implementation.</span>
 <span class="doccomment">//!</span>
-<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/sharded-slab/0.1.4&quot;</span>)]</span>
+<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> = <span class="string">&quot;https://docs.rs/sharded-slab/0.1.4&quot;</span>)]</span>
 <span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_debug_implementations</span>, <span class="ident">missing_docs</span>)]</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">warn</span>(<span class="ident">rustdoc::broken_intra_doc_links</span>))]</span>
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
@@ -1321,9 +1321,9 @@
 <span class="doccomment">/// A sharded slab.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// See the [crate-level documentation](crate) for details on using this type.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span> <span class="op">=</span> <span class="ident">DefaultConfig</span><span class="op">&gt;</span> {
-    <span class="ident">shards</span>: <span class="ident">shard::Array</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">C</span><span class="op">&gt;</span>,
-    <span class="ident">_cfg</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Slab</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span> = <span class="ident">DefaultConfig</span>&gt; {
+    <span class="ident">shards</span>: <span class="ident">shard::Array</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt;, <span class="ident">C</span>&gt;,
+    <span class="ident">_cfg</span>: <span class="ident">PhantomData</span>&lt;<span class="ident">C</span>&gt;,
 }
 
 <span class="doccomment">/// A handle that allows access to an occupied entry in a [`Slab`].</span>
@@ -1332,10 +1332,10 @@
 <span class="doccomment">/// references is currently being accessed. If the item is removed from the slab</span>
 <span class="doccomment">/// while a guard exists, the removal will be deferred until all guards are</span>
 <span class="doccomment">/// dropped.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span> <span class="op">=</span> <span class="ident">DefaultConfig</span><span class="op">&gt;</span> {
-    <span class="ident">inner</span>: <span class="ident">page::slot::Guard</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">C</span><span class="op">&gt;</span>,
-    <span class="ident">value</span>: <span class="ident">ptr::NonNull</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">shard</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Shard</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">C</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Entry</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span> = <span class="ident">DefaultConfig</span>&gt; {
+    <span class="ident">inner</span>: <span class="ident">page::slot::Guard</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt;, <span class="ident">C</span>&gt;,
+    <span class="ident">value</span>: <span class="ident">ptr::NonNull</span>&lt;<span class="ident">T</span>&gt;,
+    <span class="ident">shard</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Shard</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt;, <span class="ident">C</span>&gt;,
     <span class="ident">key</span>: <span class="ident">usize</span>,
 }
 
@@ -1362,10 +1362,10 @@
 <span class="doccomment">/// assert_eq!(&quot;hello&quot;, slab.get(hello).unwrap().1);</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VacantEntry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span> <span class="op">=</span> <span class="ident">DefaultConfig</span><span class="op">&gt;</span> {
-    <span class="ident">inner</span>: <span class="ident">page::slot::InitGuard</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">C</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">VacantEntry</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span> = <span class="ident">DefaultConfig</span>&gt; {
+    <span class="ident">inner</span>: <span class="ident">page::slot::InitGuard</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt;, <span class="ident">C</span>&gt;,
     <span class="ident">key</span>: <span class="ident">usize</span>,
-    <span class="ident">_lt</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> ()<span class="op">&gt;</span>,
+    <span class="ident">_lt</span>: <span class="ident">PhantomData</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> ()&gt;,
 }
 
 <span class="doccomment">/// An owned reference to an occupied entry in a [`Slab`].</span>
@@ -1451,24 +1451,24 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [`get`]: Slab::get</span>
 <span class="doccomment">/// [`Arc`]: std::sync::Arc</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OwnedEntry</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span> <span class="op">=</span> <span class="ident">DefaultConfig</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OwnedEntry</span>&lt;<span class="ident">T</span>, <span class="ident">C</span> = <span class="ident">DefaultConfig</span>&gt;
 <span class="kw">where</span>
     <span class="ident">C</span>: <span class="ident">cfg::Config</span>,
 {
-    <span class="ident">inner</span>: <span class="ident">page::slot::Guard</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">C</span><span class="op">&gt;</span>,
-    <span class="ident">value</span>: <span class="ident">ptr::NonNull</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">slab</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">inner</span>: <span class="ident">page::slot::Guard</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt;, <span class="ident">C</span>&gt;,
+    <span class="ident">value</span>: <span class="ident">ptr::NonNull</span>&lt;<span class="ident">T</span>&gt;,
+    <span class="ident">slab</span>: <span class="ident">Arc</span>&lt;<span class="ident">Slab</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt;&gt;,
     <span class="ident">key</span>: <span class="ident">usize</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">Slab</span>&lt;<span class="ident">T</span>&gt; {
     <span class="doccomment">/// Returns a new slab with the default configuration parameters.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
         <span class="ident"><span class="self">Self</span>::new_with_config</span>()
     }
 
     <span class="doccomment">/// Returns a new slab with the provided configuration parameters.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_with_config</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span>() -&gt; <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_with_config</span>&lt;<span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt;() -&gt; <span class="ident">Slab</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; {
         <span class="ident">C::validate</span>();
         <span class="ident">Slab</span> {
             <span class="ident">shards</span>: <span class="ident">shard::Array::new</span>(),
@@ -1477,7 +1477,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">Slab</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; {
     <span class="doccomment">/// The number of bits in each index which are used by the slab.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If other data is packed into the `usize` indices returned by</span>
@@ -1489,7 +1489,7 @@
     <span class="doccomment">/// overriding the [`Config::RESERVED_BITS`][res] constant.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [res]: crate::Config#RESERVED_BITS</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">USED_BITS</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">C::USED_BITS</span>;
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">USED_BITS</span>: <span class="ident">usize</span> = <span class="ident">C::USED_BITS</span>;
 
     <span class="doccomment">/// Inserts a value into the slab, returning the integer index at which that</span>
     <span class="doccomment">/// value was inserted. This index can then be used to access the entry.</span>
@@ -1506,16 +1506,16 @@
     <span class="doccomment">/// let key = slab.insert(&quot;hello world&quot;).unwrap();</span>
     <span class="doccomment">/// assert_eq!(slab.get(key).unwrap(), &quot;hello world&quot;);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">value</span>: <span class="ident">T</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">tid</span>, <span class="ident">shard</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">current</span>();
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">value</span>: <span class="ident">T</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt; {
+        <span class="kw">let</span> (<span class="ident">tid</span>, <span class="ident">shard</span>) = <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">current</span>();
         <span class="macro">test_println!</span>(<span class="string">&quot;insert {:?}&quot;</span>, <span class="ident">tid</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value</span> = <span class="prelude-val">Some</span>(<span class="ident">value</span>);
         <span class="ident">shard</span>
-            .<span class="ident">init_with</span>(<span class="op">|</span><span class="ident">idx</span>, <span class="ident">slot</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">gen</span> <span class="op">=</span> <span class="ident">slot</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;mut</span> <span class="ident">value</span>)<span class="question-mark">?</span>;
+            .<span class="ident">init_with</span>(|<span class="ident">idx</span>, <span class="ident">slot</span>| {
+                <span class="kw">let</span> <span class="ident">gen</span> = <span class="ident">slot</span>.<span class="ident">insert</span>(<span class="kw-2">&amp;mut</span> <span class="ident">value</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Some</span>(<span class="ident">gen</span>.<span class="ident">pack</span>(<span class="ident">idx</span>))
             })
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">idx</span><span class="op">|</span> <span class="ident">tid</span>.<span class="ident">pack</span>(<span class="ident">idx</span>))
+            .<span class="ident">map</span>(|<span class="ident">idx</span>| <span class="ident">tid</span>.<span class="ident">pack</span>(<span class="ident">idx</span>))
     }
 
     <span class="doccomment">/// Return a handle to a vacant entry allowing for further manipulation.</span>
@@ -1541,12 +1541,12 @@
     <span class="doccomment">/// assert_eq!(hello, slab.get(hello).unwrap().0);</span>
     <span class="doccomment">/// assert_eq!(&quot;hello&quot;, slab.get(hello).unwrap().1);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">vacant_entry</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">VacantEntry</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">tid</span>, <span class="ident">shard</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">current</span>();
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">vacant_entry</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">VacantEntry</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt;&gt; {
+        <span class="kw">let</span> (<span class="ident">tid</span>, <span class="ident">shard</span>) = <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">current</span>();
         <span class="macro">test_println!</span>(<span class="string">&quot;vacant_entry {:?}&quot;</span>, <span class="ident">tid</span>);
-        <span class="ident">shard</span>.<span class="ident">init_with</span>(<span class="op">|</span><span class="ident">idx</span>, <span class="ident">slot</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">slot</span>.<span class="ident">init</span>()<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="ident">inner</span>.<span class="ident">generation</span>().<span class="ident">pack</span>(<span class="ident">tid</span>.<span class="ident">pack</span>(<span class="ident">idx</span>));
+        <span class="ident">shard</span>.<span class="ident">init_with</span>(|<span class="ident">idx</span>, <span class="ident">slot</span>| {
+            <span class="kw">let</span> <span class="ident">inner</span> = <span class="ident">slot</span>.<span class="ident">init</span>()<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">inner</span>.<span class="ident">generation</span>().<span class="ident">pack</span>(<span class="ident">tid</span>.<span class="ident">pack</span>(<span class="ident">idx</span>));
             <span class="prelude-val">Some</span>(<span class="ident">VacantEntry</span> {
                 <span class="ident">inner</span>,
                 <span class="ident">key</span>,
@@ -1602,14 +1602,14 @@
         <span class="comment">// The `Drop` impl for `Entry` calls `remove_local` or `remove_remote` based</span>
         <span class="comment">// on where the guard was dropped from. If the dropped guard was the last one, this will</span>
         <span class="comment">// call `Slot::remove_value` which actually clears storage.</span>
-        <span class="kw">let</span> <span class="ident">tid</span> <span class="op">=</span> <span class="ident">C::unpack_tid</span>(<span class="ident">idx</span>);
+        <span class="kw">let</span> <span class="ident">tid</span> = <span class="ident">C::unpack_tid</span>(<span class="ident">idx</span>);
 
         <span class="macro">test_println!</span>(<span class="string">&quot;rm_deferred {:?}&quot;</span>, <span class="ident">tid</span>);
-        <span class="kw">let</span> <span class="ident">shard</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">get</span>(<span class="ident">tid</span>.<span class="ident">as_usize</span>());
+        <span class="kw">let</span> <span class="ident">shard</span> = <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">get</span>(<span class="ident">tid</span>.<span class="ident">as_usize</span>());
         <span class="kw">if</span> <span class="ident">tid</span>.<span class="ident">is_current</span>() {
-            <span class="ident">shard</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">shard</span><span class="op">|</span> <span class="ident">shard</span>.<span class="ident">remove_local</span>(<span class="ident">idx</span>)).<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
+            <span class="ident">shard</span>.<span class="ident">map</span>(|<span class="ident">shard</span>| <span class="ident">shard</span>.<span class="ident">remove_local</span>(<span class="ident">idx</span>)).<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
         } <span class="kw">else</span> {
-            <span class="ident">shard</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">shard</span><span class="op">|</span> <span class="ident">shard</span>.<span class="ident">remove_remote</span>(<span class="ident">idx</span>)).<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
+            <span class="ident">shard</span>.<span class="ident">map</span>(|<span class="ident">shard</span>| <span class="ident">shard</span>.<span class="ident">remove_remote</span>(<span class="ident">idx</span>)).<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
         }
     }
 
@@ -1667,11 +1667,11 @@
     <span class="doccomment">/// assert!(!slab.contains(key));</span>
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// [`remove`]: Slab::remove</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">take</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">tid</span> <span class="op">=</span> <span class="ident">C::unpack_tid</span>(<span class="ident">idx</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">take</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt; {
+        <span class="kw">let</span> <span class="ident">tid</span> = <span class="ident">C::unpack_tid</span>(<span class="ident">idx</span>);
 
         <span class="macro">test_println!</span>(<span class="string">&quot;rm {:?}&quot;</span>, <span class="ident">tid</span>);
-        <span class="kw">let</span> <span class="ident">shard</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">get</span>(<span class="ident">tid</span>.<span class="ident">as_usize</span>())<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">shard</span> = <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">get</span>(<span class="ident">tid</span>.<span class="ident">as_usize</span>())<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="ident">tid</span>.<span class="ident">is_current</span>() {
             <span class="ident">shard</span>.<span class="ident">take_local</span>(<span class="ident">idx</span>)
         } <span class="kw">else</span> {
@@ -1694,14 +1694,14 @@
     <span class="doccomment">/// assert_eq!(slab.get(key).unwrap(), &quot;hello world&quot;);</span>
     <span class="doccomment">/// assert!(slab.get(12345).is_none());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Entry</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">tid</span> <span class="op">=</span> <span class="ident">C::unpack_tid</span>(<span class="ident">key</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Entry</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt;&gt; {
+        <span class="kw">let</span> <span class="ident">tid</span> = <span class="ident">C::unpack_tid</span>(<span class="ident">key</span>);
 
-        <span class="macro">test_println!</span>(<span class="string">&quot;get {:?}; current={:?}&quot;</span>, <span class="ident">tid</span>, <span class="ident">Tid</span>::<span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span><span class="ident">::current</span>());
-        <span class="kw">let</span> <span class="ident">shard</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">get</span>(<span class="ident">tid</span>.<span class="ident">as_usize</span>())<span class="question-mark">?</span>;
-        <span class="ident">shard</span>.<span class="ident">with_slot</span>(<span class="ident">key</span>, <span class="op">|</span><span class="ident">slot</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">slot</span>.<span class="ident">get</span>(<span class="ident">C::unpack_gen</span>(<span class="ident">key</span>))<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">ptr::NonNull::from</span>(<span class="ident">slot</span>.<span class="ident">value</span>().<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
+        <span class="macro">test_println!</span>(<span class="string">&quot;get {:?}; current={:?}&quot;</span>, <span class="ident">tid</span>, <span class="ident">Tid</span>::&lt;<span class="ident">C</span>&gt;<span class="ident">::current</span>());
+        <span class="kw">let</span> <span class="ident">shard</span> = <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">get</span>(<span class="ident">tid</span>.<span class="ident">as_usize</span>())<span class="question-mark">?</span>;
+        <span class="ident">shard</span>.<span class="ident">with_slot</span>(<span class="ident">key</span>, |<span class="ident">slot</span>| {
+            <span class="kw">let</span> <span class="ident">inner</span> = <span class="ident">slot</span>.<span class="ident">get</span>(<span class="ident">C::unpack_gen</span>(<span class="ident">key</span>))<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">ptr::NonNull::from</span>(<span class="ident">slot</span>.<span class="ident">value</span>().<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
             <span class="prelude-val">Some</span>(<span class="ident">Entry</span> {
                 <span class="ident">inner</span>,
                 <span class="ident">value</span>,
@@ -1792,14 +1792,14 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`get`]: Slab::get</span>
     <span class="doccomment">/// [`Arc`]: std::sync::Arc</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_owned</span>(<span class="self">self</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>, <span class="ident">key</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">OwnedEntry</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">tid</span> <span class="op">=</span> <span class="ident">C::unpack_tid</span>(<span class="ident">key</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_owned</span>(<span class="self">self</span>: <span class="ident">Arc</span>&lt;<span class="self">Self</span>&gt;, <span class="ident">key</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">OwnedEntry</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt;&gt; {
+        <span class="kw">let</span> <span class="ident">tid</span> = <span class="ident">C::unpack_tid</span>(<span class="ident">key</span>);
 
-        <span class="macro">test_println!</span>(<span class="string">&quot;get_owned {:?}; current={:?}&quot;</span>, <span class="ident">tid</span>, <span class="ident">Tid</span>::<span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span><span class="ident">::current</span>());
-        <span class="kw">let</span> <span class="ident">shard</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">get</span>(<span class="ident">tid</span>.<span class="ident">as_usize</span>())<span class="question-mark">?</span>;
-        <span class="ident">shard</span>.<span class="ident">with_slot</span>(<span class="ident">key</span>, <span class="op">|</span><span class="ident">slot</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">slot</span>.<span class="ident">get</span>(<span class="ident">C::unpack_gen</span>(<span class="ident">key</span>))<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">ptr::NonNull::from</span>(<span class="ident">slot</span>.<span class="ident">value</span>().<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
+        <span class="macro">test_println!</span>(<span class="string">&quot;get_owned {:?}; current={:?}&quot;</span>, <span class="ident">tid</span>, <span class="ident">Tid</span>::&lt;<span class="ident">C</span>&gt;<span class="ident">::current</span>());
+        <span class="kw">let</span> <span class="ident">shard</span> = <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">get</span>(<span class="ident">tid</span>.<span class="ident">as_usize</span>())<span class="question-mark">?</span>;
+        <span class="ident">shard</span>.<span class="ident">with_slot</span>(<span class="ident">key</span>, |<span class="ident">slot</span>| {
+            <span class="kw">let</span> <span class="ident">inner</span> = <span class="ident">slot</span>.<span class="ident">get</span>(<span class="ident">C::unpack_gen</span>(<span class="ident">key</span>))<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">ptr::NonNull::from</span>(<span class="ident">slot</span>.<span class="ident">value</span>().<span class="ident">as_ref</span>().<span class="ident">unwrap</span>());
             <span class="prelude-val">Some</span>(<span class="ident">OwnedEntry</span> {
                 <span class="ident">inner</span>,
                 <span class="ident">value</span>,
@@ -1827,11 +1827,11 @@
     }
 
     <span class="doccomment">/// Returns an iterator over all the items in the slab.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unique_iter</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">iter::UniqueIter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">shards</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">iter_mut</span>();
-        <span class="kw">let</span> <span class="ident">shard</span> <span class="op">=</span> <span class="ident">shards</span>.<span class="ident">next</span>().<span class="ident">expect</span>(<span class="string">&quot;must be at least 1 shard&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pages</span> <span class="op">=</span> <span class="ident">shard</span>.<span class="ident">iter</span>();
-        <span class="kw">let</span> <span class="ident">slots</span> <span class="op">=</span> <span class="ident">pages</span>.<span class="ident">next</span>().<span class="ident">and_then</span>(<span class="ident">page::Shared::iter</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unique_iter</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">iter::UniqueIter</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt; {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">shards</span> = <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">iter_mut</span>();
+        <span class="kw">let</span> <span class="ident">shard</span> = <span class="ident">shards</span>.<span class="ident">next</span>().<span class="ident">expect</span>(<span class="string">&quot;must be at least 1 shard&quot;</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pages</span> = <span class="ident">shard</span>.<span class="ident">iter</span>();
+        <span class="kw">let</span> <span class="ident">slots</span> = <span class="ident">pages</span>.<span class="ident">next</span>().<span class="ident">and_then</span>(<span class="ident">page::Shared::iter</span>);
         <span class="ident">iter::UniqueIter</span> {
             <span class="ident">shards</span>,
             <span class="ident">slots</span>,
@@ -1840,14 +1840,14 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Slab</span>&lt;<span class="ident">T</span>&gt; {
     <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
         <span class="ident"><span class="self">Self</span>::new</span>()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">fmt::Debug</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+<span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">fmt::Debug</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Slab</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
         <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;Slab&quot;</span>)
             .<span class="ident">field</span>(<span class="string">&quot;shards&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">shards</span>)
             .<span class="ident">field</span>(<span class="string">&quot;config&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">C::debug</span>())
@@ -1855,12 +1855,12 @@
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Send</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> {}
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Sync</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">Slab</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">Send</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">Slab</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; {}
+<span class="kw">unsafe</span> <span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">Sync</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">Slab</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; {}
 
 <span class="comment">// === impl Entry ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">Entry</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt; {
     <span class="doccomment">/// Returns the key used to access the guard.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">key</span>
@@ -1877,17 +1877,17 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">std::ops::Deref</span> <span class="kw">for</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">T</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">std::ops::Deref</span> <span class="kw">for</span> <span class="ident">Entry</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt; {
+    <span class="kw">type</span> <span class="ident">Target</span> = <span class="ident">T</span>;
 
     <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Target</span> {
         <span class="self">self</span>.<span class="ident">value</span>()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Entry</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt; {
     <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">let</span> <span class="ident">should_remove</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+        <span class="kw">let</span> <span class="ident">should_remove</span> = <span class="kw">unsafe</span> {
             <span class="comment">// Safety: calling `slot::Guard::release` is unsafe, since the</span>
             <span class="comment">// `Guard` value contains a pointer to the slot that may outlive the</span>
             <span class="comment">// slab containing that slot. Here, the `Entry` guard owns a</span>
@@ -1902,19 +1902,19 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Entry</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt;
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">fmt::Debug</span>,
     <span class="ident">C</span>: <span class="ident">cfg::Config</span>,
 {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
         <span class="ident">fmt::Debug::fmt</span>(<span class="self">self</span>.<span class="ident">value</span>(), <span class="ident">f</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Entry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt; <span class="ident">PartialEq</span>&lt;<span class="ident">T</span>&gt; <span class="kw">for</span> <span class="ident">Entry</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+    <span class="ident">T</span>: <span class="ident">PartialEq</span>&lt;<span class="ident">T</span>&gt;,
     <span class="ident">C</span>: <span class="ident">cfg::Config</span>,
 {
     <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) -&gt; <span class="ident">bool</span> {
@@ -1924,7 +1924,7 @@
 
 <span class="comment">// === impl VacantEntry ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">VacantEntry</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">VacantEntry</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt; {
     <span class="doccomment">/// Insert a value in the entry.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// To get the integer index at which this value will be inserted, use</span>
@@ -1950,7 +1950,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`key`]: VacantEntry::key</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="ident">T</span>) {
-        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+        <span class="kw">let</span> <span class="ident">value</span> = <span class="kw">unsafe</span> {
             <span class="comment">// Safety: this `VacantEntry` only lives as long as the `Slab` it was</span>
             <span class="comment">// borrowed from, so it cannot outlive the entry&#39;s slot.</span>
             <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">value_mut</span>()
@@ -1959,15 +1959,15 @@
             <span class="ident">value</span>.<span class="ident">is_none</span>(),
             <span class="string">&quot;tried to insert to a slot that already had a value!&quot;</span>
         );
-        <span class="kw-2">*</span><span class="ident">value</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">val</span>);
-        <span class="kw">let</span> <span class="ident">_released</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+        <span class="kw-2">*</span><span class="ident">value</span> = <span class="prelude-val">Some</span>(<span class="ident">val</span>);
+        <span class="kw">let</span> <span class="ident">_released</span> = <span class="kw">unsafe</span> {
             <span class="comment">// Safety: again, this `VacantEntry` only lives as long as the</span>
             <span class="comment">// `Slab` it was borrowed from, so it cannot outlive the entry&#39;s</span>
             <span class="comment">// slot.</span>
             <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">release</span>()
         };
         <span class="macro">debug_assert!</span>(
-            <span class="op">!</span><span class="ident">_released</span>,
+            !<span class="ident">_released</span>,
             <span class="string">&quot;removing a value before it was inserted should be a no-op&quot;</span>
         )
     }
@@ -1999,7 +1999,7 @@
 }
 <span class="comment">// === impl OwnedEntry ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">OwnedEntry</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; <span class="ident">OwnedEntry</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt;
 <span class="kw">where</span>
     <span class="ident">C</span>: <span class="ident">cfg::Config</span>,
 {
@@ -2019,24 +2019,24 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">std::ops::Deref</span> <span class="kw">for</span> <span class="ident">OwnedEntry</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; <span class="ident">std::ops::Deref</span> <span class="kw">for</span> <span class="ident">OwnedEntry</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt;
 <span class="kw">where</span>
     <span class="ident">C</span>: <span class="ident">cfg::Config</span>,
 {
-    <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">T</span>;
+    <span class="kw">type</span> <span class="ident">Target</span> = <span class="ident">T</span>;
 
     <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Target</span> {
         <span class="self">self</span>.<span class="ident">value</span>()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">OwnedEntry</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">OwnedEntry</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt;
 <span class="kw">where</span>
     <span class="ident">C</span>: <span class="ident">cfg::Config</span>,
 {
     <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
         <span class="macro">test_println!</span>(<span class="string">&quot;drop OwnedEntry: try clearing data&quot;</span>);
-        <span class="kw">let</span> <span class="ident">should_clear</span> <span class="op">=</span> <span class="kw">unsafe</span> {
+        <span class="kw">let</span> <span class="ident">should_clear</span> = <span class="kw">unsafe</span> {
             <span class="comment">// Safety: calling `slot::Guard::release` is unsafe, since the</span>
             <span class="comment">// `Guard` value contains a pointer to the slot that may outlive the</span>
             <span class="comment">// slab containing that slot. Here, the `OwnedEntry` owns an `Arc`</span>
@@ -2045,9 +2045,9 @@
             <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">release</span>()
         };
         <span class="kw">if</span> <span class="ident">should_clear</span> {
-            <span class="kw">let</span> <span class="ident">shard_idx</span> <span class="op">=</span> <span class="ident">Tid</span>::<span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span><span class="ident">::from_packed</span>(<span class="self">self</span>.<span class="ident">key</span>);
+            <span class="kw">let</span> <span class="ident">shard_idx</span> = <span class="ident">Tid</span>::&lt;<span class="ident">C</span>&gt;<span class="ident">::from_packed</span>(<span class="self">self</span>.<span class="ident">key</span>);
             <span class="macro">test_println!</span>(<span class="string">&quot;-&gt; shard={:?}&quot;</span>, <span class="ident">shard_idx</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">shard</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">shards</span>.<span class="ident">get</span>(<span class="ident">shard_idx</span>.<span class="ident">as_usize</span>()) {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">shard</span>) = <span class="self">self</span>.<span class="ident">slab</span>.<span class="ident">shards</span>.<span class="ident">get</span>(<span class="ident">shard_idx</span>.<span class="ident">as_usize</span>()) {
                 <span class="ident">shard</span>.<span class="ident">clear_after_release</span>(<span class="self">self</span>.<span class="ident">key</span>)
             } <span class="kw">else</span> {
                 <span class="macro">test_println!</span>(<span class="string">&quot;-&gt; shard={:?} does not exist! THIS IS A BUG&quot;</span>, <span class="ident">shard_idx</span>);
@@ -2057,34 +2057,34 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">OwnedEntry</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">OwnedEntry</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt;
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">fmt::Debug</span>,
     <span class="ident">C</span>: <span class="ident">cfg::Config</span>,
 {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
         <span class="ident">fmt::Debug::fmt</span>(<span class="self">self</span>.<span class="ident">value</span>(), <span class="ident">f</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">OwnedEntry</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; <span class="ident">PartialEq</span>&lt;<span class="ident">T</span>&gt; <span class="kw">for</span> <span class="ident">OwnedEntry</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+    <span class="ident">T</span>: <span class="ident">PartialEq</span>&lt;<span class="ident">T</span>&gt;,
     <span class="ident">C</span>: <span class="ident">cfg::Config</span>,
 {
     <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">value</span>() <span class="op">==</span> <span class="kw-2">*</span><span class="ident">other</span>
+        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">value</span>() == <span class="kw-2">*</span><span class="ident">other</span>
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">OwnedEntry</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">unsafe</span> <span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">OwnedEntry</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt;
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">Sync</span>,
     <span class="ident">C</span>: <span class="ident">cfg::Config</span>,
 {
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">OwnedEntry</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span>
+<span class="kw">unsafe</span> <span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt; <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">OwnedEntry</span>&lt;<span class="ident">T</span>, <span class="ident">C</span>&gt;
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">Sync</span>,
     <span class="ident">C</span>: <span class="ident">cfg::Config</span>,
@@ -2093,7 +2093,7 @@
 
 <span class="comment">// === pack ===</span>
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">Pack</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span>: <span class="ident">Sized</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">Pack</span>&lt;<span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt;: <span class="ident">Sized</span> {
     <span class="comment">// ====== provided by each implementation =================================</span>
 
     <span class="doccomment">/// The number of bits occupied by this type when packed into a usize.</span>
@@ -2107,7 +2107,7 @@
     <span class="doccomment">/// should be `()`, which occupies no bytes.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is used to calculate the shift amount for packing this value.</span>
-    <span class="kw">type</span> <span class="ident">Prev</span>: <span class="ident">Pack</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Prev</span>: <span class="ident">Pack</span>&lt;<span class="ident">C</span>&gt;;
 
     <span class="comment">// ====== calculated automatically ========================================</span>
 
@@ -2118,48 +2118,48 @@
     <span class="doccomment">/// left by `Self::SHIFT` bits to calculate this type&#39;s `MASK`.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is computed automatically based on `Self::LEN`.</span>
-    <span class="kw">const</span> <span class="ident">BITS</span>: <span class="ident">usize</span> <span class="op">=</span> {
-        <span class="kw">let</span> <span class="ident">shift</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> (<span class="ident"><span class="self">Self</span>::LEN</span> <span class="op">-</span> <span class="number">1</span>);
-        <span class="ident">shift</span> <span class="op">|</span> (<span class="ident">shift</span> <span class="op">-</span> <span class="number">1</span>)
+    <span class="kw">const</span> <span class="ident">BITS</span>: <span class="ident">usize</span> = {
+        <span class="kw">let</span> <span class="ident">shift</span> = <span class="number">1</span> &lt;&lt; (<span class="ident"><span class="self">Self</span>::LEN</span> - <span class="number">1</span>);
+        <span class="ident">shift</span> | (<span class="ident">shift</span> - <span class="number">1</span>)
     };
     <span class="doccomment">/// The number of bits to shift a number to pack it into a usize with other</span>
     <span class="doccomment">/// values.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is caculated automatically based on the `LEN` and `SHIFT` constants</span>
     <span class="doccomment">/// of the previous value.</span>
-    <span class="kw">const</span> <span class="ident">SHIFT</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::Prev::SHIFT</span> <span class="op">+</span> <span class="ident"><span class="self">Self</span>::Prev::LEN</span>;
+    <span class="kw">const</span> <span class="ident">SHIFT</span>: <span class="ident">usize</span> = <span class="ident"><span class="self">Self</span>::Prev::SHIFT</span> + <span class="ident"><span class="self">Self</span>::Prev::LEN</span>;
 
     <span class="doccomment">/// The mask to extract only this type from a packed `usize`.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is calculated by shifting `Self::BITS` left by `Self::SHIFT`.</span>
-    <span class="kw">const</span> <span class="ident">MASK</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::BITS</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident"><span class="self">Self</span>::SHIFT</span>;
+    <span class="kw">const</span> <span class="ident">MASK</span>: <span class="ident">usize</span> = <span class="ident"><span class="self">Self</span>::BITS</span> &lt;&lt; <span class="ident"><span class="self">Self</span>::SHIFT</span>;
 
     <span class="kw">fn</span> <span class="ident">as_usize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span>;
     <span class="kw">fn</span> <span class="ident">from_usize</span>(<span class="ident">val</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">fn</span> <span class="ident">pack</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">to</span>: <span class="ident">usize</span>) -&gt; <span class="ident">usize</span> {
-        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">as_usize</span>();
-        <span class="macro">debug_assert!</span>(<span class="ident">value</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident"><span class="self">Self</span>::BITS</span>);
+        <span class="kw">let</span> <span class="ident">value</span> = <span class="self">self</span>.<span class="ident">as_usize</span>();
+        <span class="macro">debug_assert!</span>(<span class="ident">value</span> &lt;= <span class="ident"><span class="self">Self</span>::BITS</span>);
 
-        (<span class="ident">to</span> <span class="op">&amp;</span> <span class="op">!</span><span class="ident"><span class="self">Self</span>::MASK</span>) <span class="op">|</span> (<span class="ident">value</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident"><span class="self">Self</span>::SHIFT</span>)
+        (<span class="ident">to</span> &amp; !<span class="ident"><span class="self">Self</span>::MASK</span>) | (<span class="ident">value</span> &lt;&lt; <span class="ident"><span class="self">Self</span>::SHIFT</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">fn</span> <span class="ident">from_packed</span>(<span class="ident">from</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> (<span class="ident">from</span> <span class="op">&amp;</span> <span class="ident"><span class="self">Self</span>::MASK</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident"><span class="self">Self</span>::SHIFT</span>;
-        <span class="macro">debug_assert!</span>(<span class="ident">value</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident"><span class="self">Self</span>::BITS</span>);
+        <span class="kw">let</span> <span class="ident">value</span> = (<span class="ident">from</span> &amp; <span class="ident"><span class="self">Self</span>::MASK</span>) &gt;&gt; <span class="ident"><span class="self">Self</span>::SHIFT</span>;
+        <span class="macro">debug_assert!</span>(<span class="ident">value</span> &lt;= <span class="ident"><span class="self">Self</span>::BITS</span>);
         <span class="ident"><span class="self">Self</span>::from_usize</span>(<span class="ident">value</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">Pack</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="kw">for</span> () {
-    <span class="kw">const</span> <span class="ident">BITS</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">const</span> <span class="ident">LEN</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">const</span> <span class="ident">SHIFT</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
-    <span class="kw">const</span> <span class="ident">MASK</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
+<span class="kw">impl</span>&lt;<span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">Pack</span>&lt;<span class="ident">C</span>&gt; <span class="kw">for</span> () {
+    <span class="kw">const</span> <span class="ident">BITS</span>: <span class="ident">usize</span> = <span class="number">0</span>;
+    <span class="kw">const</span> <span class="ident">LEN</span>: <span class="ident">usize</span> = <span class="number">0</span>;
+    <span class="kw">const</span> <span class="ident">SHIFT</span>: <span class="ident">usize</span> = <span class="number">0</span>;
+    <span class="kw">const</span> <span class="ident">MASK</span>: <span class="ident">usize</span> = <span class="number">0</span>;
 
-    <span class="kw">type</span> <span class="ident">Prev</span> <span class="op">=</span> ();
+    <span class="kw">type</span> <span class="ident">Prev</span> = ();
 
     <span class="kw">fn</span> <span class="ident">as_usize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
         <span class="macro">unreachable!</span>()
@@ -2183,4 +2183,4 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span>;
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="sharded_slab" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="sharded_slab" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

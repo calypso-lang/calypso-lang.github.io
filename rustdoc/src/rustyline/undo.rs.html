@@ -518,22 +518,22 @@
 <span class="kw">impl</span> <span class="ident">Change</span> {
     <span class="kw">fn</span> <span class="ident">undo</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">line</span>: <span class="kw-2">&amp;mut</span> <span class="ident">LineBuffer</span>) {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">Change::Begin</span> <span class="op">|</span> <span class="ident">Change::End</span> =&gt; {
+            <span class="ident">Change::Begin</span> | <span class="ident">Change::End</span> =&gt; {
                 <span class="macro">unreachable!</span>();
             }
             <span class="ident">Change::Insert</span> { <span class="ident">idx</span>, <span class="kw-2">ref</span> <span class="ident">text</span> } =&gt; {
-                <span class="ident">line</span>.<span class="ident">delete_range</span>(<span class="ident">idx</span>..<span class="ident">idx</span> <span class="op">+</span> <span class="ident">text</span>.<span class="ident">len</span>());
+                <span class="ident">line</span>.<span class="ident">delete_range</span>(<span class="ident">idx</span>..<span class="ident">idx</span> + <span class="ident">text</span>.<span class="ident">len</span>());
             }
             <span class="ident">Change::Delete</span> { <span class="ident">idx</span>, <span class="kw-2">ref</span> <span class="ident">text</span> } =&gt; {
                 <span class="ident">line</span>.<span class="ident">insert_str</span>(<span class="ident">idx</span>, <span class="ident">text</span>);
-                <span class="ident">line</span>.<span class="ident">set_pos</span>(<span class="ident">idx</span> <span class="op">+</span> <span class="ident">text</span>.<span class="ident">len</span>());
+                <span class="ident">line</span>.<span class="ident">set_pos</span>(<span class="ident">idx</span> + <span class="ident">text</span>.<span class="ident">len</span>());
             }
             <span class="ident">Change::Replace</span> {
                 <span class="ident">idx</span>,
                 <span class="kw-2">ref</span> <span class="ident">old</span>,
                 <span class="kw-2">ref</span> <span class="ident">new</span>,
             } =&gt; {
-                <span class="ident">line</span>.<span class="ident">replace</span>(<span class="ident">idx</span>..<span class="ident">idx</span> <span class="op">+</span> <span class="ident">new</span>.<span class="ident">len</span>(), <span class="ident">old</span>);
+                <span class="ident">line</span>.<span class="ident">replace</span>(<span class="ident">idx</span>..<span class="ident">idx</span> + <span class="ident">new</span>.<span class="ident">len</span>(), <span class="ident">old</span>);
             }
         }
     }
@@ -541,45 +541,45 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
     <span class="kw">fn</span> <span class="ident">redo</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">line</span>: <span class="kw-2">&amp;mut</span> <span class="ident">LineBuffer</span>) {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">Change::Begin</span> <span class="op">|</span> <span class="ident">Change::End</span> =&gt; {
+            <span class="ident">Change::Begin</span> | <span class="ident">Change::End</span> =&gt; {
                 <span class="macro">unreachable!</span>();
             }
             <span class="ident">Change::Insert</span> { <span class="ident">idx</span>, <span class="kw-2">ref</span> <span class="ident">text</span> } =&gt; {
                 <span class="ident">line</span>.<span class="ident">insert_str</span>(<span class="ident">idx</span>, <span class="ident">text</span>);
             }
             <span class="ident">Change::Delete</span> { <span class="ident">idx</span>, <span class="kw-2">ref</span> <span class="ident">text</span> } =&gt; {
-                <span class="ident">line</span>.<span class="ident">delete_range</span>(<span class="ident">idx</span>..<span class="ident">idx</span> <span class="op">+</span> <span class="ident">text</span>.<span class="ident">len</span>());
+                <span class="ident">line</span>.<span class="ident">delete_range</span>(<span class="ident">idx</span>..<span class="ident">idx</span> + <span class="ident">text</span>.<span class="ident">len</span>());
             }
             <span class="ident">Change::Replace</span> {
                 <span class="ident">idx</span>,
                 <span class="kw-2">ref</span> <span class="ident">old</span>,
                 <span class="kw-2">ref</span> <span class="ident">new</span>,
             } =&gt; {
-                <span class="ident">line</span>.<span class="ident">replace</span>(<span class="ident">idx</span>..<span class="ident">idx</span> <span class="op">+</span> <span class="ident">old</span>.<span class="ident">len</span>(), <span class="ident">new</span>);
+                <span class="ident">line</span>.<span class="ident">replace</span>(<span class="ident">idx</span>..<span class="ident">idx</span> + <span class="ident">old</span>.<span class="ident">len</span>(), <span class="ident">new</span>);
             }
         }
     }
 
     <span class="kw">fn</span> <span class="ident">insert_seq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">indx</span>: <span class="ident">usize</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Change::Insert</span> { <span class="ident">idx</span>, <span class="kw-2">ref</span> <span class="ident">text</span> } <span class="op">=</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">idx</span> <span class="op">+</span> <span class="ident">text</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="ident">indx</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Change::Insert</span> { <span class="ident">idx</span>, <span class="kw-2">ref</span> <span class="ident">text</span> } = <span class="kw-2">*</span><span class="self">self</span> {
+            <span class="ident">idx</span> + <span class="ident">text</span>.<span class="ident">len</span>() == <span class="ident">indx</span>
         } <span class="kw">else</span> {
             <span class="bool-val">false</span>
         }
     }
 
     <span class="kw">fn</span> <span class="ident">delete_seq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">indx</span>: <span class="ident">usize</span>, <span class="ident">len</span>: <span class="ident">usize</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Change::Delete</span> { <span class="ident">idx</span>, .. } <span class="op">=</span> <span class="kw-2">*</span><span class="self">self</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Change::Delete</span> { <span class="ident">idx</span>, .. } = <span class="kw-2">*</span><span class="self">self</span> {
             <span class="comment">// delete or backspace</span>
-            <span class="ident">idx</span> <span class="op">==</span> <span class="ident">indx</span> <span class="op">|</span><span class="op">|</span> <span class="ident">idx</span> <span class="op">==</span> <span class="ident">indx</span> <span class="op">+</span> <span class="ident">len</span>
+            <span class="ident">idx</span> == <span class="ident">indx</span> || <span class="ident">idx</span> == <span class="ident">indx</span> + <span class="ident">len</span>
         } <span class="kw">else</span> {
             <span class="bool-val">false</span>
         }
     }
 
     <span class="kw">fn</span> <span class="ident">replace_seq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">indx</span>: <span class="ident">usize</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Change::Replace</span> { <span class="ident">idx</span>, <span class="kw-2">ref</span> <span class="ident">new</span>, .. } <span class="op">=</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">idx</span> <span class="op">+</span> <span class="ident">new</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="ident">indx</span>
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Change::Replace</span> { <span class="ident">idx</span>, <span class="kw-2">ref</span> <span class="ident">new</span>, .. } = <span class="kw-2">*</span><span class="self">self</span> {
+            <span class="ident">idx</span> + <span class="ident">new</span>.<span class="ident">len</span>() == <span class="ident">indx</span>
         } <span class="kw">else</span> {
             <span class="bool-val">false</span>
         }
@@ -588,8 +588,8 @@
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Changeset</span> {
     <span class="ident">undo_group_level</span>: <span class="ident">u32</span>,
-    <span class="ident">undos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Change</span><span class="op">&gt;</span>, <span class="comment">// undoable changes</span>
-    <span class="ident">redos</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Change</span><span class="op">&gt;</span>, <span class="comment">// undone changes, redoable</span>
+    <span class="ident">undos</span>: <span class="ident">Vec</span>&lt;<span class="ident">Change</span>&gt;, <span class="comment">// undoable changes</span>
+    <span class="ident">redos</span>: <span class="ident">Vec</span>&lt;<span class="ident">Change</span>&gt;, <span class="comment">// undone changes, redoable</span>
 }
 
 <span class="kw">impl</span> <span class="ident">Changeset</span> {
@@ -604,9 +604,9 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">begin</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">usize</span> {
         <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;Changeset::begin&quot;</span>);
         <span class="self">self</span>.<span class="ident">redos</span>.<span class="ident">clear</span>();
-        <span class="kw">let</span> <span class="ident">mark</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">len</span>();
+        <span class="kw">let</span> <span class="ident">mark</span> = <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">len</span>();
         <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">push</span>(<span class="ident">Change::Begin</span>);
-        <span class="self">self</span>.<span class="ident">undo_group_level</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        <span class="self">self</span>.<span class="ident">undo_group_level</span> += <span class="number">1</span>;
         <span class="ident">mark</span>
     }
 
@@ -615,22 +615,22 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">end</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;Changeset::end&quot;</span>);
         <span class="self">self</span>.<span class="ident">redos</span>.<span class="ident">clear</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">touched</span> <span class="op">=</span> <span class="bool-val">false</span>;
-        <span class="kw">while</span> <span class="self">self</span>.<span class="ident">undo_group_level</span> <span class="op">&gt;</span> <span class="number">0</span> {
-            <span class="self">self</span>.<span class="ident">undo_group_level</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">Change::Begin</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">last</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">touched</span> = <span class="bool-val">false</span>;
+        <span class="kw">while</span> <span class="self">self</span>.<span class="ident">undo_group_level</span> &gt; <span class="number">0</span> {
+            <span class="self">self</span>.<span class="ident">undo_group_level</span> -= <span class="number">1</span>;
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">Change::Begin</span>) = <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">last</span>() {
                 <span class="comment">// empty Begin..End</span>
                 <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">pop</span>();
             } <span class="kw">else</span> {
                 <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">push</span>(<span class="ident">Change::End</span>);
-                <span class="ident">touched</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                <span class="ident">touched</span> = <span class="bool-val">true</span>;
             }
         }
         <span class="ident">touched</span>
     }
 
     <span class="kw">fn</span> <span class="ident">insert_char</span>(<span class="ident">idx</span>: <span class="ident">usize</span>, <span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="ident">Change</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">text</span> <span class="op">=</span> <span class="ident">String::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">text</span> = <span class="ident">String::new</span>();
         <span class="ident">text</span>.<span class="ident">push</span>(<span class="ident">c</span>);
         <span class="ident">Change::Insert</span> { <span class="ident">idx</span>, <span class="ident">text</span> }
     }
@@ -638,13 +638,13 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">usize</span>, <span class="ident">c</span>: <span class="ident">char</span>) {
         <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;Changeset::insert({}, {:?})&quot;</span>, <span class="ident">idx</span>, <span class="ident">c</span>);
         <span class="self">self</span>.<span class="ident">redos</span>.<span class="ident">clear</span>();
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">c</span>.<span class="ident">is_alphanumeric</span>() <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">last</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">lc</span><span class="op">|</span> <span class="ident">lc</span>.<span class="ident">insert_seq</span>(<span class="ident">idx</span>)) {
+        <span class="kw">if</span> !<span class="ident">c</span>.<span class="ident">is_alphanumeric</span>() || !<span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">last</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, |<span class="ident">lc</span>| <span class="ident">lc</span>.<span class="ident">insert_seq</span>(<span class="ident">idx</span>)) {
             <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">push</span>(<span class="ident"><span class="self">Self</span>::insert_char</span>(<span class="ident">idx</span>, <span class="ident">c</span>));
             <span class="kw">return</span>;
         }
         <span class="comment">// merge consecutive char insertions when char is alphanumeric</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_change</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Change::Insert</span> { <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">text</span>, .. } <span class="op">=</span> <span class="ident">last_change</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_change</span> = <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Change::Insert</span> { <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">text</span>, .. } = <span class="ident">last_change</span> {
             <span class="ident">text</span>.<span class="ident">push</span>(<span class="ident">c</span>);
         } <span class="kw">else</span> {
             <span class="macro">unreachable!</span>();
@@ -652,7 +652,7 @@
         <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">push</span>(<span class="ident">last_change</span>);
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_str</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Debug</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">usize</span>, <span class="ident">string</span>: <span class="ident">S</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_str</span>&lt;<span class="ident">S</span>: <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt; + <span class="ident">Into</span>&lt;<span class="ident">String</span>&gt; + <span class="ident">Debug</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">usize</span>, <span class="ident">string</span>: <span class="ident">S</span>) {
         <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;Changeset::insert_str({}, {:?})&quot;</span>, <span class="ident">idx</span>, <span class="ident">string</span>);
         <span class="self">self</span>.<span class="ident">redos</span>.<span class="ident">clear</span>();
         <span class="kw">if</span> <span class="ident">string</span>.<span class="ident">as_ref</span>().<span class="ident">is_empty</span>() {
@@ -664,18 +664,18 @@
         });
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">delete</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Debug</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">indx</span>: <span class="ident">usize</span>, <span class="ident">string</span>: <span class="ident">S</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">delete</span>&lt;<span class="ident">S</span>: <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt; + <span class="ident">Into</span>&lt;<span class="ident">String</span>&gt; + <span class="ident">Debug</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">indx</span>: <span class="ident">usize</span>, <span class="ident">string</span>: <span class="ident">S</span>) {
         <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;Changeset::delete({}, {:?})&quot;</span>, <span class="ident">indx</span>, <span class="ident">string</span>);
         <span class="self">self</span>.<span class="ident">redos</span>.<span class="ident">clear</span>();
         <span class="kw">if</span> <span class="ident">string</span>.<span class="ident">as_ref</span>().<span class="ident">is_empty</span>() {
             <span class="kw">return</span>;
         }
 
-        <span class="kw">if</span> <span class="op">!</span><span class="ident"><span class="self">Self</span>::single_char</span>(<span class="ident">string</span>.<span class="ident">as_ref</span>())
-            <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="self">self</span>
+        <span class="kw">if</span> !<span class="ident"><span class="self">Self</span>::single_char</span>(<span class="ident">string</span>.<span class="ident">as_ref</span>())
+            || !<span class="self">self</span>
                 .<span class="ident">undos</span>
                 .<span class="ident">last</span>()
-                .<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">lc</span><span class="op">|</span> <span class="ident">lc</span>.<span class="ident">delete_seq</span>(<span class="ident">indx</span>, <span class="ident">string</span>.<span class="ident">as_ref</span>().<span class="ident">len</span>()))
+                .<span class="ident">map_or</span>(<span class="bool-val">false</span>, |<span class="ident">lc</span>| <span class="ident">lc</span>.<span class="ident">delete_seq</span>(<span class="ident">indx</span>, <span class="ident">string</span>.<span class="ident">as_ref</span>().<span class="ident">len</span>()))
         {
             <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">push</span>(<span class="ident">Change::Delete</span> {
                 <span class="ident">idx</span>: <span class="ident">indx</span>,
@@ -684,17 +684,17 @@
             <span class="kw">return</span>;
         }
         <span class="comment">// merge consecutive char deletions when char is alphanumeric</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_change</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_change</span> = <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Change::Delete</span> {
             <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">idx</span>,
             <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">text</span>,
-        } <span class="op">=</span> <span class="ident">last_change</span>
+        } = <span class="ident">last_change</span>
         {
-            <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">idx</span> <span class="op">==</span> <span class="ident">indx</span> {
+            <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">idx</span> == <span class="ident">indx</span> {
                 <span class="ident">text</span>.<span class="ident">push_str</span>(<span class="ident">string</span>.<span class="ident">as_ref</span>());
             } <span class="kw">else</span> {
                 <span class="ident">text</span>.<span class="ident">insert_str</span>(<span class="number">0</span>, <span class="ident">string</span>.<span class="ident">as_ref</span>());
-                <span class="kw-2">*</span><span class="ident">idx</span> <span class="op">=</span> <span class="ident">indx</span>;
+                <span class="kw-2">*</span><span class="ident">idx</span> = <span class="ident">indx</span>;
             }
         } <span class="kw">else</span> {
             <span class="macro">unreachable!</span>();
@@ -703,17 +703,17 @@
     }
 
     <span class="kw">fn</span> <span class="ident">single_char</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">graphemes</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">graphemes</span>(<span class="bool-val">true</span>);
-        <span class="ident">graphemes</span>.<span class="ident">next</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">grapheme</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">graphemes</span> = <span class="ident">s</span>.<span class="ident">graphemes</span>(<span class="bool-val">true</span>);
+        <span class="ident">graphemes</span>.<span class="ident">next</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, |<span class="ident">grapheme</span>| {
             <span class="ident">grapheme</span>.<span class="ident">chars</span>().<span class="ident">all</span>(<span class="ident">char::is_alphanumeric</span>)
-        }) <span class="op">&amp;&amp;</span> <span class="ident">graphemes</span>.<span class="ident">next</span>().<span class="ident">is_none</span>()
+        }) &amp;&amp; <span class="ident">graphemes</span>.<span class="ident">next</span>().<span class="ident">is_none</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">replace</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Debug</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">indx</span>: <span class="ident">usize</span>, <span class="ident">old_</span>: <span class="ident">S</span>, <span class="ident">new_</span>: <span class="ident">S</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">replace</span>&lt;<span class="ident">S</span>: <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt; + <span class="ident">Into</span>&lt;<span class="ident">String</span>&gt; + <span class="ident">Debug</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">indx</span>: <span class="ident">usize</span>, <span class="ident">old_</span>: <span class="ident">S</span>, <span class="ident">new_</span>: <span class="ident">S</span>) {
         <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;Changeset::replace({}, {:?}, {:?})&quot;</span>, <span class="ident">indx</span>, <span class="ident">old_</span>, <span class="ident">new_</span>);
         <span class="self">self</span>.<span class="ident">redos</span>.<span class="ident">clear</span>();
 
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">last</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">lc</span><span class="op">|</span> <span class="ident">lc</span>.<span class="ident">replace_seq</span>(<span class="ident">indx</span>)) {
+        <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">last</span>().<span class="ident">map_or</span>(<span class="bool-val">false</span>, |<span class="ident">lc</span>| <span class="ident">lc</span>.<span class="ident">replace_seq</span>(<span class="ident">indx</span>)) {
             <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">push</span>(<span class="ident">Change::Replace</span> {
                 <span class="ident">idx</span>: <span class="ident">indx</span>,
                 <span class="ident">old</span>: <span class="ident">old_</span>.<span class="ident">into</span>(),
@@ -723,12 +723,12 @@
         }
 
         <span class="comment">// merge consecutive char replacements</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_change</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_change</span> = <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">pop</span>().<span class="ident">unwrap</span>();
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Change::Replace</span> {
             <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">old</span>,
             <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">new</span>,
             ..
-        } <span class="op">=</span> <span class="ident">last_change</span>
+        } = <span class="ident">last_change</span>
         {
             <span class="ident">old</span>.<span class="ident">push_str</span>(<span class="ident">old_</span>.<span class="ident">as_ref</span>());
             <span class="ident">new</span>.<span class="ident">push_str</span>(<span class="ident">new_</span>.<span class="ident">as_ref</span>());
@@ -740,30 +740,30 @@
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">undo</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">line</span>: <span class="kw-2">&amp;mut</span> <span class="ident">LineBuffer</span>, <span class="ident">n</span>: <span class="ident">RepeatCount</span>) -&gt; <span class="ident">bool</span> {
         <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;Changeset::undo&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">waiting_for_begin</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">undone</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> = <span class="number">0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">waiting_for_begin</span> = <span class="number">0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">undone</span> = <span class="bool-val">false</span>;
         <span class="kw">loop</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">change</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">pop</span>() {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">change</span>) = <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">pop</span>() {
                 <span class="kw">match</span> <span class="ident">change</span> {
                     <span class="ident">Change::Begin</span> =&gt; {
-                        <span class="ident">waiting_for_begin</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
+                        <span class="ident">waiting_for_begin</span> -= <span class="number">1</span>;
                     }
                     <span class="ident">Change::End</span> =&gt; {
-                        <span class="ident">waiting_for_begin</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                        <span class="ident">waiting_for_begin</span> += <span class="number">1</span>;
                     }
                     <span class="kw">_</span> =&gt; {
                         <span class="ident">change</span>.<span class="ident">undo</span>(<span class="ident">line</span>);
-                        <span class="ident">undone</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                        <span class="ident">undone</span> = <span class="bool-val">true</span>;
                     }
                 };
                 <span class="self">self</span>.<span class="ident">redos</span>.<span class="ident">push</span>(<span class="ident">change</span>);
             } <span class="kw">else</span> {
                 <span class="kw">break</span>;
             }
-            <span class="kw">if</span> <span class="ident">waiting_for_begin</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0</span> {
-                <span class="ident">count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                <span class="kw">if</span> <span class="ident">count</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">n</span> {
+            <span class="kw">if</span> <span class="ident">waiting_for_begin</span> &lt;= <span class="number">0</span> {
+                <span class="ident">count</span> += <span class="number">1</span>;
+                <span class="kw">if</span> <span class="ident">count</span> &gt;= <span class="ident">n</span> {
                     <span class="kw">break</span>;
                 }
             }
@@ -778,34 +778,34 @@
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">redo</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">line</span>: <span class="kw-2">&amp;mut</span> <span class="ident">LineBuffer</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">waiting_for_end</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">redone</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">waiting_for_end</span> = <span class="number">0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">redone</span> = <span class="bool-val">false</span>;
         <span class="kw">loop</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">change</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">redos</span>.<span class="ident">pop</span>() {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">change</span>) = <span class="self">self</span>.<span class="ident">redos</span>.<span class="ident">pop</span>() {
                 <span class="kw">match</span> <span class="ident">change</span> {
                     <span class="ident">Change::Begin</span> =&gt; {
-                        <span class="ident">waiting_for_end</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                        <span class="ident">waiting_for_end</span> += <span class="number">1</span>;
                     }
                     <span class="ident">Change::End</span> =&gt; {
-                        <span class="ident">waiting_for_end</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
+                        <span class="ident">waiting_for_end</span> -= <span class="number">1</span>;
                     }
                     <span class="kw">_</span> =&gt; {
                         <span class="ident">change</span>.<span class="ident">redo</span>(<span class="ident">line</span>);
-                        <span class="ident">redone</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                        <span class="ident">redone</span> = <span class="bool-val">true</span>;
                     }
                 };
                 <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">push</span>(<span class="ident">change</span>);
             } <span class="kw">else</span> {
                 <span class="kw">break</span>;
             }
-            <span class="kw">if</span> <span class="ident">waiting_for_end</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0</span> {
+            <span class="kw">if</span> <span class="ident">waiting_for_end</span> &lt;= <span class="number">0</span> {
                 <span class="kw">break</span>;
             }
         }
         <span class="ident">redone</span>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">last_insert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">last_insert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">String</span>&gt; {
         <span class="kw">for</span> <span class="ident">change</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">undos</span>.<span class="ident">iter</span>().<span class="ident">rev</span>() {
             <span class="kw">match</span> <span class="ident">change</span> {
                 <span class="ident">Change::Insert</span> { <span class="kw-2">ref</span> <span class="ident">text</span>, .. } =&gt; <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">text</span>.<span class="ident">clone</span>()),
@@ -852,7 +852,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_insert_chars</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">Changeset::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> = <span class="ident">Changeset::new</span>();
         <span class="ident">cs</span>.<span class="ident">insert</span>(<span class="number">0</span>, <span class="string">&#39;H&#39;</span>);
         <span class="ident">cs</span>.<span class="ident">insert</span>(<span class="number">1</span>, <span class="string">&#39;i&#39;</span>);
         <span class="macro">assert_eq!</span>(<span class="number">1</span>, <span class="ident">cs</span>.<span class="ident">undos</span>.<span class="ident">len</span>());
@@ -863,7 +863,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_insert_strings</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">Changeset::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> = <span class="ident">Changeset::new</span>();
         <span class="ident">cs</span>.<span class="ident">insert_str</span>(<span class="number">0</span>, <span class="string">&quot;Hello&quot;</span>);
         <span class="ident">cs</span>.<span class="ident">insert_str</span>(<span class="number">5</span>, <span class="string">&quot;, &quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="number">2</span>, <span class="ident">cs</span>.<span class="ident">undos</span>.<span class="ident">len</span>());
@@ -872,10 +872,10 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_undo_insert</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">LineBuffer::init</span>(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, <span class="prelude-val">None</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> = <span class="ident">LineBuffer::init</span>(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, <span class="prelude-val">None</span>);
         <span class="ident">buf</span>.<span class="ident">insert_str</span>(<span class="number">0</span>, <span class="string">&quot;Hello&quot;</span>);
         <span class="ident">buf</span>.<span class="ident">insert_str</span>(<span class="number">5</span>, <span class="string">&quot;, world!&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">Changeset::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> = <span class="ident">Changeset::new</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">buf</span>.<span class="ident">as_str</span>(), <span class="string">&quot;Hello, world!&quot;</span>);
 
         <span class="ident">cs</span>.<span class="ident">insert_str</span>(<span class="number">5</span>, <span class="string">&quot;, world!&quot;</span>);
@@ -893,9 +893,9 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_undo_delete</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">LineBuffer::init</span>(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, <span class="prelude-val">None</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> = <span class="ident">LineBuffer::init</span>(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, <span class="prelude-val">None</span>);
         <span class="ident">buf</span>.<span class="ident">insert_str</span>(<span class="number">0</span>, <span class="string">&quot;Hello&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">Changeset::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> = <span class="ident">Changeset::new</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">buf</span>.<span class="ident">as_str</span>(), <span class="string">&quot;Hello&quot;</span>);
 
         <span class="ident">cs</span>.<span class="ident">delete</span>(<span class="number">5</span>, <span class="string">&quot;, world!&quot;</span>);
@@ -909,10 +909,10 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_delete_chars</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">LineBuffer::init</span>(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, <span class="prelude-val">None</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> = <span class="ident">LineBuffer::init</span>(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, <span class="prelude-val">None</span>);
         <span class="ident">buf</span>.<span class="ident">insert_str</span>(<span class="number">0</span>, <span class="string">&quot;Hlo&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">Changeset::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> = <span class="ident">Changeset::new</span>();
         <span class="ident">cs</span>.<span class="ident">delete</span>(<span class="number">1</span>, <span class="string">&quot;e&quot;</span>);
         <span class="ident">cs</span>.<span class="ident">delete</span>(<span class="number">1</span>, <span class="string">&quot;l&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="number">1</span>, <span class="ident">cs</span>.<span class="ident">undos</span>.<span class="ident">len</span>());
@@ -923,10 +923,10 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_backspace_chars</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">LineBuffer::init</span>(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, <span class="prelude-val">None</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> = <span class="ident">LineBuffer::init</span>(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, <span class="prelude-val">None</span>);
         <span class="ident">buf</span>.<span class="ident">insert_str</span>(<span class="number">0</span>, <span class="string">&quot;Hlo&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">Changeset::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> = <span class="ident">Changeset::new</span>();
         <span class="ident">cs</span>.<span class="ident">delete</span>(<span class="number">2</span>, <span class="string">&quot;l&quot;</span>);
         <span class="ident">cs</span>.<span class="ident">delete</span>(<span class="number">1</span>, <span class="string">&quot;e&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="number">1</span>, <span class="ident">cs</span>.<span class="ident">undos</span>.<span class="ident">len</span>());
@@ -937,9 +937,9 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_undo_replace</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">LineBuffer::init</span>(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, <span class="prelude-val">None</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> = <span class="ident">LineBuffer::init</span>(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, <span class="prelude-val">None</span>);
         <span class="ident">buf</span>.<span class="ident">insert_str</span>(<span class="number">0</span>, <span class="string">&quot;Hello, world!&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">Changeset::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> = <span class="ident">Changeset::new</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">buf</span>.<span class="ident">as_str</span>(), <span class="string">&quot;Hello, world!&quot;</span>);
 
         <span class="ident">buf</span>.<span class="ident">replace</span>(<span class="number">1</span>..<span class="number">5</span>, <span class="string">&quot;i&quot;</span>);
@@ -955,24 +955,24 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_last_insert</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">Changeset::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> = <span class="ident">Changeset::new</span>();
         <span class="ident">cs</span>.<span class="ident">begin</span>();
         <span class="ident">cs</span>.<span class="ident">delete</span>(<span class="number">0</span>, <span class="string">&quot;Hello&quot;</span>);
         <span class="ident">cs</span>.<span class="ident">insert_str</span>(<span class="number">0</span>, <span class="string">&quot;Bye&quot;</span>);
         <span class="ident">cs</span>.<span class="ident">end</span>();
-        <span class="kw">let</span> <span class="ident">insert</span> <span class="op">=</span> <span class="ident">cs</span>.<span class="ident">last_insert</span>();
+        <span class="kw">let</span> <span class="ident">insert</span> = <span class="ident">cs</span>.<span class="ident">last_insert</span>();
         <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;Bye&quot;</span>.<span class="ident">to_owned</span>()), <span class="ident">insert</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_end</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> <span class="op">=</span> <span class="ident">Changeset::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cs</span> = <span class="ident">Changeset::new</span>();
         <span class="ident">cs</span>.<span class="ident">begin</span>();
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">cs</span>.<span class="ident">end</span>());
+        <span class="macro">assert!</span>(!<span class="ident">cs</span>.<span class="ident">end</span>());
         <span class="ident">cs</span>.<span class="ident">begin</span>();
         <span class="ident">cs</span>.<span class="ident">insert_str</span>(<span class="number">0</span>, <span class="string">&quot;Hi&quot;</span>);
         <span class="macro">assert!</span>(<span class="ident">cs</span>.<span class="ident">end</span>());
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

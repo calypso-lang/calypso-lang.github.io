@@ -255,16 +255,16 @@
 
     <span class="doccomment">/// Should use ANSI truecolor?</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">truecolor</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">ansi_color</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">flags</span>.<span class="ident">contains</span>(<span class="ident">InternalFlags::TRUECOLOR</span>)
+        <span class="self">self</span>.<span class="ident">ansi_color</span>() &amp;&amp; <span class="self">self</span>.<span class="ident">flags</span>.<span class="ident">contains</span>(<span class="ident">InternalFlags::TRUECOLOR</span>)
     }
 }
 
-<span class="kw">static</span> <span class="ident">FLAGS</span>: <span class="ident">lazy::Lazy</span> <span class="op">=</span> <span class="ident">lazy::Lazy::new</span>();
-<span class="kw">static</span> <span class="ident">USER</span>: <span class="ident">AtomicChoice</span> <span class="op">=</span> <span class="ident">AtomicChoice::new</span>();
+<span class="kw">static</span> <span class="ident">FLAGS</span>: <span class="ident">lazy::Lazy</span> = <span class="ident">lazy::Lazy::new</span>();
+<span class="kw">static</span> <span class="ident">USER</span>: <span class="ident">AtomicChoice</span> = <span class="ident">AtomicChoice::new</span>();
 
 <span class="doccomment">/// Get the current [`Color`] state for a given [`Stream`][crate::Stream]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="ident">stream</span>: <span class="ident"><span class="kw">crate</span>::Stream</span>) -&gt; <span class="ident">Color</span> {
-    <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">FLAGS</span>.<span class="ident">get_or_init</span>(<span class="ident">init</span>);
+    <span class="kw">let</span> <span class="ident">flags</span> = <span class="ident">FLAGS</span>.<span class="ident">get_or_init</span>(<span class="ident">init</span>);
     <span class="ident">Color</span> {
         <span class="ident">flags</span>: <span class="ident">InternalFlags::from_bits</span>(<span class="ident">flags</span>).<span class="ident">unwrap</span>(),
         <span class="ident">choice</span>: <span class="ident">USER</span>.<span class="ident">get</span>(),
@@ -273,60 +273,60 @@
 }
 
 <span class="doccomment">/// Override the detected [`ColorChoice`][crate::ColorChoice]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;api_unstable&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;api_unstable&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set</span>(<span class="ident">choice</span>: <span class="ident"><span class="kw">crate</span>::ColorChoice</span>) {
     <span class="ident">USER</span>.<span class="ident">set</span>(<span class="ident">choice</span>)
 }
 
 <span class="kw">fn</span> <span class="ident">init</span>() -&gt; <span class="ident">usize</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">InternalFlags::empty</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">flags</span> = <span class="ident">InternalFlags::empty</span>();
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clicolor&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;clicolor&quot;</span>)]</span>
     {
         <span class="kw">if</span> <span class="ident">concolor_query::clicolor</span>() {
-            <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">InternalFlags::CLICOLOR</span>;
+            <span class="ident">flags</span> |= <span class="ident">InternalFlags::CLICOLOR</span>;
         }
         <span class="kw">if</span> <span class="ident">concolor_query::clicolor_force</span>() {
-            <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">InternalFlags::CLICOLOR_FORCE</span>;
+            <span class="ident">flags</span> |= <span class="ident">InternalFlags::CLICOLOR_FORCE</span>;
         }
     }
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;clicolor&quot;</span>))]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;clicolor&quot;</span>))]</span>
     {
         <span class="comment">// Spec defaults to enabled</span>
-        <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">InternalFlags::CLICOLOR</span>;
+        <span class="ident">flags</span> |= <span class="ident">InternalFlags::CLICOLOR</span>;
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;no_color&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;no_color&quot;</span>)]</span>
     <span class="kw">if</span> <span class="ident">concolor_query::no_color</span>() {
-        <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">InternalFlags::NO_COLOR</span>;
+        <span class="ident">flags</span> |= <span class="ident">InternalFlags::NO_COLOR</span>;
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;term&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;term&quot;</span>)]</span>
     {
         <span class="kw">if</span> <span class="ident">concolor_query::term_supports_color</span>() {
-            <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">InternalFlags::TERM_SUPPORT</span>;
+            <span class="ident">flags</span> |= <span class="ident">InternalFlags::TERM_SUPPORT</span>;
         }
         <span class="kw">if</span> <span class="ident">concolor_query::term_supports_ansi_color</span>() {
-            <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">InternalFlags::ANSI_SUPPORT</span>;
+            <span class="ident">flags</span> |= <span class="ident">InternalFlags::ANSI_SUPPORT</span>;
         }
         <span class="kw">if</span> <span class="ident">concolor_query::truecolor</span>() {
-            <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">InternalFlags::TRUECOLOR</span>;
+            <span class="ident">flags</span> |= <span class="ident">InternalFlags::TRUECOLOR</span>;
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;interactive&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;interactive&quot;</span>)]</span>
     {
         <span class="kw">if</span> <span class="ident">atty::is</span>(<span class="ident">atty::Stream::Stdout</span>) {
-            <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">InternalFlags::TTY_STDOUT</span>;
+            <span class="ident">flags</span> |= <span class="ident">InternalFlags::TTY_STDOUT</span>;
         }
         <span class="kw">if</span> <span class="ident">atty::is</span>(<span class="ident">atty::Stream::Stderr</span>) {
-            <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">InternalFlags::TTY_STDERR</span>;
+            <span class="ident">flags</span> |= <span class="ident">InternalFlags::TTY_STDERR</span>;
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;windows&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;windows&quot;</span>)]</span>
     <span class="kw">if</span> <span class="ident">concolor_query::windows::enable_ansi_colors</span>().<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>) {
-        <span class="ident">flags</span> <span class="op">|</span><span class="op">=</span> <span class="ident">InternalFlags::ANSI_WIN</span>;
+        <span class="ident">flags</span> |= <span class="ident">InternalFlags::ANSI_WIN</span>;
     }
 
     <span class="ident">flags</span>.<span class="ident">bits</span>()
@@ -334,36 +334,36 @@
 
 <span class="macro">bitflags::bitflags!</span> {
     <span class="kw">struct</span> <span class="ident">InternalFlags</span>: <span class="ident">usize</span> {
-        <span class="kw">const</span> <span class="ident">CLICOLOR</span>       <span class="op">=</span> <span class="number">0b00000000001</span>;
-        <span class="kw">const</span> <span class="ident">CLICOLOR_FORCE</span> <span class="op">=</span> <span class="number">0b00000000010</span>;
-        <span class="kw">const</span> <span class="ident">NO_COLOR</span>       <span class="op">=</span> <span class="number">0b00000000100</span>;
-        <span class="kw">const</span> <span class="ident">TERM_SUPPORT</span>   <span class="op">=</span> <span class="number">0b00000001000</span>;
-        <span class="kw">const</span> <span class="ident">ANSI_SUPPORT</span>   <span class="op">=</span> <span class="number">0b00000010000</span>;
-        <span class="kw">const</span> <span class="ident">ANSI_WIN</span>       <span class="op">=</span> <span class="number">0b00000100000</span>;
-        <span class="kw">const</span> <span class="ident">ANSI_ANY</span>       <span class="op">=</span> <span class="number">0b00000110000</span>;
-        <span class="kw">const</span> <span class="ident">TRUECOLOR</span>      <span class="op">=</span> <span class="number">0b00001000000</span>;
-        <span class="kw">const</span> <span class="ident">TTY_STDOUT</span>     <span class="op">=</span> <span class="number">0b00010000000</span>;
-        <span class="kw">const</span> <span class="ident">TTY_STDERR</span>     <span class="op">=</span> <span class="number">0b00100000000</span>;
-        <span class="kw">const</span> <span class="ident">TTY_ANY</span>        <span class="op">=</span> <span class="number">0b00110000000</span>;
+        <span class="kw">const</span> <span class="ident">CLICOLOR</span>       = <span class="number">0b00000000001</span>;
+        <span class="kw">const</span> <span class="ident">CLICOLOR_FORCE</span> = <span class="number">0b00000000010</span>;
+        <span class="kw">const</span> <span class="ident">NO_COLOR</span>       = <span class="number">0b00000000100</span>;
+        <span class="kw">const</span> <span class="ident">TERM_SUPPORT</span>   = <span class="number">0b00000001000</span>;
+        <span class="kw">const</span> <span class="ident">ANSI_SUPPORT</span>   = <span class="number">0b00000010000</span>;
+        <span class="kw">const</span> <span class="ident">ANSI_WIN</span>       = <span class="number">0b00000100000</span>;
+        <span class="kw">const</span> <span class="ident">ANSI_ANY</span>       = <span class="number">0b00000110000</span>;
+        <span class="kw">const</span> <span class="ident">TRUECOLOR</span>      = <span class="number">0b00001000000</span>;
+        <span class="kw">const</span> <span class="ident">TTY_STDOUT</span>     = <span class="number">0b00010000000</span>;
+        <span class="kw">const</span> <span class="ident">TTY_STDERR</span>     = <span class="number">0b00100000000</span>;
+        <span class="kw">const</span> <span class="ident">TTY_ANY</span>        = <span class="number">0b00110000000</span>;
     }
 }
 
 <span class="kw">impl</span> <span class="ident">InternalFlags</span> {
     <span class="kw">fn</span> <span class="ident">color</span>(<span class="self">self</span>, <span class="ident">stream</span>: <span class="ident"><span class="kw">crate</span>::Stream</span>) -&gt; <span class="ident">bool</span> {
         (<span class="self">self</span>.<span class="ident">is_interactive</span>(<span class="ident">stream</span>)
-            <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::TERM_SUPPORT</span>)
-            <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::CLICOLOR</span>)
-            <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::NO_COLOR</span>))
-            <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::CLICOLOR_FORCE</span>)
+            &amp;&amp; <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::TERM_SUPPORT</span>)
+            &amp;&amp; <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::CLICOLOR</span>)
+            &amp;&amp; !<span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::NO_COLOR</span>))
+            || <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::CLICOLOR_FORCE</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">ansi_color</span>(<span class="self">self</span>, <span class="ident">stream</span>: <span class="ident"><span class="kw">crate</span>::Stream</span>) -&gt; <span class="ident">bool</span> {
         (<span class="self">self</span>.<span class="ident">is_interactive</span>(<span class="ident">stream</span>)
-            <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::TERM_SUPPORT</span>)
-            <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">intersects</span>(<span class="ident"><span class="self">Self</span>::ANSI_ANY</span>)
-            <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::CLICOLOR</span>)
-            <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::NO_COLOR</span>))
-            <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::CLICOLOR_FORCE</span>)
+            &amp;&amp; <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::TERM_SUPPORT</span>)
+            &amp;&amp; <span class="self">self</span>.<span class="ident">intersects</span>(<span class="ident"><span class="self">Self</span>::ANSI_ANY</span>)
+            &amp;&amp; <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::CLICOLOR</span>)
+            &amp;&amp; !<span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::NO_COLOR</span>))
+            || <span class="self">self</span>.<span class="ident">contains</span>(<span class="ident"><span class="self">Self</span>::CLICOLOR_FORCE</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">is_interactive</span>(<span class="self">self</span>, <span class="ident">stream</span>: <span class="ident"><span class="kw">crate</span>::Stream</span>) -&gt; <span class="ident">bool</span> {
@@ -387,26 +387,26 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">is_interactive</span>() {
-        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">InternalFlags::empty</span>();
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stdout</span>));
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stderr</span>));
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Either</span>));
+        <span class="kw">let</span> <span class="ident">flags</span> = <span class="ident">InternalFlags::empty</span>();
+        <span class="macro">assert!</span>(!<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stdout</span>));
+        <span class="macro">assert!</span>(!<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stderr</span>));
+        <span class="macro">assert!</span>(!<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Either</span>));
 
-        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">InternalFlags::TTY_STDOUT</span>;
+        <span class="kw">let</span> <span class="ident">flags</span> = <span class="ident">InternalFlags::TTY_STDOUT</span>;
         <span class="macro">assert!</span>(<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stdout</span>));
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stderr</span>));
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Either</span>));
+        <span class="macro">assert!</span>(!<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stderr</span>));
+        <span class="macro">assert!</span>(!<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Either</span>));
 
-        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">InternalFlags::TTY_STDERR</span>;
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stdout</span>));
+        <span class="kw">let</span> <span class="ident">flags</span> = <span class="ident">InternalFlags::TTY_STDERR</span>;
+        <span class="macro">assert!</span>(!<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stdout</span>));
         <span class="macro">assert!</span>(<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stderr</span>));
-        <span class="macro">assert!</span>(<span class="op">!</span><span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Either</span>));
+        <span class="macro">assert!</span>(!<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Either</span>));
 
-        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">InternalFlags::TTY_STDOUT</span> <span class="op">|</span> <span class="ident">InternalFlags::TTY_STDERR</span>;
+        <span class="kw">let</span> <span class="ident">flags</span> = <span class="ident">InternalFlags::TTY_STDOUT</span> | <span class="ident">InternalFlags::TTY_STDERR</span>;
         <span class="macro">assert!</span>(<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stdout</span>));
         <span class="macro">assert!</span>(<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Stderr</span>));
         <span class="macro">assert!</span>(<span class="ident">flags</span>.<span class="ident">is_interactive</span>(<span class="ident"><span class="kw">crate</span>::Stream::Either</span>));
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="concolor" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="concolor" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

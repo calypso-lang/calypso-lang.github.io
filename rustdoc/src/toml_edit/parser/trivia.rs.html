@@ -127,7 +127,7 @@
 <span class="kw">use</span> <span class="ident">combine::stream::RangeStream</span>;
 <span class="kw">use</span> <span class="ident">combine</span>::<span class="kw-2">*</span>;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_utf8_unchecked</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>(
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_utf8_unchecked</span>&lt;<span class="lifetime">&#39;b</span>&gt;(
     <span class="ident">bytes</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> [<span class="ident">u8</span>],
     <span class="ident">safety_justification</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
 ) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">str</span> {
@@ -143,12 +143,12 @@
 <span class="comment">//            %x09 )              ; Horizontal tab</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">is_wschar</span>(<span class="ident">c</span>: <span class="ident">u8</span>) -&gt; <span class="ident">bool</span> {
-    <span class="macro">matches!</span>(<span class="ident">c</span>, <span class="string">b&#39; &#39;</span> <span class="op">|</span> <span class="string">b&#39;\t&#39;</span>)
+    <span class="macro">matches!</span>(<span class="ident">c</span>, <span class="string">b&#39; &#39;</span> | <span class="string">b&#39;\t&#39;</span>)
 }
 
 <span class="comment">// ws = *wschar</span>
 <span class="macro">parse!</span>(<span class="ident">ws</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, {
-    <span class="ident">take_while</span>(<span class="ident">is_wschar</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+    <span class="ident">take_while</span>(<span class="ident">is_wschar</span>).<span class="ident">map</span>(|<span class="ident">b</span>| {
         <span class="kw">unsafe</span> { <span class="ident">from_utf8_unchecked</span>(<span class="ident">b</span>, <span class="string">&quot;`is_wschar` filters out on-ASCII&quot;</span>) }
     })
 });
@@ -159,17 +159,17 @@
     <span class="comment">// - ASCII is 0xxxxxxx</span>
     <span class="comment">// - First byte for UTF-8 is 11xxxxxx</span>
     <span class="comment">// - Subsequent UTF-8 bytes are 10xxxxxx</span>
-    <span class="macro">matches!</span>(<span class="ident">c</span>, <span class="number">0x80</span>..<span class="op">=</span><span class="number">0xff</span>)
+    <span class="macro">matches!</span>(<span class="ident">c</span>, <span class="number">0x80</span>..=<span class="number">0xff</span>)
 }
 
 <span class="comment">// non-eol = %x09 / %x20-7E / non-ascii</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">fn</span> <span class="ident">is_non_eol</span>(<span class="ident">c</span>: <span class="ident">u8</span>) -&gt; <span class="ident">bool</span> {
-    <span class="macro">matches!</span>(<span class="ident">c</span>, <span class="number">0x09</span> <span class="op">|</span> <span class="number">0x20</span>..<span class="op">=</span><span class="number">0x7E</span>) <span class="op">|</span> <span class="ident">is_non_ascii</span>(<span class="ident">c</span>)
+    <span class="macro">matches!</span>(<span class="ident">c</span>, <span class="number">0x09</span> | <span class="number">0x20</span>..=<span class="number">0x7E</span>) | <span class="ident">is_non_ascii</span>(<span class="ident">c</span>)
 }
 
 <span class="comment">// comment-start-symbol = %x23 ; #</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">COMMENT_START_SYMBOL</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;#&#39;</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">COMMENT_START_SYMBOL</span>: <span class="ident">u8</span> = <span class="string">b&#39;#&#39;</span>;
 
 <span class="comment">// comment = comment-start-symbol *non-eol</span>
 <span class="macro">parse!</span>(<span class="ident">comment</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], {
@@ -181,11 +181,11 @@
 
 <span class="comment">// newline = ( %x0A /              ; LF</span>
 <span class="comment">//             %x0D.0A )           ; CRLF</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">LF</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;\n&#39;</span>;
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">CR</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;\r&#39;</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">LF</span>: <span class="ident">u8</span> = <span class="string">b&#39;\n&#39;</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">CR</span>: <span class="ident">u8</span> = <span class="string">b&#39;\r&#39;</span>;
 <span class="macro">parse!</span>(<span class="ident">newline</span>() -&gt; <span class="ident">char</span>, {
     <span class="ident">choice</span>((<span class="ident">lf</span>(), <span class="ident">crlf</span>()))
-        .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&#39;\n&#39;</span>)
+        .<span class="ident">map</span>(|<span class="kw">_</span>| <span class="string">&#39;\n&#39;</span>)
         .<span class="ident">expected</span>(<span class="string">&quot;newline&quot;</span>)
 });
 
@@ -193,10 +193,10 @@
 <span class="macro">parse!</span>(<span class="ident">ws_newline</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, {
     <span class="ident">recognize</span>(
         <span class="ident">skip_many</span>(<span class="ident">choice</span>((
-            <span class="ident">newline</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="string">b&quot;\n&quot;</span>[..]),
+            <span class="ident">newline</span>().<span class="ident">map</span>(|<span class="kw">_</span>| <span class="kw-2">&amp;</span><span class="string">b&quot;\n&quot;</span>[..]),
             <span class="ident">take_while1</span>(<span class="ident">is_wschar</span>),
         ))),
-    ).<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+    ).<span class="ident">map</span>(|<span class="ident">b</span>| {
         <span class="kw">unsafe</span> { <span class="ident">from_utf8_unchecked</span>(<span class="ident">b</span>, <span class="string">&quot;`is_wschar` and `newline` filters out on-ASCII&quot;</span>) }
     })
 });
@@ -206,7 +206,7 @@
     <span class="ident">recognize</span>((
         <span class="ident">newline</span>(),
         <span class="ident">ws_newline</span>(),
-    )).<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+    )).<span class="ident">map</span>(|<span class="ident">b</span>| {
         <span class="kw">unsafe</span> { <span class="ident">from_utf8_unchecked</span>(<span class="ident">b</span>, <span class="string">&quot;`is_wschar` and `newline` filters out on-ASCII&quot;</span>) }
     })
 });
@@ -220,10 +220,10 @@
                 <span class="ident">skip_many1</span>(
                     <span class="ident">choice</span>((
                         <span class="ident">take_while1</span>(<span class="ident">is_wschar</span>),
-                        <span class="ident">newline</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="string">b&quot;\n&quot;</span>[..]),
+                        <span class="ident">newline</span>().<span class="ident">map</span>(|<span class="kw">_</span>| <span class="kw-2">&amp;</span><span class="string">b&quot;\n&quot;</span>[..]),
                     ))
                 ),
-                <span class="ident">comment</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> ()),
+                <span class="ident">comment</span>().<span class="ident">map</span>(|<span class="kw">_</span>| ()),
             ))
         )
     )
@@ -233,8 +233,8 @@
 <span class="comment">// line-ending = newline / eof</span>
 <span class="macro">parse!</span>(<span class="ident">line_ending</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, {
     <span class="ident">choice</span>((
-        <span class="ident">newline</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;\n&quot;</span>),
-        <span class="ident">eof</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;&quot;</span>)
+        <span class="ident">newline</span>().<span class="ident">map</span>(|<span class="kw">_</span>| <span class="string">&quot;\n&quot;</span>),
+        <span class="ident">eof</span>().<span class="ident">map</span>(|<span class="kw">_</span>| <span class="string">&quot;&quot;</span>)
     ))
 });
 
@@ -247,4 +247,4 @@
     )).<span class="ident">skip</span>(<span class="ident">line_ending</span>())
 });
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="toml_edit" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="toml_edit" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

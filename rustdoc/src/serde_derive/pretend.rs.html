@@ -222,8 +222,8 @@
 <span class="comment">//       |                ^</span>
 <span class="comment">//</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pretend_used</span>(<span class="ident">cont</span>: <span class="kw-2">&amp;</span><span class="ident">Container</span>, <span class="ident">is_packed</span>: <span class="ident">bool</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">pretend_fields</span> <span class="op">=</span> <span class="ident">pretend_fields_used</span>(<span class="ident">cont</span>, <span class="ident">is_packed</span>);
-    <span class="kw">let</span> <span class="ident">pretend_variants</span> <span class="op">=</span> <span class="ident">pretend_variants_used</span>(<span class="ident">cont</span>);
+    <span class="kw">let</span> <span class="ident">pretend_fields</span> = <span class="ident">pretend_fields_used</span>(<span class="ident">cont</span>, <span class="ident">is_packed</span>);
+    <span class="kw">let</span> <span class="ident">pretend_variants</span> = <span class="ident">pretend_variants_used</span>(<span class="ident">cont</span>);
 
     <span class="macro">quote!</span> {
         #<span class="ident">pretend_fields</span>
@@ -278,34 +278,34 @@
 }
 
 <span class="kw">fn</span> <span class="ident">pretend_fields_used_struct</span>(<span class="ident">cont</span>: <span class="kw-2">&amp;</span><span class="ident">Container</span>, <span class="ident">fields</span>: <span class="kw-2">&amp;</span>[<span class="ident">Field</span>]) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">type_ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">cont</span>.<span class="ident">ident</span>;
-    <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">ty_generics</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">cont</span>.<span class="ident">generics</span>.<span class="ident">split_for_impl</span>();
+    <span class="kw">let</span> <span class="ident">type_ident</span> = <span class="kw-2">&amp;</span><span class="ident">cont</span>.<span class="ident">ident</span>;
+    <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">ty_generics</span>, <span class="kw">_</span>) = <span class="ident">cont</span>.<span class="ident">generics</span>.<span class="ident">split_for_impl</span>();
 
-    <span class="kw">let</span> <span class="ident">members</span> <span class="op">=</span> <span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">field</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">member</span>);
-    <span class="kw">let</span> <span class="ident">placeholders</span> <span class="op">=</span> (<span class="number">0usize</span>..).<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="macro">format_ident!</span>(<span class="string">&quot;__v{}&quot;</span>, <span class="ident">i</span>));
+    <span class="kw">let</span> <span class="ident">members</span> = <span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="ident">field</span>| <span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">member</span>);
+    <span class="kw">let</span> <span class="ident">placeholders</span> = (<span class="number">0usize</span>..).<span class="ident">map</span>(|<span class="ident">i</span>| <span class="macro">format_ident!</span>(<span class="string">&quot;__v{}&quot;</span>, <span class="ident">i</span>));
 
     <span class="macro">quote!</span> {
-        <span class="kw">match</span> <span class="ident">_serde::__private::None</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span>#<span class="ident">type_ident</span> #<span class="ident">ty_generics</span><span class="op">&gt;</span> {
-            <span class="ident">_serde::__private::Some</span>(#<span class="ident">type_ident</span> { #(#<span class="ident">members</span>: #<span class="ident">placeholders</span>),<span class="op">*</span> }) =&gt; {}
+        <span class="kw">match</span> <span class="ident">_serde::__private::None</span>::&lt;<span class="kw-2">&amp;</span>#<span class="ident">type_ident</span> #<span class="ident">ty_generics</span>&gt; {
+            <span class="ident">_serde::__private::Some</span>(#<span class="ident">type_ident</span> { #(#<span class="ident">members</span>: #<span class="ident">placeholders</span>),* }) =&gt; {}
             <span class="kw">_</span> =&gt; {}
         }
     }
 }
 
 <span class="kw">fn</span> <span class="ident">pretend_fields_used_struct_packed</span>(<span class="ident">cont</span>: <span class="kw-2">&amp;</span><span class="ident">Container</span>, <span class="ident">fields</span>: <span class="kw-2">&amp;</span>[<span class="ident">Field</span>]) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">type_ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">cont</span>.<span class="ident">ident</span>;
-    <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">ty_generics</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">cont</span>.<span class="ident">generics</span>.<span class="ident">split_for_impl</span>();
+    <span class="kw">let</span> <span class="ident">type_ident</span> = <span class="kw-2">&amp;</span><span class="ident">cont</span>.<span class="ident">ident</span>;
+    <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">ty_generics</span>, <span class="kw">_</span>) = <span class="ident">cont</span>.<span class="ident">generics</span>.<span class="ident">split_for_impl</span>();
 
-    <span class="kw">let</span> <span class="ident">members</span> <span class="op">=</span> <span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">field</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">member</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+    <span class="kw">let</span> <span class="ident">members</span> = <span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="ident">field</span>| <span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">member</span>).<span class="ident">collect</span>::&lt;<span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt;&gt;();
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ptr_addr_of</span>)]</span>
     {
         <span class="macro">quote!</span> {
-            <span class="kw">match</span> <span class="ident">_serde::__private::None</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span>#<span class="ident">type_ident</span> #<span class="ident">ty_generics</span><span class="op">&gt;</span> {
-                <span class="ident">_serde::__private::Some</span>(<span class="ident">__v</span> @ #<span class="ident">type_ident</span> { #(#<span class="ident">members</span>: <span class="kw">_</span>),<span class="op">*</span> }) =&gt; {
+            <span class="kw">match</span> <span class="ident">_serde::__private::None</span>::&lt;<span class="kw-2">&amp;</span>#<span class="ident">type_ident</span> #<span class="ident">ty_generics</span>&gt; {
+                <span class="ident">_serde::__private::Some</span>(<span class="ident">__v</span> @ #<span class="ident">type_ident</span> { #(#<span class="ident">members</span>: <span class="kw">_</span>),* }) =&gt; {
                     #(
-                        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">_serde::__private::ptr::addr_of!</span>(<span class="ident">__v</span>.#<span class="ident">members</span>);
-                    )<span class="op">*</span>
+                        <span class="kw">let</span> <span class="kw">_</span> = <span class="macro">_serde::__private::ptr::addr_of!</span>(<span class="ident">__v</span>.#<span class="ident">members</span>);
+                    )*
                 }
                 <span class="kw">_</span> =&gt; {}
             }
@@ -314,11 +314,11 @@
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">ptr_addr_of</span>))]</span>
     {
-        <span class="kw">let</span> <span class="ident">placeholders</span> <span class="op">=</span> (<span class="number">0usize</span>..).<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="macro">format_ident!</span>(<span class="string">&quot;__v{}&quot;</span>, <span class="ident">i</span>));
+        <span class="kw">let</span> <span class="ident">placeholders</span> = (<span class="number">0usize</span>..).<span class="ident">map</span>(|<span class="ident">i</span>| <span class="macro">format_ident!</span>(<span class="string">&quot;__v{}&quot;</span>, <span class="ident">i</span>));
 
         <span class="macro">quote!</span> {
-            <span class="kw">match</span> <span class="ident">_serde::__private::None</span>::<span class="op">&lt;</span>#<span class="ident">type_ident</span> #<span class="ident">ty_generics</span><span class="op">&gt;</span> {
-                <span class="ident">_serde::__private::Some</span>(#<span class="ident">type_ident</span> { #(#<span class="ident">members</span>: #<span class="ident">placeholders</span>),<span class="op">*</span> }) =&gt; {}
+            <span class="kw">match</span> <span class="ident">_serde::__private::None</span>::&lt;#<span class="ident">type_ident</span> #<span class="ident">ty_generics</span>&gt; {
+                <span class="ident">_serde::__private::Some</span>(#<span class="ident">type_ident</span> { #(#<span class="ident">members</span>: #<span class="ident">placeholders</span>),* }) =&gt; {}
                 <span class="kw">_</span> =&gt; {}
             }
         }
@@ -326,27 +326,27 @@
 }
 
 <span class="kw">fn</span> <span class="ident">pretend_fields_used_enum</span>(<span class="ident">cont</span>: <span class="kw-2">&amp;</span><span class="ident">Container</span>, <span class="ident">variants</span>: <span class="kw-2">&amp;</span>[<span class="ident">Variant</span>]) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">type_ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">cont</span>.<span class="ident">ident</span>;
-    <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">ty_generics</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">cont</span>.<span class="ident">generics</span>.<span class="ident">split_for_impl</span>();
+    <span class="kw">let</span> <span class="ident">type_ident</span> = <span class="kw-2">&amp;</span><span class="ident">cont</span>.<span class="ident">ident</span>;
+    <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">ty_generics</span>, <span class="kw">_</span>) = <span class="ident">cont</span>.<span class="ident">generics</span>.<span class="ident">split_for_impl</span>();
 
-    <span class="kw">let</span> <span class="ident">patterns</span> <span class="op">=</span> <span class="ident">variants</span>
+    <span class="kw">let</span> <span class="ident">patterns</span> = <span class="ident">variants</span>
         .<span class="ident">iter</span>()
-        .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">variant</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">variant</span>.<span class="ident">style</span> {
+        .<span class="ident">filter_map</span>(|<span class="ident">variant</span>| <span class="kw">match</span> <span class="ident">variant</span>.<span class="ident">style</span> {
             <span class="ident">Style::Struct</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">variant_ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">variant</span>.<span class="ident">ident</span>;
-                <span class="kw">let</span> <span class="ident">members</span> <span class="op">=</span> <span class="ident">variant</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">field</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">member</span>);
-                <span class="kw">let</span> <span class="ident">placeholders</span> <span class="op">=</span> (<span class="number">0usize</span>..).<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="macro">format_ident!</span>(<span class="string">&quot;__v{}&quot;</span>, <span class="ident">i</span>));
-                <span class="prelude-val">Some</span>(<span class="macro">quote!</span>(#<span class="ident">type_ident</span>::#<span class="ident">variant_ident</span> { #(#<span class="ident">members</span>: #<span class="ident">placeholders</span>),<span class="op">*</span> }))
+                <span class="kw">let</span> <span class="ident">variant_ident</span> = <span class="kw-2">&amp;</span><span class="ident">variant</span>.<span class="ident">ident</span>;
+                <span class="kw">let</span> <span class="ident">members</span> = <span class="ident">variant</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="ident">field</span>| <span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">member</span>);
+                <span class="kw">let</span> <span class="ident">placeholders</span> = (<span class="number">0usize</span>..).<span class="ident">map</span>(|<span class="ident">i</span>| <span class="macro">format_ident!</span>(<span class="string">&quot;__v{}&quot;</span>, <span class="ident">i</span>));
+                <span class="prelude-val">Some</span>(<span class="macro">quote!</span>(#<span class="ident">type_ident</span>::#<span class="ident">variant_ident</span> { #(#<span class="ident">members</span>: #<span class="ident">placeholders</span>),* }))
             }
             <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
         })
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+        .<span class="ident">collect</span>::&lt;<span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt;&gt;();
 
     <span class="macro">quote!</span> {
-        <span class="kw">match</span> <span class="ident">_serde::__private::None</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span>#<span class="ident">type_ident</span> #<span class="ident">ty_generics</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="ident">_serde::__private::None</span>::&lt;<span class="kw-2">&amp;</span>#<span class="ident">type_ident</span> #<span class="ident">ty_generics</span>&gt; {
             #(
                 <span class="ident">_serde::__private::Some</span>(#<span class="ident">patterns</span>) =&gt; {}
-            )<span class="op">*</span>
+            )*
             <span class="kw">_</span> =&gt; {}
         }
     }
@@ -362,36 +362,36 @@
 <span class="comment">//     }</span>
 <span class="comment">//</span>
 <span class="kw">fn</span> <span class="ident">pretend_variants_used</span>(<span class="ident">cont</span>: <span class="kw-2">&amp;</span><span class="ident">Container</span>) -&gt; <span class="ident">TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">variants</span> <span class="op">=</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">cont</span>.<span class="ident">data</span> {
+    <span class="kw">let</span> <span class="ident">variants</span> = <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">cont</span>.<span class="ident">data</span> {
         <span class="ident">Data::Enum</span>(<span class="ident">variants</span>) =&gt; <span class="ident">variants</span>,
         <span class="ident">Data::Struct</span>(<span class="kw">_</span>, <span class="kw">_</span>) =&gt; {
             <span class="kw">return</span> <span class="macro">quote!</span>();
         }
     };
 
-    <span class="kw">let</span> <span class="ident">type_ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">cont</span>.<span class="ident">ident</span>;
-    <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">ty_generics</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">cont</span>.<span class="ident">generics</span>.<span class="ident">split_for_impl</span>();
-    <span class="kw">let</span> <span class="ident">turbofish</span> <span class="op">=</span> <span class="ident">ty_generics</span>.<span class="ident">as_turbofish</span>();
+    <span class="kw">let</span> <span class="ident">type_ident</span> = <span class="kw-2">&amp;</span><span class="ident">cont</span>.<span class="ident">ident</span>;
+    <span class="kw">let</span> (<span class="kw">_</span>, <span class="ident">ty_generics</span>, <span class="kw">_</span>) = <span class="ident">cont</span>.<span class="ident">generics</span>.<span class="ident">split_for_impl</span>();
+    <span class="kw">let</span> <span class="ident">turbofish</span> = <span class="ident">ty_generics</span>.<span class="ident">as_turbofish</span>();
 
-    <span class="kw">let</span> <span class="ident">cases</span> <span class="op">=</span> <span class="ident">variants</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">variant</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">variant_ident</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">variant</span>.<span class="ident">ident</span>;
-        <span class="kw">let</span> <span class="ident">placeholders</span> <span class="op">=</span> <span class="kw-2">&amp;</span>(<span class="number">0</span>..<span class="ident">variant</span>.<span class="ident">fields</span>.<span class="ident">len</span>())
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="macro">format_ident!</span>(<span class="string">&quot;__v{}&quot;</span>, <span class="ident">i</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
+    <span class="kw">let</span> <span class="ident">cases</span> = <span class="ident">variants</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="ident">variant</span>| {
+        <span class="kw">let</span> <span class="ident">variant_ident</span> = <span class="kw-2">&amp;</span><span class="ident">variant</span>.<span class="ident">ident</span>;
+        <span class="kw">let</span> <span class="ident">placeholders</span> = <span class="kw-2">&amp;</span>(<span class="number">0</span>..<span class="ident">variant</span>.<span class="ident">fields</span>.<span class="ident">len</span>())
+            .<span class="ident">map</span>(|<span class="ident">i</span>| <span class="macro">format_ident!</span>(<span class="string">&quot;__v{}&quot;</span>, <span class="ident">i</span>))
+            .<span class="ident">collect</span>::&lt;<span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt;&gt;();
 
-        <span class="kw">let</span> <span class="ident">pat</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">variant</span>.<span class="ident">style</span> {
+        <span class="kw">let</span> <span class="ident">pat</span> = <span class="kw">match</span> <span class="ident">variant</span>.<span class="ident">style</span> {
             <span class="ident">Style::Struct</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">members</span> <span class="op">=</span> <span class="ident">variant</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">field</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">member</span>);
-                <span class="macro">quote!</span>({ #(#<span class="ident">members</span>: #<span class="ident">placeholders</span>),<span class="op">*</span> })
+                <span class="kw">let</span> <span class="ident">members</span> = <span class="ident">variant</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="ident">field</span>| <span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">member</span>);
+                <span class="macro">quote!</span>({ #(#<span class="ident">members</span>: #<span class="ident">placeholders</span>),* })
             }
-            <span class="ident">Style::Tuple</span> <span class="op">|</span> <span class="ident">Style::Newtype</span> =&gt; <span class="macro">quote!</span>(( #(#<span class="ident">placeholders</span>),<span class="op">*</span> )),
+            <span class="ident">Style::Tuple</span> | <span class="ident">Style::Newtype</span> =&gt; <span class="macro">quote!</span>(( #(#<span class="ident">placeholders</span>),* )),
             <span class="ident">Style::Unit</span> =&gt; <span class="macro">quote!</span>(),
         };
 
         <span class="macro">quote!</span> {
             <span class="kw">match</span> <span class="ident">_serde::__private::None</span> {
                 <span class="ident">_serde::__private::Some</span>((#(#<span class="ident">placeholders</span>,)<span class="kw-2">*</span>)) =&gt; {
-                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> #<span class="ident">type_ident</span>::#<span class="ident">variant_ident</span> #<span class="ident">turbofish</span> #<span class="ident">pat</span>;
+                    <span class="kw">let</span> <span class="kw">_</span> = #<span class="ident">type_ident</span>::#<span class="ident">variant_ident</span> #<span class="ident">turbofish</span> #<span class="ident">pat</span>;
                 }
                 <span class="kw">_</span> =&gt; {}
             }
@@ -401,4 +401,4 @@
     <span class="macro">quote!</span>(#(#<span class="ident">cases</span>)<span class="kw-2">*</span>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="serde_derive" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="serde_derive" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

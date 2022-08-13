@@ -238,7 +238,7 @@
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">enum</span> <span class="ident">DataInner</span> {
-    <span class="ident">Binary</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>),
+    <span class="ident">Binary</span>(<span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;),
     <span class="ident">Text</span>(<span class="ident">String</span>),
 }
 
@@ -250,14 +250,14 @@
 
 <span class="kw">impl</span> <span class="ident">Data</span> {
     <span class="doccomment">/// Mark the data as binary (no post-processing)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">binary</span>(<span class="ident">raw</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">binary</span>(<span class="ident">raw</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;&gt;) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">inner</span>: <span class="ident">DataInner::Binary</span>(<span class="ident">raw</span>.<span class="ident">into</span>()),
         }
     }
 
     <span class="doccomment">/// Mark the data as text (post-processing)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">text</span>(<span class="ident">raw</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">text</span>(<span class="ident">raw</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">String</span>&gt;) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">inner</span>: <span class="ident">DataInner::Text</span>(<span class="ident">raw</span>.<span class="ident">into</span>()),
         }
@@ -271,24 +271,24 @@
     <span class="doccomment">/// Load test data from a file</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_from</span>(
         <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>,
-        <span class="ident">data_format</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataFormat</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="kw">crate</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_format</span> {
+        <span class="ident">data_format</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">DataFormat</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
+        <span class="kw">let</span> <span class="ident">data</span> = <span class="kw">match</span> <span class="ident">data_format</span> {
             <span class="prelude-val">Some</span>(<span class="ident">df</span>) =&gt; <span class="kw">match</span> <span class="ident">df</span> {
                 <span class="ident">DataFormat::Binary</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">std::fs::read</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
-                        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
+                    <span class="kw">let</span> <span class="ident">data</span> = <span class="ident">std::fs::read</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
+                        .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
                     <span class="ident"><span class="self">Self</span>::binary</span>(<span class="ident">data</span>)
                 }
                 <span class="ident">DataFormat::Text</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">std::fs::read_to_string</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
-                        .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
+                    <span class="kw">let</span> <span class="ident">data</span> = <span class="ident">std::fs::read_to_string</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
+                        .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
                     <span class="ident"><span class="self">Self</span>::text</span>(<span class="ident">data</span>)
                 }
             },
             <span class="prelude-val">None</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">std::fs::read</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
-                    .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">data</span> = <span class="ident">std::fs::read</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>)
+                    .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
                 <span class="ident"><span class="self">Self</span>::binary</span>(<span class="ident">data</span>).<span class="ident">try_coerce</span>(<span class="ident">DataFormat::Text</span>)
             }
         };
@@ -296,14 +296,14 @@
     }
 
     <span class="doccomment">/// Overwrite a snapshot</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_to</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident"><span class="kw">crate</span>::Error</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">parent</span>) <span class="op">=</span> <span class="ident">path</span>.<span class="ident">parent</span>() {
-            <span class="ident">std::fs::create_dir_all</span>(<span class="ident">parent</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_to</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">parent</span>) = <span class="ident">path</span>.<span class="ident">parent</span>() {
+            <span class="ident">std::fs::create_dir_all</span>(<span class="ident">parent</span>).<span class="ident">map_err</span>(|<span class="ident">e</span>| {
                 <span class="macro">format!</span>(<span class="string">&quot;Failed to create parent dir for {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>)
             })<span class="question-mark">?</span>;
         }
         <span class="ident">std::fs::write</span>(<span class="ident">path</span>, <span class="self">self</span>.<span class="ident">to_bytes</span>())
-            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to write {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>).<span class="ident">into</span>())
+            .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to write {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>).<span class="ident">into</span>())
     }
 
     <span class="doccomment">/// Post-process text</span>
@@ -319,18 +319,18 @@
     <span class="doccomment">/// Coerce to a string</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Note: this will **not** do a binary-content check</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">make_text</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">std::str::Utf8Error</span><span class="op">&gt;</span> {
-        <span class="kw-2">*</span><span class="self">self</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::text</span>(<span class="ident">std::mem::take</span>(<span class="self">self</span>).<span class="ident">into_string</span>()<span class="question-mark">?</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">make_text</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">std::str::Utf8Error</span>&gt; {
+        <span class="kw-2">*</span><span class="self">self</span> = <span class="ident"><span class="self">Self</span>::text</span>(<span class="ident">std::mem::take</span>(<span class="self">self</span>).<span class="ident">into_string</span>()<span class="question-mark">?</span>);
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Coerce to a string</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Note: this will **not** do a binary-content check</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_string</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">std::str::Utf8Error</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_string</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">String</span>, <span class="ident">std::str::Utf8Error</span>&gt; {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span> {
             <span class="ident">DataInner::Binary</span>(<span class="ident">data</span>) =&gt; {
-                <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">String::from_utf8</span>(<span class="ident">data</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">utf8_error</span>())<span class="question-mark">?</span>;
+                <span class="kw">let</span> <span class="ident">data</span> = <span class="ident">String::from_utf8</span>(<span class="ident">data</span>).<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident">e</span>.<span class="ident">utf8_error</span>())<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident">data</span>)
             }
             <span class="ident">DataInner::Text</span>(<span class="ident">data</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">data</span>),
@@ -340,14 +340,14 @@
     <span class="doccomment">/// Return the underlying `str`</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Note: this will not inspect binary data for being a valid `str`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>&gt; {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span> {
             <span class="ident">DataInner::Binary</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
             <span class="ident">DataInner::Text</span>(<span class="ident">data</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">data</span>.<span class="ident">as_str</span>()),
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span> {
             <span class="ident">DataInner::Binary</span>(<span class="ident">data</span>) =&gt; <span class="ident">data</span>.<span class="ident">clone</span>(),
             <span class="ident">DataInner::Text</span>(<span class="ident">data</span>) =&gt; <span class="ident">data</span>.<span class="ident">clone</span>().<span class="ident">into_bytes</span>(),
@@ -365,7 +365,7 @@
                         <span class="kw">match</span> <span class="ident">String::from_utf8</span>(<span class="ident">data</span>) {
                             <span class="prelude-val">Ok</span>(<span class="ident">data</span>) =&gt; <span class="ident"><span class="self">Self</span>::text</span>(<span class="ident">data</span>),
                             <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                                <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">err</span>.<span class="ident">into_bytes</span>();
+                                <span class="kw">let</span> <span class="ident">data</span> = <span class="ident">err</span>.<span class="ident">into_bytes</span>();
                                 <span class="ident"><span class="self">Self</span>::binary</span>(<span class="ident">data</span>)
                             }
                         }
@@ -386,7 +386,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">std::fmt::Display</span> <span class="kw">for</span> <span class="ident">Data</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">std::fmt::Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">std::fmt::Result</span> {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span> {
             <span class="ident">DataInner::Binary</span>(<span class="ident">data</span>) =&gt; <span class="ident">String::from_utf8_lossy</span>(<span class="ident">data</span>).<span class="ident">fmt</span>(<span class="ident">f</span>),
             <span class="ident">DataInner::Text</span>(<span class="ident">data</span>) =&gt; <span class="ident">data</span>.<span class="ident">fmt</span>(<span class="ident">f</span>),
@@ -400,63 +400,63 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;d</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;d</span> <span class="ident">Data</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Data</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;d</span>&gt; <span class="ident">From</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;d</span> <span class="ident">Data</span>&gt; <span class="kw">for</span> <span class="ident">Data</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;d</span> <span class="ident">Data</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">other</span>.<span class="ident">clone</span>()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Data</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;&gt; <span class="kw">for</span> <span class="ident">Data</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;) -&gt; <span class="self">Self</span> {
         <span class="ident"><span class="self">Self</span>::binary</span>(<span class="ident">other</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> [<span class="ident">u8</span>]<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Data</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;b</span>&gt; <span class="ident">From</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> [<span class="ident">u8</span>]&gt; <span class="kw">for</span> <span class="ident">Data</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> [<span class="ident">u8</span>]) -&gt; <span class="self">Self</span> {
         <span class="ident">other</span>.<span class="ident">to_owned</span>().<span class="ident">into</span>()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Data</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">String</span>&gt; <span class="kw">for</span> <span class="ident">Data</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
         <span class="ident"><span class="self">Self</span>::text</span>(<span class="ident">other</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">String</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Data</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;s</span>&gt; <span class="ident">From</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">String</span>&gt; <span class="kw">for</span> <span class="ident">Data</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">other</span>.<span class="ident">clone</span>().<span class="ident">into</span>()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;s</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Data</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;s</span>&gt; <span class="ident">From</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">str</span>&gt; <span class="kw">for</span> <span class="ident">Data</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="ident">str</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">other</span>.<span class="ident">to_owned</span>().<span class="ident">into</span>()
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;detect-encoding&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;detect-encoding&quot;</span>)]</span>
 <span class="kw">fn</span> <span class="ident">is_binary</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">bool</span> {
     <span class="kw">match</span> <span class="ident">content_inspector::inspect</span>(<span class="ident">data</span>) {
-        <span class="ident">content_inspector::ContentType::BINARY</span> <span class="op">|</span>
+        <span class="ident">content_inspector::ContentType::BINARY</span> |
         <span class="comment">// We don&#39;t support these</span>
-        <span class="ident">content_inspector::ContentType::UTF_16LE</span> <span class="op">|</span>
-        <span class="ident">content_inspector::ContentType::UTF_16BE</span> <span class="op">|</span>
-        <span class="ident">content_inspector::ContentType::UTF_32LE</span> <span class="op">|</span>
+        <span class="ident">content_inspector::ContentType::UTF_16LE</span> |
+        <span class="ident">content_inspector::ContentType::UTF_16BE</span> |
+        <span class="ident">content_inspector::ContentType::UTF_32LE</span> |
         <span class="ident">content_inspector::ContentType::UTF_32BE</span> =&gt; {
             <span class="bool-val">true</span>
         },
-        <span class="ident">content_inspector::ContentType::UTF_8</span> <span class="op">|</span>
+        <span class="ident">content_inspector::ContentType::UTF_8</span> |
         <span class="ident">content_inspector::ContentType::UTF_8_BOM</span> =&gt; {
             <span class="bool-val">false</span>
         },
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;detect-encoding&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;detect-encoding&quot;</span>))]</span>
 <span class="kw">fn</span> <span class="ident">is_binary</span>(<span class="ident">_data</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">bool</span> {
     <span class="bool-val">false</span>
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

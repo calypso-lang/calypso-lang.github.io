@@ -234,32 +234,32 @@
 <span class="doccomment">//! syscall instructions.</span>
 
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">unsafe_code</span>)]</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;all-apis&quot;</span>), <span class="ident">allow</span>(<span class="ident">unused_imports</span>))]</span>
+<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;all-apis&quot;</span>), <span class="ident">allow</span>(<span class="ident">unused_imports</span>))]</span>
 
 <span class="comment">// When inline asm is available, use it. Otherwise, use out-of-line asm. These</span>
 <span class="comment">// functions always use the machine&#39;s syscall instruction, even when it isn&#39;t</span>
 <span class="comment">// the fastest option available.</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">asm</span>, <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;inline/mod.rs&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">asm</span>), <span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;outline/mod.rs&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">asm</span>, <span class="ident">path</span> = <span class="string">&quot;inline/mod.rs&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">asm</span>), <span class="ident">path</span> = <span class="string">&quot;outline/mod.rs&quot;</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">mod</span> <span class="ident">asm</span>;
 
 <span class="comment">// On most architectures, the architecture syscall instruction is fast, so use</span>
 <span class="comment">// it directly.</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(
-    <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;arm&quot;</span>,
-    <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;aarch64&quot;</span>,
-    <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips&quot;</span>,
-    <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;mips64&quot;</span>,
-    <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;powerpc64&quot;</span>,
-    <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;riscv64&quot;</span>,
-    <span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86_64&quot;</span>,
+    <span class="ident">target_arch</span> = <span class="string">&quot;arm&quot;</span>,
+    <span class="ident">target_arch</span> = <span class="string">&quot;aarch64&quot;</span>,
+    <span class="ident">target_arch</span> = <span class="string">&quot;mips&quot;</span>,
+    <span class="ident">target_arch</span> = <span class="string">&quot;mips64&quot;</span>,
+    <span class="ident">target_arch</span> = <span class="string">&quot;powerpc64&quot;</span>,
+    <span class="ident">target_arch</span> = <span class="string">&quot;riscv64&quot;</span>,
+    <span class="ident">target_arch</span> = <span class="string">&quot;x86_64&quot;</span>,
 ))]</span>
 <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">use</span> <span class="ident"><span class="self">self</span>::asm</span> <span class="kw">as</span> <span class="ident">choose</span>;
 
 <span class="comment">// On 32-bit x86, use vDSO wrappers for all syscalls. We could use the</span>
 <span class="comment">// architecture syscall instruction (`int 0x80`), but the vDSO kernel_vsyscall</span>
 <span class="comment">// mechanism is much faster.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> <span class="op">=</span> <span class="string">&quot;x86&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_arch</span> = <span class="string">&quot;x86&quot;</span>)]</span>
 <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::vdso_wrappers::x86_via_vdso</span> <span class="kw">as</span> <span class="ident">choose</span>;
 
 <span class="comment">// This would be the code for always using `int 0x80` on 32-bit x86.</span>
@@ -429,7 +429,7 @@
     };
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;runtime&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;runtime&quot;</span>)]</span>
 <span class="macro">macro_rules!</span> <span class="ident">syscall_noreturn</span> {
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">nr</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a0</span>:<span class="ident">expr</span>) =&gt; {
         <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::backend::arch::choose::syscall1_noreturn</span>(
@@ -439,4 +439,4 @@
     };
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

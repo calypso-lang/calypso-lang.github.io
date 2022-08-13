@@ -265,13 +265,13 @@
 
 <span class="doccomment">/// Input event</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Event</span> {
     <span class="doccomment">/// Wildcard.</span>
     <span class="doccomment">/// Useful if you want to filter out some keys.</span>
     <span class="ident">Any</span>,
     <span class="doccomment">/// Key sequence</span>
-    <span class="ident">KeySeq</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">KeyEvent</span><span class="op">&gt;</span>),
+    <span class="ident">KeySeq</span>(<span class="ident">Vec</span>&lt;<span class="ident">KeyEvent</span>&gt;),
     <span class="doccomment">/// TODO Mouse event</span>
     <span class="ident">Mouse</span>(),
 }
@@ -279,9 +279,9 @@
 <span class="kw">impl</span> <span class="ident">Event</span> {
     <span class="doccomment">/// See [`KeyEvent::normalize`]</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">normalize</span>(<span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Event::KeySeq</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">keys</span>) <span class="op">=</span> <span class="self">self</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Event::KeySeq</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">keys</span>) = <span class="self">self</span> {
             <span class="kw">for</span> <span class="ident">key</span> <span class="kw">in</span> <span class="ident">keys</span>.<span class="ident">iter_mut</span>() {
-                <span class="kw-2">*</span><span class="ident">key</span> <span class="op">=</span> <span class="ident">KeyEvent::normalize</span>(<span class="kw-2">*</span><span class="ident">key</span>);
+                <span class="kw-2">*</span><span class="ident">key</span> = <span class="ident">KeyEvent::normalize</span>(<span class="kw-2">*</span><span class="ident">key</span>);
             }
         }
         <span class="self">self</span>
@@ -289,8 +289,8 @@
 
     <span class="doccomment">/// Return `i`th key event</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">KeyEvent</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Event::KeySeq</span>(<span class="kw-2">ref</span> <span class="ident">ks</span>) <span class="op">=</span> <span class="self">self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">KeyEvent</span>&gt; {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Event::KeySeq</span>(<span class="kw-2">ref</span> <span class="ident">ks</span>) = <span class="self">self</span> {
             <span class="ident">ks</span>.<span class="ident">get</span>(<span class="ident">i</span>)
         } <span class="kw">else</span> {
             <span class="prelude-val">None</span>
@@ -298,39 +298,39 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">KeyEvent</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Event</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">KeyEvent</span>&gt; <span class="kw">for</span> <span class="ident">Event</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">k</span>: <span class="ident">KeyEvent</span>) -&gt; <span class="ident">Event</span> {
         <span class="ident">Event::KeySeq</span>(<span class="macro">vec!</span>[<span class="ident">k</span>])
     }
 }
 
-<span class="kw">const</span> <span class="ident">BASE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0010_ffff</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">BASE_CONTROL</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0200_0000</span>;
-<span class="kw">const</span> <span class="ident">BASE_META</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0400_0000</span>;
-<span class="kw">const</span> <span class="ident">BASE_SHIFT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0100_0000</span>;
-<span class="kw">const</span> <span class="ident">ESCAPE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">27</span>;
-<span class="kw">const</span> <span class="ident">PAGE_UP</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">BASE</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">PAGE_DOWN</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">PAGE_UP</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">DOWN</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">PAGE_DOWN</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">UP</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">DOWN</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">LEFT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">UP</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">RIGHT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">LEFT</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">HOME</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">RIGHT</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">END</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">HOME</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">DELETE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">END</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">INSERT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">DELETE</span> <span class="op">+</span> <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">BASE</span>: <span class="ident">u32</span> = <span class="number">0x0010_ffff</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">BASE_CONTROL</span>: <span class="ident">u32</span> = <span class="number">0x0200_0000</span>;
+<span class="kw">const</span> <span class="ident">BASE_META</span>: <span class="ident">u32</span> = <span class="number">0x0400_0000</span>;
+<span class="kw">const</span> <span class="ident">BASE_SHIFT</span>: <span class="ident">u32</span> = <span class="number">0x0100_0000</span>;
+<span class="kw">const</span> <span class="ident">ESCAPE</span>: <span class="ident">u32</span> = <span class="number">27</span>;
+<span class="kw">const</span> <span class="ident">PAGE_UP</span>: <span class="ident">u32</span> = <span class="ident">BASE</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">PAGE_DOWN</span>: <span class="ident">u32</span> = <span class="ident">PAGE_UP</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">DOWN</span>: <span class="ident">u32</span> = <span class="ident">PAGE_DOWN</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">UP</span>: <span class="ident">u32</span> = <span class="ident">DOWN</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">LEFT</span>: <span class="ident">u32</span> = <span class="ident">UP</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">RIGHT</span>: <span class="ident">u32</span> = <span class="ident">LEFT</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">HOME</span>: <span class="ident">u32</span> = <span class="ident">RIGHT</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">END</span>: <span class="ident">u32</span> = <span class="ident">HOME</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">DELETE</span>: <span class="ident">u32</span> = <span class="ident">END</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">INSERT</span>: <span class="ident">u32</span> = <span class="ident">DELETE</span> + <span class="number">1</span>;
 <span class="comment">//const F1: u32 = INSERT + 1;</span>
-<span class="kw">const</span> <span class="ident">MOUSE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="comment">/* F24 + 1 */</span> <span class="ident">INSERT</span> <span class="op">+</span> <span class="number">25</span>;
-<span class="kw">const</span> <span class="ident">PASTE_START</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">MOUSE</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">PASTE_FINISH</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">PASTE_START</span> <span class="op">+</span> <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">ANY</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">PASTE_FINISH</span> <span class="op">+</span> <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">MOUSE</span>: <span class="ident">u32</span> = <span class="comment">/* F24 + 1 */</span> <span class="ident">INSERT</span> + <span class="number">25</span>;
+<span class="kw">const</span> <span class="ident">PASTE_START</span>: <span class="ident">u32</span> = <span class="ident">MOUSE</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">PASTE_FINISH</span>: <span class="ident">u32</span> = <span class="ident">PASTE_START</span> + <span class="number">1</span>;
+<span class="kw">const</span> <span class="ident">ANY</span>: <span class="ident">u32</span> = <span class="ident">PASTE_FINISH</span> + <span class="number">1</span>;
 
 <span class="kw">impl</span> <span class="ident">KeyEvent</span> {
     <span class="kw">fn</span> <span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u32</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">u</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="number">0</span> {
-            <span class="ident">KeyCode::UnknownEscSeq</span> <span class="op">|</span> <span class="ident">KeyCode::Null</span> =&gt; <span class="number">0</span>,
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">u</span> = <span class="kw">match</span> <span class="self">self</span>.<span class="number">0</span> {
+            <span class="ident">KeyCode::UnknownEscSeq</span> | <span class="ident">KeyCode::Null</span> =&gt; <span class="number">0</span>,
             <span class="ident">KeyCode::Backspace</span> =&gt; <span class="ident">u32::from</span>(<span class="string">&#39;\x7f&#39;</span>),
-            <span class="ident">KeyCode::BackTab</span> =&gt; <span class="ident">u32::from</span>(<span class="string">&#39;\t&#39;</span>) <span class="op">|</span> <span class="ident">BASE_SHIFT</span>,
+            <span class="ident">KeyCode::BackTab</span> =&gt; <span class="ident">u32::from</span>(<span class="string">&#39;\t&#39;</span>) | <span class="ident">BASE_SHIFT</span>,
             <span class="ident">KeyCode::BracketedPasteStart</span> =&gt; <span class="ident">PASTE_START</span>,
             <span class="ident">KeyCode::BracketedPasteEnd</span> =&gt; <span class="ident">PASTE_FINISH</span>,
             <span class="ident">KeyCode::Char</span>(<span class="ident">c</span>) =&gt; <span class="ident">u32::from</span>(<span class="ident">c</span>),
@@ -338,7 +338,7 @@
             <span class="ident">KeyCode::Down</span> =&gt; <span class="ident">DOWN</span>,
             <span class="ident">KeyCode::End</span> =&gt; <span class="ident">END</span>,
             <span class="ident">KeyCode::Enter</span> =&gt; <span class="ident">u32::from</span>(<span class="string">&#39;\r&#39;</span>),
-            <span class="ident">KeyCode::F</span>(<span class="ident">i</span>) =&gt; <span class="ident">INSERT</span> <span class="op">+</span> <span class="ident">u32::from</span>(<span class="ident">i</span>),
+            <span class="ident">KeyCode::F</span>(<span class="ident">i</span>) =&gt; <span class="ident">INSERT</span> + <span class="ident">u32::from</span>(<span class="ident">i</span>),
             <span class="ident">KeyCode::Esc</span> =&gt; <span class="ident">ESCAPE</span>,
             <span class="ident">KeyCode::Home</span> =&gt; <span class="ident">HOME</span>,
             <span class="ident">KeyCode::Insert</span> =&gt; <span class="ident">INSERT</span>,
@@ -350,24 +350,24 @@
             <span class="ident">KeyCode::Up</span> =&gt; <span class="ident">UP</span>,
         };
         <span class="kw">if</span> <span class="self">self</span>.<span class="number">1</span>.<span class="ident">contains</span>(<span class="ident">Modifiers::CTRL</span>) {
-            <span class="ident">u</span> <span class="op">|</span><span class="op">=</span> <span class="ident">BASE_CONTROL</span>;
+            <span class="ident">u</span> |= <span class="ident">BASE_CONTROL</span>;
         }
         <span class="kw">if</span> <span class="self">self</span>.<span class="number">1</span>.<span class="ident">contains</span>(<span class="ident">Modifiers::ALT</span>) {
-            <span class="ident">u</span> <span class="op">|</span><span class="op">=</span> <span class="ident">BASE_META</span>;
+            <span class="ident">u</span> |= <span class="ident">BASE_META</span>;
         }
         <span class="kw">if</span> <span class="self">self</span>.<span class="number">1</span>.<span class="ident">contains</span>(<span class="ident">Modifiers::SHIFT</span>) {
-            <span class="ident">u</span> <span class="op">|</span><span class="op">=</span> <span class="ident">BASE_SHIFT</span>;
+            <span class="ident">u</span> |= <span class="ident">BASE_SHIFT</span>;
         }
         <span class="ident">u</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">Event</span> {
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">Event::Any</span> =&gt; <span class="ident">ANY</span>.<span class="ident">to_be_bytes</span>().<span class="ident">to_vec</span>(),
             <span class="ident">Event::KeySeq</span>(<span class="ident">keys</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dst</span> <span class="op">=</span> <span class="ident">Vec::with_capacity</span>(<span class="ident">keys</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="number">4</span>);
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dst</span> = <span class="ident">Vec::with_capacity</span>(<span class="ident">keys</span>.<span class="ident">len</span>() * <span class="number">4</span>);
                 <span class="kw">for</span> <span class="ident">key</span> <span class="kw">in</span> <span class="ident">keys</span> {
                     <span class="ident">dst</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>.<span class="ident">encode</span>().<span class="ident">to_be_bytes</span>());
                 }
@@ -379,31 +379,31 @@
 }
 
 <span class="doccomment">/// Event handler</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EventHandler</span> {
     <span class="doccomment">/// unconditional command</span>
     <span class="ident">Simple</span>(<span class="ident">Cmd</span>),
     <span class="doccomment">/// handler behaviour depends on input state</span>
-    <span class="ident">Conditional</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ConditionalEventHandler</span><span class="op">&gt;</span>),
+    <span class="ident">Conditional</span>(<span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">ConditionalEventHandler</span>&gt;),
     <span class="comment">/* invoke multiple actions
      * TODO Macro(), */</span>
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Cmd</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EventHandler</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">Cmd</span>&gt; <span class="kw">for</span> <span class="ident">EventHandler</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">c</span>: <span class="ident">Cmd</span>) -&gt; <span class="ident">EventHandler</span> {
         <span class="ident">EventHandler::Simple</span>(<span class="ident">c</span>)
     }
 }
 
 <span class="doccomment">/// Give access to user input.</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EventContext</span><span class="op">&lt;</span><span class="lifetime">&#39;r</span><span class="op">&gt;</span> {
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EventContext</span>&lt;<span class="lifetime">&#39;r</span>&gt; {
     <span class="ident">mode</span>: <span class="ident">EditMode</span>,
     <span class="ident">input_mode</span>: <span class="ident">InputMode</span>,
     <span class="ident">wrt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;r</span> <span class="kw">dyn</span> <span class="ident">Refresher</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;r</span><span class="op">&gt;</span> <span class="ident">EventContext</span><span class="op">&lt;</span><span class="lifetime">&#39;r</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;r</span>&gt; <span class="ident">EventContext</span>&lt;<span class="lifetime">&#39;r</span>&gt; {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">is</span>: <span class="kw-2">&amp;</span><span class="ident">InputState</span>, <span class="ident">wrt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;r</span> <span class="kw">dyn</span> <span class="ident">Refresher</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">EventContext</span> {
             <span class="ident">mode</span>: <span class="ident">is</span>.<span class="ident">mode</span>,
@@ -432,7 +432,7 @@
 
     <span class="doccomment">/// Returns the hint text that is shown after the current cursor position.</span>
     <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">hint_text</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">hint_text</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>&gt; {
         <span class="self">self</span>.<span class="ident">wrt</span>.<span class="ident">hint_text</span>()
     }
 
@@ -458,8 +458,8 @@
 <span class="doccomment">///  * original key pressed (when same command is bound to different key)</span>
 <span class="doccomment">///  * hint</span>
 <span class="doccomment">///  * ...</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ConditionalEventHandler</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> {
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ConditionalEventHandler</span>: <span class="ident">Send</span> + <span class="ident">Sync</span> {
     <span class="doccomment">/// Takes the current input state and</span>
     <span class="doccomment">/// returns the command to be performed or `None` to perform the default</span>
     <span class="doccomment">/// one.</span>
@@ -469,7 +469,7 @@
         <span class="ident">n</span>: <span class="ident">RepeatCount</span>,
         <span class="ident">positive</span>: <span class="ident">bool</span>,
         <span class="ident">ctx</span>: <span class="kw-2">&amp;</span><span class="ident">EventContext</span>,
-    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Cmd</span><span class="op">&gt;</span>;
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Cmd</span>&gt;;
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -482,25 +482,25 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">encode</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trie</span> <span class="op">=</span> <span class="ident">Trie::new</span>();
-        <span class="kw">let</span> <span class="ident">evt</span> <span class="op">=</span> <span class="ident">Event::KeySeq</span>(<span class="macro">vec!</span>[<span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;X&#39;</span>), <span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;E&#39;</span>)]);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trie</span> = <span class="ident">Trie::new</span>();
+        <span class="kw">let</span> <span class="ident">evt</span> = <span class="ident">Event::KeySeq</span>(<span class="macro">vec!</span>[<span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;X&#39;</span>), <span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;E&#39;</span>)]);
         <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">evt</span>.<span class="ident">clone</span>(), <span class="ident">EventHandler::from</span>(<span class="ident">Cmd::Noop</span>));
-        <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="ident">Event::from</span>(<span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;X&#39;</span>));
-        <span class="kw">let</span> <span class="ident">subtrie</span> <span class="op">=</span> <span class="ident">trie</span>.<span class="ident">get_raw_descendant</span>(<span class="kw-2">&amp;</span><span class="ident">prefix</span>);
+        <span class="kw">let</span> <span class="ident">prefix</span> = <span class="ident">Event::from</span>(<span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;X&#39;</span>));
+        <span class="kw">let</span> <span class="ident">subtrie</span> = <span class="ident">trie</span>.<span class="ident">get_raw_descendant</span>(<span class="kw-2">&amp;</span><span class="ident">prefix</span>);
         <span class="macro">assert!</span>(<span class="ident">subtrie</span>.<span class="ident">is_some</span>());
-        <span class="kw">let</span> <span class="ident">subtrie</span> <span class="op">=</span> <span class="ident">subtrie</span>.<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">sub_result</span> <span class="op">=</span> <span class="ident">subtrie</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">evt</span>);
+        <span class="kw">let</span> <span class="ident">subtrie</span> = <span class="ident">subtrie</span>.<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">sub_result</span> = <span class="ident">subtrie</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">evt</span>);
         <span class="macro">assert!</span>(<span class="ident">sub_result</span>.<span class="ident">is_ok</span>());
         <span class="macro">assert!</span>(<span class="ident">sub_result</span>.<span class="ident">unwrap</span>().<span class="ident">is_some</span>());
-        <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="ident">Event::from</span>(<span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;O&#39;</span>));
-        <span class="kw">let</span> <span class="ident">subtrie</span> <span class="op">=</span> <span class="ident">trie</span>.<span class="ident">get_raw_descendant</span>(<span class="kw-2">&amp;</span><span class="ident">prefix</span>);
+        <span class="kw">let</span> <span class="ident">prefix</span> = <span class="ident">Event::from</span>(<span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;O&#39;</span>));
+        <span class="kw">let</span> <span class="ident">subtrie</span> = <span class="ident">trie</span>.<span class="ident">get_raw_descendant</span>(<span class="kw-2">&amp;</span><span class="ident">prefix</span>);
         <span class="macro">assert!</span>(<span class="ident">subtrie</span>.<span class="ident">is_none</span>())
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">no_collision</span>() {
         <span class="kw">use</span> {<span class="ident">Event</span> <span class="kw">as</span> <span class="ident">E</span>, <span class="ident">EventHandler</span> <span class="kw">as</span> <span class="ident">H</span>, <span class="ident">KeyCode</span> <span class="kw">as</span> <span class="ident">C</span>, <span class="ident">KeyEvent</span> <span class="kw">as</span> <span class="ident">K</span>, <span class="ident">Modifiers</span> <span class="kw">as</span> <span class="ident">M</span>};
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trie</span> <span class="op">=</span> <span class="ident">Trie::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trie</span> = <span class="ident">Trie::new</span>();
         <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">E::from</span>(<span class="ident">K</span>(<span class="ident">C::Backspace</span>, <span class="ident">M::NONE</span>)), <span class="ident">H::from</span>(<span class="ident">Cmd::Noop</span>));
         <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">E::from</span>(<span class="ident">K</span>(<span class="ident">C::Enter</span>, <span class="ident">M::NONE</span>)), <span class="ident">H::from</span>(<span class="ident">Cmd::Noop</span>));
         <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">E::from</span>(<span class="ident">K</span>(<span class="ident">C::Tab</span>, <span class="ident">M::NONE</span>)), <span class="ident">H::from</span>(<span class="ident">Cmd::Noop</span>));
@@ -511,8 +511,8 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">size_of_event</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">Event</span><span class="op">&gt;</span>(), <span class="number">32</span>);
+        <span class="macro">assert_eq!</span>(<span class="ident">size_of</span>::&lt;<span class="ident">Event</span>&gt;(), <span class="number">32</span>);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

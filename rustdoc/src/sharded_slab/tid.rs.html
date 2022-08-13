@@ -210,37 +210,37 @@
 };
 
 <span class="doccomment">/// Uniquely identifies a thread.</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Tid</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Tid</span>&lt;<span class="ident">C</span>&gt; {
     <span class="ident">id</span>: <span class="ident">usize</span>,
-    <span class="ident">_not_send</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">UnsafeCell</span><span class="op">&lt;</span>()<span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">_cfg</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw">fn</span>(<span class="ident">C</span>)<span class="op">&gt;</span>,
+    <span class="ident">_not_send</span>: <span class="ident">PhantomData</span>&lt;<span class="ident">UnsafeCell</span>&lt;()&gt;&gt;,
+    <span class="ident">_cfg</span>: <span class="ident">PhantomData</span>&lt;<span class="kw">fn</span>(<span class="ident">C</span>)&gt;,
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">Registration</span>(<span class="ident">Cell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span>);
+<span class="kw">struct</span> <span class="ident">Registration</span>(<span class="ident">Cell</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;&gt;);
 
 <span class="kw">struct</span> <span class="ident">Registry</span> {
     <span class="ident">next</span>: <span class="ident">AtomicUsize</span>,
-    <span class="ident">free</span>: <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">VecDeque</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">free</span>: <span class="ident">Mutex</span>&lt;<span class="ident">VecDeque</span>&lt;<span class="ident">usize</span>&gt;&gt;,
 }
 
 <span class="macro">lazy_static!</span> {
-    <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">REGISTRY</span>: <span class="ident">Registry</span> <span class="op">=</span> <span class="ident">Registry</span> {
+    <span class="kw">static</span> <span class="kw-2">ref</span> <span class="ident">REGISTRY</span>: <span class="ident">Registry</span> = <span class="ident">Registry</span> {
         <span class="ident">next</span>: <span class="ident">AtomicUsize::new</span>(<span class="number">0</span>),
         <span class="ident">free</span>: <span class="ident">Mutex::new</span>(<span class="ident">VecDeque::new</span>()),
     };
 }
 
 <span class="macro">thread_local!</span> {
-    <span class="kw">static</span> <span class="ident">REGISTRATION</span>: <span class="ident">Registration</span> <span class="op">=</span> <span class="ident">Registration::new</span>();
+    <span class="kw">static</span> <span class="ident">REGISTRATION</span>: <span class="ident">Registration</span> = <span class="ident">Registration::new</span>();
 }
 
 <span class="comment">// === impl Tid ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">Pack</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Tid</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">LEN</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="ident">C::MAX_SHARDS</span>.<span class="ident">trailing_zeros</span>() <span class="kw">as</span> <span class="ident">usize</span> <span class="op">+</span> <span class="number">1</span>;
+<span class="kw">impl</span>&lt;<span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">Pack</span>&lt;<span class="ident">C</span>&gt; <span class="kw">for</span> <span class="ident">Tid</span>&lt;<span class="ident">C</span>&gt; {
+    <span class="kw">const</span> <span class="ident">LEN</span>: <span class="ident">usize</span> = <span class="ident">C::MAX_SHARDS</span>.<span class="ident">trailing_zeros</span>() <span class="kw">as</span> <span class="ident">usize</span> + <span class="number">1</span>;
 
-    <span class="kw">type</span> <span class="ident">Prev</span> <span class="op">=</span> <span class="ident">page::Addr</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Prev</span> = <span class="ident">page::Addr</span>&lt;<span class="ident">C</span>&gt;;
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">fn</span> <span class="ident">as_usize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
@@ -257,17 +257,17 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">Tid</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">Tid</span>&lt;<span class="ident">C</span>&gt; {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">current</span>() -&gt; <span class="self">Self</span> {
         <span class="ident">REGISTRATION</span>
             .<span class="ident">try_with</span>(<span class="ident">Registration::current</span>)
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident"><span class="self">Self</span>::poisoned</span>())
+            .<span class="ident">unwrap_or_else</span>(|<span class="kw">_</span>| <span class="ident"><span class="self">Self</span>::poisoned</span>())
     }
 
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">is_current</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="ident">REGISTRATION</span>
-            .<span class="ident">try_with</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="self">self</span> <span class="op">==</span> <span class="ident">r</span>.<span class="ident">current</span>::<span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>())
+            .<span class="ident">try_with</span>(|<span class="ident">r</span>| <span class="self">self</span> == <span class="ident">r</span>.<span class="ident">current</span>::&lt;<span class="ident">C</span>&gt;())
             .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
     }
 
@@ -277,7 +277,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="ident">Tid</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">C</span>&gt; <span class="ident">Tid</span>&lt;<span class="ident">C</span>&gt; {
     <span class="attribute">#[<span class="ident">cold</span>]</span>
     <span class="kw">fn</span> <span class="ident">poisoned</span>() -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
@@ -289,12 +289,12 @@
 
     <span class="doccomment">/// Returns true if the local thread ID was accessed while unwinding.</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">is_poisoned</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">id</span> <span class="op">==</span> <span class="ident">std::usize::MAX</span>
+        <span class="self">self</span>.<span class="ident">id</span> == <span class="ident">std::usize::MAX</span>
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Tid</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+<span class="kw">impl</span>&lt;<span class="ident">C</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Tid</span>&lt;<span class="ident">C</span>&gt; {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_poisoned</span>() {
             <span class="ident">f</span>.<span class="ident">debug_tuple</span>(<span class="string">&quot;Tid&quot;</span>)
                 .<span class="ident">field</span>(<span class="kw-2">&amp;</span><span class="macro">format_args!</span>(<span class="string">&quot;&lt;poisoned&gt;&quot;</span>))
@@ -307,21 +307,21 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">Tid</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">C</span>&gt; <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">Tid</span>&lt;<span class="ident">C</span>&gt; {
     <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">id</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">id</span>
+        <span class="self">self</span>.<span class="ident">id</span> == <span class="ident">other</span>.<span class="ident">id</span>
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">Tid</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {}
+<span class="kw">impl</span>&lt;<span class="ident">C</span>&gt; <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">Tid</span>&lt;<span class="ident">C</span>&gt; {}
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Tid</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Tid</span>&lt;<span class="ident">C</span>&gt; {
     <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span> {
         <span class="ident"><span class="self">Self</span>::new</span>(<span class="self">self</span>.<span class="ident">id</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span> <span class="ident">Copy</span> <span class="kw">for</span> <span class="ident">Tid</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {}
+<span class="kw">impl</span>&lt;<span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt; <span class="ident">Copy</span> <span class="kw">for</span> <span class="ident">Tid</span>&lt;<span class="ident">C</span>&gt; {}
 
 <span class="comment">// === impl Registration ===</span>
 
@@ -331,8 +331,8 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">current</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Tid</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">tid</span>) <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">get</span>().<span class="ident">map</span>(<span class="ident">Tid::new</span>) {
+    <span class="kw">fn</span> <span class="ident">current</span>&lt;<span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Tid</span>&lt;<span class="ident">C</span>&gt; {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">tid</span>) = <span class="self">self</span>.<span class="number">0</span>.<span class="ident">get</span>().<span class="ident">map</span>(<span class="ident">Tid::new</span>) {
             <span class="kw">return</span> <span class="ident">tid</span>;
         }
 
@@ -340,28 +340,28 @@
     }
 
     <span class="attribute">#[<span class="ident">cold</span>]</span>
-    <span class="kw">fn</span> <span class="ident">register</span><span class="op">&lt;</span><span class="ident">C</span>: <span class="ident">cfg::Config</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Tid</span><span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">REGISTRY</span>
+    <span class="kw">fn</span> <span class="ident">register</span>&lt;<span class="ident">C</span>: <span class="ident">cfg::Config</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Tid</span>&lt;<span class="ident">C</span>&gt; {
+        <span class="kw">let</span> <span class="ident">id</span> = <span class="ident">REGISTRY</span>
             .<span class="ident">free</span>
             .<span class="ident">lock</span>()
             .<span class="ident">ok</span>()
-            .<span class="ident">and_then</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">free</span><span class="op">|</span> {
-                <span class="kw">if</span> <span class="ident">free</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
+            .<span class="ident">and_then</span>(|<span class="kw-2">mut</span> <span class="ident">free</span>| {
+                <span class="kw">if</span> <span class="ident">free</span>.<span class="ident">len</span>() &gt; <span class="number">1</span> {
                     <span class="ident">free</span>.<span class="ident">pop_front</span>()
                 } <span class="kw">else</span> {
                     <span class="prelude-val">None</span>
                 }
             })
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">REGISTRY</span>.<span class="ident">next</span>.<span class="ident">fetch_add</span>(<span class="number">1</span>, <span class="ident">Ordering::AcqRel</span>);
-                <span class="kw">if</span> <span class="ident">id</span> <span class="op">&gt;</span> <span class="ident">Tid</span>::<span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span><span class="ident">::BITS</span> {
+            .<span class="ident">unwrap_or_else</span>(|| {
+                <span class="kw">let</span> <span class="ident">id</span> = <span class="ident">REGISTRY</span>.<span class="ident">next</span>.<span class="ident">fetch_add</span>(<span class="number">1</span>, <span class="ident">Ordering::AcqRel</span>);
+                <span class="kw">if</span> <span class="ident">id</span> &gt; <span class="ident">Tid</span>::&lt;<span class="ident">C</span>&gt;<span class="ident">::BITS</span> {
                     <span class="macro">panic_in_drop!</span>(
                         <span class="string">&quot;creating a new thread ID ({}) would exceed the \
                         maximum number of thread ID bits specified in {} \
                         ({})&quot;</span>,
                         <span class="ident">id</span>,
-                        <span class="ident">std::any::type_name</span>::<span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span>(),
-                        <span class="ident">Tid</span>::<span class="op">&lt;</span><span class="ident">C</span><span class="op">&gt;</span><span class="ident">::BITS</span>,
+                        <span class="ident">std::any::type_name</span>::&lt;<span class="ident">C</span>&gt;(),
+                        <span class="ident">Tid</span>::&lt;<span class="ident">C</span>&gt;<span class="ident">::BITS</span>,
                     );
                 }
                 <span class="ident">id</span>
@@ -377,14 +377,14 @@
 <span class="comment">// panics. T_T</span>
 <span class="comment">// Just skip TID reuse and use loom&#39;s lazy_static macro to ensure we have a</span>
 <span class="comment">// clean initial TID on every iteration, instead.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">loom</span>, <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;loom&quot;</span>, <span class="ident">test</span>))))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">loom</span>, <span class="ident">any</span>(<span class="ident">feature</span> = <span class="string">&quot;loom&quot;</span>, <span class="ident">test</span>))))]</span>
 <span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Registration</span> {
     <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">id</span>) <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">get</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">free_list</span> <span class="op">=</span> <span class="ident">REGISTRY</span>.<span class="ident">free</span>.<span class="ident">lock</span>().<span class="ident">unwrap_or_else</span>(<span class="ident">PoisonError::into_inner</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">id</span>) = <span class="self">self</span>.<span class="number">0</span>.<span class="ident">get</span>() {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">free_list</span> = <span class="ident">REGISTRY</span>.<span class="ident">free</span>.<span class="ident">lock</span>().<span class="ident">unwrap_or_else</span>(<span class="ident">PoisonError::into_inner</span>);
             <span class="ident">free_list</span>.<span class="ident">push_back</span>(<span class="ident">id</span>);
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="sharded_slab" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="sharded_slab" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

@@ -91,13 +91,13 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend</span>;
 <span class="kw">use</span> <span class="ident">core</span>::{<span class="ident">fmt</span>, <span class="ident">result</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">std::error</span>;
 
 <span class="doccomment">/// A specialized [`Result`] type for `rustix` APIs.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// [`Result`]: core::result::Result</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">result::Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Errno</span><span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>&gt; = <span class="ident">result::Result</span>&lt;<span class="ident">T</span>, <span class="ident">Errno</span>&gt;;
 
 <span class="doccomment">/// `errno`—An error code.</span>
 <span class="doccomment">///</span>
@@ -114,7 +114,7 @@
 
 <span class="kw">impl</span> <span class="ident">Errno</span> {
     <span class="doccomment">/// Shorthand for `std::io::Error::from(self).kind()`.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">kind</span>(<span class="self">self</span>) -&gt; <span class="ident">std::io::ErrorKind</span> {
         <span class="ident">std::io::Error::from</span>(<span class="self">self</span>).<span class="ident">kind</span>()
@@ -122,12 +122,12 @@
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Errno</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
         {
             <span class="ident">std::io::Error::from</span>(<span class="kw-2">*</span><span class="self">self</span>).<span class="ident">fmt</span>(<span class="ident">fmt</span>)
         }
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
         {
             <span class="macro">write!</span>(<span class="ident">fmt</span>, <span class="string">&quot;os error {}&quot;</span>, <span class="self">self</span>.<span class="ident">raw_os_error</span>())
         }
@@ -135,23 +135,23 @@
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Errno</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
         {
             <span class="ident">std::io::Error::from</span>(<span class="kw-2">*</span><span class="self">self</span>).<span class="ident">fmt</span>(<span class="ident">fmt</span>)
         }
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
         {
             <span class="macro">write!</span>(<span class="ident">fmt</span>, <span class="string">&quot;os error {}&quot;</span>, <span class="self">self</span>.<span class="ident">raw_os_error</span>())
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">error::Error</span> <span class="kw">for</span> <span class="ident">Errno</span> {}
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Errno</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">std::io::Error</span> {
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">Errno</span>&gt; <span class="kw">for</span> <span class="ident">std::io::Error</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">Errno</span>) -&gt; <span class="self">Self</span> {
         <span class="ident"><span class="self">Self</span>::from_raw_os_error</span>(<span class="ident">err</span>.<span class="ident">raw_os_error</span>() <span class="kw">as</span> <span class="kw">_</span>)
@@ -160,7 +160,7 @@
 
 <span class="doccomment">/// Call `f` until it either succeeds or fails other than [`Errno::INTR`].</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">retry_on_intr</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span>: <span class="ident">FnMut</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">retry_on_intr</span>&lt;<span class="ident">T</span>, <span class="ident">F</span>: <span class="ident">FnMut</span>() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>&gt;&gt;(<span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>&gt; {
     <span class="kw">loop</span> {
         <span class="kw">match</span> <span class="ident">f</span>() {
             <span class="prelude-val">Err</span>(<span class="ident">Errno::INTR</span>) =&gt; (),
@@ -169,4 +169,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

@@ -165,7 +165,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">ReadlineError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
             <span class="ident">ReadlineError::Io</span>(<span class="kw-2">ref</span> <span class="ident">err</span>) =&gt; <span class="ident">err</span>.<span class="ident">fmt</span>(<span class="ident">f</span>),
             <span class="ident">ReadlineError::Eof</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;EOF&quot;</span>),
@@ -182,7 +182,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">ReadlineError</span> {
-    <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">Error</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">Error</span> + <span class="lifetime">&#39;static</span>)&gt; {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
             <span class="ident">ReadlineError::Io</span>(<span class="kw-2">ref</span> <span class="ident">err</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">err</span>),
             <span class="ident">ReadlineError::Eof</span> =&gt; <span class="prelude-val">None</span>,
@@ -203,19 +203,19 @@
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">WindowResizedError</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">WindowResizedError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
         <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;WindowResized&quot;</span>)
     }
 }
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
 <span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">WindowResizedError</span> {}
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">io::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ReadlineError</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">io::Error</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">io::Error</span>) -&gt; <span class="self">Self</span> {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-        <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">kind</span>() <span class="op">==</span> <span class="ident">io::ErrorKind::Interrupted</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">err</span>.<span class="ident">get_ref</span>() {
-                <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">WindowResizedError</span><span class="op">&gt;</span>().<span class="ident">is_some</span>() {
+        <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">kind</span>() == <span class="ident">io::ErrorKind::Interrupted</span> {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">e</span>) = <span class="ident">err</span>.<span class="ident">get_ref</span>() {
+                <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">downcast_ref</span>::&lt;<span class="ident">WindowResizedError</span>&gt;().<span class="ident">is_some</span>() {
                     <span class="kw">return</span> <span class="ident">ReadlineError::WindowResized</span>;
                 }
             }
@@ -224,45 +224,45 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">io::ErrorKind</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ReadlineError</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">io::ErrorKind</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">kind</span>: <span class="ident">io::ErrorKind</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">ReadlineError::Io</span>(<span class="ident">io::Error::from</span>(<span class="ident">kind</span>))
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">nix::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ReadlineError</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">nix::Error</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">nix::Error</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">ReadlineError::Errno</span>(<span class="ident">err</span>)
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">char::DecodeUtf16Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ReadlineError</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">char::DecodeUtf16Error</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">char::DecodeUtf16Error</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">ReadlineError::Io</span>(<span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::InvalidData</span>, <span class="ident">err</span>))
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">std::string::FromUtf8Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ReadlineError</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">std::string::FromUtf8Error</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">std::string::FromUtf8Error</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">ReadlineError::Io</span>(<span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::InvalidData</span>, <span class="ident">err</span>))
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">fmt::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ReadlineError</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">fmt::Error</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">fmt::Error</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">ReadlineError::Io</span>(<span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::Other</span>, <span class="ident">err</span>))
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">clipboard_win::SystemError</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ReadlineError</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">clipboard_win::SystemError</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">clipboard_win::SystemError</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">ReadlineError::SystemError</span>(<span class="ident">err</span>)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

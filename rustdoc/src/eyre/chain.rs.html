@@ -115,16 +115,16 @@
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Chain</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">ChainState</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">ChainState</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="ident">Linked</span> {
-        <span class="ident">next</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> (<span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)<span class="op">&gt;</span>,
+        <span class="ident">next</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> (<span class="kw">dyn</span> <span class="ident">StdError</span> + <span class="lifetime">&#39;static</span>)&gt;,
     },
     <span class="ident">Buffered</span> {
-        <span class="ident">rest</span>: <span class="ident">vec::IntoIter</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> (<span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)<span class="op">&gt;</span>,
+        <span class="ident">rest</span>: <span class="ident">vec::IntoIter</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> (<span class="kw">dyn</span> <span class="ident">StdError</span> + <span class="lifetime">&#39;static</span>)&gt;,
     },
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Chain</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Chain</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// Construct an iterator over a chain of errors via the `source` method</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Example</span>
@@ -145,45 +145,45 @@
     <span class="doccomment">///     Ok(())</span>
     <span class="doccomment">/// }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">head</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> (<span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)) -&gt; <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">head</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> (<span class="kw">dyn</span> <span class="ident">StdError</span> + <span class="lifetime">&#39;static</span>)) -&gt; <span class="self">Self</span> {
         <span class="ident">Chain</span> {
             <span class="ident">state</span>: <span class="ident">ChainState::Linked</span> { <span class="ident">next</span>: <span class="prelude-val">Some</span>(<span class="ident">head</span>) },
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Chain</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> (<span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>);
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Chain</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">type</span> <span class="ident">Item</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> (<span class="kw">dyn</span> <span class="ident">StdError</span> + <span class="lifetime">&#39;static</span>);
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
         <span class="kw">match</span> <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">state</span> {
             <span class="ident">Linked</span> { <span class="ident">next</span> } =&gt; {
-                <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">next</span>)<span class="question-mark">?</span>;
-                <span class="kw-2">*</span><span class="ident">next</span> <span class="op">=</span> <span class="ident">error</span>.<span class="ident">source</span>();
+                <span class="kw">let</span> <span class="ident">error</span> = (<span class="kw-2">*</span><span class="ident">next</span>)<span class="question-mark">?</span>;
+                <span class="kw-2">*</span><span class="ident">next</span> = <span class="ident">error</span>.<span class="ident">source</span>();
                 <span class="prelude-val">Some</span>(<span class="ident">error</span>)
             }
             <span class="ident">Buffered</span> { <span class="ident">rest</span> } =&gt; <span class="ident">rest</span>.<span class="ident">next</span>(),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
-        <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>();
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
+        <span class="kw">let</span> <span class="ident">len</span> = <span class="self">self</span>.<span class="ident">len</span>();
         (<span class="ident">len</span>, <span class="prelude-val">Some</span>(<span class="ident">len</span>))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">DoubleEndedIterator</span> <span class="kw">for</span> <span class="ident">Chain</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">DoubleEndedIterator</span> <span class="kw">for</span> <span class="ident">Chain</span>&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
         <span class="kw">match</span> <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">state</span> {
             <span class="ident">Linked</span> { <span class="kw-2">mut</span> <span class="ident">next</span> } =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rest</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-                <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cause</span>) <span class="op">=</span> <span class="ident">next</span> {
-                    <span class="ident">next</span> <span class="op">=</span> <span class="ident">cause</span>.<span class="ident">source</span>();
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rest</span> = <span class="ident">Vec::new</span>();
+                <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cause</span>) = <span class="ident">next</span> {
+                    <span class="ident">next</span> = <span class="ident">cause</span>.<span class="ident">source</span>();
                     <span class="ident">rest</span>.<span class="ident">push</span>(<span class="ident">cause</span>);
                 }
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rest</span> <span class="op">=</span> <span class="ident">rest</span>.<span class="ident">into_iter</span>();
-                <span class="kw">let</span> <span class="ident">last</span> <span class="op">=</span> <span class="ident">rest</span>.<span class="ident">next_back</span>();
-                <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="ident">Buffered</span> { <span class="ident">rest</span> };
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rest</span> = <span class="ident">rest</span>.<span class="ident">into_iter</span>();
+                <span class="kw">let</span> <span class="ident">last</span> = <span class="ident">rest</span>.<span class="ident">next_back</span>();
+                <span class="self">self</span>.<span class="ident">state</span> = <span class="ident">Buffered</span> { <span class="ident">rest</span> };
                 <span class="ident">last</span>
             }
             <span class="ident">Buffered</span> { <span class="ident">rest</span> } =&gt; <span class="ident">rest</span>.<span class="ident">next_back</span>(),
@@ -191,14 +191,14 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">ExactSizeIterator</span> <span class="kw">for</span> <span class="ident">Chain</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">ExactSizeIterator</span> <span class="kw">for</span> <span class="ident">Chain</span>&lt;<span class="lifetime">&#39;_</span>&gt; {
     <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">state</span> {
             <span class="ident">Linked</span> { <span class="kw-2">mut</span> <span class="ident">next</span> } =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span> <span class="op">=</span> <span class="number">0</span>;
-                <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cause</span>) <span class="op">=</span> <span class="ident">next</span> {
-                    <span class="ident">next</span> <span class="op">=</span> <span class="ident">cause</span>.<span class="ident">source</span>();
-                    <span class="ident">len</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span> = <span class="number">0</span>;
+                <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cause</span>) = <span class="ident">next</span> {
+                    <span class="ident">next</span> = <span class="ident">cause</span>.<span class="ident">source</span>();
+                    <span class="ident">len</span> += <span class="number">1</span>;
                 }
                 <span class="ident">len</span>
             }
@@ -207,7 +207,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Chain</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Chain</span>&lt;<span class="lifetime">&#39;_</span>&gt; {
     <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
         <span class="ident">Chain</span> {
             <span class="ident">state</span>: <span class="ident">ChainState::Buffered</span> {
@@ -217,4 +217,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="eyre" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="eyre" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

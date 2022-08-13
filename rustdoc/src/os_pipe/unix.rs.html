@@ -103,36 +103,36 @@
 <span class="comment">// we can do is call pipe() followed by fcntl(), and hope that no other threads</span>
 <span class="comment">// fork() in between. The following code is copied from the nix crate, where it</span>
 <span class="comment">// works but is deprecated.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;ios&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;haiku&quot;</span>)))]</span>
-<span class="kw">fn</span> <span class="ident">pipe2_cloexec</span>() -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="ident">c_int</span>, <span class="ident">c_int</span>)<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fds</span>: [<span class="ident">c_int</span>; <span class="number">2</span>] <span class="op">=</span> [<span class="number">0</span>; <span class="number">2</span>];
-    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::pipe2</span>(<span class="ident">fds</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">libc::O_CLOEXEC</span>) };
-    <span class="kw">if</span> <span class="ident">res</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;ios&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;haiku&quot;</span>)))]</span>
+<span class="kw">fn</span> <span class="ident">pipe2_cloexec</span>() -&gt; <span class="ident">io::Result</span>&lt;(<span class="ident">c_int</span>, <span class="ident">c_int</span>)&gt; {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fds</span>: [<span class="ident">c_int</span>; <span class="number">2</span>] = [<span class="number">0</span>; <span class="number">2</span>];
+    <span class="kw">let</span> <span class="ident">res</span> = <span class="kw">unsafe</span> { <span class="ident">libc::pipe2</span>(<span class="ident">fds</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">libc::O_CLOEXEC</span>) };
+    <span class="kw">if</span> <span class="ident">res</span> != <span class="number">0</span> {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">io::Error::last_os_error</span>());
     }
     <span class="prelude-val">Ok</span>((<span class="ident">fds</span>[<span class="number">0</span>], <span class="ident">fds</span>[<span class="number">1</span>]))
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;ios&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;haiku&quot;</span>))]</span>
-<span class="kw">fn</span> <span class="ident">pipe2_cloexec</span>() -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="ident">c_int</span>, <span class="ident">c_int</span>)<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fds</span>: [<span class="ident">c_int</span>; <span class="number">2</span>] <span class="op">=</span> [<span class="number">0</span>; <span class="number">2</span>];
-    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::pipe</span>(<span class="ident">fds</span>.<span class="ident">as_mut_ptr</span>()) };
-    <span class="kw">if</span> <span class="ident">res</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;ios&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;haiku&quot;</span>))]</span>
+<span class="kw">fn</span> <span class="ident">pipe2_cloexec</span>() -&gt; <span class="ident">io::Result</span>&lt;(<span class="ident">c_int</span>, <span class="ident">c_int</span>)&gt; {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fds</span>: [<span class="ident">c_int</span>; <span class="number">2</span>] = [<span class="number">0</span>; <span class="number">2</span>];
+    <span class="kw">let</span> <span class="ident">res</span> = <span class="kw">unsafe</span> { <span class="ident">libc::pipe</span>(<span class="ident">fds</span>.<span class="ident">as_mut_ptr</span>()) };
+    <span class="kw">if</span> <span class="ident">res</span> != <span class="number">0</span> {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">io::Error::last_os_error</span>());
     }
-    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::fcntl</span>(<span class="ident">fds</span>[<span class="number">0</span>], <span class="ident">libc::F_SETFD</span>, <span class="ident">libc::FD_CLOEXEC</span>) };
-    <span class="kw">if</span> <span class="ident">res</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+    <span class="kw">let</span> <span class="ident">res</span> = <span class="kw">unsafe</span> { <span class="ident">libc::fcntl</span>(<span class="ident">fds</span>[<span class="number">0</span>], <span class="ident">libc::F_SETFD</span>, <span class="ident">libc::FD_CLOEXEC</span>) };
+    <span class="kw">if</span> <span class="ident">res</span> != <span class="number">0</span> {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">io::Error::last_os_error</span>());
     }
-    <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">libc::fcntl</span>(<span class="ident">fds</span>[<span class="number">1</span>], <span class="ident">libc::F_SETFD</span>, <span class="ident">libc::FD_CLOEXEC</span>) };
-    <span class="kw">if</span> <span class="ident">res</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+    <span class="kw">let</span> <span class="ident">res</span> = <span class="kw">unsafe</span> { <span class="ident">libc::fcntl</span>(<span class="ident">fds</span>[<span class="number">1</span>], <span class="ident">libc::F_SETFD</span>, <span class="ident">libc::FD_CLOEXEC</span>) };
+    <span class="kw">if</span> <span class="ident">res</span> != <span class="number">0</span> {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">io::Error::last_os_error</span>());
     }
     <span class="prelude-val">Ok</span>((<span class="ident">fds</span>[<span class="number">0</span>], <span class="ident">fds</span>[<span class="number">1</span>]))
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">pipe</span>() -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="ident">PipeReader</span>, <span class="ident">PipeWriter</span>)<span class="op">&gt;</span> {
-    <span class="kw">let</span> (<span class="ident">read_fd</span>, <span class="ident">write_fd</span>) <span class="op">=</span> <span class="ident">pipe2_cloexec</span>()<span class="question-mark">?</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">pipe</span>() -&gt; <span class="ident">io::Result</span>&lt;(<span class="ident">PipeReader</span>, <span class="ident">PipeWriter</span>)&gt; {
+    <span class="kw">let</span> (<span class="ident">read_fd</span>, <span class="ident">write_fd</span>) = <span class="ident">pipe2_cloexec</span>()<span class="question-mark">?</span>;
     <span class="kw">unsafe</span> {
         <span class="prelude-val">Ok</span>((
             <span class="ident">PipeReader::from_raw_fd</span>(<span class="ident">read_fd</span>),
@@ -141,9 +141,9 @@
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">dup</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">AsRawFd</span><span class="op">&gt;</span>(<span class="ident">wrapper</span>: <span class="kw-2">&amp;</span><span class="ident">F</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">File</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">fd</span> <span class="op">=</span> <span class="ident">wrapper</span>.<span class="ident">as_raw_fd</span>();
-    <span class="kw">let</span> <span class="ident">temp_file</span> <span class="op">=</span> <span class="ident">ManuallyDrop::new</span>(<span class="kw">unsafe</span> { <span class="ident">File::from_raw_fd</span>(<span class="ident">fd</span>) });
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">dup</span>&lt;<span class="ident">F</span>: <span class="ident">AsRawFd</span>&gt;(<span class="ident">wrapper</span>: <span class="kw-2">&amp;</span><span class="ident">F</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">File</span>&gt; {
+    <span class="kw">let</span> <span class="ident">fd</span> = <span class="ident">wrapper</span>.<span class="ident">as_raw_fd</span>();
+    <span class="kw">let</span> <span class="ident">temp_file</span> = <span class="ident">ManuallyDrop::new</span>(<span class="kw">unsafe</span> { <span class="ident">File::from_raw_fd</span>(<span class="ident">fd</span>) });
     <span class="ident">temp_file</span>.<span class="ident">try_clone</span>()
 }
 
@@ -183,4 +183,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="os_pipe" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="os_pipe" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

@@ -169,7 +169,7 @@
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Empty</span>;
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Empty</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">TokenStream</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">Empty</span>&gt; <span class="kw">for</span> <span class="ident">TokenStream</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">Empty</span>) -&gt; <span class="ident">TokenStream</span> {
         <span class="ident">TokenStream::new</span>()
     }
@@ -182,11 +182,11 @@
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parsed</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">syn::Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parsed</span>&lt;<span class="ident">T</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">syn::Result</span>&lt;<span class="ident">T</span>&gt;&gt;
     <span class="kw">where</span>
         <span class="ident">T</span>: <span class="ident">syn::parse::Parse</span>,
     {
-        <span class="kw">let</span> <span class="ident">tokens</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">collect_tail</span>(<span class="ident">TokenStream::new</span>());
+        <span class="kw">let</span> <span class="ident">tokens</span> = <span class="self">self</span>.<span class="ident">collect_tail</span>(<span class="ident">TokenStream::new</span>());
 
         <span class="kw">if</span> <span class="ident">tokens</span>.<span class="ident">is_empty</span>() {
             <span class="kw">return</span> <span class="prelude-val">None</span>;
@@ -195,17 +195,17 @@
         <span class="prelude-val">Some</span>(<span class="ident">syn::parse2</span>(<span class="ident">tokens</span>))
     }
 
-    <span class="kw">fn</span> <span class="ident">next_tt</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TokenTree</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next_tt</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">TokenTree</span>&gt; {
         <span class="ident">expect_punct</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">next</span>(), <span class="string">&#39;,&#39;</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">collect_tail</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">first</span>: <span class="ident">T</span>) -&gt; <span class="ident">TokenStream</span>
+    <span class="kw">fn</span> <span class="ident">collect_tail</span>&lt;<span class="ident">T</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">first</span>: <span class="ident">T</span>) -&gt; <span class="ident">TokenStream</span>
     <span class="kw">where</span>
-        <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">TokenStream</span><span class="op">&gt;</span>,
+        <span class="ident">T</span>: <span class="ident">Into</span>&lt;<span class="ident">TokenStream</span>&gt;,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">first</span>.<span class="ident">into</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> = <span class="ident">first</span>.<span class="ident">into</span>();
 
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">tt</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">next_tt</span>() {
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">tt</span>) = <span class="self">self</span>.<span class="ident">next_tt</span>() {
             <span class="ident">out</span>.<span class="ident">extend</span>(<span class="prelude-val">Some</span>(<span class="ident">tt</span>));
         }
 
@@ -213,7 +213,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">parse_unnamed</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">first</span>: <span class="ident">Ident</span>, <span class="ident">next</span>: <span class="ident">TokenTree</span>) -&gt; <span class="ident">Nested</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">TokenStream::from</span>(<span class="ident">TokenTree::Ident</span>(<span class="ident">first</span>));
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> = <span class="ident">TokenStream::from</span>(<span class="ident">TokenTree::Ident</span>(<span class="ident">first</span>));
 
         <span class="ident">out</span>.<span class="ident">extend</span>(<span class="self">self</span>.<span class="ident">collect_tail</span>(<span class="ident">next</span>));
 
@@ -221,7 +221,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">parse_assign</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="ident">Ident</span>) -&gt; <span class="ident">Nested</span> {
-        <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">collect_tail</span>(<span class="ident">Empty</span>);
+        <span class="kw">let</span> <span class="ident">value</span> = <span class="self">self</span>.<span class="ident">collect_tail</span>(<span class="ident">Empty</span>);
 
         <span class="ident">Nested::Named</span>(<span class="ident">name</span>, <span class="ident">NestedValue::Assign</span>(<span class="ident">value</span>))
     }
@@ -231,16 +231,16 @@
     }
 
     <span class="kw">fn</span> <span class="ident">parse_keyword</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">keyword</span>: <span class="ident">Ident</span>, <span class="ident">name</span>: <span class="ident">Ident</span>) -&gt; <span class="ident">Nested</span> {
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="ident">expect_punct</span>(<span class="self">self</span>.<span class="ident">next_tt</span>(), <span class="string">&#39;=&#39;</span>);
+        <span class="kw">let</span> <span class="ident">error</span> = <span class="ident">expect_punct</span>(<span class="self">self</span>.<span class="ident">next_tt</span>(), <span class="string">&#39;=&#39;</span>);
 
         <span class="kw">match</span> <span class="ident">error</span> {
             <span class="prelude-val">Some</span>(<span class="ident">error</span>) =&gt; {
-                <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">collect_tail</span>(<span class="ident">error</span>);
+                <span class="kw">let</span> <span class="ident">error</span> = <span class="self">self</span>.<span class="ident">collect_tail</span>(<span class="ident">error</span>);
 
                 <span class="ident">Nested::Unexpected</span>(<span class="ident">error</span>)
             }
             <span class="prelude-val">None</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">collect_tail</span>(<span class="ident">Empty</span>);
+                <span class="kw">let</span> <span class="ident">value</span> = <span class="self">self</span>.<span class="ident">collect_tail</span>(<span class="ident">Empty</span>);
 
                 <span class="ident">Nested::Named</span>(<span class="ident">keyword</span>, <span class="ident">NestedValue::KeywordAssign</span>(<span class="ident">name</span>, <span class="ident">value</span>))
             }
@@ -249,15 +249,15 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">AttributeParser</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">Nested</span>;
+    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">Nested</span>;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Nested</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">first</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">next</span>()<span class="question-mark">?</span>;
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Nested</span>&gt; {
+        <span class="kw">let</span> <span class="ident">first</span> = <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">next</span>()<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">first</span> {
+        <span class="kw">let</span> <span class="ident">name</span> = <span class="kw">match</span> <span class="ident">first</span> {
             <span class="ident">TokenTree::Ident</span>(<span class="ident">ident</span>) =&gt; <span class="ident">ident</span>,
             <span class="ident">tt</span> =&gt; {
-                <span class="kw">let</span> <span class="ident">stream</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">collect_tail</span>(<span class="ident">tt</span>);
+                <span class="kw">let</span> <span class="ident">stream</span> = <span class="self">self</span>.<span class="ident">collect_tail</span>(<span class="ident">tt</span>);
 
                 <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">Nested::Unnamed</span>(<span class="ident">stream</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>()));
             }
@@ -273,4 +273,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="logos_derive" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="logos_derive" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

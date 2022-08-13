@@ -135,11 +135,11 @@
     <span class="doccomment">/// Options for modifying the behavior of wait/waitpid</span>
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WaitOptions</span>: <span class="ident">u32</span> {
         <span class="doccomment">/// Return immediately if no child has exited.</span>
-        <span class="kw">const</span> <span class="ident">NOHANG</span> <span class="op">=</span> <span class="ident">backend::process::wait::WNOHANG</span> <span class="kw">as</span> <span class="kw">_</span>;
+        <span class="kw">const</span> <span class="ident">NOHANG</span> = <span class="ident">backend::process::wait::WNOHANG</span> <span class="kw">as</span> <span class="kw">_</span>;
         <span class="doccomment">/// Return if a child has stopped (but not traced via `ptrace(2)`)</span>
-        <span class="kw">const</span> <span class="ident">UNTRACED</span> <span class="op">=</span> <span class="ident">backend::process::wait::WUNTRACED</span> <span class="kw">as</span> <span class="kw">_</span>;
+        <span class="kw">const</span> <span class="ident">UNTRACED</span> = <span class="ident">backend::process::wait::WUNTRACED</span> <span class="kw">as</span> <span class="kw">_</span>;
         <span class="doccomment">/// Return if a stopped child has been resumed by delivery of `SIGCONT`</span>
-        <span class="kw">const</span> <span class="ident">CONTINUED</span> <span class="op">=</span> <span class="ident">backend::process::wait::WCONTINUED</span> <span class="kw">as</span> <span class="kw">_</span>;
+        <span class="kw">const</span> <span class="ident">CONTINUED</span> = <span class="ident">backend::process::wait::WCONTINUED</span> <span class="kw">as</span> <span class="kw">_</span>;
     }
 }
 
@@ -175,7 +175,7 @@
     <span class="doccomment">/// Returns the number of the signal that stopped the process,</span>
     <span class="doccomment">/// if the process was stopped by a signal.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stopping_signal</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stopping_signal</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">u32</span>&gt; {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stopped</span>() {
             <span class="prelude-val">Some</span>(<span class="ident">backend::process::wait::WSTOPSIG</span>(<span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="kw">_</span>) <span class="kw">as</span> <span class="kw">_</span>)
         } <span class="kw">else</span> {
@@ -186,7 +186,7 @@
     <span class="doccomment">/// Returns the exit status number returned by the process,</span>
     <span class="doccomment">/// if it exited normally.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exit_status</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exit_status</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">u32</span>&gt; {
         <span class="kw">if</span> <span class="ident">backend::process::wait::WIFEXITED</span>(<span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="kw">_</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">backend::process::wait::WEXITSTATUS</span>(<span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="kw">_</span>) <span class="kw">as</span> <span class="kw">_</span>)
         } <span class="kw">else</span> {
@@ -197,7 +197,7 @@
     <span class="doccomment">/// Returns the number of the signal that terminated the process,</span>
     <span class="doccomment">/// if the process was terminated by a signal.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">terminating_signal</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">terminating_signal</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">u32</span>&gt; {
         <span class="kw">if</span> <span class="ident">backend::process::wait::WIFSIGNALED</span>(<span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="kw">_</span>) {
             <span class="prelude-val">Some</span>(<span class="ident">backend::process::wait::WTERMSIG</span>(<span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="kw">_</span>) <span class="kw">as</span> <span class="kw">_</span>)
         } <span class="kw">else</span> {
@@ -230,10 +230,10 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [POSIX]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/wait.html</span>
 <span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man2/waitpid.2.html</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;wasi&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>))]</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">waitpid</span>(<span class="ident">pid</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Pid</span><span class="op">&gt;</span>, <span class="ident">waitopts</span>: <span class="ident">WaitOptions</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">WaitStatus</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="prelude-val">Ok</span>(<span class="ident">backend::process::syscalls::waitpid</span>(<span class="ident">pid</span>, <span class="ident">waitopts</span>)<span class="question-mark">?</span>.<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">status</span>)<span class="op">|</span> <span class="ident">status</span>))
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">waitpid</span>(<span class="ident">pid</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">Pid</span>&gt;, <span class="ident">waitopts</span>: <span class="ident">WaitOptions</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">WaitStatus</span>&gt;&gt; {
+    <span class="prelude-val">Ok</span>(<span class="ident">backend::process::syscalls::waitpid</span>(<span class="ident">pid</span>, <span class="ident">waitopts</span>)<span class="question-mark">?</span>.<span class="ident">map</span>(|(<span class="kw">_</span>, <span class="ident">status</span>)| <span class="ident">status</span>))
 }
 
 <span class="doccomment">/// `wait(waitopts)`—Wait for any of the children of calling process to</span>
@@ -251,10 +251,10 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [POSIX]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/wait.html</span>
 <span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man2/waitpid.2.html</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;wasi&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>))]</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wait</span>(<span class="ident">waitopts</span>: <span class="ident">WaitOptions</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">Pid</span>, <span class="ident">WaitStatus</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wait</span>(<span class="ident">waitopts</span>: <span class="ident">WaitOptions</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="prelude-ty">Option</span>&lt;(<span class="ident">Pid</span>, <span class="ident">WaitStatus</span>)&gt;&gt; {
     <span class="ident">backend::process::syscalls::wait</span>(<span class="ident">waitopts</span>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

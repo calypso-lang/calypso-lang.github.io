@@ -201,15 +201,15 @@
 <span class="doccomment">/// Check that the premultiplication of the given state identifier can</span>
 <span class="doccomment">/// fit into the representation indicated by `S`. If it cannot, or if it</span>
 <span class="doccomment">/// overflows `usize` itself, then an error is returned.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">premultiply_overflow_error</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">premultiply_overflow_error</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>&gt;(
     <span class="ident">last_state</span>: <span class="ident">S</span>,
     <span class="ident">alphabet_len</span>: <span class="ident">usize</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">requested</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">last_state</span>.<span class="ident">to_usize</span>().<span class="ident">checked_mul</span>(<span class="ident">alphabet_len</span>) {
+) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">let</span> <span class="ident">requested</span> = <span class="kw">match</span> <span class="ident">last_state</span>.<span class="ident">to_usize</span>().<span class="ident">checked_mul</span>(<span class="ident">alphabet_len</span>) {
         <span class="prelude-val">Some</span>(<span class="ident">requested</span>) =&gt; <span class="ident">requested</span>,
         <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::premultiply_overflow</span>(<span class="number">0</span>, <span class="number">0</span>)),
     };
-    <span class="kw">if</span> <span class="ident">requested</span> <span class="op">&gt;</span> <span class="ident">S::max_id</span>() {
+    <span class="kw">if</span> <span class="ident">requested</span> &gt; <span class="ident">S::max_id</span>() {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error::premultiply_overflow</span>(<span class="ident">S::max_id</span>(), <span class="ident">requested</span>));
     }
     <span class="prelude-val">Ok</span>(())
@@ -218,8 +218,8 @@
 <span class="doccomment">/// Convert the given `usize` to the chosen state identifier</span>
 <span class="doccomment">/// representation. If the given value cannot fit in the chosen</span>
 <span class="doccomment">/// representation, then an error is returned.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">usize_to_state_id</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span>(<span class="ident">value</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">value</span> <span class="op">&gt;</span> <span class="ident">S::max_id</span>() {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">usize_to_state_id</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>&gt;(<span class="ident">value</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S</span>&gt; {
+    <span class="kw">if</span> <span class="ident">value</span> &gt; <span class="ident">S::max_id</span>() {
         <span class="prelude-val">Err</span>(<span class="ident">Error::state_id_overflow</span>(<span class="ident">S::max_id</span>()))
     } <span class="kw">else</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">S::from_usize</span>(<span class="ident">value</span>))
@@ -228,13 +228,13 @@
 
 <span class="doccomment">/// Return the unique identifier for an automaton&#39;s fail state in the chosen</span>
 <span class="doccomment">/// representation indicated by `S`.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fail_id</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span>() -&gt; <span class="ident">S</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fail_id</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>&gt;() -&gt; <span class="ident">S</span> {
     <span class="ident">S::from_usize</span>(<span class="number">0</span>)
 }
 
 <span class="doccomment">/// Return the unique identifier for an automaton&#39;s fail state in the chosen</span>
 <span class="doccomment">/// representation indicated by `S`.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dead_id</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span>() -&gt; <span class="ident">S</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dead_id</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>&gt;() -&gt; <span class="ident">S</span> {
     <span class="ident">S::from_usize</span>(<span class="number">1</span>)
 }
 
@@ -263,14 +263,14 @@
 <span class="doccomment">/// targets that can represent all corresponding values in a `usize`.)</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">StateID</span>:
     <span class="ident">private::Sealed</span>
-    <span class="op">+</span> <span class="ident">Clone</span>
-    <span class="op">+</span> <span class="ident">Copy</span>
-    <span class="op">+</span> <span class="ident">Debug</span>
-    <span class="op">+</span> <span class="ident">Eq</span>
-    <span class="op">+</span> <span class="ident">Hash</span>
-    <span class="op">+</span> <span class="ident">PartialEq</span>
-    <span class="op">+</span> <span class="ident">PartialOrd</span>
-    <span class="op">+</span> <span class="ident">Ord</span>
+    + <span class="ident">Clone</span>
+    + <span class="ident">Copy</span>
+    + <span class="ident">Debug</span>
+    + <span class="ident">Eq</span>
+    + <span class="ident">Hash</span>
+    + <span class="ident">PartialEq</span>
+    + <span class="ident">PartialOrd</span>
+    + <span class="ident">Ord</span>
 {
     <span class="doccomment">/// Convert from a `usize` to this implementation&#39;s representation.</span>
     <span class="doccomment">///</span>
@@ -347,7 +347,7 @@
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_pointer_width</span> = <span class="string">&quot;32&quot;</span>, <span class="ident">target_pointer_width</span> = <span class="string">&quot;64&quot;</span>))]</span>
 <span class="kw">impl</span> <span class="ident">StateID</span> <span class="kw">for</span> <span class="ident">u32</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">from_usize</span>(<span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="ident">u32</span> {
@@ -365,7 +365,7 @@
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> = <span class="string">&quot;64&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">StateID</span> <span class="kw">for</span> <span class="ident">u64</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">from_usize</span>(<span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="ident">u64</span> {
@@ -383,4 +383,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="aho_corasick" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="aho_corasick" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

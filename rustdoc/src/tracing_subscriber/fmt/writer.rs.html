@@ -1559,7 +1559,7 @@
 <span class="doccomment">/// [`Metadata`]: tracing_core::Metadata</span>
 <span class="doccomment">/// [levels]: tracing_core::Level</span>
 <span class="doccomment">/// [targets]: tracing_core::Metadata::target</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// The concrete [`io::Write`] implementation returned by [`make_writer`].</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`io::Write`]: std::io::Write</span>
@@ -1669,8 +1669,8 @@
     <span class="doccomment">/// [make_writer]: MakeWriter::make_writer</span>
     <span class="doccomment">/// [`WARN`]: tracing_core::Level::WARN</span>
     <span class="doccomment">/// [`ERROR`]: tracing_core::Level::ERROR</span>
-    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
-        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">meta</span>;
+    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
+        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">meta</span>;
         <span class="self">self</span>.<span class="ident">make_writer</span>()
     }
 }
@@ -1681,7 +1681,7 @@
 <span class="doccomment">/// This is not intended to be implemented directly for user-defined</span>
 <span class="doccomment">/// [`MakeWriter`]s; instead, it should be imported when the desired methods are</span>
 <span class="doccomment">/// used.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">MakeWriterExt</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">MakeWriterExt</span>&lt;<span class="lifetime">&#39;a</span>&gt;: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// Wraps `self` and returns a [`MakeWriter`] that will only write output</span>
     <span class="doccomment">/// for events at or below the provided verbosity [`Level`]. For instance,</span>
     <span class="doccomment">/// `Level::TRACE` is considered to be _more verbose` than `Level::INFO`.</span>
@@ -1740,7 +1740,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`Level`]: tracing_core::Level</span>
     <span class="doccomment">/// [`io::Write`]: std::io::Write</span>
-    <span class="kw">fn</span> <span class="ident">with_max_level</span>(<span class="self">self</span>, <span class="ident">level</span>: <span class="ident">tracing_core::Level</span>) -&gt; <span class="ident">WithMaxLevel</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">with_max_level</span>(<span class="self">self</span>, <span class="ident">level</span>: <span class="ident">tracing_core::Level</span>) -&gt; <span class="ident">WithMaxLevel</span>&lt;<span class="self">Self</span>&gt;
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Sized</span>,
     {
@@ -1782,7 +1782,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// [`Level`]: tracing_core::Level</span>
     <span class="doccomment">/// [`io::Write`]: std::io::Write</span>
-    <span class="kw">fn</span> <span class="ident">with_min_level</span>(<span class="self">self</span>, <span class="ident">level</span>: <span class="ident">tracing_core::Level</span>) -&gt; <span class="ident">WithMinLevel</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">with_min_level</span>(<span class="self">self</span>, <span class="ident">level</span>: <span class="ident">tracing_core::Level</span>) -&gt; <span class="ident">WithMinLevel</span>&lt;<span class="self">Self</span>&gt;
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Sized</span>,
     {
@@ -1861,10 +1861,10 @@
     <span class="doccomment">/// [`Metadata`]: tracing_core::Metadata</span>
     <span class="doccomment">/// [mwf]: MakeWriter::make_writer_for</span>
     <span class="doccomment">/// [own]: EitherWriter::none</span>
-    <span class="kw">fn</span> <span class="ident">with_filter</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">filter</span>: <span class="ident">F</span>) -&gt; <span class="ident">WithFilter</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">F</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">with_filter</span>&lt;<span class="ident">F</span>&gt;(<span class="self">self</span>, <span class="ident">filter</span>: <span class="ident">F</span>) -&gt; <span class="ident">WithFilter</span>&lt;<span class="self">Self</span>, <span class="ident">F</span>&gt;
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Sized</span>,
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span>,
+        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">bool</span>,
     {
         <span class="ident">WithFilter::new</span>(<span class="self">self</span>, <span class="ident">filter</span>)
     }
@@ -1916,10 +1916,10 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [writers]: std::io::Write</span>
-    <span class="kw">fn</span> <span class="ident">and</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="ident">B</span>) -&gt; <span class="ident">Tee</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">B</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">and</span>&lt;<span class="ident">B</span>&gt;(<span class="self">self</span>, <span class="ident">other</span>: <span class="ident">B</span>) -&gt; <span class="ident">Tee</span>&lt;<span class="self">Self</span>, <span class="ident">B</span>&gt;
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Sized</span>,
-        <span class="ident">B</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Sized</span>,
+        <span class="ident">B</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; + <span class="ident">Sized</span>,
     {
         <span class="ident">Tee::new</span>(<span class="self">self</span>, <span class="ident">other</span>)
     }
@@ -1947,10 +1947,10 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`make_writer`]: MakeWriter::make_writer</span>
     <span class="doccomment">/// [own]: EitherWriter::none</span>
-    <span class="kw">fn</span> <span class="ident">or_else</span><span class="op">&lt;</span><span class="ident">W</span>, <span class="ident">B</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="ident">B</span>) -&gt; <span class="ident">OrElse</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">B</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">or_else</span>&lt;<span class="ident">W</span>, <span class="ident">B</span>&gt;(<span class="self">self</span>, <span class="ident">other</span>: <span class="ident">B</span>) -&gt; <span class="ident">OrElse</span>&lt;<span class="self">Self</span>, <span class="ident">B</span>&gt;
     <span class="kw">where</span>
-        <span class="self">Self</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">OptionalWriter</span><span class="op">&lt;</span><span class="ident">W</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Sized</span>,
-        <span class="ident">B</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Sized</span>,
+        <span class="self">Self</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">Writer</span> = <span class="ident">OptionalWriter</span>&lt;<span class="ident">W</span>&gt;&gt; + <span class="ident">Sized</span>,
+        <span class="ident">B</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; + <span class="ident">Sized</span>,
         <span class="ident">W</span>: <span class="ident">Write</span>,
     {
         <span class="ident">OrElse::new</span>(<span class="self">self</span>, <span class="ident">other</span>)
@@ -2006,7 +2006,7 @@
 <span class="doccomment">/// [`Subscriber`]: tracing::Subscriber</span>
 <span class="doccomment">/// [`io::Write`]: std::io::Write</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BoxMakeWriter</span> {
-    <span class="ident">inner</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Write</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span><span class="op">&gt;</span>,
+    <span class="ident">inner</span>: <span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="kw">for</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">Writer</span> = <span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">Write</span> + <span class="lifetime">&#39;a</span>&gt;&gt; + <span class="ident">Send</span> + <span class="ident">Sync</span>&gt;,
     <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
 }
 
@@ -2017,7 +2017,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [writer]: std::io::Write</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EitherWriter</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EitherWriter</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt; {
     <span class="doccomment">/// A writer of type `A`.</span>
     <span class="ident">A</span>(<span class="ident">A</span>),
     <span class="doccomment">/// A writer of type `B`.</span>
@@ -2031,7 +2031,7 @@
 <span class="doccomment">/// event&#39;s [`Metadata`].</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// [writer]: std::io::Write</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">OptionalWriter</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">EitherWriter</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">std::io::Sink</span><span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">OptionalWriter</span>&lt;<span class="ident">T</span>&gt; = <span class="ident">EitherWriter</span>&lt;<span class="ident">T</span>, <span class="ident">std::io::Sink</span>&gt;;
 
 <span class="doccomment">/// A [`MakeWriter`] combinator that only returns an enabled [writer] for spans</span>
 <span class="doccomment">/// and events with metadata at or below a specified verbosity [`Level`].</span>
@@ -2042,7 +2042,7 @@
 <span class="doccomment">/// [writer]: std::io::Write</span>
 <span class="doccomment">/// [`Level`]: tracing_core::Level</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WithMaxLevel</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WithMaxLevel</span>&lt;<span class="ident">M</span>&gt; {
     <span class="ident">make</span>: <span class="ident">M</span>,
     <span class="ident">level</span>: <span class="ident">tracing_core::Level</span>,
 }
@@ -2056,7 +2056,7 @@
 <span class="doccomment">/// [writer]: std::io::Write</span>
 <span class="doccomment">/// [`Level`]: tracing_core::Level</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WithMinLevel</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WithMinLevel</span>&lt;<span class="ident">M</span>&gt; {
     <span class="ident">make</span>: <span class="ident">M</span>,
     <span class="ident">level</span>: <span class="ident">tracing_core::Level</span>,
 }
@@ -2073,7 +2073,7 @@
 <span class="doccomment">/// [ows]: EitherWriter::some</span>
 <span class="doccomment">/// [own]: EitherWriter::none</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WithFilter</span><span class="op">&lt;</span><span class="ident">M</span>, <span class="ident">F</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WithFilter</span>&lt;<span class="ident">M</span>, <span class="ident">F</span>&gt; {
     <span class="ident">make</span>: <span class="ident">M</span>,
     <span class="ident">filter</span>: <span class="ident">F</span>,
 }
@@ -2087,7 +2087,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [own]: EitherWriter::none</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OrElse</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OrElse</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt; {
     <span class="ident">inner</span>: <span class="ident">A</span>,
     <span class="ident">or_else</span>: <span class="ident">B</span>,
 }
@@ -2098,7 +2098,7 @@
 <span class="doccomment">/// This is returned by the [`MakeWriterExt::and`] method. See the method</span>
 <span class="doccomment">/// documentation for details.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Tee</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Tee</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt; {
     <span class="ident">a</span>: <span class="ident">A</span>,
     <span class="ident">b</span>: <span class="ident">B</span>,
 }
@@ -2116,13 +2116,13 @@
 <span class="doccomment">/// [`MutexGuard`]: std::sync::MutexGuard</span>
 <span class="doccomment">/// [`Mutex`]: std::sync::Mutex</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MutexGuardWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span>(<span class="ident">MutexGuard</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MutexGuardWriter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">W</span>&gt;(<span class="ident">MutexGuard</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">W</span>&gt;);
 
 <span class="doccomment">/// Implements [`std::io::Write`] for an [`Arc`]&lt;W&gt; where `&amp;W: Write`.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This is an implementation detail of the [`MakeWriter`] impl for [`Arc`].</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ArcWriter</span><span class="op">&lt;</span><span class="ident">W</span><span class="op">&gt;</span>(<span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">W</span><span class="op">&gt;</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ArcWriter</span>&lt;<span class="ident">W</span>&gt;(<span class="ident">Arc</span>&lt;<span class="ident">W</span>&gt;);
 
 <span class="doccomment">/// A bridge between `fmt::Write` and `io::Write`.</span>
 <span class="doccomment">///</span>
@@ -2131,35 +2131,35 @@
 <span class="doccomment">/// `tracing-subscriber`&#39;s `FormatEvent`/`FormatTime` traits expect a</span>
 <span class="doccomment">/// `fmt::Write` implementation, while `serde_json::Serializer` and `time`&#39;s</span>
 <span class="doccomment">/// `format_into` methods expect an `io::Write`.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;json&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;time&quot;</span>))]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::fmt</span>) <span class="kw">struct</span> <span class="ident">WriteAdaptor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> = <span class="string">&quot;json&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;time&quot;</span>))]</span>
+<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::fmt</span>) <span class="kw">struct</span> <span class="ident">WriteAdaptor</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="ident">fmt_write</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">fmt::Write</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">F</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">F</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">F</span>, <span class="ident">W</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">F</span>
 <span class="kw">where</span>
     <span class="ident">F</span>: <span class="ident">Fn</span>() -&gt; <span class="ident">W</span>,
     <span class="ident">W</span>: <span class="ident">io::Write</span>,
 {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">W</span>;
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="ident">W</span>;
 
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
         (<span class="self">self</span>)()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">W</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">W</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">Arc</span>&lt;<span class="ident">W</span>&gt;
 <span class="kw">where</span>
-    <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">W</span>: <span class="ident">io::Write</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>,
+    <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">W</span>: <span class="ident">io::Write</span> + <span class="lifetime">&#39;a</span>,
 {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">W</span>;
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">W</span>;
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
         <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">std::fs::File</span> {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">std::fs::File</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">std::fs::File</span> {
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">std::fs::File</span>;
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
         <span class="self">self</span>
     }
@@ -2175,19 +2175,19 @@
 }
 
 <span class="kw">impl</span> <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">TestWriter</span> {
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">out_str</span> <span class="op">=</span> <span class="ident">String::from_utf8_lossy</span>(<span class="ident">buf</span>);
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
+        <span class="kw">let</span> <span class="ident">out_str</span> = <span class="ident">String::from_utf8_lossy</span>(<span class="ident">buf</span>);
         <span class="macro">print!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">out_str</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">buf</span>.<span class="ident">len</span>())
     }
 
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">TestWriter</span> {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="self">Self</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">TestWriter</span> {
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="self">Self</span>;
 
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
         <span class="ident"><span class="self">Self</span>::default</span>()
@@ -2199,27 +2199,27 @@
 <span class="kw">impl</span> <span class="ident">BoxMakeWriter</span> {
     <span class="doccomment">/// Constructs a `BoxMakeWriter` wrapping a type implementing [`MakeWriter`].</span>
     <span class="doccomment">///</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(<span class="ident">make_writer</span>: <span class="ident">M</span>) -&gt; <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>&lt;<span class="ident">M</span>&gt;(<span class="ident">make_writer</span>: <span class="ident">M</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">M</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+        <span class="ident">M</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; + <span class="ident">Send</span> + <span class="ident">Sync</span> + <span class="lifetime">&#39;static</span>,
     {
         <span class="self">Self</span> {
             <span class="ident">inner</span>: <span class="ident">Box::new</span>(<span class="ident">Boxed</span>(<span class="ident">make_writer</span>)),
-            <span class="ident">name</span>: <span class="ident">std::any::type_name</span>::<span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(),
+            <span class="ident">name</span>: <span class="ident">std::any::type_name</span>::&lt;<span class="ident">M</span>&gt;(),
         }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">BoxMakeWriter</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
         <span class="ident">f</span>.<span class="ident">debug_tuple</span>(<span class="string">&quot;BoxMakeWriter&quot;</span>)
             .<span class="ident">field</span>(<span class="kw-2">&amp;</span><span class="macro">format_args!</span>(<span class="string">&quot;&lt;{}&gt;&quot;</span>, <span class="self">self</span>.<span class="ident">name</span>))
             .<span class="ident">finish</span>()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BoxMakeWriter</span> {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Write</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">BoxMakeWriter</span> {
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">Write</span> + <span class="lifetime">&#39;a</span>&gt;;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
@@ -2227,82 +2227,82 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
+    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
         <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">make_writer_for</span>(<span class="ident">meta</span>)
     }
 }
 
-<span class="kw">struct</span> <span class="ident">Boxed</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(<span class="ident">M</span>);
+<span class="kw">struct</span> <span class="ident">Boxed</span>&lt;<span class="ident">M</span>&gt;(<span class="ident">M</span>);
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">M</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Boxed</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">M</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">Boxed</span>&lt;<span class="ident">M</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">M</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+    <span class="ident">M</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt;,
 {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Write</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">Write</span> + <span class="lifetime">&#39;a</span>&gt;;
 
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
-        <span class="kw">let</span> <span class="ident">w</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">make_writer</span>();
+        <span class="kw">let</span> <span class="ident">w</span> = <span class="self">self</span>.<span class="number">0</span>.<span class="ident">make_writer</span>();
         <span class="ident">Box::new</span>(<span class="ident">w</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
-        <span class="kw">let</span> <span class="ident">w</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">make_writer_for</span>(<span class="ident">meta</span>);
+    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
+        <span class="kw">let</span> <span class="ident">w</span> = <span class="self">self</span>.<span class="number">0</span>.<span class="ident">make_writer_for</span>(<span class="ident">meta</span>);
         <span class="ident">Box::new</span>(<span class="ident">w</span>)
     }
 }
 
 <span class="comment">// === impl Mutex/MutexGuardWriter ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">W</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">W</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">Mutex</span>&lt;<span class="ident">W</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">W</span>: <span class="ident">io::Write</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>,
+    <span class="ident">W</span>: <span class="ident">io::Write</span> + <span class="lifetime">&#39;a</span>,
 {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">MutexGuardWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="ident">MutexGuardWriter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">W</span>&gt;;
 
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
         <span class="ident">MutexGuardWriter</span>(<span class="self">self</span>.<span class="ident">lock</span>().<span class="ident">expect</span>(<span class="string">&quot;lock poisoned&quot;</span>))
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">MutexGuardWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">W</span>&gt; <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">MutexGuardWriter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">W</span>&gt;
 <span class="kw">where</span>
     <span class="ident">W</span>: <span class="ident">io::Write</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">write</span>(<span class="ident">buf</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">flush</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_vectored</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="ident">io::IoSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_vectored</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="ident">io::IoSlice</span>&lt;<span class="lifetime">&#39;_</span>&gt;]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">write_vectored</span>(<span class="ident">bufs</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_all</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_all</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">write_all</span>(<span class="ident">buf</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_fmt</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fmt</span>: <span class="ident">std::fmt::Arguments</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_fmt</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fmt</span>: <span class="ident">std::fmt::Arguments</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">write_fmt</span>(<span class="ident">fmt</span>)
     }
 }
 
 <span class="comment">// === impl EitherWriter ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">EitherWriter</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt; <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">EitherWriter</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt;
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">io::Write</span>,
     <span class="ident">B</span>: <span class="ident">io::Write</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">EitherWriter::A</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">write</span>(<span class="ident">buf</span>),
             <span class="ident">EitherWriter::B</span>(<span class="ident">b</span>) =&gt; <span class="ident">b</span>.<span class="ident">write</span>(<span class="ident">buf</span>),
@@ -2310,7 +2310,7 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">EitherWriter::A</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">flush</span>(),
             <span class="ident">EitherWriter::B</span>(<span class="ident">b</span>) =&gt; <span class="ident">b</span>.<span class="ident">flush</span>(),
@@ -2318,7 +2318,7 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_vectored</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="ident">io::IoSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_vectored</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="ident">io::IoSlice</span>&lt;<span class="lifetime">&#39;_</span>&gt;]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">EitherWriter::A</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">write_vectored</span>(<span class="ident">bufs</span>),
             <span class="ident">EitherWriter::B</span>(<span class="ident">b</span>) =&gt; <span class="ident">b</span>.<span class="ident">write_vectored</span>(<span class="ident">bufs</span>),
@@ -2326,7 +2326,7 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_all</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_all</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">EitherWriter::A</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">write_all</span>(<span class="ident">buf</span>),
             <span class="ident">EitherWriter::B</span>(<span class="ident">b</span>) =&gt; <span class="ident">b</span>.<span class="ident">write_all</span>(<span class="ident">buf</span>),
@@ -2334,7 +2334,7 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_fmt</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fmt</span>: <span class="ident">std::fmt::Arguments</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_fmt</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fmt</span>: <span class="ident">std::fmt::Arguments</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">EitherWriter::A</span>(<span class="ident">a</span>) =&gt; <span class="ident">a</span>.<span class="ident">write_fmt</span>(<span class="ident">fmt</span>),
             <span class="ident">EitherWriter::B</span>(<span class="ident">b</span>) =&gt; <span class="ident">b</span>.<span class="ident">write_fmt</span>(<span class="ident">fmt</span>),
@@ -2342,7 +2342,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">OptionalWriter</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">OptionalWriter</span>&lt;<span class="ident">T</span>&gt; {
     <span class="doccomment">/// Returns a [disabled writer].</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Any bytes written to the returned writer are discarded.</span>
@@ -2364,9 +2364,9 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">OptionalWriter</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">From</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt;&gt; <span class="kw">for</span> <span class="ident">OptionalWriter</span>&lt;<span class="ident">T</span>&gt; {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">opt</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">opt</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt;) -&gt; <span class="self">Self</span> {
         <span class="kw">match</span> <span class="ident">opt</span> {
             <span class="prelude-val">Some</span>(<span class="ident">writer</span>) =&gt; <span class="ident"><span class="self">Self</span>::some</span>(<span class="ident">writer</span>),
             <span class="prelude-val">None</span> =&gt; <span class="ident"><span class="self">Self</span>::none</span>(),
@@ -2376,7 +2376,7 @@
 
 <span class="comment">// === impl WithMaxLevel ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span> <span class="ident">WithMaxLevel</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">M</span>&gt; <span class="ident">WithMaxLevel</span>&lt;<span class="ident">M</span>&gt; {
     <span class="doccomment">/// Wraps the provided [`MakeWriter`] with a maximum [`Level`], so that it</span>
     <span class="doccomment">/// returns [`OptionalWriter::none`] for spans and events whose level is</span>
     <span class="doccomment">/// more verbose than the maximum level.</span>
@@ -2389,8 +2389,8 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">M</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WithMaxLevel</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">OptionalWriter</span><span class="op">&lt;</span><span class="ident">M::Writer</span><span class="op">&gt;</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">M</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt;&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">WithMaxLevel</span>&lt;<span class="ident">M</span>&gt; {
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="ident">OptionalWriter</span>&lt;<span class="ident">M::Writer</span>&gt;;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
@@ -2399,8 +2399,8 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
-        <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">level</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">level</span> {
+    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
+        <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">level</span>() &lt;= <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">level</span> {
             <span class="kw">return</span> <span class="ident">OptionalWriter::some</span>(<span class="self">self</span>.<span class="ident">make</span>.<span class="ident">make_writer_for</span>(<span class="ident">meta</span>));
         }
         <span class="ident">OptionalWriter::none</span>()
@@ -2409,7 +2409,7 @@
 
 <span class="comment">// === impl WithMinLevel ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span> <span class="ident">WithMinLevel</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">M</span>&gt; <span class="ident">WithMinLevel</span>&lt;<span class="ident">M</span>&gt; {
     <span class="doccomment">/// Wraps the provided [`MakeWriter`] with a minimum [`Level`], so that it</span>
     <span class="doccomment">/// returns [`OptionalWriter::none`] for spans and events whose level is</span>
     <span class="doccomment">/// less verbose than the maximum level.</span>
@@ -2422,8 +2422,8 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">M</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WithMinLevel</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">OptionalWriter</span><span class="op">&lt;</span><span class="ident">M::Writer</span><span class="op">&gt;</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">M</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt;&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">WithMinLevel</span>&lt;<span class="ident">M</span>&gt; {
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="ident">OptionalWriter</span>&lt;<span class="ident">M::Writer</span>&gt;;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
@@ -2432,8 +2432,8 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
-        <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">level</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">level</span> {
+    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
+        <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">level</span>() &gt;= <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">level</span> {
             <span class="kw">return</span> <span class="ident">OptionalWriter::some</span>(<span class="self">self</span>.<span class="ident">make</span>.<span class="ident">make_writer_for</span>(<span class="ident">meta</span>));
         }
         <span class="ident">OptionalWriter::none</span>()
@@ -2442,7 +2442,7 @@
 
 <span class="comment">// ==== impl WithFilter ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">M</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">WithFilter</span><span class="op">&lt;</span><span class="ident">M</span>, <span class="ident">F</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">M</span>, <span class="ident">F</span>&gt; <span class="ident">WithFilter</span>&lt;<span class="ident">M</span>, <span class="ident">F</span>&gt; {
     <span class="doccomment">/// Wraps `make` with the provided `filter`, returning a [`MakeWriter`] that</span>
     <span class="doccomment">/// will call `make.make_writer_for()` when `filter` returns `true` for a</span>
     <span class="doccomment">/// span or event&#39;s [`Metadata`], and returns a [`sink`] otherwise.</span>
@@ -2453,18 +2453,18 @@
     <span class="doccomment">/// [`sink`]: std::io::sink</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">make</span>: <span class="ident">M</span>, <span class="ident">filter</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span>,
+        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">bool</span>,
     {
         <span class="self">Self</span> { <span class="ident">make</span>, <span class="ident">filter</span> }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">M</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">WithFilter</span><span class="op">&lt;</span><span class="ident">M</span>, <span class="ident">F</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">M</span>, <span class="ident">F</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">WithFilter</span>&lt;<span class="ident">M</span>, <span class="ident">F</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">M</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span>,
+    <span class="ident">M</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt;,
+    <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">bool</span>,
 {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">OptionalWriter</span><span class="op">&lt;</span><span class="ident">M::Writer</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="ident">OptionalWriter</span>&lt;<span class="ident">M::Writer</span>&gt;;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
@@ -2472,7 +2472,7 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
+    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
         <span class="kw">if</span> (<span class="self">self</span>.<span class="ident">filter</span>)(<span class="ident">meta</span>) {
             <span class="ident">OptionalWriter::some</span>(<span class="self">self</span>.<span class="ident">make</span>.<span class="ident">make_writer_for</span>(<span class="ident">meta</span>))
         } <span class="kw">else</span> {
@@ -2483,7 +2483,7 @@
 
 <span class="comment">// === impl Tee ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> <span class="ident">Tee</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt; <span class="ident">Tee</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt; {
     <span class="doccomment">/// Combines two types implementing [`MakeWriter`], returning</span>
     <span class="doccomment">/// a new [`MakeWriter`] that produces [writers] that write to *both*</span>
     <span class="doccomment">/// outputs.</span>
@@ -2496,12 +2496,12 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Tee</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">B</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">Tee</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">A</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
-    <span class="ident">B</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+    <span class="ident">A</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt;,
+    <span class="ident">B</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt;,
 {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">Tee</span><span class="op">&lt;</span><span class="ident">A::Writer</span>, <span class="ident">B::Writer</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="ident">Tee</span>&lt;<span class="ident">A::Writer</span>, <span class="ident">B::Writer</span>&gt;;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
@@ -2509,7 +2509,7 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
+    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
         <span class="ident">Tee::new</span>(<span class="self">self</span>.<span class="ident">a</span>.<span class="ident">make_writer_for</span>(<span class="ident">meta</span>), <span class="self">self</span>.<span class="ident">b</span>.<span class="ident">make_writer_for</span>(<span class="ident">meta</span>))
     }
 }
@@ -2517,44 +2517,44 @@
 <span class="macro">macro_rules!</span> <span class="ident">impl_tee</span> {
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>:<span class="ident">ident</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">f</span>:<span class="ident">ident</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arg</span>:<span class="ident">ident</span>),<span class="kw-2">*</span>)) =&gt; {
         {
-            <span class="kw">let</span> <span class="ident">res_a</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>.<span class="ident">a</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">f</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arg</span>),<span class="kw-2">*</span>);
-            <span class="kw">let</span> <span class="ident">res_b</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>.<span class="ident">b</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">f</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arg</span>),<span class="kw-2">*</span>);
+            <span class="kw">let</span> <span class="ident">res_a</span> = <span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>.<span class="ident">a</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">f</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arg</span>),<span class="kw-2">*</span>);
+            <span class="kw">let</span> <span class="ident">res_b</span> = <span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>.<span class="ident">b</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">f</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arg</span>),<span class="kw-2">*</span>);
             (<span class="ident">res_a</span><span class="question-mark">?</span>, <span class="ident">res_b</span><span class="question-mark">?</span>)
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">Tee</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt; <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">Tee</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt;
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">io::Write</span>,
     <span class="ident">B</span>: <span class="ident">io::Write</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">=</span> <span class="macro">impl_tee!</span>(<span class="self">self</span>.<span class="ident">write</span>(<span class="ident">buf</span>));
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
+        <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>) = <span class="macro">impl_tee!</span>(<span class="self">self</span>.<span class="ident">write</span>(<span class="ident">buf</span>));
         <span class="prelude-val">Ok</span>(<span class="ident">std::cmp::max</span>(<span class="ident">a</span>, <span class="ident">b</span>))
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="macro">impl_tee!</span>(<span class="self">self</span>.<span class="ident">flush</span>());
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_vectored</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="ident">io::IoSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">=</span> <span class="macro">impl_tee!</span>(<span class="self">self</span>.<span class="ident">write_vectored</span>(<span class="ident">bufs</span>));
+    <span class="kw">fn</span> <span class="ident">write_vectored</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="ident">io::IoSlice</span>&lt;<span class="lifetime">&#39;_</span>&gt;]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
+        <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>) = <span class="macro">impl_tee!</span>(<span class="self">self</span>.<span class="ident">write_vectored</span>(<span class="ident">bufs</span>));
         <span class="prelude-val">Ok</span>(<span class="ident">std::cmp::max</span>(<span class="ident">a</span>, <span class="ident">b</span>))
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_all</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_all</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="macro">impl_tee!</span>(<span class="self">self</span>.<span class="ident">write_all</span>(<span class="ident">buf</span>));
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_fmt</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fmt</span>: <span class="ident">std::fmt::Arguments</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_fmt</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fmt</span>: <span class="ident">std::fmt::Arguments</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="macro">impl_tee!</span>(<span class="self">self</span>.<span class="ident">write_fmt</span>(<span class="ident">fmt</span>));
         <span class="prelude-val">Ok</span>(())
     }
@@ -2562,25 +2562,25 @@
 
 <span class="comment">// === impl OrElse ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> <span class="ident">OrElse</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt; <span class="ident">OrElse</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt; {
     <span class="doccomment">/// Combines</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">W</span><span class="op">&gt;</span>(<span class="ident">inner</span>: <span class="ident">A</span>, <span class="ident">or_else</span>: <span class="ident">B</span>) -&gt; <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">W</span>&gt;(<span class="ident">inner</span>: <span class="ident">A</span>, <span class="ident">or_else</span>: <span class="ident">B</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">A</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">OptionalWriter</span><span class="op">&lt;</span><span class="ident">W</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-        <span class="ident">B</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+        <span class="ident">A</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">Writer</span> = <span class="ident">OptionalWriter</span>&lt;<span class="ident">W</span>&gt;&gt;,
+        <span class="ident">B</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt;,
         <span class="ident">W</span>: <span class="ident">Write</span>,
     {
         <span class="self">Self</span> { <span class="ident">inner</span>, <span class="ident">or_else</span> }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">W</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">OrElse</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">W</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">OrElse</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">A</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">OptionalWriter</span><span class="op">&lt;</span><span class="ident">W</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="ident">B</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+    <span class="ident">A</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">Writer</span> = <span class="ident">OptionalWriter</span>&lt;<span class="ident">W</span>&gt;&gt;,
+    <span class="ident">B</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt;,
     <span class="ident">W</span>: <span class="ident">io::Write</span>,
 {
-    <span class="kw">type</span> <span class="ident">Writer</span> <span class="op">=</span> <span class="ident">EitherWriter</span><span class="op">&lt;</span><span class="ident">W</span>, <span class="ident">B::Writer</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Writer</span> = <span class="ident">EitherWriter</span>&lt;<span class="ident">W</span>, <span class="ident">B::Writer</span>&gt;;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">make_writer</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
@@ -2591,7 +2591,7 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
+    <span class="kw">fn</span> <span class="ident">make_writer_for</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">meta</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident"><span class="self">Self</span>::Writer</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">make_writer_for</span>(<span class="ident">meta</span>) {
             <span class="ident">EitherWriter::A</span>(<span class="ident">writer</span>) =&gt; <span class="ident">EitherWriter::A</span>(<span class="ident">writer</span>),
             <span class="ident">EitherWriter::B</span>(<span class="kw">_</span>) =&gt; <span class="ident">EitherWriter::B</span>(<span class="self">self</span>.<span class="ident">or_else</span>.<span class="ident">make_writer_for</span>(<span class="ident">meta</span>)),
@@ -2601,71 +2601,71 @@
 
 <span class="comment">// === impl ArcWriter ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">W</span><span class="op">&gt;</span> <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">ArcWriter</span><span class="op">&lt;</span><span class="ident">W</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">W</span>&gt; <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">ArcWriter</span>&lt;<span class="ident">W</span>&gt;
 <span class="kw">where</span>
-    <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">W</span>: <span class="ident">io::Write</span>,
+    <span class="kw">for</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">W</span>: <span class="ident">io::Write</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
         (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="number">0</span>).<span class="ident">write</span>(<span class="ident">buf</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="number">0</span>).<span class="ident">flush</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_vectored</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="ident">io::IoSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_vectored</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">bufs</span>: <span class="kw-2">&amp;</span>[<span class="ident">io::IoSlice</span>&lt;<span class="lifetime">&#39;_</span>&gt;]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
         (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="number">0</span>).<span class="ident">write_vectored</span>(<span class="ident">bufs</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_all</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_all</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="number">0</span>).<span class="ident">write_all</span>(<span class="ident">buf</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">write_fmt</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fmt</span>: <span class="ident">std::fmt::Arguments</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write_fmt</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">fmt</span>: <span class="ident">std::fmt::Arguments</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="number">0</span>).<span class="ident">write_fmt</span>(<span class="ident">fmt</span>)
     }
 }
 
 <span class="comment">// === impl WriteAdaptor ===</span>
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;json&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;time&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">WriteAdaptor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> = <span class="string">&quot;json&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;time&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">WriteAdaptor</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::fmt</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">fmt_write</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">fmt::Write</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> { <span class="ident">fmt_write</span> }
     }
 }
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;json&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;time&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">WriteAdaptor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span>
-            <span class="ident">std::str::from_utf8</span>(<span class="ident">buf</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::InvalidData</span>, <span class="ident">e</span>))<span class="question-mark">?</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> = <span class="string">&quot;json&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;time&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">WriteAdaptor</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
+        <span class="kw">let</span> <span class="ident">s</span> =
+            <span class="ident">std::str::from_utf8</span>(<span class="ident">buf</span>).<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::InvalidData</span>, <span class="ident">e</span>))<span class="question-mark">?</span>;
 
         <span class="self">self</span>.<span class="ident">fmt_write</span>
             .<span class="ident">write_str</span>(<span class="ident">s</span>)
-            .<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::Other</span>, <span class="ident">e</span>))<span class="question-mark">?</span>;
+            .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::Other</span>, <span class="ident">e</span>))<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="ident">s</span>.<span class="ident">as_bytes</span>().<span class="ident">len</span>())
     }
 
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;json&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;time&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">WriteAdaptor</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> = <span class="string">&quot;json&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;time&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">WriteAdaptor</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
         <span class="ident">f</span>.<span class="ident">pad</span>(<span class="string">&quot;WriteAdaptor { .. }&quot;</span>)
     }
 }
 <span class="comment">// === blanket impls ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">M</span><span class="op">&gt;</span> <span class="ident">MakeWriterExt</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">M</span> <span class="kw">where</span> <span class="ident">M</span>: <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {}
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">M</span>&gt; <span class="ident">MakeWriterExt</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">M</span> <span class="kw">where</span> <span class="ident">M</span>: <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;a</span>&gt; {}
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">test</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
@@ -2677,95 +2677,95 @@
     <span class="kw">use</span> <span class="ident">tracing</span>::{<span class="ident">debug</span>, <span class="ident">error</span>, <span class="ident">info</span>, <span class="ident">trace</span>, <span class="ident">warn</span>, <span class="ident">Level</span>};
     <span class="kw">use</span> <span class="ident">tracing_core::dispatcher</span>::{<span class="self">self</span>, <span class="ident">Dispatch</span>};
 
-    <span class="kw">fn</span> <span class="ident">test_writer</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">make_writer</span>: <span class="ident">T</span>, <span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>)
+    <span class="kw">fn</span> <span class="ident">test_writer</span>&lt;<span class="ident">T</span>&gt;(<span class="ident">make_writer</span>: <span class="ident">T</span>, <span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="ident">Mutex</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;&gt;)
     <span class="kw">where</span>
-        <span class="ident">T</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;writer</span><span class="op">&gt;</span> <span class="ident">MakeWriter</span><span class="op">&lt;</span><span class="lifetime">&#39;writer</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+        <span class="ident">T</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;writer</span>&gt; <span class="ident">MakeWriter</span>&lt;<span class="lifetime">&#39;writer</span>&gt; + <span class="ident">Send</span> + <span class="ident">Sync</span> + <span class="lifetime">&#39;static</span>,
     {
-        <span class="kw">let</span> <span class="ident">subscriber</span> <span class="op">=</span> {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi&quot;</span>)]</span>
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Format::default</span>().<span class="ident">without_time</span>().<span class="ident">with_ansi</span>(<span class="bool-val">false</span>);
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi&quot;</span>))]</span>
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Format::default</span>().<span class="ident">without_time</span>();
+        <span class="kw">let</span> <span class="ident">subscriber</span> = {
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi&quot;</span>)]</span>
+            <span class="kw">let</span> <span class="ident">f</span> = <span class="ident">Format::default</span>().<span class="ident">without_time</span>().<span class="ident">with_ansi</span>(<span class="bool-val">false</span>);
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi&quot;</span>))]</span>
+            <span class="kw">let</span> <span class="ident">f</span> = <span class="ident">Format::default</span>().<span class="ident">without_time</span>();
             <span class="ident">Subscriber::builder</span>()
                 .<span class="ident">event_format</span>(<span class="ident">f</span>)
                 .<span class="ident">with_writer</span>(<span class="ident">make_writer</span>)
                 .<span class="ident">finish</span>()
         };
-        <span class="kw">let</span> <span class="ident">dispatch</span> <span class="op">=</span> <span class="ident">Dispatch::from</span>(<span class="ident">subscriber</span>);
+        <span class="kw">let</span> <span class="ident">dispatch</span> = <span class="ident">Dispatch::from</span>(<span class="ident">subscriber</span>);
 
-        <span class="ident">dispatcher::with_default</span>(<span class="kw-2">&amp;</span><span class="ident">dispatch</span>, <span class="op">|</span><span class="op">|</span> {
+        <span class="ident">dispatcher::with_default</span>(<span class="kw-2">&amp;</span><span class="ident">dispatch</span>, || {
             <span class="macro">error!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">msg</span>);
         });
 
-        <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;ERROR {}: {}\n&quot;</span>, <span class="macro">module_path!</span>(), <span class="ident">msg</span>);
-        <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">String::from_utf8</span>(<span class="ident">buf</span>.<span class="ident">try_lock</span>().<span class="ident">unwrap</span>().<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">expected</span> = <span class="macro">format!</span>(<span class="string">&quot;ERROR {}: {}\n&quot;</span>, <span class="macro">module_path!</span>(), <span class="ident">msg</span>);
+        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">String::from_utf8</span>(<span class="ident">buf</span>.<span class="ident">try_lock</span>().<span class="ident">unwrap</span>().<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>();
         <span class="macro">assert!</span>(<span class="ident">actual</span>.<span class="ident">contains</span>(<span class="ident">expected</span>.<span class="ident">as_str</span>()));
     }
 
-    <span class="kw">fn</span> <span class="ident">has_lines</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">msgs</span>: <span class="kw-2">&amp;</span>[(<span class="ident">tracing::Level</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)]) {
-        <span class="kw">let</span> <span class="ident">actual</span> <span class="op">=</span> <span class="ident">String::from_utf8</span>(<span class="ident">buf</span>.<span class="ident">try_lock</span>().<span class="ident">unwrap</span>().<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expected_lines</span> <span class="op">=</span> <span class="ident">msgs</span>.<span class="ident">iter</span>();
+    <span class="kw">fn</span> <span class="ident">has_lines</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="ident">Mutex</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;&gt;, <span class="ident">msgs</span>: <span class="kw-2">&amp;</span>[(<span class="ident">tracing::Level</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)]) {
+        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">String::from_utf8</span>(<span class="ident">buf</span>.<span class="ident">try_lock</span>().<span class="ident">unwrap</span>().<span class="ident">to_vec</span>()).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expected_lines</span> = <span class="ident">msgs</span>.<span class="ident">iter</span>();
         <span class="kw">for</span> <span class="ident">line</span> <span class="kw">in</span> <span class="ident">actual</span>.<span class="ident">lines</span>() {
-            <span class="kw">let</span> <span class="ident">line</span> <span class="op">=</span> <span class="macro">dbg!</span>(<span class="ident">line</span>).<span class="ident">trim</span>();
-            <span class="kw">let</span> (<span class="ident">level</span>, <span class="ident">msg</span>) <span class="op">=</span> <span class="ident">expected_lines</span>
+            <span class="kw">let</span> <span class="ident">line</span> = <span class="macro">dbg!</span>(<span class="ident">line</span>).<span class="ident">trim</span>();
+            <span class="kw">let</span> (<span class="ident">level</span>, <span class="ident">msg</span>) = <span class="ident">expected_lines</span>
                 .<span class="ident">next</span>()
-                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">panic!</span>(<span class="string">&quot;expected no more lines, but got: {:?}&quot;</span>, <span class="ident">line</span>));
-            <span class="kw">let</span> <span class="ident">expected</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{} {}: {}&quot;</span>, <span class="ident">level</span>, <span class="macro">module_path!</span>(), <span class="ident">msg</span>);
+                .<span class="ident">unwrap_or_else</span>(|| <span class="macro">panic!</span>(<span class="string">&quot;expected no more lines, but got: {:?}&quot;</span>, <span class="ident">line</span>));
+            <span class="kw">let</span> <span class="ident">expected</span> = <span class="macro">format!</span>(<span class="string">&quot;{} {}: {}&quot;</span>, <span class="ident">level</span>, <span class="macro">module_path!</span>(), <span class="ident">msg</span>);
             <span class="macro">assert_eq!</span>(<span class="ident">line</span>, <span class="ident">expected</span>.<span class="ident">as_str</span>());
         }
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">custom_writer_closure</span>() {
-        <span class="kw">let</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">buf2</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">clone</span>();
-        <span class="kw">let</span> <span class="ident">make_writer</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="op">|</span> <span class="ident">MockWriter::new</span>(<span class="ident">buf2</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="string">&quot;my custom writer closure error&quot;</span>;
+        <span class="kw">let</span> <span class="ident">buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">buf2</span> = <span class="ident">buf</span>.<span class="ident">clone</span>();
+        <span class="kw">let</span> <span class="ident">make_writer</span> = <span class="kw">move</span> || <span class="ident">MockWriter::new</span>(<span class="ident">buf2</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">msg</span> = <span class="string">&quot;my custom writer closure error&quot;</span>;
         <span class="ident">test_writer</span>(<span class="ident">make_writer</span>, <span class="ident">msg</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">custom_writer_struct</span>() {
-        <span class="kw">let</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">make_writer</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">buf</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="string">&quot;my custom writer struct error&quot;</span>;
+        <span class="kw">let</span> <span class="ident">buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">make_writer</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">msg</span> = <span class="string">&quot;my custom writer struct error&quot;</span>;
         <span class="ident">test_writer</span>(<span class="ident">make_writer</span>, <span class="ident">msg</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">custom_writer_mutex</span>() {
-        <span class="kw">let</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">writer</span> <span class="op">=</span> <span class="ident">MockWriter::new</span>(<span class="ident">buf</span>.<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">make_writer</span> <span class="op">=</span> <span class="ident">Mutex::new</span>(<span class="ident">writer</span>);
-        <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="string">&quot;my mutex writer error&quot;</span>;
+        <span class="kw">let</span> <span class="ident">buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">writer</span> = <span class="ident">MockWriter::new</span>(<span class="ident">buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">make_writer</span> = <span class="ident">Mutex::new</span>(<span class="ident">writer</span>);
+        <span class="kw">let</span> <span class="ident">msg</span> = <span class="string">&quot;my mutex writer error&quot;</span>;
         <span class="ident">test_writer</span>(<span class="ident">make_writer</span>, <span class="ident">msg</span>, <span class="kw-2">&amp;</span><span class="ident">buf</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">combinators_level_filters</span>() {
-        <span class="kw">let</span> <span class="ident">info_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">info_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">info_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">info</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">info_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">debug_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">debug</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">debug_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">debug_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">debug</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">debug_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">warn_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">warn</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">warn_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">warn_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">warn</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">warn_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">err_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">err_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">err_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">err</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">err_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">make_writer</span> <span class="op">=</span> <span class="ident">info</span>
+        <span class="kw">let</span> <span class="ident">make_writer</span> = <span class="ident">info</span>
             .<span class="ident">with_max_level</span>(<span class="ident">Level::INFO</span>)
             .<span class="ident">and</span>(<span class="ident">debug</span>.<span class="ident">with_max_level</span>(<span class="ident">Level::DEBUG</span>))
             .<span class="ident">and</span>(<span class="ident">warn</span>.<span class="ident">with_max_level</span>(<span class="ident">Level::WARN</span>))
             .<span class="ident">and</span>(<span class="ident">err</span>.<span class="ident">with_max_level</span>(<span class="ident">Level::ERROR</span>));
 
-        <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi&quot;</span>)]</span>
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Format::default</span>().<span class="ident">without_time</span>().<span class="ident">with_ansi</span>(<span class="bool-val">false</span>);
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi&quot;</span>))]</span>
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Format::default</span>().<span class="ident">without_time</span>();
+        <span class="kw">let</span> <span class="ident">c</span> = {
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi&quot;</span>)]</span>
+            <span class="kw">let</span> <span class="ident">f</span> = <span class="ident">Format::default</span>().<span class="ident">without_time</span>().<span class="ident">with_ansi</span>(<span class="bool-val">false</span>);
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi&quot;</span>))]</span>
+            <span class="kw">let</span> <span class="ident">f</span> = <span class="ident">Format::default</span>().<span class="ident">without_time</span>();
             <span class="ident">Subscriber::builder</span>()
                 .<span class="ident">event_format</span>(<span class="ident">f</span>)
                 .<span class="ident">with_writer</span>(<span class="ident">make_writer</span>)
@@ -2773,7 +2773,7 @@
                 .<span class="ident">finish</span>()
         };
 
-        <span class="kw">let</span> <span class="ident">_s</span> <span class="op">=</span> <span class="ident">tracing::subscriber::set_default</span>(<span class="ident">c</span>);
+        <span class="kw">let</span> <span class="ident">_s</span> = <span class="ident">tracing::subscriber::set_default</span>(<span class="ident">c</span>);
 
         <span class="macro">trace!</span>(<span class="string">&quot;trace&quot;</span>);
         <span class="macro">debug!</span>(<span class="string">&quot;debug&quot;</span>);
@@ -2781,7 +2781,7 @@
         <span class="macro">warn!</span>(<span class="string">&quot;warn&quot;</span>);
         <span class="macro">error!</span>(<span class="string">&quot;error&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">all_lines</span> <span class="op">=</span> [
+        <span class="kw">let</span> <span class="ident">all_lines</span> = [
             (<span class="ident">Level::TRACE</span>, <span class="string">&quot;trace&quot;</span>),
             (<span class="ident">Level::DEBUG</span>, <span class="string">&quot;debug&quot;</span>),
             (<span class="ident">Level::INFO</span>, <span class="string">&quot;info&quot;</span>),
@@ -2804,26 +2804,26 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">combinators_or_else</span>() {
-        <span class="kw">let</span> <span class="ident">some_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">some</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">some_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">some_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">some</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">some_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">or_else_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">or_else</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">or_else_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">or_else_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">or_else</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">or_else_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">return_some</span> <span class="op">=</span> <span class="ident">AtomicBool::new</span>(<span class="bool-val">true</span>);
-        <span class="kw">let</span> <span class="ident">make_writer</span> <span class="op">=</span> <span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="ident">return_some</span> = <span class="ident">AtomicBool::new</span>(<span class="bool-val">true</span>);
+        <span class="kw">let</span> <span class="ident">make_writer</span> = <span class="kw">move</span> || {
             <span class="kw">if</span> <span class="ident">return_some</span>.<span class="ident">swap</span>(<span class="bool-val">false</span>, <span class="ident">Ordering::Relaxed</span>) {
                 <span class="ident">OptionalWriter::some</span>(<span class="ident">some</span>.<span class="ident">make_writer</span>())
             } <span class="kw">else</span> {
                 <span class="ident">OptionalWriter::none</span>()
             }
         };
-        <span class="kw">let</span> <span class="ident">make_writer</span> <span class="op">=</span> <span class="ident">make_writer</span>.<span class="ident">or_else</span>(<span class="ident">or_else</span>);
-        <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi&quot;</span>)]</span>
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Format::default</span>().<span class="ident">without_time</span>().<span class="ident">with_ansi</span>(<span class="bool-val">false</span>);
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi&quot;</span>))]</span>
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Format::default</span>().<span class="ident">without_time</span>();
+        <span class="kw">let</span> <span class="ident">make_writer</span> = <span class="ident">make_writer</span>.<span class="ident">or_else</span>(<span class="ident">or_else</span>);
+        <span class="kw">let</span> <span class="ident">c</span> = {
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi&quot;</span>)]</span>
+            <span class="kw">let</span> <span class="ident">f</span> = <span class="ident">Format::default</span>().<span class="ident">without_time</span>().<span class="ident">with_ansi</span>(<span class="bool-val">false</span>);
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi&quot;</span>))]</span>
+            <span class="kw">let</span> <span class="ident">f</span> = <span class="ident">Format::default</span>().<span class="ident">without_time</span>();
             <span class="ident">Subscriber::builder</span>()
                 .<span class="ident">event_format</span>(<span class="ident">f</span>)
                 .<span class="ident">with_writer</span>(<span class="ident">make_writer</span>)
@@ -2831,7 +2831,7 @@
                 .<span class="ident">finish</span>()
         };
 
-        <span class="kw">let</span> <span class="ident">_s</span> <span class="op">=</span> <span class="ident">tracing::subscriber::set_default</span>(<span class="ident">c</span>);
+        <span class="kw">let</span> <span class="ident">_s</span> = <span class="ident">tracing::subscriber::set_default</span>(<span class="ident">c</span>);
         <span class="macro">info!</span>(<span class="string">&quot;hello&quot;</span>);
         <span class="macro">info!</span>(<span class="string">&quot;world&quot;</span>);
         <span class="macro">info!</span>(<span class="string">&quot;goodbye&quot;</span>);
@@ -2845,30 +2845,30 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">combinators_or_else_chain</span>() {
-        <span class="kw">let</span> <span class="ident">info_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">info</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">info_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">info_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">info</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">info_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">debug_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">debug</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">debug_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">debug_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">debug</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">debug_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">warn_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">warn</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">warn_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">warn_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">warn</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">warn_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">err_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">err</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">err_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">err_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">err</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">err_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">make_writer</span> <span class="op">=</span> <span class="ident">err</span>.<span class="ident">with_max_level</span>(<span class="ident">Level::ERROR</span>).<span class="ident">or_else</span>(
+        <span class="kw">let</span> <span class="ident">make_writer</span> = <span class="ident">err</span>.<span class="ident">with_max_level</span>(<span class="ident">Level::ERROR</span>).<span class="ident">or_else</span>(
             <span class="ident">warn</span>.<span class="ident">with_max_level</span>(<span class="ident">Level::WARN</span>).<span class="ident">or_else</span>(
                 <span class="ident">info</span>.<span class="ident">with_max_level</span>(<span class="ident">Level::INFO</span>)
                     .<span class="ident">or_else</span>(<span class="ident">debug</span>.<span class="ident">with_max_level</span>(<span class="ident">Level::DEBUG</span>)),
             ),
         );
 
-        <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi&quot;</span>)]</span>
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Format::default</span>().<span class="ident">without_time</span>().<span class="ident">with_ansi</span>(<span class="bool-val">false</span>);
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi&quot;</span>))]</span>
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Format::default</span>().<span class="ident">without_time</span>();
+        <span class="kw">let</span> <span class="ident">c</span> = {
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi&quot;</span>)]</span>
+            <span class="kw">let</span> <span class="ident">f</span> = <span class="ident">Format::default</span>().<span class="ident">without_time</span>().<span class="ident">with_ansi</span>(<span class="bool-val">false</span>);
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi&quot;</span>))]</span>
+            <span class="kw">let</span> <span class="ident">f</span> = <span class="ident">Format::default</span>().<span class="ident">without_time</span>();
             <span class="ident">Subscriber::builder</span>()
                 .<span class="ident">event_format</span>(<span class="ident">f</span>)
                 .<span class="ident">with_writer</span>(<span class="ident">make_writer</span>)
@@ -2876,7 +2876,7 @@
                 .<span class="ident">finish</span>()
         };
 
-        <span class="kw">let</span> <span class="ident">_s</span> <span class="op">=</span> <span class="ident">tracing::subscriber::set_default</span>(<span class="ident">c</span>);
+        <span class="kw">let</span> <span class="ident">_s</span> = <span class="ident">tracing::subscriber::set_default</span>(<span class="ident">c</span>);
 
         <span class="macro">trace!</span>(<span class="string">&quot;trace&quot;</span>);
         <span class="macro">debug!</span>(<span class="string">&quot;debug&quot;</span>);
@@ -2899,20 +2899,20 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">combinators_and</span>() {
-        <span class="kw">let</span> <span class="ident">a_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">a_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">a_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">a</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">a_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">b_buf</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
-        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">MockMakeWriter::new</span>(<span class="ident">b_buf</span>.<span class="ident">clone</span>());
+        <span class="kw">let</span> <span class="ident">b_buf</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">Vec::new</span>()));
+        <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">MockMakeWriter::new</span>(<span class="ident">b_buf</span>.<span class="ident">clone</span>());
 
-        <span class="kw">let</span> <span class="ident">lines</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[(<span class="ident">Level::INFO</span>, <span class="string">&quot;hello&quot;</span>), (<span class="ident">Level::INFO</span>, <span class="string">&quot;world&quot;</span>)];
+        <span class="kw">let</span> <span class="ident">lines</span> = <span class="kw-2">&amp;</span>[(<span class="ident">Level::INFO</span>, <span class="string">&quot;hello&quot;</span>), (<span class="ident">Level::INFO</span>, <span class="string">&quot;world&quot;</span>)];
 
-        <span class="kw">let</span> <span class="ident">make_writer</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">and</span>(<span class="ident">b</span>);
-        <span class="kw">let</span> <span class="ident">c</span> <span class="op">=</span> {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi&quot;</span>)]</span>
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Format::default</span>().<span class="ident">without_time</span>().<span class="ident">with_ansi</span>(<span class="bool-val">false</span>);
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi&quot;</span>))]</span>
-            <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Format::default</span>().<span class="ident">without_time</span>();
+        <span class="kw">let</span> <span class="ident">make_writer</span> = <span class="ident">a</span>.<span class="ident">and</span>(<span class="ident">b</span>);
+        <span class="kw">let</span> <span class="ident">c</span> = {
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi&quot;</span>)]</span>
+            <span class="kw">let</span> <span class="ident">f</span> = <span class="ident">Format::default</span>().<span class="ident">without_time</span>().<span class="ident">with_ansi</span>(<span class="bool-val">false</span>);
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi&quot;</span>))]</span>
+            <span class="kw">let</span> <span class="ident">f</span> = <span class="ident">Format::default</span>().<span class="ident">without_time</span>();
             <span class="ident">Subscriber::builder</span>()
                 .<span class="ident">event_format</span>(<span class="ident">f</span>)
                 .<span class="ident">with_writer</span>(<span class="ident">make_writer</span>)
@@ -2920,7 +2920,7 @@
                 .<span class="ident">finish</span>()
         };
 
-        <span class="kw">let</span> <span class="ident">_s</span> <span class="op">=</span> <span class="ident">tracing::subscriber::set_default</span>(<span class="ident">c</span>);
+        <span class="kw">let</span> <span class="ident">_s</span> = <span class="ident">tracing::subscriber::set_default</span>(<span class="ident">c</span>);
         <span class="macro">info!</span>(<span class="string">&quot;hello&quot;</span>);
         <span class="macro">info!</span>(<span class="string">&quot;world&quot;</span>);
 
@@ -2929,4 +2929,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="tracing_subscriber" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="tracing_subscriber" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

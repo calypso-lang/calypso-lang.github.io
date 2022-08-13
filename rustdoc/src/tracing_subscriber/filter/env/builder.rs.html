@@ -339,8 +339,8 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Builder</span> {
     <span class="ident">regex</span>: <span class="ident">bool</span>,
-    <span class="ident">env</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="ident">default_directive</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Directive</span><span class="op">&gt;</span>,
+    <span class="ident">env</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">String</span>&gt;,
+    <span class="ident">default_directive</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">Directive</span>&gt;,
 }
 
 <span class="kw">impl</span> <span class="ident">Builder</span> {
@@ -458,12 +458,12 @@
 
     <span class="doccomment">/// Returns a new [`EnvFilter`] from the directives in the given string,</span>
     <span class="doccomment">/// *ignoring* any that are invalid.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_lossy</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">dirs</span>: <span class="ident">S</span>) -&gt; <span class="ident">EnvFilter</span> {
-        <span class="kw">let</span> <span class="ident">directives</span> <span class="op">=</span> <span class="ident">dirs</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse_lossy</span>&lt;<span class="ident">S</span>: <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt;&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">dirs</span>: <span class="ident">S</span>) -&gt; <span class="ident">EnvFilter</span> {
+        <span class="kw">let</span> <span class="ident">directives</span> = <span class="ident">dirs</span>
             .<span class="ident">as_ref</span>()
             .<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>)
-            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="op">!</span><span class="ident">s</span>.<span class="ident">is_empty</span>())
-            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">Directive::parse</span>(<span class="ident">s</span>, <span class="self">self</span>.<span class="ident">regex</span>) {
+            .<span class="ident">filter</span>(|<span class="ident">s</span>| !<span class="ident">s</span>.<span class="ident">is_empty</span>())
+            .<span class="ident">filter_map</span>(|<span class="ident">s</span>| <span class="kw">match</span> <span class="ident">Directive::parse</span>(<span class="ident">s</span>, <span class="self">self</span>.<span class="ident">regex</span>) {
                 <span class="prelude-val">Ok</span>(<span class="ident">d</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">d</span>),
                 <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
                     <span class="macro">eprintln!</span>(<span class="string">&quot;ignoring `{}`: {}&quot;</span>, <span class="ident">s</span>, <span class="ident">err</span>);
@@ -475,39 +475,39 @@
 
     <span class="doccomment">/// Returns a new [`EnvFilter`] from the directives in the given string,</span>
     <span class="doccomment">/// or an error if any are invalid.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">dirs</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">EnvFilter</span>, <span class="ident">directive::ParseError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">dirs</span> <span class="op">=</span> <span class="ident">dirs</span>.<span class="ident">as_ref</span>();
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parse</span>&lt;<span class="ident">S</span>: <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt;&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">dirs</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">EnvFilter</span>, <span class="ident">directive::ParseError</span>&gt; {
+        <span class="kw">let</span> <span class="ident">dirs</span> = <span class="ident">dirs</span>.<span class="ident">as_ref</span>();
         <span class="kw">if</span> <span class="ident">dirs</span>.<span class="ident">is_empty</span>() {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">from_directives</span>(<span class="ident">std::iter::empty</span>()));
         }
-        <span class="kw">let</span> <span class="ident">directives</span> <span class="op">=</span> <span class="ident">dirs</span>
+        <span class="kw">let</span> <span class="ident">directives</span> = <span class="ident">dirs</span>
             .<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>)
-            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="op">!</span><span class="ident">s</span>.<span class="ident">is_empty</span>())
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">Directive::parse</span>(<span class="ident">s</span>, <span class="self">self</span>.<span class="ident">regex</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+            .<span class="ident">filter</span>(|<span class="ident">s</span>| !<span class="ident">s</span>.<span class="ident">is_empty</span>())
+            .<span class="ident">map</span>(|<span class="ident">s</span>| <span class="ident">Directive::parse</span>(<span class="ident">s</span>, <span class="self">self</span>.<span class="ident">regex</span>))
+            .<span class="ident">collect</span>::&lt;<span class="prelude-ty">Result</span>&lt;<span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt;, <span class="kw">_</span>&gt;&gt;()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">from_directives</span>(<span class="ident">directives</span>))
     }
 
     <span class="doccomment">/// Returns a new [`EnvFilter`] from the directives in the configured</span>
     <span class="doccomment">/// environment variable, ignoring any directives that are invalid.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_env_lossy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">EnvFilter</span> {
-        <span class="kw">let</span> <span class="ident">var</span> <span class="op">=</span> <span class="ident">env::var</span>(<span class="self">self</span>.<span class="ident">env_var_name</span>()).<span class="ident">unwrap_or_default</span>();
+        <span class="kw">let</span> <span class="ident">var</span> = <span class="ident">env::var</span>(<span class="self">self</span>.<span class="ident">env_var_name</span>()).<span class="ident">unwrap_or_default</span>();
         <span class="self">self</span>.<span class="ident">parse_lossy</span>(<span class="ident">var</span>)
     }
 
     <span class="doccomment">/// Returns a new [`EnvFilter`] from the directives in the in the configured</span>
     <span class="doccomment">/// environment variable, or an error if the environment variable is not set</span>
     <span class="doccomment">/// or contains invalid directives.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_env</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">EnvFilter</span>, <span class="ident">FromEnvError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">var</span> <span class="op">=</span> <span class="ident">env::var</span>(<span class="self">self</span>.<span class="ident">env_var_name</span>()).<span class="ident">unwrap_or_default</span>();
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_env</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">EnvFilter</span>, <span class="ident">FromEnvError</span>&gt; {
+        <span class="kw">let</span> <span class="ident">var</span> = <span class="ident">env::var</span>(<span class="self">self</span>.<span class="ident">env_var_name</span>()).<span class="ident">unwrap_or_default</span>();
         <span class="self">self</span>.<span class="ident">parse</span>(<span class="ident">var</span>).<span class="ident">map_err</span>(<span class="ident">Into::into</span>)
     }
 
     <span class="doccomment">/// Returns a new [`EnvFilter`] from the directives in the in the configured</span>
     <span class="doccomment">/// environment variable, or an error if the environment variable is not set</span>
     <span class="doccomment">/// or contains invalid directives.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_from_env</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">EnvFilter</span>, <span class="ident">FromEnvError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">var</span> <span class="op">=</span> <span class="ident">env::var</span>(<span class="self">self</span>.<span class="ident">env_var_name</span>())<span class="question-mark">?</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_from_env</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">EnvFilter</span>, <span class="ident">FromEnvError</span>&gt; {
+        <span class="kw">let</span> <span class="ident">var</span> = <span class="ident">env::var</span>(<span class="self">self</span>.<span class="ident">env_var_name</span>())<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">parse</span>(<span class="ident">var</span>).<span class="ident">map_err</span>(<span class="ident">Into::into</span>)
     }
 
@@ -518,71 +518,71 @@
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::wrong_self_convention</span>)]</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">from_directives</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">directives</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Directive</span><span class="op">&gt;</span>,
+        <span class="ident">directives</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = <span class="ident">Directive</span>&gt;,
     ) -&gt; <span class="ident">EnvFilter</span> {
         <span class="kw">use</span> <span class="ident">tracing::Level</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">directives</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">directives</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">disabled</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">directives</span>: <span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt; = <span class="ident">directives</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">disabled</span> = <span class="ident">Vec::new</span>();
         <span class="kw">for</span> <span class="ident">directive</span> <span class="kw">in</span> <span class="kw-2">&amp;mut</span> <span class="ident">directives</span> {
-            <span class="kw">if</span> <span class="ident">directive</span>.<span class="ident">level</span> <span class="op">&gt;</span> <span class="ident">STATIC_MAX_LEVEL</span> {
+            <span class="kw">if</span> <span class="ident">directive</span>.<span class="ident">level</span> &gt; <span class="ident">STATIC_MAX_LEVEL</span> {
                 <span class="ident">disabled</span>.<span class="ident">push</span>(<span class="ident">directive</span>.<span class="ident">clone</span>());
             }
-            <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">regex</span> {
+            <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">regex</span> {
                 <span class="ident">directive</span>.<span class="ident">deregexify</span>();
             }
         }
 
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">disabled</span>.<span class="ident">is_empty</span>() {
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi_term&quot;</span>)]</span>
+        <span class="kw">if</span> !<span class="ident">disabled</span>.<span class="ident">is_empty</span>() {
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi_term&quot;</span>)]</span>
             <span class="kw">use</span> <span class="ident">ansi_term</span>::{<span class="ident">Color</span>, <span class="ident">Style</span>};
             <span class="comment">// NOTE: We can&#39;t use a configured `MakeWriter` because the EnvFilter</span>
             <span class="comment">// has no knowledge of any underlying subscriber or collector, which</span>
             <span class="comment">// may or may not use a `MakeWriter`.</span>
-            <span class="kw">let</span> <span class="ident">warn</span> <span class="op">=</span> <span class="op">|</span><span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">|</span> {
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi_term&quot;</span>))]</span>
-                <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;warning: {}&quot;</span>, <span class="ident">msg</span>);
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi_term&quot;</span>)]</span>
-                <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> {
-                    <span class="kw">let</span> <span class="ident">bold</span> <span class="op">=</span> <span class="ident">Style::new</span>().<span class="ident">bold</span>();
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">warning</span> <span class="op">=</span> <span class="ident">Color::Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;warning&quot;</span>);
-                    <span class="ident">warning</span>.<span class="ident">style_ref_mut</span>().<span class="ident">is_bold</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            <span class="kw">let</span> <span class="ident">warn</span> = |<span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>| {
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi_term&quot;</span>))]</span>
+                <span class="kw">let</span> <span class="ident">msg</span> = <span class="macro">format!</span>(<span class="string">&quot;warning: {}&quot;</span>, <span class="ident">msg</span>);
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi_term&quot;</span>)]</span>
+                <span class="kw">let</span> <span class="ident">msg</span> = {
+                    <span class="kw">let</span> <span class="ident">bold</span> = <span class="ident">Style::new</span>().<span class="ident">bold</span>();
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">warning</span> = <span class="ident">Color::Yellow</span>.<span class="ident">paint</span>(<span class="string">&quot;warning&quot;</span>);
+                    <span class="ident">warning</span>.<span class="ident">style_ref_mut</span>().<span class="ident">is_bold</span> = <span class="bool-val">true</span>;
                     <span class="macro">format!</span>(<span class="string">&quot;{}{} {}&quot;</span>, <span class="ident">warning</span>, <span class="ident">bold</span>.<span class="ident">paint</span>(<span class="string">&quot;:&quot;</span>), <span class="ident">bold</span>.<span class="ident">paint</span>(<span class="ident">msg</span>))
                 };
                 <span class="macro">eprintln!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">msg</span>);
             };
-            <span class="kw">let</span> <span class="ident">ctx_prefixed</span> <span class="op">=</span> <span class="op">|</span><span class="ident">prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">|</span> {
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi_term&quot;</span>))]</span>
-                <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{} {}&quot;</span>, <span class="ident">prefix</span>, <span class="ident">msg</span>);
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi_term&quot;</span>)]</span>
-                <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">equal</span> <span class="op">=</span> <span class="ident">Color::Fixed</span>(<span class="number">21</span>).<span class="ident">paint</span>(<span class="string">&quot;=&quot;</span>); <span class="comment">// dark blue</span>
-                    <span class="ident">equal</span>.<span class="ident">style_ref_mut</span>().<span class="ident">is_bold</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            <span class="kw">let</span> <span class="ident">ctx_prefixed</span> = |<span class="ident">prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>| {
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi_term&quot;</span>))]</span>
+                <span class="kw">let</span> <span class="ident">msg</span> = <span class="macro">format!</span>(<span class="string">&quot;{} {}&quot;</span>, <span class="ident">prefix</span>, <span class="ident">msg</span>);
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi_term&quot;</span>)]</span>
+                <span class="kw">let</span> <span class="ident">msg</span> = {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">equal</span> = <span class="ident">Color::Fixed</span>(<span class="number">21</span>).<span class="ident">paint</span>(<span class="string">&quot;=&quot;</span>); <span class="comment">// dark blue</span>
+                    <span class="ident">equal</span>.<span class="ident">style_ref_mut</span>().<span class="ident">is_bold</span> = <span class="bool-val">true</span>;
                     <span class="macro">format!</span>(<span class="string">&quot; {} {} {}&quot;</span>, <span class="ident">equal</span>, <span class="ident">Style::new</span>().<span class="ident">bold</span>().<span class="ident">paint</span>(<span class="ident">prefix</span>), <span class="ident">msg</span>)
                 };
                 <span class="macro">eprintln!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">msg</span>);
             };
-            <span class="kw">let</span> <span class="ident">ctx_help</span> <span class="op">=</span> <span class="op">|</span><span class="ident">msg</span><span class="op">|</span> <span class="ident">ctx_prefixed</span>(<span class="string">&quot;help:&quot;</span>, <span class="ident">msg</span>);
-            <span class="kw">let</span> <span class="ident">ctx_note</span> <span class="op">=</span> <span class="op">|</span><span class="ident">msg</span><span class="op">|</span> <span class="ident">ctx_prefixed</span>(<span class="string">&quot;note:&quot;</span>, <span class="ident">msg</span>);
-            <span class="kw">let</span> <span class="ident">ctx</span> <span class="op">=</span> <span class="op">|</span><span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">|</span> {
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi_term&quot;</span>))]</span>
-                <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;note: {}&quot;</span>, <span class="ident">msg</span>);
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;ansi_term&quot;</span>)]</span>
-                <span class="kw">let</span> <span class="ident">msg</span> <span class="op">=</span> {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pipe</span> <span class="op">=</span> <span class="ident">Color::Fixed</span>(<span class="number">21</span>).<span class="ident">paint</span>(<span class="string">&quot;|&quot;</span>);
-                    <span class="ident">pipe</span>.<span class="ident">style_ref_mut</span>().<span class="ident">is_bold</span> <span class="op">=</span> <span class="bool-val">true</span>;
+            <span class="kw">let</span> <span class="ident">ctx_help</span> = |<span class="ident">msg</span>| <span class="ident">ctx_prefixed</span>(<span class="string">&quot;help:&quot;</span>, <span class="ident">msg</span>);
+            <span class="kw">let</span> <span class="ident">ctx_note</span> = |<span class="ident">msg</span>| <span class="ident">ctx_prefixed</span>(<span class="string">&quot;note:&quot;</span>, <span class="ident">msg</span>);
+            <span class="kw">let</span> <span class="ident">ctx</span> = |<span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>| {
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi_term&quot;</span>))]</span>
+                <span class="kw">let</span> <span class="ident">msg</span> = <span class="macro">format!</span>(<span class="string">&quot;note: {}&quot;</span>, <span class="ident">msg</span>);
+                <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;ansi_term&quot;</span>)]</span>
+                <span class="kw">let</span> <span class="ident">msg</span> = {
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pipe</span> = <span class="ident">Color::Fixed</span>(<span class="number">21</span>).<span class="ident">paint</span>(<span class="string">&quot;|&quot;</span>);
+                    <span class="ident">pipe</span>.<span class="ident">style_ref_mut</span>().<span class="ident">is_bold</span> = <span class="bool-val">true</span>;
                     <span class="macro">format!</span>(<span class="string">&quot; {} {}&quot;</span>, <span class="ident">pipe</span>, <span class="ident">msg</span>)
                 };
                 <span class="macro">eprintln!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">msg</span>);
             };
             <span class="ident">warn</span>(<span class="string">&quot;some trace filter directives would enable traces that are disabled statically&quot;</span>);
             <span class="kw">for</span> <span class="ident">directive</span> <span class="kw">in</span> <span class="ident">disabled</span> {
-                <span class="kw">let</span> <span class="ident">target</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">target</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">directive</span>.<span class="ident">target</span> {
+                <span class="kw">let</span> <span class="ident">target</span> = <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">target</span>) = <span class="kw-2">&amp;</span><span class="ident">directive</span>.<span class="ident">target</span> {
                     <span class="macro">format!</span>(<span class="string">&quot;the `{}` target&quot;</span>, <span class="ident">target</span>)
                 } <span class="kw">else</span> {
                     <span class="string">&quot;all targets&quot;</span>.<span class="ident">into</span>()
                 };
-                <span class="kw">let</span> <span class="ident">level</span> <span class="op">=</span> <span class="ident">directive</span>
+                <span class="kw">let</span> <span class="ident">level</span> = <span class="ident">directive</span>
                     .<span class="ident">level</span>
                     .<span class="ident">into_level</span>()
                     .<span class="ident">expect</span>(<span class="string">&quot;=off would not have enabled any filters&quot;</span>);
@@ -592,8 +592,8 @@
                 ));
             }
             <span class="ident">ctx_note</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;the static max level is `{}`&quot;</span>, <span class="ident">STATIC_MAX_LEVEL</span>));
-            <span class="kw">let</span> <span class="ident">help_msg</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> {
-                <span class="kw">let</span> (<span class="ident">feature</span>, <span class="ident">filter</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">STATIC_MAX_LEVEL</span>.<span class="ident">into_level</span>() {
+            <span class="kw">let</span> <span class="ident">help_msg</span> = || {
+                <span class="kw">let</span> (<span class="ident">feature</span>, <span class="ident">filter</span>) = <span class="kw">match</span> <span class="ident">STATIC_MAX_LEVEL</span>.<span class="ident">into_level</span>() {
                     <span class="prelude-val">Some</span>(<span class="ident">Level::TRACE</span>) =&gt; <span class="macro">unreachable!</span>(
                         <span class="string">&quot;if the max level is trace, no static filtering features are enabled&quot;</span>
                     ),
@@ -605,17 +605,17 @@
                 };
                 (<span class="ident">feature</span>, <span class="macro">format!</span>(<span class="string">&quot;{} &quot;</span>, <span class="ident">filter</span>))
             };
-            <span class="kw">let</span> (<span class="ident">feature</span>, <span class="ident">earlier_level</span>) <span class="op">=</span> <span class="ident">help_msg</span>();
+            <span class="kw">let</span> (<span class="ident">feature</span>, <span class="ident">earlier_level</span>) = <span class="ident">help_msg</span>();
             <span class="ident">ctx_help</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
                 <span class="string">&quot;to enable {}logging, remove the `{}` feature&quot;</span>,
                 <span class="ident">earlier_level</span>, <span class="ident">feature</span>
             ));
         }
 
-        <span class="kw">let</span> (<span class="ident">dynamics</span>, <span class="ident">statics</span>) <span class="op">=</span> <span class="ident">Directive::make_tables</span>(<span class="ident">directives</span>);
-        <span class="kw">let</span> <span class="ident">has_dynamics</span> <span class="op">=</span> <span class="op">!</span><span class="ident">dynamics</span>.<span class="ident">is_empty</span>();
+        <span class="kw">let</span> (<span class="ident">dynamics</span>, <span class="ident">statics</span>) = <span class="ident">Directive::make_tables</span>(<span class="ident">directives</span>);
+        <span class="kw">let</span> <span class="ident">has_dynamics</span> = !<span class="ident">dynamics</span>.<span class="ident">is_empty</span>();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">filter</span> <span class="op">=</span> <span class="ident">EnvFilter</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">filter</span> = <span class="ident">EnvFilter</span> {
             <span class="ident">statics</span>,
             <span class="ident">dynamics</span>,
             <span class="ident">has_dynamics</span>,
@@ -625,9 +625,9 @@
             <span class="ident">regex</span>: <span class="self">self</span>.<span class="ident">regex</span>,
         };
 
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">has_dynamics</span> <span class="op">&amp;&amp;</span> <span class="ident">filter</span>.<span class="ident">statics</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">default</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">default_directive</span> {
-                <span class="ident">filter</span> <span class="op">=</span> <span class="ident">filter</span>.<span class="ident">add_directive</span>(<span class="ident">default</span>.<span class="ident">clone</span>());
+        <span class="kw">if</span> !<span class="ident">has_dynamics</span> &amp;&amp; <span class="ident">filter</span>.<span class="ident">statics</span>.<span class="ident">is_empty</span>() {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">default</span>) = <span class="self">self</span>.<span class="ident">default_directive</span> {
+                <span class="ident">filter</span> = <span class="ident">filter</span>.<span class="ident">add_directive</span>(<span class="ident">default</span>.<span class="ident">clone</span>());
             }
         }
 
@@ -649,4 +649,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="tracing_subscriber" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="tracing_subscriber" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

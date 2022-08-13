@@ -80,13 +80,13 @@
 
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">abort_if_dirty</span>() {
     <span class="ident">check_correctness</span>();
-    <span class="kw">if</span> <span class="ident">IS_DIRTY</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">get</span>()) {
+    <span class="kw">if</span> <span class="ident">IS_DIRTY</span>.<span class="ident">with</span>(|<span class="ident">c</span>| <span class="ident">c</span>.<span class="ident">get</span>()) {
         <span class="ident">abort_now</span>()
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">cleanup</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Diagnostic</span><span class="op">&gt;</span> {
-    <span class="ident">IS_DIRTY</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">set</span>(<span class="bool-val">false</span>));
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">cleanup</span>() -&gt; <span class="ident">Vec</span>&lt;<span class="ident">Diagnostic</span>&gt; {
+    <span class="ident">IS_DIRTY</span>.<span class="ident">with</span>(|<span class="ident">c</span>| <span class="ident">c</span>.<span class="ident">set</span>(<span class="bool-val">false</span>));
     <span class="macro">vec!</span>[]
 }
 
@@ -97,23 +97,23 @@
         <span class="ident">msg</span>,
         <span class="ident">suggestions</span>,
         <span class="ident">children</span>,
-    } <span class="op">=</span> <span class="ident">diag</span>;
+    } = <span class="ident">diag</span>;
 
-    <span class="kw">let</span> <span class="ident">span</span> <span class="op">=</span> <span class="ident">span_range</span>.<span class="ident">collapse</span>().<span class="ident">unwrap</span>();
+    <span class="kw">let</span> <span class="ident">span</span> = <span class="ident">span_range</span>.<span class="ident">collapse</span>().<span class="ident">unwrap</span>();
 
-    <span class="kw">let</span> <span class="ident">level</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">level</span> {
+    <span class="kw">let</span> <span class="ident">level</span> = <span class="kw">match</span> <span class="ident">level</span> {
         <span class="ident">Level::Warning</span> =&gt; <span class="ident">PLevel::Warning</span>,
         <span class="ident">Level::Error</span> =&gt; {
-            <span class="ident">IS_DIRTY</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">c</span>.<span class="ident">set</span>(<span class="bool-val">true</span>));
+            <span class="ident">IS_DIRTY</span>.<span class="ident">with</span>(|<span class="ident">c</span>| <span class="ident">c</span>.<span class="ident">set</span>(<span class="bool-val">true</span>));
             <span class="ident">PLevel::Error</span>
         }
         <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
     };
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">PDiag::spanned</span>(<span class="ident">span</span>, <span class="ident">level</span>, <span class="ident">msg</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> = <span class="ident">PDiag::spanned</span>(<span class="ident">span</span>, <span class="ident">level</span>, <span class="ident">msg</span>);
 
     <span class="kw">for</span> (<span class="ident">kind</span>, <span class="ident">msg</span>, <span class="ident">span</span>) <span class="kw">in</span> <span class="ident">suggestions</span> {
-        <span class="ident">res</span> <span class="op">=</span> <span class="kw">match</span> (<span class="ident">kind</span>, <span class="ident">span</span>) {
+        <span class="ident">res</span> = <span class="kw">match</span> (<span class="ident">kind</span>, <span class="ident">span</span>) {
             (<span class="ident">SuggestionKind::Note</span>, <span class="prelude-val">Some</span>(<span class="ident">span_range</span>)) =&gt; {
                 <span class="ident">res</span>.<span class="ident">span_note</span>(<span class="ident">span_range</span>.<span class="ident">collapse</span>().<span class="ident">unwrap</span>(), <span class="ident">msg</span>)
             }
@@ -126,15 +126,15 @@
     }
 
     <span class="kw">for</span> (<span class="ident">span_range</span>, <span class="ident">msg</span>) <span class="kw">in</span> <span class="ident">children</span> {
-        <span class="kw">let</span> <span class="ident">span</span> <span class="op">=</span> <span class="ident">span_range</span>.<span class="ident">collapse</span>().<span class="ident">unwrap</span>();
-        <span class="ident">res</span> <span class="op">=</span> <span class="ident">res</span>.<span class="ident">span_error</span>(<span class="ident">span</span>, <span class="ident">msg</span>);
+        <span class="kw">let</span> <span class="ident">span</span> = <span class="ident">span_range</span>.<span class="ident">collapse</span>().<span class="ident">unwrap</span>();
+        <span class="ident">res</span> = <span class="ident">res</span>.<span class="ident">span_error</span>(<span class="ident">span</span>, <span class="ident">msg</span>);
     }
 
     <span class="ident">res</span>.<span class="ident">emit</span>()
 }
 
 <span class="macro">thread_local!</span> {
-    <span class="kw">static</span> <span class="ident">IS_DIRTY</span>: <span class="ident">Cell</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Cell::new</span>(<span class="bool-val">false</span>);
+    <span class="kw">static</span> <span class="ident">IS_DIRTY</span>: <span class="ident">Cell</span>&lt;<span class="ident">bool</span>&gt; = <span class="ident">Cell::new</span>(<span class="bool-val">false</span>);
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="proc_macro_error" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="proc_macro_error" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

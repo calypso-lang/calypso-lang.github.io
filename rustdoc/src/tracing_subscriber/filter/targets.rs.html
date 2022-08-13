@@ -725,7 +725,7 @@
     },
     <span class="ident">layer</span>,
 };
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
 <span class="kw">use</span> <span class="ident">alloc::string::String</span>;
 <span class="kw">use</span> <span class="ident">core</span>::{
     <span class="ident">iter</span>::{<span class="ident">Extend</span>, <span class="ident">FilterMap</span>, <span class="ident">FromIterator</span>},
@@ -881,7 +881,7 @@
 <span class="doccomment">/// [`env_logger` crate]: https://docs.rs/env_logger/0.9.0/env_logger/index.html#enabling-logging</span>
 <span class="doccomment">/// [`EnvFilter`]: crate::filter::EnvFilter</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Targets</span>(<span class="ident">DirectiveSet</span><span class="op">&lt;</span><span class="ident">StaticDirective</span><span class="op">&gt;</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Targets</span>(<span class="ident">DirectiveSet</span>&lt;<span class="ident">StaticDirective</span>&gt;);
 
 <span class="kw">impl</span> <span class="ident">Targets</span> {
     <span class="doccomment">/// Returns a new `Targets` filter.</span>
@@ -927,7 +927,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [target]: tracing_core::Metadata::target</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_target</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">target</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>, <span class="ident">level</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">LevelFilter</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_target</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">target</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">String</span>&gt;, <span class="ident">level</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">LevelFilter</span>&gt;) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">add</span>(<span class="ident">StaticDirective::new</span>(
             <span class="prelude-val">Some</span>(<span class="ident">target</span>.<span class="ident">into</span>()),
             <span class="ident">Default::default</span>(),
@@ -966,10 +966,10 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [target]: tracing_core::Metadata::target</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_targets</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">L</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">targets</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="ident">T</span>, <span class="ident">L</span>)<span class="op">&gt;</span>) -&gt; <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_targets</span>&lt;<span class="ident">T</span>, <span class="ident">L</span>&gt;(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">targets</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = (<span class="ident">T</span>, <span class="ident">L</span>)&gt;) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">String</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-        <span class="ident">LevelFilter</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="ident">L</span><span class="op">&gt;</span>,
+        <span class="ident">String</span>: <span class="ident">From</span>&lt;<span class="ident">T</span>&gt;,
+        <span class="ident">LevelFilter</span>: <span class="ident">From</span>&lt;<span class="ident">L</span>&gt;,
     {
         <span class="self">self</span>.<span class="ident">extend</span>(<span class="ident">targets</span>);
         <span class="self">self</span>
@@ -983,7 +983,7 @@
     <span class="doccomment">/// prefixes. If this is changed to a different [`LevelFilter`], spans and</span>
     <span class="doccomment">/// events with targets that did not match any of the configured prefixes</span>
     <span class="doccomment">/// will be enabled if their level is at or below the provided level.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_default</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">level</span>: <span class="kw">impl</span> <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">LevelFilter</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_default</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">level</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">LevelFilter</span>&gt;) -&gt; <span class="self">Self</span> {
         <span class="self">self</span>.<span class="number">0</span>
             .<span class="ident">add</span>(<span class="ident">StaticDirective::new</span>(<span class="prelude-val">None</span>, <span class="ident">Default::default</span>(), <span class="ident">level</span>.<span class="ident">into</span>()));
         <span class="self">self</span>
@@ -1013,12 +1013,12 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [target]: tracing_core::Metadata::target</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;_</span>&gt; {
         <span class="self">self</span>.<span class="ident">into_iter</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">interested</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>) -&gt; <span class="ident">Interest</span> {
+    <span class="kw">fn</span> <span class="ident">interested</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;static</span>&gt;) -&gt; <span class="ident">Interest</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">enabled</span>(<span class="ident">metadata</span>) {
             <span class="ident">Interest::always</span>()
         } <span class="kw">else</span> {
@@ -1056,88 +1056,88 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">L</span><span class="op">&gt;</span> <span class="ident">Extend</span><span class="op">&lt;</span>(<span class="ident">T</span>, <span class="ident">L</span>)<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Targets</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">L</span>&gt; <span class="ident">Extend</span>&lt;(<span class="ident">T</span>, <span class="ident">L</span>)&gt; <span class="kw">for</span> <span class="ident">Targets</span>
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="ident">L</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">LevelFilter</span><span class="op">&gt;</span>,
+    <span class="ident">T</span>: <span class="ident">Into</span>&lt;<span class="ident">String</span>&gt;,
+    <span class="ident">L</span>: <span class="ident">Into</span>&lt;<span class="ident">LevelFilter</span>&gt;,
 {
-    <span class="kw">fn</span> <span class="ident">extend</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="ident">T</span>, <span class="ident">L</span>)<span class="op">&gt;</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">iter</span>: <span class="ident">I</span>) {
-        <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">target</span>, <span class="ident">level</span>)<span class="op">|</span> {
+    <span class="kw">fn</span> <span class="ident">extend</span>&lt;<span class="ident">I</span>: <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = (<span class="ident">T</span>, <span class="ident">L</span>)&gt;&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">iter</span>: <span class="ident">I</span>) {
+        <span class="kw">let</span> <span class="ident">iter</span> = <span class="ident">iter</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(|(<span class="ident">target</span>, <span class="ident">level</span>)| {
             <span class="ident">StaticDirective::new</span>(<span class="prelude-val">Some</span>(<span class="ident">target</span>.<span class="ident">into</span>()), <span class="ident">Default::default</span>(), <span class="ident">level</span>.<span class="ident">into</span>())
         });
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">extend</span>(<span class="ident">iter</span>);
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">L</span><span class="op">&gt;</span> <span class="ident">FromIterator</span><span class="op">&lt;</span>(<span class="ident">T</span>, <span class="ident">L</span>)<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Targets</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">L</span>&gt; <span class="ident">FromIterator</span>&lt;(<span class="ident">T</span>, <span class="ident">L</span>)&gt; <span class="kw">for</span> <span class="ident">Targets</span>
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="ident">L</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">LevelFilter</span><span class="op">&gt;</span>,
+    <span class="ident">T</span>: <span class="ident">Into</span>&lt;<span class="ident">String</span>&gt;,
+    <span class="ident">L</span>: <span class="ident">Into</span>&lt;<span class="ident">LevelFilter</span>&gt;,
 {
-    <span class="kw">fn</span> <span class="ident">from_iter</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> (<span class="ident">T</span>, <span class="ident">L</span>)<span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">iter</span>: <span class="ident">I</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">this</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::default</span>();
+    <span class="kw">fn</span> <span class="ident">from_iter</span>&lt;<span class="ident">I</span>: <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = (<span class="ident">T</span>, <span class="ident">L</span>)&gt;&gt;(<span class="ident">iter</span>: <span class="ident">I</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">this</span> = <span class="ident"><span class="self">Self</span>::default</span>();
         <span class="ident">this</span>.<span class="ident">extend</span>(<span class="ident">iter</span>);
         <span class="ident">this</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">FromStr</span> <span class="kw">for</span> <span class="ident">Targets</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> <span class="op">=</span> <span class="ident">ParseError</span>;
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span><span class="op">&gt;</span> {
+    <span class="kw">type</span> <span class="prelude-val">Err</span> = <span class="ident">ParseError</span>;
+    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span>&gt; {
         <span class="ident">s</span>.<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>)
             .<span class="ident">map</span>(<span class="ident">StaticDirective::from_str</span>)
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+            .<span class="ident">collect</span>::&lt;<span class="prelude-ty">Result</span>&lt;<span class="kw">_</span>, <span class="kw">_</span>&gt;&gt;()
             .<span class="ident">map</span>(<span class="self">Self</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">layer::Layer</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Targets</span>
+<span class="kw">impl</span>&lt;<span class="ident">S</span>&gt; <span class="ident">layer::Layer</span>&lt;<span class="ident">S</span>&gt; <span class="kw">for</span> <span class="ident">Targets</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Subscriber</span>,
 {
-    <span class="kw">fn</span> <span class="ident">enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="kw">_</span>: <span class="ident">layer::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">S</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;, <span class="kw">_</span>: <span class="ident">layer::Context</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">S</span>&gt;) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">enabled</span>(<span class="ident">metadata</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">register_callsite</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>) -&gt; <span class="ident">Interest</span> {
+    <span class="kw">fn</span> <span class="ident">register_callsite</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;static</span>&gt;) -&gt; <span class="ident">Interest</span> {
         <span class="self">self</span>.<span class="ident">interested</span>(<span class="ident">metadata</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">max_level_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LevelFilter</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">max_level_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">LevelFilter</span>&gt; {
         <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">max_level</span>)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>)))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">layer::Filter</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Targets</span> {
-    <span class="kw">fn</span> <span class="ident">enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">layer::Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">S</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>)))]</span>
+<span class="kw">impl</span>&lt;<span class="ident">S</span>&gt; <span class="ident">layer::Filter</span>&lt;<span class="ident">S</span>&gt; <span class="kw">for</span> <span class="ident">Targets</span> {
+    <span class="kw">fn</span> <span class="ident">enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">layer::Context</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">S</span>&gt;) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">enabled</span>(<span class="ident">metadata</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">callsite_enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>) -&gt; <span class="ident">Interest</span> {
+    <span class="kw">fn</span> <span class="ident">callsite_enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;static</span>&gt;) -&gt; <span class="ident">Interest</span> {
         <span class="self">self</span>.<span class="ident">interested</span>(<span class="ident">metadata</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">max_level_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">LevelFilter</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">max_level_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">LevelFilter</span>&gt; {
         <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">max_level</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="ident">Targets</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">String</span>, <span class="ident">LevelFilter</span>);
+    <span class="kw">type</span> <span class="ident">Item</span> = (<span class="ident">String</span>, <span class="ident">LevelFilter</span>);
 
-    <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">IntoIter</span>;
+    <span class="kw">type</span> <span class="ident">IntoIter</span> = <span class="ident">IntoIter</span>;
 
     <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::IntoIter</span> {
         <span class="ident">IntoIter::new</span>(<span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Targets</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">LevelFilter</span>);
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Targets</span> {
+    <span class="kw">type</span> <span class="ident">Item</span> = (<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">LevelFilter</span>);
 
-    <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">IntoIter</span> = <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>&gt;;
 
     <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::IntoIter</span> {
         <span class="ident">Iter::new</span>(<span class="self">self</span>)
@@ -1168,29 +1168,29 @@
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IntoIter</span>(
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::type_complexity</span>)]</span> <span class="comment">// alias indirection would probably make this more confusing</span>
-    <span class="ident">FilterMap</span><span class="op">&lt;</span>
-        <span class="op">&lt;</span><span class="ident">DirectiveSet</span><span class="op">&lt;</span><span class="ident">StaticDirective</span><span class="op">&gt;</span> <span class="kw">as</span> <span class="ident">IntoIterator</span><span class="op">&gt;</span><span class="ident">::IntoIter</span>,
-        <span class="kw">fn</span>(<span class="ident">StaticDirective</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="ident">LevelFilter</span>)<span class="op">&gt;</span>,
-    <span class="op">&gt;</span>,
+    <span class="ident">FilterMap</span>&lt;
+        &lt;<span class="ident">DirectiveSet</span>&lt;<span class="ident">StaticDirective</span>&gt; <span class="kw">as</span> <span class="ident">IntoIterator</span>&gt;<span class="ident">::IntoIter</span>,
+        <span class="kw">fn</span>(<span class="ident">StaticDirective</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">String</span>, <span class="ident">LevelFilter</span>)&gt;,
+    &gt;,
 );
 
 <span class="kw">impl</span> <span class="ident">IntoIter</span> {
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">targets</span>: <span class="ident">Targets</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">targets</span>.<span class="number">0</span>.<span class="ident">into_iter</span>().<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">directive</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">level</span> <span class="op">=</span> <span class="ident">directive</span>.<span class="ident">level</span>;
-            <span class="ident">directive</span>.<span class="ident">target</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">target</span><span class="op">|</span> (<span class="ident">target</span>, <span class="ident">level</span>))
+        <span class="self">Self</span>(<span class="ident">targets</span>.<span class="number">0</span>.<span class="ident">into_iter</span>().<span class="ident">filter_map</span>(|<span class="ident">directive</span>| {
+            <span class="kw">let</span> <span class="ident">level</span> = <span class="ident">directive</span>.<span class="ident">level</span>;
+            <span class="ident">directive</span>.<span class="ident">target</span>.<span class="ident">map</span>(|<span class="ident">target</span>| (<span class="ident">target</span>, <span class="ident">level</span>))
         }))
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">IntoIter</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">String</span>, <span class="ident">LevelFilter</span>);
+    <span class="kw">type</span> <span class="ident">Item</span> = (<span class="ident">String</span>, <span class="ident">LevelFilter</span>);
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">next</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">size_hint</span>()
     }
 }
@@ -1204,32 +1204,32 @@
 <span class="doccomment">/// [level]: tracing_core::Level</span>
 <span class="doccomment">/// [`iter`]: Targets::iter</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
-    <span class="ident">FilterMap</span><span class="op">&lt;</span>
-        <span class="ident">slice::Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">StaticDirective</span><span class="op">&gt;</span>,
-        <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">StaticDirective</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">LevelFilter</span>)<span class="op">&gt;</span>,
-    <span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>&gt;(
+    <span class="ident">FilterMap</span>&lt;
+        <span class="ident">slice::Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">StaticDirective</span>&gt;,
+        <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">StaticDirective</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">LevelFilter</span>)&gt;,
+    &gt;,
 );
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">targets</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Targets</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">targets</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">directive</span><span class="op">|</span> {
+        <span class="self">Self</span>(<span class="ident">targets</span>.<span class="number">0</span>.<span class="ident">iter</span>().<span class="ident">filter_map</span>(|<span class="ident">directive</span>| {
             <span class="ident">directive</span>
                 .<span class="ident">target</span>
                 .<span class="ident">as_deref</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">target</span><span class="op">|</span> (<span class="ident">target</span>, <span class="ident">directive</span>.<span class="ident">level</span>))
+                .<span class="ident">map</span>(|<span class="ident">target</span>| (<span class="ident">target</span>, <span class="ident">directive</span>.<span class="ident">level</span>))
         }))
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">LevelFilter</span>);
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">type</span> <span class="ident">Item</span> = (<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>, <span class="ident">LevelFilter</span>);
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">next</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">size_hint</span>()
     }
 }
@@ -1239,7 +1239,7 @@
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
 
     <span class="macro">feature!</span> {
-        <span class="attribute">#![<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
+        <span class="attribute">#![<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
         <span class="kw">use</span> <span class="ident">alloc</span>::{<span class="ident">vec</span>, <span class="ident">vec::Vec</span>, <span class="ident">string::ToString</span>};
 
         <span class="comment">// `dbg!` is only available with `libstd`; just nop it out when testing</span>
@@ -1250,51 +1250,51 @@
     }
 
     <span class="kw">fn</span> <span class="ident">expect_parse</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">Targets</span> {
-        <span class="kw">match</span> <span class="macro">dbg!</span>(<span class="ident">s</span>).<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Targets</span><span class="op">&gt;</span>() {
+        <span class="kw">match</span> <span class="macro">dbg!</span>(<span class="ident">s</span>).<span class="ident">parse</span>::&lt;<span class="ident">Targets</span>&gt;() {
             <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;string {:?} did not parse successfully: {}&quot;</span>, <span class="ident">s</span>, <span class="ident">e</span>),
             <span class="prelude-val">Ok</span>(<span class="ident">e</span>) =&gt; <span class="ident">e</span>,
         }
     }
 
     <span class="kw">fn</span> <span class="ident">expect_parse_ralith</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="kw">let</span> <span class="ident">dirs</span> <span class="op">=</span> <span class="ident">expect_parse</span>(<span class="ident">s</span>).<span class="number">0</span>.<span class="ident">into_vec</span>();
+        <span class="kw">let</span> <span class="ident">dirs</span> = <span class="ident">expect_parse</span>(<span class="ident">s</span>).<span class="number">0</span>.<span class="ident">into_vec</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>.<span class="ident">len</span>(), <span class="number">2</span>, <span class="string">&quot;\nparsed: {:#?}&quot;</span>, <span class="ident">dirs</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;server&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::DEBUG</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
 
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;common&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::INFO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
     }
 
     <span class="kw">fn</span> <span class="ident">expect_parse_level_directives</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="kw">let</span> <span class="ident">dirs</span> <span class="op">=</span> <span class="ident">expect_parse</span>(<span class="ident">s</span>).<span class="number">0</span>.<span class="ident">into_vec</span>();
+        <span class="kw">let</span> <span class="ident">dirs</span> = <span class="ident">expect_parse</span>(<span class="ident">s</span>).<span class="number">0</span>.<span class="ident">into_vec</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>.<span class="ident">len</span>(), <span class="number">6</span>, <span class="string">&quot;\nparsed: {:#?}&quot;</span>, <span class="ident">dirs</span>);
 
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;crate3::mod2::mod1&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::OFF</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
 
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;crate1::mod2::mod3&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::INFO</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
 
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">2</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;crate1::mod2&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">2</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::WARN</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">2</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">2</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
 
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">3</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;crate1::mod1&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">3</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::ERROR</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">3</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">3</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
 
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">4</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;crate3&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">4</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::TRACE</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">4</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">4</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
 
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">5</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;crate2&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">5</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::DEBUG</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">5</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">5</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1314,25 +1314,25 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">expect_parse_valid</span>() {
-        <span class="kw">let</span> <span class="ident">dirs</span> <span class="op">=</span> <span class="ident">expect_parse</span>(<span class="string">&quot;crate1::mod1=error,crate1::mod2,crate2=debug,crate3=off&quot;</span>)
+        <span class="kw">let</span> <span class="ident">dirs</span> = <span class="ident">expect_parse</span>(<span class="string">&quot;crate1::mod1=error,crate1::mod2,crate2=debug,crate3=off&quot;</span>)
             .<span class="number">0</span>
             .<span class="ident">into_vec</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>.<span class="ident">len</span>(), <span class="number">4</span>, <span class="string">&quot;\nparsed: {:#?}&quot;</span>, <span class="ident">dirs</span>);
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;crate1::mod2&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::TRACE</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">0</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
 
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;crate1::mod1&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::ERROR</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">1</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
 
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">2</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;crate3&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">2</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::OFF</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">2</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">2</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
 
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">3</span>].<span class="ident">target</span>, <span class="prelude-val">Some</span>(<span class="string">&quot;crate2&quot;</span>.<span class="ident">to_string</span>()));
         <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">3</span>].<span class="ident">level</span>, <span class="ident">LevelFilter::DEBUG</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">3</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="ident">::new</span>());
+        <span class="macro">assert_eq!</span>(<span class="ident">dirs</span>[<span class="number">3</span>].<span class="ident">field_names</span>, <span class="ident">Vec</span>::&lt;<span class="ident">String</span>&gt;<span class="ident">::new</span>());
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
@@ -1361,10 +1361,10 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">targets_iter</span>() {
-        <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="ident">expect_parse</span>(<span class="string">&quot;crate1::mod1=error,crate1::mod2,crate2=debug,crate3=off&quot;</span>)
+        <span class="kw">let</span> <span class="ident">filter</span> = <span class="ident">expect_parse</span>(<span class="string">&quot;crate1::mod1=error,crate1::mod2,crate2=debug,crate3=off&quot;</span>)
             .<span class="ident">with_default</span>(<span class="ident">LevelFilter::WARN</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">targets</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">filter</span>.<span class="ident">iter</span>().<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">targets</span>: <span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt; = <span class="ident">filter</span>.<span class="ident">iter</span>().<span class="ident">collect</span>();
         <span class="ident">targets</span>.<span class="ident">sort</span>();
 
         <span class="macro">assert_eq!</span>(
@@ -1380,10 +1380,10 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">targets_into_iter</span>() {
-        <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="ident">expect_parse</span>(<span class="string">&quot;crate1::mod1=error,crate1::mod2,crate2=debug,crate3=off&quot;</span>)
+        <span class="kw">let</span> <span class="ident">filter</span> = <span class="ident">expect_parse</span>(<span class="string">&quot;crate1::mod1=error,crate1::mod2,crate2=debug,crate3=off&quot;</span>)
             .<span class="ident">with_default</span>(<span class="ident">LevelFilter::WARN</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">targets</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">filter</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">targets</span>: <span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt; = <span class="ident">filter</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>();
         <span class="ident">targets</span>.<span class="ident">sort</span>();
 
         <span class="macro">assert_eq!</span>(
@@ -1399,10 +1399,10 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="comment">// `println!` is only available with `libstd`.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
     <span class="kw">fn</span> <span class="ident">size_of_filters</span>() {
         <span class="kw">fn</span> <span class="ident">print_sz</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-            <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">Targets</span><span class="op">&gt;</span>().<span class="ident">expect</span>(<span class="string">&quot;filter should parse&quot;</span>);
+            <span class="kw">let</span> <span class="ident">filter</span> = <span class="ident">s</span>.<span class="ident">parse</span>::&lt;<span class="ident">Targets</span>&gt;().<span class="ident">expect</span>(<span class="string">&quot;filter should parse&quot;</span>);
             <span class="macro">println!</span>(
                 <span class="string">&quot;size_of_val({:?})\n -&gt; {}B&quot;</span>,
                 <span class="ident">s</span>,
@@ -1421,4 +1421,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="tracing_subscriber" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="tracing_subscriber" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

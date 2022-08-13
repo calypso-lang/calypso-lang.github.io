@@ -564,7 +564,7 @@
 <span class="kw">use</span> <span class="ident">core::mem::ManuallyDrop</span>;
 <span class="kw">use</span> <span class="ident">core::ptr::NonNull</span>;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> = <span class="string">&quot;64&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::lean::internal::Lean</span>;
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::traits</span>::{<span class="ident">Beef</span>, <span class="ident">Capacity</span>};
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::wide::internal::Wide</span>;
@@ -572,9 +572,9 @@
 <span class="doccomment">/// A clone-on-write smart pointer, mostly compatible with [`std::borrow::Cow`](https://doc.rust-lang.org/std/borrow/enum.Cow.html).</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This type is using a generic `U: Capacity`. Use either [`beef::Cow`](../type.Cow.html) or [`beef::lean::Cow`](../lean/type.Cow.html) in your code.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>, <span class="ident">U</span>: <span class="ident">Capacity</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span> + <span class="lifetime">&#39;a</span>, <span class="ident">U</span>: <span class="ident">Capacity</span>&gt; {
     <span class="doccomment">/// Pointer to data</span>
-    <span class="ident">ptr</span>: <span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">T::PointerT</span><span class="op">&gt;</span>,
+    <span class="ident">ptr</span>: <span class="ident">NonNull</span>&lt;<span class="ident">T::PointerT</span>&gt;,
 
     <span class="doccomment">/// This usize contains length, but it may contain other</span>
     <span class="doccomment">/// information pending on impl of `Capacity`, and must therefore</span>
@@ -585,12 +585,12 @@
     <span class="ident">cap</span>: <span class="ident">U::Field</span>,
 
     <span class="doccomment">/// Lifetime marker</span>
-    <span class="ident">marker</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span><span class="op">&gt;</span>,
+    <span class="ident">marker</span>: <span class="ident">PhantomData</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="doccomment">/// Owned data.</span>
@@ -604,7 +604,7 @@
     <span class="doccomment">/// ```</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">owned</span>(<span class="ident">val</span>: <span class="ident">T::Owned</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> (<span class="ident">ptr</span>, <span class="ident">fat</span>, <span class="ident">cap</span>) <span class="op">=</span> <span class="ident">T::owned_into_parts</span>::<span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>(<span class="ident">val</span>);
+        <span class="kw">let</span> (<span class="ident">ptr</span>, <span class="ident">fat</span>, <span class="ident">cap</span>) = <span class="ident">T::owned_into_parts</span>::&lt;<span class="ident">U</span>&gt;(<span class="ident">val</span>);
 
         <span class="ident">Cow</span> {
             <span class="ident">ptr</span>,
@@ -615,9 +615,9 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="doccomment">/// Borrowed data.</span>
@@ -631,7 +631,7 @@
     <span class="doccomment">/// ```</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">borrowed</span>(<span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> (<span class="ident">ptr</span>, <span class="ident">fat</span>, <span class="ident">cap</span>) <span class="op">=</span> <span class="ident">T::ref_into_parts</span>::<span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>(<span class="ident">val</span>);
+        <span class="kw">let</span> (<span class="ident">ptr</span>, <span class="ident">fat</span>, <span class="ident">cap</span>) = <span class="ident">T::ref_into_parts</span>::&lt;<span class="ident">U</span>&gt;(<span class="ident">val</span>);
 
         <span class="ident">Cow</span> {
             <span class="ident">ptr</span>,
@@ -646,11 +646,11 @@
     <span class="doccomment">/// Clones the data if it is not already owned.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_owned</span>(<span class="self">self</span>) -&gt; <span class="ident">T::Owned</span> {
-        <span class="kw">let</span> <span class="ident">cow</span> <span class="op">=</span> <span class="ident">ManuallyDrop::new</span>(<span class="self">self</span>);
+        <span class="kw">let</span> <span class="ident">cow</span> = <span class="ident">ManuallyDrop::new</span>(<span class="self">self</span>);
 
         <span class="kw">match</span> <span class="ident">cow</span>.<span class="ident">capacity</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">capacity</span>) =&gt; <span class="kw">unsafe</span> { <span class="ident">T::owned_from_parts</span>::<span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>(<span class="ident">cow</span>.<span class="ident">ptr</span>, <span class="ident">cow</span>.<span class="ident">fat</span>, <span class="ident">capacity</span>) },
-            <span class="prelude-val">None</span> =&gt; <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">T::ref_from_parts</span>::<span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>(<span class="ident">cow</span>.<span class="ident">ptr</span>, <span class="ident">cow</span>.<span class="ident">fat</span>) }.<span class="ident">to_owned</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">capacity</span>) =&gt; <span class="kw">unsafe</span> { <span class="ident">T::owned_from_parts</span>::&lt;<span class="ident">U</span>&gt;(<span class="ident">cow</span>.<span class="ident">ptr</span>, <span class="ident">cow</span>.<span class="ident">fat</span>, <span class="ident">capacity</span>) },
+            <span class="prelude-val">None</span> =&gt; <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">T::ref_from_parts</span>::&lt;<span class="ident">U</span>&gt;(<span class="ident">cow</span>.<span class="ident">ptr</span>, <span class="ident">cow</span>.<span class="ident">fat</span>) }.<span class="ident">to_owned</span>(),
         }
     }
 
@@ -662,7 +662,7 @@
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">capacity</span>().<span class="ident">is_some</span>() {
             <span class="macro">panic!</span>(<span class="string">&quot;Can not turn owned beef::Cow into a borrowed value&quot;</span>)
         }
-        <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">T::ref_from_parts</span>::<span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">fat</span>) }
+        <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">T::ref_from_parts</span>::&lt;<span class="ident">U</span>&gt;(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">fat</span>) }
     }
 
     <span class="doccomment">/// Returns `true` if data is borrowed or had no capacity.</span>
@@ -708,16 +708,16 @@
     <span class="doccomment">/// Internal convenience method for casting `ptr` into a `&amp;T`</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">borrow</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">T</span> {
-        <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">T::ref_from_parts</span>::<span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">fat</span>) }
+        <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">T::ref_from_parts</span>::&lt;<span class="ident">U</span>&gt;(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">fat</span>) }
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">capacity</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">U::NonZero</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">capacity</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">U::NonZero</span>&gt; {
         <span class="ident">U::maybe</span>(<span class="self">self</span>.<span class="ident">fat</span>, <span class="self">self</span>.<span class="ident">cap</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span>, <span class="ident">Wide</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">str</span>, <span class="ident">Wide</span>&gt; {
     <span class="doccomment">/// Borrowed data.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is functionally identical to [`borrow`](./generic/struct.Cow.html#method.borrow).</span>
@@ -742,8 +742,8 @@
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">str</span>, <span class="ident">Lean</span><span class="op">&gt;</span> {
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> = <span class="string">&quot;64&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">str</span>, <span class="ident">Lean</span>&gt; {
     <span class="doccomment">/// Borrowed data.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is functionally identical to [`borrow`](./generic/struct.Cow.html#method.borrow).</span>
@@ -770,8 +770,8 @@
 
 <span class="comment">// This requires nightly:</span>
 <span class="comment">// https://github.com/rust-lang/rust/issues/57563</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;const_fn&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, [<span class="ident">T</span>], <span class="ident">Wide</span><span class="op">&gt;</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;const_fn&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, [<span class="ident">T</span>], <span class="ident">Wide</span>&gt;
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">Clone</span>,
 {
@@ -801,8 +801,8 @@
 
 <span class="comment">// This requires nightly:</span>
 <span class="comment">// https://github.com/rust-lang/rust/issues/57563</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;const_fn&quot;</span>, <span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, [<span class="ident">T</span>], <span class="ident">Lean</span><span class="op">&gt;</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;const_fn&quot;</span>, <span class="ident">target_pointer_width</span> = <span class="string">&quot;64&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, [<span class="ident">T</span>], <span class="ident">Lean</span>&gt;
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">Clone</span>,
 {
@@ -830,20 +830,20 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Hash</span> <span class="op">+</span> <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Hash</span> + <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">H</span>) {
+    <span class="kw">fn</span> <span class="ident">hash</span>&lt;<span class="ident">H</span>: <span class="ident">Hasher</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">H</span>) {
         <span class="self">self</span>.<span class="ident">borrow</span>().<span class="ident">hash</span>(<span class="ident">state</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
     <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>: <span class="ident">Default</span>,
 {
@@ -853,29 +853,29 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Eq</span> + <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">U</span>, <span class="ident">V</span><span class="op">&gt;</span> <span class="ident">PartialOrd</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">B</span>, <span class="ident">V</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">A</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">U</span>, <span class="ident">V</span>&gt; <span class="ident">PartialOrd</span>&lt;<span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">B</span>, <span class="ident">V</span>&gt;&gt; <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">A</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">PartialOrd</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
-    <span class="ident">B</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">A</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span> + <span class="ident">PartialOrd</span>&lt;<span class="ident">B</span>&gt;,
+    <span class="ident">B</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
     <span class="ident">V</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">B</span>, <span class="ident">V</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Ordering</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">B</span>, <span class="ident">V</span>&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Ordering</span>&gt; {
         <span class="ident">PartialOrd::partial_cmp</span>(<span class="self">self</span>.<span class="ident">borrow</span>(), <span class="ident">other</span>.<span class="ident">borrow</span>())
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Ord</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Ord</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Ord</span> + <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -884,9 +884,9 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">From</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>&gt; <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -895,7 +895,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">U</span>&gt; <span class="ident">From</span>&lt;<span class="ident">String</span>&gt; <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">str</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
@@ -905,33 +905,33 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, [<span class="ident">T</span>], <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">From</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">T</span>&gt;&gt; <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, [<span class="ident">T</span>], <span class="ident">U</span>&gt;
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">Clone</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">v</span>: <span class="ident">Vec</span>&lt;<span class="ident">T</span>&gt;) -&gt; <span class="self">Self</span> {
         <span class="ident">Cow::owned</span>(<span class="ident">v</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">capacity</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">capacity</span>() {
-            <span class="kw">unsafe</span> { <span class="ident">T::owned_from_parts</span>::<span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">fat</span>, <span class="ident">capacity</span>) };
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">capacity</span>) = <span class="self">self</span>.<span class="ident">capacity</span>() {
+            <span class="kw">unsafe</span> { <span class="ident">T::owned_from_parts</span>::&lt;<span class="ident">U</span>&gt;(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">fat</span>, <span class="ident">capacity</span>) };
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -943,12 +943,12 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">core::ops::Deref</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">core::ops::Deref</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
-    <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">T</span>;
+    <span class="kw">type</span> <span class="ident">Target</span> = <span class="ident">T</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">T</span> {
@@ -956,9 +956,9 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">AsRef</span>&lt;<span class="ident">T</span>&gt; <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -967,9 +967,9 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Borrow</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Borrow</span>&lt;<span class="ident">T</span>&gt; <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -978,13 +978,13 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">StdCow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">From</span>&lt;<span class="ident">StdCow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>&gt;&gt; <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">stdcow</span>: <span class="ident">StdCow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">stdcow</span>: <span class="ident">StdCow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>&gt;) -&gt; <span class="self">Self</span> {
         <span class="kw">match</span> <span class="ident">stdcow</span> {
             <span class="ident">StdCow::Borrowed</span>(<span class="ident">v</span>) =&gt; <span class="ident"><span class="self">Self</span>::borrowed</span>(<span class="ident">v</span>),
             <span class="ident">StdCow::Owned</span>(<span class="ident">v</span>) =&gt; <span class="ident"><span class="self">Self</span>::owned</span>(<span class="ident">v</span>),
@@ -992,75 +992,75 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">StdCow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">From</span>&lt;<span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;&gt; <span class="kw">for</span> <span class="ident">StdCow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">cow</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">cow</span> <span class="op">=</span> <span class="ident">ManuallyDrop::new</span>(<span class="ident">cow</span>);
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">cow</span>: <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">cow</span> = <span class="ident">ManuallyDrop::new</span>(<span class="ident">cow</span>);
 
         <span class="kw">match</span> <span class="ident">cow</span>.<span class="ident">capacity</span>() {
             <span class="prelude-val">Some</span>(<span class="ident">capacity</span>) =&gt; {
-                <span class="ident">StdCow::Owned</span>(<span class="kw">unsafe</span> { <span class="ident">T::owned_from_parts</span>::<span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>(<span class="ident">cow</span>.<span class="ident">ptr</span>, <span class="ident">cow</span>.<span class="ident">fat</span>, <span class="ident">capacity</span>) })
+                <span class="ident">StdCow::Owned</span>(<span class="kw">unsafe</span> { <span class="ident">T::owned_from_parts</span>::&lt;<span class="ident">U</span>&gt;(<span class="ident">cow</span>.<span class="ident">ptr</span>, <span class="ident">cow</span>.<span class="ident">fat</span>, <span class="ident">capacity</span>) })
             }
-            <span class="prelude-val">None</span> =&gt; <span class="ident">StdCow::Borrowed</span>(<span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">T::ref_from_parts</span>::<span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span>(<span class="ident">cow</span>.<span class="ident">ptr</span>, <span class="ident">cow</span>.<span class="ident">fat</span>) }),
+            <span class="prelude-val">None</span> =&gt; <span class="ident">StdCow::Borrowed</span>(<span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">T::ref_from_parts</span>::&lt;<span class="ident">U</span>&gt;(<span class="ident">cow</span>.<span class="ident">ptr</span>, <span class="ident">cow</span>.<span class="ident">fat</span>) }),
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">U</span>, <span class="ident">V</span><span class="op">&gt;</span> <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">B</span>, <span class="ident">V</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">A</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">U</span>, <span class="ident">V</span>&gt; <span class="ident">PartialEq</span>&lt;<span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">B</span>, <span class="ident">V</span>&gt;&gt; <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">A</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
-    <span class="ident">B</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">A</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">B</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
     <span class="ident">V</span>: <span class="ident">Capacity</span>,
-    <span class="ident">A</span>: <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
+    <span class="ident">A</span>: <span class="ident">PartialEq</span>&lt;<span class="ident">B</span>&gt;,
 {
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">V</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">borrow</span>() <span class="op">==</span> <span class="ident">other</span>.<span class="ident">borrow</span>()
+    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Cow</span>&lt;<span class="ident">B</span>, <span class="ident">V</span>&gt;) -&gt; <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">borrow</span>() == <span class="ident">other</span>.<span class="ident">borrow</span>()
     }
 }
 
 <span class="macro">macro_rules!</span> <span class="ident">impl_eq</span> {
-    ($($(@<span class="kw">for</span><span class="op">&lt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bounds</span>:<span class="ident">tt</span> <span class="op">&gt;</span>)<span class="question-mark">?</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ptr</span>:<span class="ident">ty</span> =&gt; $([$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">deref</span>:<span class="ident">tt</span>)<span class="op">+</span>])<span class="question-mark">?</span> <span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">with</span>:<span class="ident">ty</span><span class="op">&gt;</span>,)<span class="kw-2">*</span>) =&gt; {$(
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">U</span> $(, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bounds</span>)<span class="kw-2">*</span><span class="op">&gt;</span> <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">with</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ptr</span>, <span class="ident">U</span><span class="op">&gt;</span>
+    ($($(@<span class="kw">for</span>&lt; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bounds</span>:<span class="ident">tt</span> &gt;)<span class="question-mark">?</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ptr</span>:<span class="ident">ty</span> =&gt; $([$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">deref</span>:<span class="ident">tt</span>)+])<span class="question-mark">?</span> &lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">with</span>:<span class="ident">ty</span>&gt;,)<span class="kw-2">*</span>) =&gt; {$(
+        <span class="kw">impl</span>&lt;<span class="ident">U</span> $(, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bounds</span>)<span class="kw-2">*</span>&gt; <span class="ident">PartialEq</span>&lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">with</span>&gt; <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ptr</span>, <span class="ident">U</span>&gt;
         <span class="kw">where</span>
             <span class="ident">U</span>: <span class="ident">Capacity</span>,
-            $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bounds</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">PartialEq</span>, )<span class="op">*</span>
+            $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bounds</span>: <span class="ident">Clone</span> + <span class="ident">PartialEq</span>, )*
         {
             <span class="attribute">#[<span class="ident">inline</span>]</span>
             <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">with</span>) -&gt; <span class="ident">bool</span> {
-                <span class="self">self</span>.<span class="ident">borrow</span>() <span class="op">==</span> $($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">deref</span>)<span class="kw-2">*</span>)<span class="op">*</span> <span class="ident">other</span>
+                <span class="self">self</span>.<span class="ident">borrow</span>() == $($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">deref</span>)<span class="kw-2">*</span>)* <span class="ident">other</span>
             }
         }
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">U</span> $(, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bounds</span>)<span class="kw-2">*</span><span class="op">&gt;</span> <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ptr</span>, <span class="ident">U</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">with</span>
+        <span class="kw">impl</span>&lt;<span class="ident">U</span> $(, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bounds</span>)<span class="kw-2">*</span>&gt; <span class="ident">PartialEq</span>&lt;<span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ptr</span>, <span class="ident">U</span>&gt;&gt; <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">with</span>
         <span class="kw">where</span>
             <span class="ident">U</span>: <span class="ident">Capacity</span>,
-            $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bounds</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">PartialEq</span>, )<span class="op">*</span>
+            $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bounds</span>: <span class="ident">Clone</span> + <span class="ident">PartialEq</span>, )*
         {
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ptr</span>, <span class="ident">U</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
-                $($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">deref</span>)<span class="kw-2">*</span>)<span class="op">*</span> <span class="self">self</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">borrow</span>()
+            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Cow</span>&lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ptr</span>, <span class="ident">U</span>&gt;) -&gt; <span class="ident">bool</span> {
+                $($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">deref</span>)<span class="kw-2">*</span>)* <span class="self">self</span> == <span class="ident">other</span>.<span class="ident">borrow</span>()
             }
         }
     )<span class="kw-2">*</span>};
 }
 
 <span class="macro">impl_eq!</span> {
-    <span class="ident">str</span> =&gt; <span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">str</span> =&gt; [<span class="kw-2">*</span>]<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
-    <span class="ident">str</span> =&gt; <span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    @<span class="kw">for</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> [<span class="ident">T</span>] =&gt; <span class="op">&lt;</span>[<span class="ident">T</span>]<span class="op">&gt;</span>,
-    @<span class="kw">for</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> [<span class="ident">T</span>] =&gt; [<span class="kw-2">*</span>]<span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">T</span>]<span class="op">&gt;</span>,
-    @<span class="kw">for</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> [<span class="ident">T</span>] =&gt; [<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span>]<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">str</span> =&gt; &lt;<span class="ident">str</span>&gt;,
+    <span class="ident">str</span> =&gt; [<span class="kw-2">*</span>]&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>&gt;,
+    <span class="ident">str</span> =&gt; &lt;<span class="ident">String</span>&gt;,
+    @<span class="kw">for</span>&lt;<span class="ident">T</span>&gt; [<span class="ident">T</span>] =&gt; &lt;[<span class="ident">T</span>]&gt;,
+    @<span class="kw">for</span>&lt;<span class="ident">T</span>&gt; [<span class="ident">T</span>] =&gt; [<span class="kw-2">*</span>]&lt;<span class="kw-2">&amp;</span>[<span class="ident">T</span>]&gt;,
+    @<span class="kw">for</span>&lt;<span class="ident">T</span>&gt; [<span class="ident">T</span>] =&gt; [<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span>]&lt;<span class="ident">Vec</span>&lt;<span class="ident">T</span>&gt;&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="ident">fmt::Debug</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="ident">fmt::Debug</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -1069,9 +1069,9 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="ident">fmt::Display</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="ident">fmt::Display</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -1081,28 +1081,28 @@
 }
 
 <span class="comment">// Safety: Same bounds as `std::borrow::Cow`.</span>
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">unsafe</span> <span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="ident">Sync</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">T::Owned</span>: <span class="ident">Sync</span>,
 {
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">unsafe</span> <span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="ident">Sync</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">T::Owned</span>: <span class="ident">Send</span>,
 {
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span> <span class="ident">Unpin</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>&gt; <span class="ident">Unpin</span> <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>, <span class="ident">U</span>&gt;
 <span class="kw">where</span>
     <span class="ident">U</span>: <span class="ident">Capacity</span>,
-    <span class="ident">T</span>: <span class="ident">Beef</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">T</span>: <span class="ident">Beef</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
     <span class="ident">T::Owned</span>: <span class="ident">Unpin</span>,
 {
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="beef" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="beef" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

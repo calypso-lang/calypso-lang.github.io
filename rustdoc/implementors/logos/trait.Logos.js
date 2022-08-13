@@ -1,3 +1,3 @@
-(function() {var implementors = {};
-implementors["calypso_parsing"] = [{"text":"impl&lt;'s&gt; <a class=\"trait\" href=\"logos/trait.Logos.html\" title=\"trait logos::Logos\">Logos</a>&lt;'s&gt; for <a class=\"enum\" href=\"calypso_parsing/lexer/enum.Token.html\" title=\"enum calypso_parsing::lexer::Token\">Token</a>","synthetic":false,"types":["calypso_parsing::lexer::Token"]}];
-if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
+(function() {var implementors = {
+"calypso_parsing":[["impl&lt;'s&gt; <a class=\"trait\" href=\"logos/trait.Logos.html\" title=\"trait logos::Logos\">Logos</a>&lt;'s&gt; for <a class=\"enum\" href=\"calypso_parsing/lexer/enum.Token.html\" title=\"enum calypso_parsing::lexer::Token\">Token</a>"]]
+};if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

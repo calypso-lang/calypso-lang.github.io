@@ -140,7 +140,7 @@
 <span id="140">140</span>
 </pre><pre class="rust"><code><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="ident"><span class="self">self</span>::inner</span>::<span class="kw-2">*</span>;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">loom</span>, <span class="ident">any</span>(<span class="ident">test</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;loom&quot;</span>)))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">loom</span>, <span class="ident">any</span>(<span class="ident">test</span>, <span class="ident">feature</span> = <span class="string">&quot;loom&quot;</span>)))]</span>
 <span class="kw">mod</span> <span class="ident">inner</span> {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">atomic</span> {
         <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">loom::sync::atomic</span>::<span class="kw-2">*</span>;
@@ -158,12 +158,12 @@
         <span class="doccomment">///</span>
         <span class="doccomment">/// This is a version of `loom::alloc::Track` that adds a missing</span>
         <span class="doccomment">/// `Default` impl.</span>
-        <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Track</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">alloc::Track</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
+        <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Track</span>&lt;<span class="ident">T</span>&gt;(<span class="ident">alloc::Track</span>&lt;<span class="ident">T</span>&gt;);
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Track</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+        <span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">Track</span>&lt;<span class="ident">T</span>&gt; {
             <span class="doccomment">/// Track a value for leaks</span>
             <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">value</span>: <span class="ident">T</span>) -&gt; <span class="ident">Track</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">value</span>: <span class="ident">T</span>) -&gt; <span class="ident">Track</span>&lt;<span class="ident">T</span>&gt; {
                 <span class="ident">Track</span>(<span class="ident">alloc::Track::new</span>(<span class="ident">value</span>))
             }
 
@@ -186,13 +186,13 @@
             }
         }
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">fmt::Debug</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Track</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">fmt::Debug</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Track</span>&lt;<span class="ident">T</span>&gt; {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
                 <span class="self">self</span>.<span class="number">0</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)
             }
         }
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Default</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Track</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+        <span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">Default</span>&gt; <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Track</span>&lt;<span class="ident">T</span>&gt; {
             <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
                 <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">T::default</span>())
             }
@@ -200,7 +200,7 @@
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">loom</span>, <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;loom&quot;</span>, <span class="ident">test</span>))))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">all</span>(<span class="ident">loom</span>, <span class="ident">any</span>(<span class="ident">feature</span> = <span class="string">&quot;loom&quot;</span>, <span class="ident">test</span>))))]</span>
 <span class="kw">mod</span> <span class="ident">inner</span> {
     <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="ident">lazy_static::lazy_static</span>;
@@ -220,15 +220,15 @@
     }
 
     <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">std::cell::UnsafeCell</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">UnsafeCell</span>&lt;<span class="ident">T</span>&gt;(<span class="ident">std::cell::UnsafeCell</span>&lt;<span class="ident">T</span>&gt;);
 
-    <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">data</span>: <span class="ident">T</span>) -&gt; <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">UnsafeCell</span>&lt;<span class="ident">T</span>&gt; {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">data</span>: <span class="ident">T</span>) -&gt; <span class="ident">UnsafeCell</span>&lt;<span class="ident">T</span>&gt; {
             <span class="ident">UnsafeCell</span>(<span class="ident">std::cell::UnsafeCell::new</span>(<span class="ident">data</span>))
         }
 
         <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with</span>&lt;<span class="ident">F</span>, <span class="ident">R</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
         <span class="kw">where</span>
             <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">*const</span> <span class="ident">T</span>) -&gt; <span class="ident">R</span>,
         {
@@ -236,7 +236,7 @@
         }
 
         <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_mut</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_mut</span>&lt;<span class="ident">F</span>, <span class="ident">R</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">R</span>
         <span class="kw">where</span>
             <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">*mut</span> <span class="ident">T</span>) -&gt; <span class="ident">R</span>,
         {
@@ -247,14 +247,14 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">alloc</span> {
         <span class="doccomment">/// Track allocations, detecting leaks</span>
         <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
-        <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Track</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+        <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Track</span>&lt;<span class="ident">T</span>&gt; {
             <span class="ident">value</span>: <span class="ident">T</span>,
         }
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Track</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+        <span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">Track</span>&lt;<span class="ident">T</span>&gt; {
             <span class="doccomment">/// Track a value for leaks</span>
             <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">value</span>: <span class="ident">T</span>) -&gt; <span class="ident">Track</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">value</span>: <span class="ident">T</span>) -&gt; <span class="ident">Track</span>&lt;<span class="ident">T</span>&gt; {
                 <span class="ident">Track</span> { <span class="ident">value</span> }
             }
 
@@ -279,4 +279,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="sharded_slab" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="sharded_slab" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

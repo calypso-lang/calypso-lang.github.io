@@ -43,10 +43,10 @@ might be a good fit for your use case.)</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">std::io::prelude</span>::<span class="kw-2">*</span>;
 
-<span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>) <span class="op">=</span> <span class="ident">os_pipe::pipe</span>()<span class="question-mark">?</span>;
+<span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>) = <span class="ident">os_pipe::pipe</span>()<span class="question-mark">?</span>;
 <span class="comment">// XXX: If this write blocks, we&#39;ll never get to the read.</span>
 <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="string">b&quot;x&quot;</span>)<span class="question-mark">?</span>;
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> [<span class="number">0</span>];
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> = [<span class="number">0</span>];
 <span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;mut</span> <span class="ident">output</span>)<span class="question-mark">?</span>;
 <span class="macro">assert_eq!</span>(<span class="string">b&quot;x&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">output</span>);</code></pre></div>
 <p>This is a minimal working example, but as discussed in the section
@@ -66,7 +66,7 @@ closing the writers.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// We&#39;re going to spawn a child process that prints &quot;foo&quot; to stdout</span>
 <span class="comment">// and &quot;bar&quot; to stderr, and we&#39;ll combine these into a single pipe.</span>
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">std::process::Command::new</span>(<span class="string">&quot;python&quot;</span>);
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">command</span> = <span class="ident">std::process::Command::new</span>(<span class="string">&quot;python&quot;</span>);
 <span class="ident">command</span>.<span class="ident">args</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;-c&quot;</span>, <span class="string">r#&quot;
 import sys
 sys.stdout.write(&quot;foo&quot;)
@@ -77,13 +77,13 @@ sys.stderr.flush()
 
 <span class="comment">// Here&#39;s the interesting part. Open a pipe, clone its writer, and</span>
 <span class="comment">// set that pair of writers as the child&#39;s stdout and stderr.</span>
-<span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="ident">writer</span>) <span class="op">=</span> <span class="ident">os_pipe::pipe</span>()<span class="question-mark">?</span>;
-<span class="kw">let</span> <span class="ident">writer_clone</span> <span class="op">=</span> <span class="ident">writer</span>.<span class="ident">try_clone</span>()<span class="question-mark">?</span>;
+<span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="ident">writer</span>) = <span class="ident">os_pipe::pipe</span>()<span class="question-mark">?</span>;
+<span class="kw">let</span> <span class="ident">writer_clone</span> = <span class="ident">writer</span>.<span class="ident">try_clone</span>()<span class="question-mark">?</span>;
 <span class="ident">command</span>.<span class="ident">stdout</span>(<span class="ident">writer</span>);
 <span class="ident">command</span>.<span class="ident">stderr</span>(<span class="ident">writer_clone</span>);
 
 <span class="comment">// Now start the child process running.</span>
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">handle</span> <span class="op">=</span> <span class="ident">command</span>.<span class="ident">spawn</span>()<span class="question-mark">?</span>;
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">handle</span> = <span class="ident">command</span>.<span class="ident">spawn</span>()<span class="question-mark">?</span>;
 
 <span class="comment">// Avoid a deadlock! This parent process is still holding open pipe</span>
 <span class="comment">// writers inside the Command object, and we have to close those</span>
@@ -91,7 +91,7 @@ sys.stderr.flush()
 <span class="ident">drop</span>(<span class="ident">command</span>);
 
 <span class="comment">// Finally we can read all the output and clean up the child.</span>
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">String::new</span>();
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> = <span class="ident">String::new</span>();
 <span class="ident">reader</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;mut</span> <span class="ident">output</span>)<span class="question-mark">?</span>;
 <span class="ident">handle</span>.<span class="ident">wait</span>()<span class="question-mark">?</span>;
 <span class="macro">assert_eq!</span>(<span class="ident">output</span>, <span class="string">&quot;foobar&quot;</span>);</code></pre></div>
@@ -108,4 +108,4 @@ children</a>.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.dup_stdout.html" title="os_pipe::dup_stdout fn">dup_stdout</a></div><div class="item-right docblock-short"><p>Get a duplicated copy of the current process’s standard output, as a
 <a href="struct.PipeWriter.html"><code>PipeWriter</code></a>.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.pipe.html" title="os_pipe::pipe fn">pipe</a></div><div class="item-right docblock-short"><p>Open a new pipe and return a <a href="struct.PipeReader.html"><code>PipeReader</code></a> and <a href="struct.PipeWriter.html"><code>PipeWriter</code></a> pair.</p>
-</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="os_pipe" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="os_pipe" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

@@ -64,8 +64,8 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// See [`.zip_eq()`](crate::Itertools::zip_eq) for more information.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">must_use</span> <span class="op">=</span> <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ZipEq</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">J</span><span class="op">&gt;</span> {
+<span class="attribute">#[<span class="ident">must_use</span> = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ZipEq</span>&lt;<span class="ident">I</span>, <span class="ident">J</span>&gt; {
     <span class="ident">a</span>: <span class="ident">I</span>,
     <span class="ident">b</span>: <span class="ident">J</span>,
 }
@@ -84,7 +84,7 @@
 <span class="doccomment">///     /* loop body */</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">zip_eq</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">J</span><span class="op">&gt;</span>(<span class="ident">i</span>: <span class="ident">I</span>, <span class="ident">j</span>: <span class="ident">J</span>) -&gt; <span class="ident">ZipEq</span><span class="op">&lt;</span><span class="ident">I::IntoIter</span>, <span class="ident">J::IntoIter</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">zip_eq</span>&lt;<span class="ident">I</span>, <span class="ident">J</span>&gt;(<span class="ident">i</span>: <span class="ident">I</span>, <span class="ident">j</span>: <span class="ident">J</span>) -&gt; <span class="ident">ZipEq</span>&lt;<span class="ident">I::IntoIter</span>, <span class="ident">J::IntoIter</span>&gt;
     <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">IntoIterator</span>,
           <span class="ident">J</span>: <span class="ident">IntoIterator</span>
 {
@@ -94,29 +94,29 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">J</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">ZipEq</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">J</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">I</span>, <span class="ident">J</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">ZipEq</span>&lt;<span class="ident">I</span>, <span class="ident">J</span>&gt;
     <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>,
           <span class="ident">J</span>: <span class="ident">Iterator</span>
 {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">I::Item</span>, <span class="ident">J::Item</span>);
+    <span class="kw">type</span> <span class="ident">Item</span> = (<span class="ident">I::Item</span>, <span class="ident">J::Item</span>);
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
         <span class="kw">match</span> (<span class="self">self</span>.<span class="ident">a</span>.<span class="ident">next</span>(), <span class="self">self</span>.<span class="ident">b</span>.<span class="ident">next</span>()) {
             (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="prelude-val">None</span>,
             (<span class="prelude-val">Some</span>(<span class="ident">a</span>), <span class="prelude-val">Some</span>(<span class="ident">b</span>)) =&gt; <span class="prelude-val">Some</span>((<span class="ident">a</span>, <span class="ident">b</span>)),
-            (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">|</span> (<span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="prelude-val">None</span>) =&gt;
+            (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) | (<span class="prelude-val">Some</span>(<span class="kw">_</span>), <span class="prelude-val">None</span>) =&gt;
             <span class="macro">panic!</span>(<span class="string">&quot;itertools: .zip_eq() reached end of one iterator before the other&quot;</span>)
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
         <span class="ident">size_hint::min</span>(<span class="self">self</span>.<span class="ident">a</span>.<span class="ident">size_hint</span>(), <span class="self">self</span>.<span class="ident">b</span>.<span class="ident">size_hint</span>())
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">J</span><span class="op">&gt;</span> <span class="ident">ExactSizeIterator</span> <span class="kw">for</span> <span class="ident">ZipEq</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">J</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">I</span>, <span class="ident">J</span>&gt; <span class="ident">ExactSizeIterator</span> <span class="kw">for</span> <span class="ident">ZipEq</span>&lt;<span class="ident">I</span>, <span class="ident">J</span>&gt;
     <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">ExactSizeIterator</span>,
           <span class="ident">J</span>: <span class="ident">ExactSizeIterator</span>
 {}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

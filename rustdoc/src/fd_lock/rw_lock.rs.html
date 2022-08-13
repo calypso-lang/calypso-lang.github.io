@@ -136,11 +136,11 @@
 <span class="doccomment">/// underlying data (exclusive access) and the read portion of this lock typically</span>
 <span class="doccomment">/// allows for read-only access (shared access).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">sys::AsRaw</span><span class="op">&gt;</span> {
-    <span class="ident">lock</span>: <span class="ident">sys::RwLock</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RwLock</span>&lt;<span class="ident">T</span>: <span class="ident">sys::AsRaw</span>&gt; {
+    <span class="ident">lock</span>: <span class="ident">sys::RwLock</span>&lt;<span class="ident">T</span>&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">sys::AsRaw</span><span class="op">&gt;</span> <span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">sys::AsRaw</span>&gt; <span class="ident">RwLock</span>&lt;<span class="ident">T</span>&gt; {
     <span class="doccomment">/// Create a new instance.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Examples</span>
@@ -178,8 +178,8 @@
     <span class="doccomment">/// On Unix this may return an `ErrorKind::Interrupted` if the operation was</span>
     <span class="doccomment">/// interrupted by a signal handler.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">RwLockReadGuard</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">guard</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">lock</span>.<span class="ident">read</span>()<span class="question-mark">?</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">RwLockReadGuard</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>&gt;&gt; {
+        <span class="kw">let</span> <span class="ident">guard</span> = <span class="self">self</span>.<span class="ident">lock</span>.<span class="ident">read</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">RwLockReadGuard::new</span>(<span class="ident">guard</span>))
     }
 
@@ -200,8 +200,8 @@
     <span class="doccomment">/// On Unix this may return an `ErrorKind::Interrupted` if the operation was</span>
     <span class="doccomment">/// interrupted by a signal handler.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">RwLockReadGuard</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">guard</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">lock</span>.<span class="ident">try_read</span>()<span class="question-mark">?</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_read</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">RwLockReadGuard</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>&gt;&gt; {
+        <span class="kw">let</span> <span class="ident">guard</span> = <span class="self">self</span>.<span class="ident">lock</span>.<span class="ident">try_read</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">RwLockReadGuard::new</span>(<span class="ident">guard</span>))
     }
 
@@ -219,8 +219,8 @@
     <span class="doccomment">/// On Unix this may return an `ErrorKind::Interrupted` if the operation was</span>
     <span class="doccomment">/// interrupted by a signal handler.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">RwLockWriteGuard</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">guard</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">lock</span>.<span class="ident">write</span>()<span class="question-mark">?</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">RwLockWriteGuard</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>&gt;&gt; {
+        <span class="kw">let</span> <span class="ident">guard</span> = <span class="self">self</span>.<span class="ident">lock</span>.<span class="ident">write</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">RwLockWriteGuard::new</span>(<span class="ident">guard</span>))
     }
 
@@ -236,8 +236,8 @@
     <span class="doccomment">/// On Unix this may return an `ErrorKind::Interrupted` if the operation was</span>
     <span class="doccomment">/// interrupted by a signal handler.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">RwLockWriteGuard</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">guard</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">lock</span>.<span class="ident">try_write</span>()<span class="question-mark">?</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">RwLockWriteGuard</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">T</span>&gt;&gt; {
+        <span class="kw">let</span> <span class="ident">guard</span> = <span class="self">self</span>.<span class="ident">lock</span>.<span class="ident">try_write</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="ident">RwLockWriteGuard::new</span>(<span class="ident">guard</span>))
     }
 
@@ -251,4 +251,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="fd_lock" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="fd_lock" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

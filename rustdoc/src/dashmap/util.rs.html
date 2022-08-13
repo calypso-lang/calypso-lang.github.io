@@ -106,15 +106,15 @@
 <span class="kw">use</span> <span class="ident">core</span>::{<span class="ident">mem</span>, <span class="ident">ptr</span>};
 
 <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">ptr_size_bits</span>() -&gt; <span class="ident">usize</span> {
-    <span class="ident">mem::size_of</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>() <span class="op">*</span> <span class="number">8</span>
+    <span class="ident">mem::size_of</span>::&lt;<span class="ident">usize</span>&gt;() * <span class="number">8</span>
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">map_in_place_2</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">U</span>, <span class="ident">T</span>) -&gt; <span class="ident">T</span><span class="op">&gt;</span>((<span class="ident">k</span>, <span class="ident">v</span>): (<span class="ident">U</span>, <span class="kw-2">&amp;mut</span> <span class="ident">T</span>), <span class="ident">f</span>: <span class="ident">F</span>) {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">map_in_place_2</span>&lt;<span class="ident">T</span>, <span class="ident">U</span>, <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">U</span>, <span class="ident">T</span>) -&gt; <span class="ident">T</span>&gt;((<span class="ident">k</span>, <span class="ident">v</span>): (<span class="ident">U</span>, <span class="kw-2">&amp;mut</span> <span class="ident">T</span>), <span class="ident">f</span>: <span class="ident">F</span>) {
     <span class="kw">unsafe</span> {
         <span class="comment">// # Safety</span>
         <span class="comment">//</span>
         <span class="comment">// If the closure panics, we must abort otherwise we could double drop `T`</span>
-        <span class="kw">let</span> <span class="ident">_promote_panic_to_abort</span> <span class="op">=</span> <span class="ident">AbortOnPanic</span>;
+        <span class="kw">let</span> <span class="ident">_promote_panic_to_abort</span> = <span class="ident">AbortOnPanic</span>;
 
         <span class="ident">ptr::write</span>(<span class="ident">v</span>, <span class="ident">f</span>(<span class="ident">k</span>, <span class="ident">ptr::read</span>(<span class="ident">v</span>)));
     }
@@ -124,7 +124,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Requires that you ensure the reference does not become invalid.</span>
 <span class="doccomment">/// The object has to outlive the reference.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">change_lifetime_const</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">T</span> {
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">change_lifetime_const</span>&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">T</span>&gt;(<span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">T</span> {
     <span class="kw-2">&amp;</span><span class="kw-2">*</span>(<span class="ident">x</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">T</span>)
 }
 
@@ -132,7 +132,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Requires that you ensure the reference does not become invalid.</span>
 <span class="doccomment">/// The object has to outlive the reference.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">change_lifetime_mut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="kw-2">mut</span> <span class="ident">T</span> {
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">change_lifetime_mut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">T</span>&gt;(<span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="kw-2">mut</span> <span class="ident">T</span> {
     <span class="kw-2">&amp;mut</span> <span class="kw-2">*</span>(<span class="ident">x</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">T</span>)
 }
 
@@ -146,13 +146,13 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This type is meant to be an implementation detail, but must be exposed due to the `Dashmap::shards`</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SharedValue</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">value</span>: <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SharedValue</span>&lt;<span class="ident">T</span>&gt; {
+    <span class="ident">value</span>: <span class="ident">UnsafeCell</span>&lt;<span class="ident">T</span>&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Clone</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">SharedValue</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">Clone</span>&gt; <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">SharedValue</span>&lt;<span class="ident">T</span>&gt; {
     <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get</span>().<span class="ident">clone</span>();
+        <span class="kw">let</span> <span class="ident">inner</span> = <span class="self">self</span>.<span class="ident">get</span>().<span class="ident">clone</span>();
 
         <span class="self">Self</span> {
             <span class="ident">value</span>: <span class="ident">UnsafeCell::new</span>(<span class="ident">inner</span>),
@@ -160,11 +160,11 @@
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Send</span><span class="op">&gt;</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">SharedValue</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">Send</span>&gt; <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">SharedValue</span>&lt;<span class="ident">T</span>&gt; {}
 
-<span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Sync</span><span class="op">&gt;</span> <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">SharedValue</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
+<span class="kw">unsafe</span> <span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">Sync</span>&gt; <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">SharedValue</span>&lt;<span class="ident">T</span>&gt; {}
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">SharedValue</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">SharedValue</span>&lt;<span class="ident">T</span>&gt; {
     <span class="doccomment">/// Create a new `SharedValue&lt;T&gt;`</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">value</span>: <span class="ident">T</span>) -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
@@ -203,4 +203,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="dashmap" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="dashmap" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

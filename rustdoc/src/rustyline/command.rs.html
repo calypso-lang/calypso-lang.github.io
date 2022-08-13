@@ -251,18 +251,18 @@
     <span class="ident">Submit</span>,
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">execute</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">Helper</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">execute</span>&lt;<span class="ident">H</span>: <span class="ident">Helper</span>&gt;(
     <span class="ident">cmd</span>: <span class="ident">Cmd</span>,
-    <span class="ident">s</span>: <span class="kw-2">&amp;mut</span> <span class="ident">State</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="ident">H</span><span class="op">&gt;</span>,
+    <span class="ident">s</span>: <span class="kw-2">&amp;mut</span> <span class="ident">State</span>&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="ident">H</span>&gt;,
     <span class="ident">input_state</span>: <span class="kw-2">&amp;</span><span class="ident">InputState</span>,
-    <span class="ident">kill_ring</span>: <span class="kw-2">&amp;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">KillRing</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">kill_ring</span>: <span class="kw-2">&amp;</span><span class="ident">Arc</span>&lt;<span class="ident">Mutex</span>&lt;<span class="ident">KillRing</span>&gt;&gt;,
     <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Status</span><span class="op">&gt;</span> {
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">Status</span>&gt; {
     <span class="kw">use</span> <span class="ident">Status</span>::{<span class="ident">Proceed</span>, <span class="ident">Submit</span>};
 
     <span class="kw">match</span> <span class="ident">cmd</span> {
-        <span class="ident">Cmd::EndOfFile</span> <span class="op">|</span> <span class="ident">Cmd::AcceptLine</span> <span class="op">|</span> <span class="ident">Cmd::AcceptOrInsertLine</span> { .. } <span class="op">|</span> <span class="ident">Cmd::Newline</span> =&gt; {
-            <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">has_hint</span>() <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">s</span>.<span class="ident">is_default_prompt</span>() {
+        <span class="ident">Cmd::EndOfFile</span> | <span class="ident">Cmd::AcceptLine</span> | <span class="ident">Cmd::AcceptOrInsertLine</span> { .. } | <span class="ident">Cmd::Newline</span> =&gt; {
+            <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">has_hint</span>() || !<span class="ident">s</span>.<span class="ident">is_default_prompt</span>() {
                 <span class="comment">// Force a refresh without hints to leave the previous</span>
                 <span class="comment">// line as the user typed it after a newline.</span>
                 <span class="ident">s</span>.<span class="ident">refresh_line_with_msg</span>(<span class="prelude-val">None</span>)<span class="question-mark">?</span>;
@@ -295,7 +295,7 @@
         <span class="ident">Cmd::ReplaceChar</span>(<span class="ident">n</span>, <span class="ident">c</span>) =&gt; <span class="ident">s</span>.<span class="ident">edit_replace_char</span>(<span class="ident">c</span>, <span class="ident">n</span>)<span class="question-mark">?</span>,
         <span class="ident">Cmd::Replace</span>(<span class="ident">mvt</span>, <span class="ident">text</span>) =&gt; {
             <span class="ident">s</span>.<span class="ident">edit_kill</span>(<span class="kw-2">&amp;</span><span class="ident">mvt</span>)<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">text</span>) <span class="op">=</span> <span class="ident">text</span> {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">text</span>) = <span class="ident">text</span> {
                 <span class="ident">s</span>.<span class="ident">edit_insert_text</span>(<span class="kw-2">&amp;</span><span class="ident">text</span>)<span class="question-mark">?</span>;
             }
         }
@@ -305,7 +305,7 @@
         <span class="ident">Cmd::EndOfFile</span> =&gt; {
             <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">is_empty</span>() {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">error::ReadlineError::Eof</span>);
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">input_state</span>.<span class="ident">is_emacs_mode</span>() {
+            } <span class="kw">else</span> <span class="kw">if</span> !<span class="ident">input_state</span>.<span class="ident">is_emacs_mode</span>() {
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">Submit</span>);
             }
         }
@@ -331,12 +331,12 @@
             <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">true</span>)<span class="question-mark">?</span>;
         }
         <span class="ident">Cmd::LineUpOrPreviousHistory</span>(<span class="ident">n</span>) =&gt; {
-            <span class="kw">if</span> <span class="op">!</span><span class="ident">s</span>.<span class="ident">edit_move_line_up</span>(<span class="ident">n</span>)<span class="question-mark">?</span> {
+            <span class="kw">if</span> !<span class="ident">s</span>.<span class="ident">edit_move_line_up</span>(<span class="ident">n</span>)<span class="question-mark">?</span> {
                 <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">true</span>)<span class="question-mark">?</span>;
             }
         }
         <span class="ident">Cmd::LineDownOrNextHistory</span>(<span class="ident">n</span>) =&gt; {
-            <span class="kw">if</span> <span class="op">!</span><span class="ident">s</span>.<span class="ident">edit_move_line_down</span>(<span class="ident">n</span>)<span class="question-mark">?</span> {
+            <span class="kw">if</span> !<span class="ident">s</span>.<span class="ident">edit_move_line_down</span>(<span class="ident">n</span>)<span class="question-mark">?</span> {
                 <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
             }
         }
@@ -348,28 +348,28 @@
         }
         <span class="ident">Cmd::Yank</span>(<span class="ident">n</span>, <span class="ident">anchor</span>) =&gt; {
             <span class="comment">// retrieve (yank) last item killed</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kill_ring</span> <span class="op">=</span> <span class="ident">kill_ring</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">text</span>) <span class="op">=</span> <span class="ident">kill_ring</span>.<span class="ident">yank</span>() {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kill_ring</span> = <span class="ident">kill_ring</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">text</span>) = <span class="ident">kill_ring</span>.<span class="ident">yank</span>() {
                 <span class="ident">s</span>.<span class="ident">edit_yank</span>(<span class="ident">input_state</span>, <span class="ident">text</span>, <span class="ident">anchor</span>, <span class="ident">n</span>)<span class="question-mark">?</span>;
             }
         }
         <span class="ident">Cmd::ViYankTo</span>(<span class="kw-2">ref</span> <span class="ident">mvt</span>) =&gt; {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">text</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">copy</span>(<span class="ident">mvt</span>) {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kill_ring</span> <span class="op">=</span> <span class="ident">kill_ring</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">text</span>) = <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">copy</span>(<span class="ident">mvt</span>) {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kill_ring</span> = <span class="ident">kill_ring</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
                 <span class="ident">kill_ring</span>.<span class="ident">kill</span>(<span class="kw-2">&amp;</span><span class="ident">text</span>, <span class="ident">Mode::Append</span>);
             }
         }
         <span class="ident">Cmd::Newline</span> =&gt; {
             <span class="ident">s</span>.<span class="ident">edit_insert</span>(<span class="string">&#39;\n&#39;</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::AcceptLine</span> <span class="op">|</span> <span class="ident">Cmd::AcceptOrInsertLine</span> { .. } =&gt; {
-            <span class="kw">let</span> <span class="ident">validation_result</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">validate</span>()<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">valid</span> <span class="op">=</span> <span class="ident">validation_result</span>.<span class="ident">is_valid</span>();
-            <span class="kw">let</span> <span class="ident">end</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">is_end_of_input</span>();
+        <span class="ident">Cmd::AcceptLine</span> | <span class="ident">Cmd::AcceptOrInsertLine</span> { .. } =&gt; {
+            <span class="kw">let</span> <span class="ident">validation_result</span> = <span class="ident">s</span>.<span class="ident">validate</span>()<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">valid</span> = <span class="ident">validation_result</span>.<span class="ident">is_valid</span>();
+            <span class="kw">let</span> <span class="ident">end</span> = <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">is_end_of_input</span>();
             <span class="kw">match</span> (<span class="ident">cmd</span>, <span class="ident">valid</span>, <span class="ident">end</span>) {
                 (<span class="ident">Cmd::AcceptLine</span>, ..)
-                <span class="op">|</span> (<span class="ident">Cmd::AcceptOrInsertLine</span> { .. }, <span class="bool-val">true</span>, <span class="bool-val">true</span>)
-                <span class="op">|</span> (
+                | (<span class="ident">Cmd::AcceptOrInsertLine</span> { .. }, <span class="bool-val">true</span>, <span class="bool-val">true</span>)
+                | (
                     <span class="ident">Cmd::AcceptOrInsertLine</span> {
                         <span class="ident">accept_in_the_middle</span>: <span class="bool-val">true</span>,
                     },
@@ -379,8 +379,8 @@
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">Submit</span>);
                 }
                 (<span class="ident">Cmd::AcceptOrInsertLine</span> { .. }, <span class="bool-val">false</span>, <span class="kw">_</span>)
-                <span class="op">|</span> (<span class="ident">Cmd::AcceptOrInsertLine</span> { .. }, <span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; {
-                    <span class="kw">if</span> <span class="ident">valid</span> <span class="op">|</span><span class="op">|</span> <span class="op">!</span><span class="ident">validation_result</span>.<span class="ident">has_message</span>() {
+                | (<span class="ident">Cmd::AcceptOrInsertLine</span> { .. }, <span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; {
+                    <span class="kw">if</span> <span class="ident">valid</span> || !<span class="ident">validation_result</span>.<span class="ident">has_message</span>() {
                         <span class="ident">s</span>.<span class="ident">edit_insert</span>(<span class="string">&#39;\n&#39;</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
                     }
                 }
@@ -438,8 +438,8 @@
         }
         <span class="ident">Cmd::YankPop</span> =&gt; {
             <span class="comment">// yank-pop</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kill_ring</span> <span class="op">=</span> <span class="ident">kill_ring</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">yank_size</span>, <span class="ident">text</span>)) <span class="op">=</span> <span class="ident">kill_ring</span>.<span class="ident">yank_pop</span>() {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kill_ring</span> = <span class="ident">kill_ring</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">yank_size</span>, <span class="ident">text</span>)) = <span class="ident">kill_ring</span>.<span class="ident">yank_pop</span>() {
                 <span class="ident">s</span>.<span class="ident">edit_yank_pop</span>(<span class="ident">yank_size</span>, <span class="ident">text</span>)<span class="question-mark">?</span>;
             }
         }
@@ -469,4 +469,4 @@
     <span class="prelude-val">Ok</span>(<span class="ident">Proceed</span>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

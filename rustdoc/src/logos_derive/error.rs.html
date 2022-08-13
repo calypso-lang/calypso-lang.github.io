@@ -124,10 +124,10 @@
 <span class="kw">use</span> <span class="ident">quote::quote</span>;
 <span class="kw">use</span> <span class="ident">quote</span>::{<span class="ident">quote_spanned</span>, <span class="ident">ToTokens</span>, <span class="ident">TokenStreamExt</span>};
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">std::result::Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>&gt; = <span class="ident">std::result::Result</span>&lt;<span class="ident">T</span>, <span class="ident">Error</span>&gt;;
 
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Errors</span> {
-    <span class="ident">collected</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">SpannedError</span><span class="op">&gt;</span>,
+    <span class="ident">collected</span>: <span class="ident">Vec</span>&lt;<span class="ident">SpannedError</span>&gt;,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Errors</span> {
@@ -139,9 +139,9 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Errors</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">err</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">message</span>: <span class="ident">M</span>, <span class="ident">span</span>: <span class="ident">Span</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">err</span>&lt;<span class="ident">M</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">message</span>: <span class="ident">M</span>, <span class="ident">span</span>: <span class="ident">Span</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">M</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+        <span class="ident">M</span>: <span class="ident">Into</span>&lt;<span class="ident">Cow</span>&lt;<span class="lifetime">&#39;static</span>, <span class="ident">str</span>&gt;&gt;,
     {
         <span class="self">self</span>.<span class="ident">collected</span>.<span class="ident">push</span>(<span class="ident">SpannedError</span> {
             <span class="ident">message</span>: <span class="ident">message</span>.<span class="ident">into</span>(),
@@ -151,32 +151,32 @@
         <span class="self">self</span>
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">render</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TokenStream</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">errors</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">collected</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">render</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">TokenStream</span>&gt; {
+        <span class="kw">let</span> <span class="ident">errors</span> = <span class="self">self</span>.<span class="ident">collected</span>;
 
         <span class="kw">match</span> <span class="ident">errors</span>.<span class="ident">len</span>() {
             <span class="number">0</span> =&gt; <span class="prelude-val">None</span>,
             <span class="kw">_</span> =&gt; <span class="prelude-val">Some</span>(<span class="macro">quote!</span> {
                 <span class="kw">fn</span> <span class="ident">_logos_derive_compile_errors</span>() {
-                    #(#<span class="ident">errors</span>)<span class="op">*</span>
+                    #(#<span class="ident">errors</span>)*
                 }
             }),
         }
     }
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Error</span>(<span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Error</span>(<span class="ident">Cow</span>&lt;<span class="lifetime">&#39;static</span>, <span class="ident">str</span>&gt;);
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SpannedError</span> {
-    <span class="ident">message</span>: <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span>,
+    <span class="ident">message</span>: <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;static</span>, <span class="ident">str</span>&gt;,
     <span class="ident">span</span>: <span class="ident">Span</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Error</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">M</span>) -&gt; <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>&lt;<span class="ident">M</span>&gt;(<span class="ident">message</span>: <span class="ident">M</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
-        <span class="ident">M</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+        <span class="ident">M</span>: <span class="ident">Into</span>&lt;<span class="ident">Cow</span>&lt;<span class="lifetime">&#39;static</span>, <span class="ident">str</span>&gt;&gt;,
     {
         <span class="ident">Error</span>(<span class="ident">message</span>.<span class="ident">into</span>())
     }
@@ -201,25 +201,25 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">regex_syntax::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">regex_syntax::Error</span>&gt; <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">regex_syntax::Error</span>) -&gt; <span class="ident">Error</span> {
         <span class="ident">Error</span>(<span class="ident">err</span>.<span class="ident">to_string</span>().<span class="ident">into</span>())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>&gt; <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) -&gt; <span class="ident">Error</span> {
         <span class="ident">Error</span>(<span class="ident">err</span>.<span class="ident">into</span>())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Error</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">String</span>&gt; <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">String</span>) -&gt; <span class="ident">Error</span> {
         <span class="ident">Error</span>(<span class="ident">err</span>.<span class="ident">into</span>())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">Error</span>&gt; <span class="kw">for</span> <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;static</span>, <span class="ident">str</span>&gt; {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">Error</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">err</span>.<span class="number">0</span>
     }
@@ -227,7 +227,7 @@
 
 <span class="kw">impl</span> <span class="ident">ToTokens</span> <span class="kw">for</span> <span class="ident">SpannedError</span> {
     <span class="kw">fn</span> <span class="ident">to_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">tokens</span>: <span class="kw-2">&amp;mut</span> <span class="ident">TokenStream</span>) {
-        <span class="kw">let</span> <span class="ident">message</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">message</span>;
+        <span class="kw">let</span> <span class="ident">message</span> = <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">message</span>;
 
         <span class="ident">tokens</span>.<span class="ident">append_all</span>(<span class="macro">quote_spanned!</span>(<span class="self">self</span>.<span class="ident">span</span> =&gt; {
             <span class="macro">compile_error!</span>(#<span class="ident">message</span>)
@@ -235,4 +235,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="logos_derive" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="logos_derive" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

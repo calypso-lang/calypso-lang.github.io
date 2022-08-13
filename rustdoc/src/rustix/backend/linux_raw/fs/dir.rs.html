@@ -238,23 +238,23 @@
     <span class="doccomment">/// The `OwnedFd` that we read directory entries from.</span>
     <span class="ident">fd</span>: <span class="ident">OwnedFd</span>,
 
-    <span class="ident">buf</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
+    <span class="ident">buf</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;,
     <span class="ident">pos</span>: <span class="ident">usize</span>,
-    <span class="ident">next</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>,
+    <span class="ident">next</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">u64</span>&gt;,
 }
 
 <span class="kw">impl</span> <span class="ident">Dir</span> {
     <span class="doccomment">/// Construct a `Dir` that reads entries from the given directory</span>
     <span class="doccomment">/// file descriptor.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_from</span><span class="op">&lt;</span><span class="ident">Fd</span>: <span class="ident">AsFd</span><span class="op">&gt;</span>(<span class="ident">fd</span>: <span class="ident">Fd</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read_from</span>&lt;<span class="ident">Fd</span>: <span class="ident">AsFd</span>&gt;(<span class="ident">fd</span>: <span class="ident">Fd</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="self">Self</span>&gt; {
         <span class="ident"><span class="self">Self</span>::_read_from</span>(<span class="ident">fd</span>.<span class="ident">as_fd</span>())
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">_read_from</span>(<span class="ident">fd</span>: <span class="ident">BorrowedFd</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="ident">fcntl_getfl</span>(<span class="ident">fd</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">fd_for_dir</span> <span class="op">=</span> <span class="ident">openat</span>(<span class="ident">fd</span>, <span class="macro">cstr!</span>(<span class="string">&quot;.&quot;</span>), <span class="ident">flags</span> <span class="op">|</span> <span class="ident">OFlags::CLOEXEC</span>, <span class="ident">Mode::empty</span>())<span class="question-mark">?</span>;
+    <span class="kw">fn</span> <span class="ident">_read_from</span>(<span class="ident">fd</span>: <span class="ident">BorrowedFd</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">io::Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let</span> <span class="ident">flags</span> = <span class="ident">fcntl_getfl</span>(<span class="ident">fd</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">fd_for_dir</span> = <span class="ident">openat</span>(<span class="ident">fd</span>, <span class="macro">cstr!</span>(<span class="string">&quot;.&quot;</span>), <span class="ident">flags</span> | <span class="ident">OFlags::CLOEXEC</span>, <span class="ident">Mode::empty</span>())<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
             <span class="ident">fd</span>: <span class="ident">fd_for_dir</span>,
@@ -267,13 +267,13 @@
     <span class="doccomment">/// `rewinddir(self)`</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rewind</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">pos</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">len</span>();
-        <span class="self">self</span>.<span class="ident">next</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">0</span>);
+        <span class="self">self</span>.<span class="ident">pos</span> = <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">len</span>();
+        <span class="self">self</span>.<span class="ident">next</span> = <span class="prelude-val">Some</span>(<span class="number">0</span>);
     }
 
     <span class="doccomment">/// `readdir(self)`, where `None` means the end of the directory.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">DirEntry</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">next</span>.<span class="ident">take</span>() {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">io::Result</span>&lt;<span class="ident">DirEntry</span>&gt;&gt; {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next</span>) = <span class="self">self</span>.<span class="ident">next</span>.<span class="ident">take</span>() {
             <span class="kw">match</span> <span class="ident"><span class="kw">crate</span>::backend::fs::syscalls::_seek</span>(<span class="self">self</span>.<span class="ident">fd</span>.<span class="ident">as_fd</span>(), <span class="ident">next</span> <span class="kw">as</span> <span class="ident">i64</span>, <span class="ident">SEEK_SET</span>) {
                 <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; (),
                 <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">err</span>)),
@@ -281,21 +281,21 @@
         }
 
         <span class="comment">// Compute linux_dirent64 field offsets.</span>
-        <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> <span class="ident">linux_dirent64</span> {
+        <span class="kw">let</span> <span class="ident">z</span> = <span class="ident">linux_dirent64</span> {
             <span class="ident">d_ino</span>: <span class="number">0_u64</span>,
             <span class="ident">d_off</span>: <span class="number">0_i64</span>,
             <span class="ident">d_type</span>: <span class="number">0_u8</span>,
             <span class="ident">d_reclen</span>: <span class="number">0_u16</span>,
             <span class="ident">d_name</span>: <span class="ident">Default::default</span>(),
         };
-        <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-        <span class="kw">let</span> <span class="ident">offsetof_d_reclen</span> <span class="op">=</span> (<span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>.<span class="ident">d_reclen</span>) <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">-</span> <span class="ident">base</span>;
-        <span class="kw">let</span> <span class="ident">offsetof_d_name</span> <span class="op">=</span> (<span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>.<span class="ident">d_name</span>) <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">-</span> <span class="ident">base</span>;
-        <span class="kw">let</span> <span class="ident">offsetof_d_ino</span> <span class="op">=</span> (<span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>.<span class="ident">d_ino</span>) <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">-</span> <span class="ident">base</span>;
-        <span class="kw">let</span> <span class="ident">offsetof_d_type</span> <span class="op">=</span> (<span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>.<span class="ident">d_type</span>) <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">-</span> <span class="ident">base</span>;
+        <span class="kw">let</span> <span class="ident">base</span> = <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>) <span class="kw">as</span> <span class="ident">usize</span>;
+        <span class="kw">let</span> <span class="ident">offsetof_d_reclen</span> = (<span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>.<span class="ident">d_reclen</span>) <span class="kw">as</span> <span class="ident">usize</span>) - <span class="ident">base</span>;
+        <span class="kw">let</span> <span class="ident">offsetof_d_name</span> = (<span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>.<span class="ident">d_name</span>) <span class="kw">as</span> <span class="ident">usize</span>) - <span class="ident">base</span>;
+        <span class="kw">let</span> <span class="ident">offsetof_d_ino</span> = (<span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>.<span class="ident">d_ino</span>) <span class="kw">as</span> <span class="ident">usize</span>) - <span class="ident">base</span>;
+        <span class="kw">let</span> <span class="ident">offsetof_d_type</span> = (<span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>.<span class="ident">d_type</span>) <span class="kw">as</span> <span class="ident">usize</span>) - <span class="ident">base</span>;
 
         <span class="comment">// Test if we need more entries, and if so, read more.</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="self">self</span>.<span class="ident">pos</span> <span class="op">&lt;</span> <span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">linux_dirent64</span><span class="op">&gt;</span>() {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">len</span>() - <span class="self">self</span>.<span class="ident">pos</span> &lt; <span class="ident">size_of</span>::&lt;<span class="ident">linux_dirent64</span>&gt;() {
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">read_more</span>()<span class="question-mark">?</span> {
                 <span class="prelude-val">Ok</span>(()) =&gt; (),
                 <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">e</span>)),
@@ -303,45 +303,45 @@
         }
 
         <span class="comment">// We successfully read an entry. Extract the fields.</span>
-        <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">pos</span>;
+        <span class="kw">let</span> <span class="ident">pos</span> = <span class="self">self</span>.<span class="ident">pos</span>;
 
         <span class="comment">// Do an unaligned u16 load.</span>
-        <span class="kw">let</span> <span class="ident">d_reclen</span> <span class="op">=</span> <span class="ident">u16::from_ne_bytes</span>([
-            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_reclen</span>],
-            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_reclen</span> <span class="op">+</span> <span class="number">1</span>],
+        <span class="kw">let</span> <span class="ident">d_reclen</span> = <span class="ident">u16::from_ne_bytes</span>([
+            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> + <span class="ident">offsetof_d_reclen</span>],
+            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> + <span class="ident">offsetof_d_reclen</span> + <span class="number">1</span>],
         ]);
-        <span class="macro">assert!</span>(<span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">pos</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">d_reclen</span> <span class="kw">as</span> <span class="ident">usize</span>);
-        <span class="self">self</span>.<span class="ident">pos</span> <span class="op">+</span><span class="op">=</span> <span class="ident">d_reclen</span> <span class="kw">as</span> <span class="ident">usize</span>;
+        <span class="macro">assert!</span>(<span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">len</span>() - <span class="ident">pos</span> &gt;= <span class="ident">d_reclen</span> <span class="kw">as</span> <span class="ident">usize</span>);
+        <span class="self">self</span>.<span class="ident">pos</span> += <span class="ident">d_reclen</span> <span class="kw">as</span> <span class="ident">usize</span>;
 
         <span class="comment">// Read the NUL-terminated name from the `d_name` field. Without</span>
         <span class="comment">// `unsafe`, we need to scan for the NUL twice: once to obtain a size</span>
         <span class="comment">// for the slice, and then once within `CStr::from_bytes_with_nul`.</span>
-        <span class="kw">let</span> <span class="ident">name_start</span> <span class="op">=</span> <span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_name</span>;
-        <span class="kw">let</span> <span class="ident">name_len</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">name_start</span>..]
+        <span class="kw">let</span> <span class="ident">name_start</span> = <span class="ident">pos</span> + <span class="ident">offsetof_d_name</span>;
+        <span class="kw">let</span> <span class="ident">name_len</span> = <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">name_start</span>..]
             .<span class="ident">iter</span>()
-            .<span class="ident">position</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">x</span> <span class="op">==</span> <span class="string">b&#39;\0&#39;</span>)
+            .<span class="ident">position</span>(|<span class="ident">x</span>| <span class="kw-2">*</span><span class="ident">x</span> == <span class="string">b&#39;\0&#39;</span>)
             .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span>
-            <span class="ident">CStr::from_bytes_with_nul</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">name_start</span>..<span class="ident">name_start</span> <span class="op">+</span> <span class="ident">name_len</span> <span class="op">+</span> <span class="number">1</span>]).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">to_owned</span>();
-        <span class="macro">assert!</span>(<span class="ident">name</span>.<span class="ident">as_bytes</span>().<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="ident">name_start</span>);
+        <span class="kw">let</span> <span class="ident">name</span> =
+            <span class="ident">CStr::from_bytes_with_nul</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">name_start</span>..<span class="ident">name_start</span> + <span class="ident">name_len</span> + <span class="number">1</span>]).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">name</span> = <span class="ident">name</span>.<span class="ident">to_owned</span>();
+        <span class="macro">assert!</span>(<span class="ident">name</span>.<span class="ident">as_bytes</span>().<span class="ident">len</span>() &lt;= <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">len</span>() - <span class="ident">name_start</span>);
 
         <span class="comment">// Do an unaligned u64 load.</span>
-        <span class="kw">let</span> <span class="ident">d_ino</span> <span class="op">=</span> <span class="ident">u64::from_ne_bytes</span>([
-            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_ino</span>],
-            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_ino</span> <span class="op">+</span> <span class="number">1</span>],
-            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_ino</span> <span class="op">+</span> <span class="number">2</span>],
-            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_ino</span> <span class="op">+</span> <span class="number">3</span>],
-            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_ino</span> <span class="op">+</span> <span class="number">4</span>],
-            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_ino</span> <span class="op">+</span> <span class="number">5</span>],
-            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_ino</span> <span class="op">+</span> <span class="number">6</span>],
-            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_ino</span> <span class="op">+</span> <span class="number">7</span>],
+        <span class="kw">let</span> <span class="ident">d_ino</span> = <span class="ident">u64::from_ne_bytes</span>([
+            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> + <span class="ident">offsetof_d_ino</span>],
+            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> + <span class="ident">offsetof_d_ino</span> + <span class="number">1</span>],
+            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> + <span class="ident">offsetof_d_ino</span> + <span class="number">2</span>],
+            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> + <span class="ident">offsetof_d_ino</span> + <span class="number">3</span>],
+            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> + <span class="ident">offsetof_d_ino</span> + <span class="number">4</span>],
+            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> + <span class="ident">offsetof_d_ino</span> + <span class="number">5</span>],
+            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> + <span class="ident">offsetof_d_ino</span> + <span class="number">6</span>],
+            <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> + <span class="ident">offsetof_d_ino</span> + <span class="number">7</span>],
         ]);
 
-        <span class="kw">let</span> <span class="ident">d_type</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> <span class="op">+</span> <span class="ident">offsetof_d_type</span>];
+        <span class="kw">let</span> <span class="ident">d_type</span> = <span class="self">self</span>.<span class="ident">buf</span>[<span class="ident">pos</span> + <span class="ident">offsetof_d_type</span>];
 
         <span class="comment">// Check that our types correspond to the `linux_dirent64` types.</span>
-        <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">linux_dirent64</span> {
+        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">linux_dirent64</span> {
             <span class="ident">d_ino</span>,
             <span class="ident">d_off</span>: <span class="number">0</span>,
             <span class="ident">d_type</span>,
@@ -356,17 +356,17 @@
         }))
     }
 
-    <span class="kw">fn</span> <span class="ident">read_more</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">read_more</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">io::Result</span>&lt;()&gt;&gt; {
         <span class="comment">// Capacity increment currently chosen by wild guess.</span>
         <span class="self">self</span>.<span class="ident">buf</span>
-            .<span class="ident">resize</span>(<span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">capacity</span>() <span class="op">+</span> <span class="number">32</span> <span class="op">*</span> <span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">linux_dirent64</span><span class="op">&gt;</span>(), <span class="number">0</span>);
-        <span class="self">self</span>.<span class="ident">pos</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">let</span> <span class="ident">nread</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident"><span class="kw">crate</span>::backend::fs::syscalls::getdents</span>(<span class="self">self</span>.<span class="ident">fd</span>.<span class="ident">as_fd</span>(), <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">buf</span>) {
+            .<span class="ident">resize</span>(<span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">capacity</span>() + <span class="number">32</span> * <span class="ident">size_of</span>::&lt;<span class="ident">linux_dirent64</span>&gt;(), <span class="number">0</span>);
+        <span class="self">self</span>.<span class="ident">pos</span> = <span class="number">0</span>;
+        <span class="kw">let</span> <span class="ident">nread</span> = <span class="kw">match</span> <span class="ident"><span class="kw">crate</span>::backend::fs::syscalls::getdents</span>(<span class="self">self</span>.<span class="ident">fd</span>.<span class="ident">as_fd</span>(), <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">buf</span>) {
             <span class="prelude-val">Ok</span>(<span class="ident">nread</span>) =&gt; <span class="ident">nread</span>,
             <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">err</span>)),
         };
         <span class="self">self</span>.<span class="ident">buf</span>.<span class="ident">resize</span>(<span class="ident">nread</span>, <span class="number">0</span>);
-        <span class="kw">if</span> <span class="ident">nread</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">nread</span> == <span class="number">0</span> {
             <span class="prelude-val">None</span>
         } <span class="kw">else</span> {
             <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(()))
@@ -375,40 +375,40 @@
 
     <span class="doccomment">/// `fstat(self)`</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stat</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">Stat</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stat</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">Stat</span>&gt; {
         <span class="ident">fstat</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fd</span>)
     }
 
     <span class="doccomment">/// `fstatfs(self)`</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">statfs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">StatFs</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">statfs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">StatFs</span>&gt; {
         <span class="ident">fstatfs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fd</span>)
     }
 
     <span class="doccomment">/// `fstatvfs(self)`</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">statvfs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">StatVfs</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">statvfs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">StatVfs</span>&gt; {
         <span class="ident">fstatvfs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fd</span>)
     }
 
     <span class="doccomment">/// `fchdir(self)`</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">chdir</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">chdir</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="ident">fchdir</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fd</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Dir</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">DirEntry</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">io::Result</span>&lt;<span class="ident">DirEntry</span>&gt;;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
         <span class="ident"><span class="self">Self</span>::read</span>(<span class="self">self</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Dir</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
         <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;Dir&quot;</span>).<span class="ident">field</span>(<span class="string">&quot;fd&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">fd</span>).<span class="ident">finish</span>()
     }
 }
@@ -441,4 +441,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

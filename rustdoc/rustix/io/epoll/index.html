@@ -13,35 +13,35 @@ in simple examples 🙂.</p>
 <span class="kw">use</span> <span class="ident">std::os::unix::io::AsRawFd</span>;
 
 <span class="comment">// Create a socket and listen on it.</span>
-<span class="kw">let</span> <span class="ident">listen_sock</span> <span class="op">=</span> <span class="ident">socket</span>(<span class="ident">AddressFamily::INET</span>, <span class="ident">SocketType::STREAM</span>, <span class="ident">Protocol::default</span>())<span class="question-mark">?</span>;
+<span class="kw">let</span> <span class="ident">listen_sock</span> = <span class="ident">socket</span>(<span class="ident">AddressFamily::INET</span>, <span class="ident">SocketType::STREAM</span>, <span class="ident">Protocol::default</span>())<span class="question-mark">?</span>;
 <span class="ident">bind_v4</span>(<span class="kw-2">&amp;</span><span class="ident">listen_sock</span>, <span class="kw-2">&amp;</span><span class="ident">SocketAddrV4::new</span>(<span class="ident">Ipv4Addr::LOCALHOST</span>, <span class="number">0</span>))<span class="question-mark">?</span>;
 <span class="ident">listen</span>(<span class="kw-2">&amp;</span><span class="ident">listen_sock</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
 
 <span class="comment">// Create an epoll object. Using `Owning` here means the epoll object will</span>
 <span class="comment">// take ownership of the file descriptors registered with it.</span>
-<span class="kw">let</span> <span class="ident">epoll</span> <span class="op">=</span> <span class="ident">Epoll::new</span>(<span class="ident">epoll::CreateFlags::CLOEXEC</span>, <span class="ident">epoll::Owning::new</span>())<span class="question-mark">?</span>;
+<span class="kw">let</span> <span class="ident">epoll</span> = <span class="ident">Epoll::new</span>(<span class="ident">epoll::CreateFlags::CLOEXEC</span>, <span class="ident">epoll::Owning::new</span>())<span class="question-mark">?</span>;
 
 <span class="comment">// Remember the socket raw fd, which we use for comparisons only.</span>
-<span class="kw">let</span> <span class="ident">raw_listen_sock</span> <span class="op">=</span> <span class="ident">listen_sock</span>.<span class="ident">as_fd</span>().<span class="ident">as_raw_fd</span>();
+<span class="kw">let</span> <span class="ident">raw_listen_sock</span> = <span class="ident">listen_sock</span>.<span class="ident">as_fd</span>().<span class="ident">as_raw_fd</span>();
 
 <span class="comment">// Register the socket with the epoll object.</span>
 <span class="ident">epoll</span>.<span class="ident">add</span>(<span class="ident">listen_sock</span>, <span class="ident">epoll::EventFlags::IN</span>)<span class="question-mark">?</span>;
 
 <span class="comment">// Process events.</span>
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_list</span> <span class="op">=</span> <span class="ident">epoll::EventVec::with_capacity</span>(<span class="number">4</span>);
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">event_list</span> = <span class="ident">epoll::EventVec::with_capacity</span>(<span class="number">4</span>);
 <span class="kw">loop</span> {
-    <span class="ident">epoll</span>.<span class="ident">wait</span>(<span class="kw-2">&amp;mut</span> <span class="ident">event_list</span>, <span class="op">-</span><span class="number">1</span>)<span class="question-mark">?</span>;
+    <span class="ident">epoll</span>.<span class="ident">wait</span>(<span class="kw-2">&amp;mut</span> <span class="ident">event_list</span>, -<span class="number">1</span>)<span class="question-mark">?</span>;
     <span class="kw">for</span> (<span class="ident">_event_flags</span>, <span class="ident">target</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">event_list</span> {
-        <span class="kw">if</span> <span class="ident">target</span>.<span class="ident">as_raw_fd</span>() <span class="op">==</span> <span class="ident">raw_listen_sock</span> {
+        <span class="kw">if</span> <span class="ident">target</span>.<span class="ident">as_raw_fd</span>() == <span class="ident">raw_listen_sock</span> {
             <span class="comment">// Accept a new connection, set it to non-blocking, and</span>
             <span class="comment">// register to be notified when it&#39;s ready to write to.</span>
-            <span class="kw">let</span> <span class="ident">conn_sock</span> <span class="op">=</span> <span class="ident">accept</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">target</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">conn_sock</span> = <span class="ident">accept</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">target</span>)<span class="question-mark">?</span>;
             <span class="ident">ioctl_fionbio</span>(<span class="kw-2">&amp;</span><span class="ident">conn_sock</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
-            <span class="ident">epoll</span>.<span class="ident">add</span>(<span class="ident">conn_sock</span>, <span class="ident">epoll::EventFlags::OUT</span> <span class="op">|</span> <span class="ident">epoll::EventFlags::ET</span>)<span class="question-mark">?</span>;
+            <span class="ident">epoll</span>.<span class="ident">add</span>(<span class="ident">conn_sock</span>, <span class="ident">epoll::EventFlags::OUT</span> | <span class="ident">epoll::EventFlags::ET</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> {
             <span class="comment">// Write a message to the stream and then unregister it.</span>
             <span class="ident">write</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">target</span>, <span class="string">b&quot;hello\n&quot;</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">epoll</span>.<span class="ident">del</span>(<span class="ident">target</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">epoll</span>.<span class="ident">del</span>(<span class="ident">target</span>)<span class="question-mark">?</span>;
         }
     }
 }</code></pre></div>
@@ -56,4 +56,4 @@ for events from a set of file descriptors efficiently.</p>
 implementing <code>IntoFd</code> and <code>FromFd</code>.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Ref.html" title="rustix::io::epoll::Ref struct">Ref</a></div><div class="item-right docblock-short"><p>A reference to a <code>T</code>.</p>
 </div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.Context.html" title="rustix::io::epoll::Context trait">Context</a></div><div class="item-right docblock-short"><p>A trait for data stored within an <a href="struct.Epoll.html" title="Epoll"><code>Epoll</code></a> instance.</p>
-</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

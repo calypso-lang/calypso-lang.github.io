@@ -713,10 +713,10 @@
 <span class="doccomment">//! supported compiler version is not considered a semver breaking change as</span>
 <span class="doccomment">//! long as doing so complies with this policy.</span>
 <span class="doccomment">//!</span>
-<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/tracing-attributes/0.1.22&quot;</span>)]</span>
+<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> = <span class="string">&quot;https://docs.rs/tracing-attributes/0.1.22&quot;</span>)]</span>
 <span class="attribute">#![<span class="ident">doc</span>(
-    <span class="ident">html_logo_url</span> <span class="op">=</span> <span class="string">&quot;https://raw.githubusercontent.com/tokio-rs/tracing/master/assets/logo-type.png&quot;</span>,
-    <span class="ident">issue_tracker_base_url</span> <span class="op">=</span> <span class="string">&quot;https://github.com/tokio-rs/tracing/issues/&quot;</span>
+    <span class="ident">html_logo_url</span> = <span class="string">&quot;https://raw.githubusercontent.com/tokio-rs/tracing/master/assets/logo-type.png&quot;</span>,
+    <span class="ident">issue_tracker_base_url</span> = <span class="string">&quot;https://github.com/tokio-rs/tracing/issues/&quot;</span>
 )]</span>
 <span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">deny</span>(<span class="ident">rustdoc::broken_intra_doc_links</span>))]</span>
 <span class="attribute">#![<span class="ident">warn</span>(
@@ -1214,10 +1214,10 @@
     <span class="ident">args</span>: <span class="ident">proc_macro::TokenStream</span>,
     <span class="ident">item</span>: <span class="ident">proc_macro::TokenStream</span>,
 ) -&gt; <span class="ident">proc_macro::TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">args</span> <span class="op">=</span> <span class="macro">syn::parse_macro_input!</span>(<span class="ident">args</span> <span class="kw">as</span> <span class="ident">attr::InstrumentArgs</span>);
+    <span class="kw">let</span> <span class="ident">args</span> = <span class="macro">syn::parse_macro_input!</span>(<span class="ident">args</span> <span class="kw">as</span> <span class="ident">attr::InstrumentArgs</span>);
     <span class="comment">// Cloning a `TokenStream` is cheap since it&#39;s reference counted internally.</span>
     <span class="ident">instrument_precise</span>(<span class="ident">args</span>.<span class="ident">clone</span>(), <span class="ident">item</span>.<span class="ident">clone</span>())
-        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">_err</span><span class="op">|</span> <span class="ident">instrument_speculative</span>(<span class="ident">args</span>, <span class="ident">item</span>))
+        .<span class="ident">unwrap_or_else</span>(|<span class="ident">_err</span>| <span class="ident">instrument_speculative</span>(<span class="ident">args</span>, <span class="ident">item</span>))
 }
 
 <span class="doccomment">/// Instrument the function, without parsing the function body (instead using the raw tokens).</span>
@@ -1225,8 +1225,8 @@
     <span class="ident">args</span>: <span class="ident">attr::InstrumentArgs</span>,
     <span class="ident">item</span>: <span class="ident">proc_macro::TokenStream</span>,
 ) -&gt; <span class="ident">proc_macro::TokenStream</span> {
-    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="macro">syn::parse_macro_input!</span>(<span class="ident">item</span> <span class="kw">as</span> <span class="ident">MaybeItemFn</span>);
-    <span class="kw">let</span> <span class="ident">instrumented_function_name</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">sig</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>();
+    <span class="kw">let</span> <span class="ident">input</span> = <span class="macro">syn::parse_macro_input!</span>(<span class="ident">item</span> <span class="kw">as</span> <span class="ident">MaybeItemFn</span>);
+    <span class="kw">let</span> <span class="ident">instrumented_function_name</span> = <span class="ident">input</span>.<span class="ident">sig</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>();
     <span class="ident">expand::gen_function</span>(
         <span class="ident">input</span>.<span class="ident">as_ref</span>(),
         <span class="ident">args</span>,
@@ -1241,13 +1241,13 @@
 <span class="kw">fn</span> <span class="ident">instrument_precise</span>(
     <span class="ident">args</span>: <span class="ident">attr::InstrumentArgs</span>,
     <span class="ident">item</span>: <span class="ident">proc_macro::TokenStream</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proc_macro::TokenStream</span>, <span class="ident">syn::Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="ident">syn::parse</span>::<span class="op">&lt;</span><span class="ident">ItemFn</span><span class="op">&gt;</span>(<span class="ident">item</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">instrumented_function_name</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">sig</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>();
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">proc_macro::TokenStream</span>, <span class="ident">syn::Error</span>&gt; {
+    <span class="kw">let</span> <span class="ident">input</span> = <span class="ident">syn::parse</span>::&lt;<span class="ident">ItemFn</span>&gt;(<span class="ident">item</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">instrumented_function_name</span> = <span class="ident">input</span>.<span class="ident">sig</span>.<span class="ident">ident</span>.<span class="ident">to_string</span>();
 
     <span class="comment">// check for async_trait-like patterns in the block, and instrument</span>
     <span class="comment">// the future instead of the wrapper</span>
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">async_like</span>) <span class="op">=</span> <span class="ident">expand::AsyncInfo::from_fn</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>) {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">async_like</span>) = <span class="ident">expand::AsyncInfo::from_fn</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>) {
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">async_like</span>.<span class="ident">gen_async</span>(<span class="ident">args</span>, <span class="ident">instrumented_function_name</span>.<span class="ident">as_str</span>()));
     }
 
@@ -1264,14 +1264,14 @@
 <span class="doccomment">/// which&#39;s block is just a `TokenStream` (it may contain invalid code).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">struct</span> <span class="ident">MaybeItemFn</span> {
-    <span class="ident">attrs</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>,
+    <span class="ident">attrs</span>: <span class="ident">Vec</span>&lt;<span class="ident">Attribute</span>&gt;,
     <span class="ident">vis</span>: <span class="ident">Visibility</span>,
     <span class="ident">sig</span>: <span class="ident">Signature</span>,
     <span class="ident">block</span>: <span class="ident">TokenStream</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">MaybeItemFn</span> {
-    <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">MaybeItemFnRef</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">TokenStream</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">MaybeItemFnRef</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">TokenStream</span>&gt; {
         <span class="ident">MaybeItemFnRef</span> {
             <span class="ident">attrs</span>: <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">attrs</span>,
             <span class="ident">vis</span>: <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">vis</span>,
@@ -1284,11 +1284,11 @@
 <span class="doccomment">/// This parses a `TokenStream` into a `MaybeItemFn`</span>
 <span class="doccomment">/// (just like `ItemFn`, but skips parsing the body).</span>
 <span class="kw">impl</span> <span class="ident">Parse</span> <span class="kw">for</span> <span class="ident">MaybeItemFn</span> {
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">syn::Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">syn::Attribute::parse_outer</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">vis</span>: <span class="ident">Visibility</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">sig</span>: <span class="ident">Signature</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">block</span>: <span class="ident">TokenStream</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="ident">input</span>: <span class="ident">ParseStream</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">syn::Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let</span> <span class="ident">attrs</span> = <span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">syn::Attribute::parse_outer</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">vis</span>: <span class="ident">Visibility</span> = <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">sig</span>: <span class="ident">Signature</span> = <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">block</span>: <span class="ident">TokenStream</span> = <span class="ident">input</span>.<span class="ident">parse</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
             <span class="ident">attrs</span>,
             <span class="ident">vis</span>,
@@ -1301,14 +1301,14 @@
 <span class="doccomment">/// A generic reference type for `MaybeItemFn`,</span>
 <span class="doccomment">/// that takes a generic block type `B` that implements `ToTokens` (eg. `TokenStream`, `Block`).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">struct</span> <span class="ident">MaybeItemFnRef</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">B</span>: <span class="ident">ToTokens</span><span class="op">&gt;</span> {
-    <span class="ident">attrs</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Attribute</span><span class="op">&gt;</span>,
+<span class="kw">struct</span> <span class="ident">MaybeItemFnRef</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">B</span>: <span class="ident">ToTokens</span>&gt; {
+    <span class="ident">attrs</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Vec</span>&lt;<span class="ident">Attribute</span>&gt;,
     <span class="ident">vis</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Visibility</span>,
     <span class="ident">sig</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Signature</span>,
     <span class="ident">block</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">B</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ItemFn</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MaybeItemFnRef</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Block</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">From</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ItemFn</span>&gt; <span class="kw">for</span> <span class="ident">MaybeItemFnRef</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">Box</span>&lt;<span class="ident">Block</span>&gt;&gt; {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ItemFn</span>) -&gt; <span class="self">Self</span> {
         <span class="ident">MaybeItemFnRef</span> {
             <span class="ident">attrs</span>: <span class="kw-2">&amp;</span><span class="ident">val</span>.<span class="ident">attrs</span>,
@@ -1319,4 +1319,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="tracing_attributes" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="tracing_attributes" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

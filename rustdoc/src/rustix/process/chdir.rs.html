@@ -74,7 +74,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::path::SMALL_PATH_BUFFER_SIZE</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">backend</span>, <span class="ident">io</span>, <span class="ident">path</span>};
 <span class="kw">use</span> <span class="ident">alloc::vec::Vec</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;fuchsia&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> = <span class="string">&quot;fuchsia&quot;</span>))]</span>
 <span class="kw">use</span> <span class="ident">backend::fd::AsFd</span>;
 
 <span class="doccomment">/// `chdir(path)`—Change the current working directory.</span>
@@ -86,7 +86,7 @@
 <span class="doccomment">/// [POSIX]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/chdir.html</span>
 <span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man2/chdir.2.html</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">chdir</span><span class="op">&lt;</span><span class="ident">P</span>: <span class="ident">path::Arg</span><span class="op">&gt;</span>(<span class="ident">path</span>: <span class="ident">P</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">chdir</span>&lt;<span class="ident">P</span>: <span class="ident">path::Arg</span>&gt;(<span class="ident">path</span>: <span class="ident">P</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
     <span class="ident">path</span>.<span class="ident">into_with_c_str</span>(<span class="ident">backend::process::syscalls::chdir</span>)
 }
 
@@ -98,9 +98,9 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [POSIX]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/fchdir.html</span>
 <span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man2/fchdir.2.html</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;fuchsia&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> = <span class="string">&quot;fuchsia&quot;</span>))]</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fchdir</span><span class="op">&lt;</span><span class="ident">Fd</span>: <span class="ident">AsFd</span><span class="op">&gt;</span>(<span class="ident">fd</span>: <span class="ident">Fd</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fchdir</span>&lt;<span class="ident">Fd</span>: <span class="ident">AsFd</span>&gt;(<span class="ident">fd</span>: <span class="ident">Fd</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
     <span class="ident">backend::process::syscalls::fchdir</span>(<span class="ident">fd</span>.<span class="ident">as_fd</span>())
 }
 
@@ -114,13 +114,13 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [POSIX]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/getcwd.html</span>
 <span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man3/getcwd.3.html</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;wasi&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>))]</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getcwd</span><span class="op">&lt;</span><span class="ident">B</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">reuse</span>: <span class="ident">B</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">CString</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">getcwd</span>&lt;<span class="ident">B</span>: <span class="ident">Into</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;&gt;&gt;(<span class="ident">reuse</span>: <span class="ident">B</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">CString</span>&gt; {
     <span class="ident">_getcwd</span>(<span class="ident">reuse</span>.<span class="ident">into</span>())
 }
 
-<span class="kw">fn</span> <span class="ident">_getcwd</span>(<span class="kw-2">mut</span> <span class="ident">buffer</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">CString</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">_getcwd</span>(<span class="kw-2">mut</span> <span class="ident">buffer</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">CString</span>&gt; {
     <span class="comment">// This code would benefit from having a better way to read into</span>
     <span class="comment">// uninitialized memory, but that requires `unsafe`.</span>
     <span class="ident">buffer</span>.<span class="ident">clear</span>();
@@ -134,7 +134,7 @@
                 <span class="ident">buffer</span>.<span class="ident">resize</span>(<span class="ident">buffer</span>.<span class="ident">capacity</span>(), <span class="number">0_u8</span>);
             }
             <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; {
-                <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">buffer</span>.<span class="ident">iter</span>().<span class="ident">position</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">x</span> <span class="op">==</span> <span class="string">b&#39;\0&#39;</span>).<span class="ident">unwrap</span>();
+                <span class="kw">let</span> <span class="ident">len</span> = <span class="ident">buffer</span>.<span class="ident">iter</span>().<span class="ident">position</span>(|<span class="ident">x</span>| <span class="kw-2">*</span><span class="ident">x</span> == <span class="string">b&#39;\0&#39;</span>).<span class="ident">unwrap</span>();
                 <span class="ident">buffer</span>.<span class="ident">resize</span>(<span class="ident">len</span>, <span class="number">0_u8</span>);
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">CString::new</span>(<span class="ident">buffer</span>).<span class="ident">unwrap</span>());
             }
@@ -143,4 +143,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

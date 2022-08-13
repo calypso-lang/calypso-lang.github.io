@@ -1391,10 +1391,10 @@
 
 <span class="doccomment">/// The identifier for a pattern, which is simply the position of the pattern</span>
 <span class="doccomment">/// in the sequence of patterns given by the caller.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">PatternID</span> <span class="op">=</span> <span class="ident">usize</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">PatternID</span> = <span class="ident">usize</span>;
 
 <span class="doccomment">/// The length of a pattern, in bytes.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">PatternLength</span> <span class="op">=</span> <span class="ident">usize</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">PatternLength</span> = <span class="ident">usize</span>;
 
 <span class="doccomment">/// An Aho-Corasick automaton, represented as an NFA.</span>
 <span class="doccomment">///</span>
@@ -1421,7 +1421,7 @@
 <span class="doccomment">/// them is that all failure transitions are followed and pre-computed. This</span>
 <span class="doccomment">/// uses much more memory, but also executes searches more quickly.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt; {
     <span class="doccomment">/// The match semantics built into this NFA.</span>
     <span class="ident">match_kind</span>: <span class="ident">MatchKind</span>,
     <span class="doccomment">/// The start state id as an index into `states`.</span>
@@ -1436,7 +1436,7 @@
     <span class="doccomment">/// The number of bytes of heap used by this NFA&#39;s transition table.</span>
     <span class="ident">heap_bytes</span>: <span class="ident">usize</span>,
     <span class="doccomment">/// A prefilter for quickly skipping to candidate matches, if pertinent.</span>
-    <span class="ident">prefilter</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PrefilterObj</span><span class="op">&gt;</span>,
+    <span class="ident">prefilter</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">PrefilterObj</span>&gt;,
     <span class="doccomment">/// Whether this automaton anchors all matches to the start of input.</span>
     <span class="ident">anchored</span>: <span class="ident">bool</span>,
     <span class="doccomment">/// A set of equivalence classes in terms of bytes. We compute this while</span>
@@ -1461,10 +1461,10 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// The third state (index 2) is generally intended to be the starting or</span>
     <span class="doccomment">/// &quot;root&quot; state.</span>
-    <span class="ident">states</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">State</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">states</span>: <span class="ident">Vec</span>&lt;<span class="ident">State</span>&lt;<span class="ident">S</span>&gt;&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> <span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>&gt; <span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt; {
     <span class="doccomment">/// Returns the equivalence classes of bytes found while constructing</span>
     <span class="doccomment">/// this NFA.</span>
     <span class="doccomment">///</span>
@@ -1475,7 +1475,7 @@
     }
 
     <span class="doccomment">/// Returns a prefilter, if one exists.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prefilter_obj</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">PrefilterObj</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prefilter_obj</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">PrefilterObj</span>&gt; {
         <span class="self">self</span>.<span class="ident">prefilter</span>.<span class="ident">as_ref</span>()
     }
 
@@ -1483,7 +1483,7 @@
     <span class="doccomment">/// table.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">heap_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">heap_bytes</span>
-            <span class="op">+</span> <span class="self">self</span>.<span class="ident">prefilter</span>.<span class="ident">as_ref</span>().<span class="ident">map_or</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>().<span class="ident">heap_bytes</span>())
+            + <span class="self">self</span>.<span class="ident">prefilter</span>.<span class="ident">as_ref</span>().<span class="ident">map_or</span>(<span class="number">0</span>, |<span class="ident">p</span>| <span class="ident">p</span>.<span class="ident">as_ref</span>().<span class="ident">heap_bytes</span>())
     }
 
     <span class="doccomment">/// Return the length of the longest pattern in this automaton.</span>
@@ -1510,7 +1510,7 @@
     <span class="doccomment">/// to the given equivalence classes, including transitions to `fail_id()`.</span>
     <span class="doccomment">/// The number of transitions returned is always equivalent to the number</span>
     <span class="doccomment">/// of equivalence classes.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_all_transitions</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">u8</span>, <span class="ident">S</span>)<span class="op">&gt;</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_all_transitions</span>&lt;<span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">u8</span>, <span class="ident">S</span>)&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">byte_classes</span>: <span class="kw-2">&amp;</span><span class="ident">ByteClasses</span>,
         <span class="ident">id</span>: <span class="ident">S</span>,
@@ -1532,41 +1532,41 @@
         <span class="self">self</span>.<span class="ident">states</span>[<span class="ident">current</span>.<span class="ident">to_usize</span>()].<span class="ident">next_state</span>(<span class="ident">input</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="ident">S</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">State</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="ident">S</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">State</span>&lt;<span class="ident">S</span>&gt; {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">states</span>[<span class="ident">id</span>.<span class="ident">to_usize</span>()]
     }
 
-    <span class="kw">fn</span> <span class="ident">state_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident">S</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">State</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">state_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident">S</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">State</span>&lt;<span class="ident">S</span>&gt; {
         <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">states</span>[<span class="ident">id</span>.<span class="ident">to_usize</span>()]
     }
 
-    <span class="kw">fn</span> <span class="ident">start</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">State</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">start</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">State</span>&lt;<span class="ident">S</span>&gt; {
         <span class="self">self</span>.<span class="ident">state</span>(<span class="self">self</span>.<span class="ident">start_id</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">start_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">State</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start_id</span>;
+    <span class="kw">fn</span> <span class="ident">start_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">State</span>&lt;<span class="ident">S</span>&gt; {
+        <span class="kw">let</span> <span class="ident">id</span> = <span class="self">self</span>.<span class="ident">start_id</span>;
         <span class="self">self</span>.<span class="ident">state_mut</span>(<span class="ident">id</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">iter_transitions_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident">S</span>) -&gt; <span class="ident">IterTransitionsMut</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">S</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">iter_transitions_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident">S</span>) -&gt; <span class="ident">IterTransitionsMut</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">S</span>&gt; {
         <span class="ident">IterTransitionsMut::new</span>(<span class="self">self</span>, <span class="ident">id</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">copy_matches</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">src</span>: <span class="ident">S</span>, <span class="ident">dst</span>: <span class="ident">S</span>) {
-        <span class="kw">let</span> (<span class="ident">src</span>, <span class="ident">dst</span>) <span class="op">=</span>
+        <span class="kw">let</span> (<span class="ident">src</span>, <span class="ident">dst</span>) =
             <span class="ident">get_two_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">states</span>, <span class="ident">src</span>.<span class="ident">to_usize</span>(), <span class="ident">dst</span>.<span class="ident">to_usize</span>());
         <span class="ident">dst</span>.<span class="ident">matches</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">src</span>.<span class="ident">matches</span>);
     }
 
     <span class="kw">fn</span> <span class="ident">copy_empty_matches</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">dst</span>: <span class="ident">S</span>) {
-        <span class="kw">let</span> <span class="ident">start_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start_id</span>;
+        <span class="kw">let</span> <span class="ident">start_id</span> = <span class="self">self</span>.<span class="ident">start_id</span>;
         <span class="self">self</span>.<span class="ident">copy_matches</span>(<span class="ident">start_id</span>, <span class="ident">dst</span>);
     }
 
-    <span class="kw">fn</span> <span class="ident">add_dense_state</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">depth</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">trans</span> <span class="op">=</span> <span class="ident">Transitions::Dense</span>(<span class="ident">Dense::new</span>());
-        <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">usize_to_state_id</span>(<span class="self">self</span>.<span class="ident">states</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
+    <span class="kw">fn</span> <span class="ident">add_dense_state</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">depth</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S</span>&gt; {
+        <span class="kw">let</span> <span class="ident">trans</span> = <span class="ident">Transitions::Dense</span>(<span class="ident">Dense::new</span>());
+        <span class="kw">let</span> <span class="ident">id</span> = <span class="ident">usize_to_state_id</span>(<span class="self">self</span>.<span class="ident">states</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">push</span>(<span class="ident">State</span> {
             <span class="ident">trans</span>,
             <span class="comment">// Anchored automatons do not have any failure transitions.</span>
@@ -1577,9 +1577,9 @@
         <span class="prelude-val">Ok</span>(<span class="ident">id</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">add_sparse_state</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">depth</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">trans</span> <span class="op">=</span> <span class="ident">Transitions::Sparse</span>(<span class="macro">vec!</span>[]);
-        <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">usize_to_state_id</span>(<span class="self">self</span>.<span class="ident">states</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
+    <span class="kw">fn</span> <span class="ident">add_sparse_state</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">depth</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S</span>&gt; {
+        <span class="kw">let</span> <span class="ident">trans</span> = <span class="ident">Transitions::Sparse</span>(<span class="macro">vec!</span>[]);
+        <span class="kw">let</span> <span class="ident">id</span> = <span class="ident">usize_to_state_id</span>(<span class="self">self</span>.<span class="ident">states</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">push</span>(<span class="ident">State</span> {
             <span class="ident">trans</span>,
             <span class="comment">// Anchored automatons do not have any failure transitions.</span>
@@ -1591,8 +1591,8 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> <span class="ident">Automaton</span> <span class="kw">for</span> <span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">ID</span> <span class="op">=</span> <span class="ident">S</span>;
+<span class="kw">impl</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>&gt; <span class="ident">Automaton</span> <span class="kw">for</span> <span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt; {
+    <span class="kw">type</span> <span class="ident">ID</span> = <span class="ident">S</span>;
 
     <span class="kw">fn</span> <span class="ident">match_kind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">MatchKind</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">match_kind</span>
@@ -1602,8 +1602,8 @@
         <span class="self">self</span>.<span class="ident">anchored</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">prefilter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Prefilter</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">prefilter</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">as_ref</span>())
+    <span class="kw">fn</span> <span class="ident">prefilter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Prefilter</span>&gt; {
+        <span class="self">self</span>.<span class="ident">prefilter</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(|<span class="ident">p</span>| <span class="ident">p</span>.<span class="ident">as_ref</span>())
     }
 
     <span class="kw">fn</span> <span class="ident">start_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">S</span> {
@@ -1611,7 +1611,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">is_valid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="ident">S</span>) -&gt; <span class="ident">bool</span> {
-        <span class="ident">id</span>.<span class="ident">to_usize</span>() <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">len</span>()
+        <span class="ident">id</span>.<span class="ident">to_usize</span>() &lt; <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">len</span>()
     }
 
     <span class="kw">fn</span> <span class="ident">is_match_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="ident">S</span>) -&gt; <span class="ident">bool</span> {
@@ -1623,12 +1623,12 @@
         <span class="ident">id</span>: <span class="ident">S</span>,
         <span class="ident">match_index</span>: <span class="ident">usize</span>,
         <span class="ident">end</span>: <span class="ident">usize</span>,
-    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Match</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">get</span>(<span class="ident">id</span>.<span class="ident">to_usize</span>()) {
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Match</span>&gt; {
+        <span class="kw">let</span> <span class="ident">state</span> = <span class="kw">match</span> <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">get</span>(<span class="ident">id</span>.<span class="ident">to_usize</span>()) {
             <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">None</span>,
             <span class="prelude-val">Some</span>(<span class="ident">state</span>) =&gt; <span class="ident">state</span>,
         };
-        <span class="ident">state</span>.<span class="ident">matches</span>.<span class="ident">get</span>(<span class="ident">match_index</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="ident">id</span>, <span class="ident">len</span>)<span class="op">|</span> <span class="ident">Match</span> {
+        <span class="ident">state</span>.<span class="ident">matches</span>.<span class="ident">get</span>(<span class="ident">match_index</span>).<span class="ident">map</span>(|<span class="kw-2">&amp;</span>(<span class="ident">id</span>, <span class="ident">len</span>)| <span class="ident">Match</span> {
             <span class="ident">pattern</span>: <span class="ident">id</span>,
             <span class="ident">len</span>,
             <span class="ident">end</span>,
@@ -1646,12 +1646,12 @@
         <span class="comment">// 2. All `State.fail` values point to a state closer to `start`.</span>
         <span class="comment">// 3. The start state has no transitions to fail_id().</span>
         <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">states</span>[<span class="ident">current</span>.<span class="ident">to_usize</span>()];
-            <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">next_state</span>(<span class="ident">input</span>);
-            <span class="kw">if</span> <span class="ident">next</span> <span class="op">!</span><span class="op">=</span> <span class="ident">fail_id</span>() {
+            <span class="kw">let</span> <span class="ident">state</span> = <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">states</span>[<span class="ident">current</span>.<span class="ident">to_usize</span>()];
+            <span class="kw">let</span> <span class="ident">next</span> = <span class="ident">state</span>.<span class="ident">next_state</span>(<span class="ident">input</span>);
+            <span class="kw">if</span> <span class="ident">next</span> != <span class="ident">fail_id</span>() {
                 <span class="kw">return</span> <span class="ident">next</span>;
             }
-            <span class="ident">current</span> <span class="op">=</span> <span class="ident">state</span>.<span class="ident">fail</span>;
+            <span class="ident">current</span> = <span class="ident">state</span>.<span class="ident">fail</span>;
         }
     }
 }
@@ -1664,10 +1664,10 @@
 <span class="doccomment">/// state. The depth of a state is simply the distance from it to the start</span>
 <span class="doccomment">/// state in the automaton, where the depth of the start state is 0.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">State</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="ident">trans</span>: <span class="ident">Transitions</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">State</span>&lt;<span class="ident">S</span>&gt; {
+    <span class="ident">trans</span>: <span class="ident">Transitions</span>&lt;<span class="ident">S</span>&gt;,
     <span class="ident">fail</span>: <span class="ident">S</span>,
-    <span class="ident">matches</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">PatternID</span>, <span class="ident">PatternLength</span>)<span class="op">&gt;</span>,
+    <span class="ident">matches</span>: <span class="ident">Vec</span>&lt;(<span class="ident">PatternID</span>, <span class="ident">PatternLength</span>)&gt;,
     <span class="comment">// TODO: Strictly speaking, this isn&#39;t needed for searching. It&#39;s only</span>
     <span class="comment">// used when building an NFA that supports leftmost match semantics. We</span>
     <span class="comment">// could drop this from the state and dynamically build a map only when</span>
@@ -1676,10 +1676,10 @@
     <span class="ident">depth</span>: <span class="ident">usize</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> <span class="ident">State</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>&gt; <span class="ident">State</span>&lt;<span class="ident">S</span>&gt; {
     <span class="kw">fn</span> <span class="ident">heap_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">trans</span>.<span class="ident">heap_bytes</span>()
-            <span class="op">+</span> (<span class="self">self</span>.<span class="ident">matches</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">size_of</span>::<span class="op">&lt;</span>(<span class="ident">PatternID</span>, <span class="ident">PatternLength</span>)<span class="op">&gt;</span>())
+            + (<span class="self">self</span>.<span class="ident">matches</span>.<span class="ident">len</span>() * <span class="ident">size_of</span>::&lt;(<span class="ident">PatternID</span>, <span class="ident">PatternLength</span>)&gt;())
     }
 
     <span class="kw">fn</span> <span class="ident">add_match</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">i</span>: <span class="ident">PatternID</span>, <span class="ident">len</span>: <span class="ident">PatternLength</span>) {
@@ -1687,10 +1687,10 @@
     }
 
     <span class="kw">fn</span> <span class="ident">is_match</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="op">!</span><span class="self">self</span>.<span class="ident">matches</span>.<span class="ident">is_empty</span>()
+        !<span class="self">self</span>.<span class="ident">matches</span>.<span class="ident">is_empty</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">get_longest_match_len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get_longest_match_len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt; {
         <span class="comment">// Why is this true? Because the first match in any matching state</span>
         <span class="comment">// will always correspond to the match added to it during trie</span>
         <span class="comment">// construction (since when we copy matches due to failure transitions,</span>
@@ -1698,7 +1698,7 @@
         <span class="comment">// must always be longest since any subsequent match must be from a</span>
         <span class="comment">// failure transition, and a failure transition by construction points</span>
         <span class="comment">// to a proper suffix. A proper suffix is, by definition, smaller.</span>
-        <span class="self">self</span>.<span class="ident">matches</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw">_</span>, <span class="ident">len</span>)<span class="op">|</span> <span class="ident">len</span>)
+        <span class="self">self</span>.<span class="ident">matches</span>.<span class="ident">get</span>(<span class="number">0</span>).<span class="ident">map</span>(|<span class="kw-2">&amp;</span>(<span class="kw">_</span>, <span class="ident">len</span>)| <span class="ident">len</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">next_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">input</span>: <span class="ident">u8</span>) -&gt; <span class="ident">S</span> {
@@ -1716,9 +1716,9 @@
 <span class="doccomment">/// dense representation always contains 256 elements, all values of `u8` are</span>
 <span class="doccomment">/// valid indices.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">Dense</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>);
+<span class="kw">struct</span> <span class="ident">Dense</span>&lt;<span class="ident">S</span>&gt;(<span class="ident">Vec</span>&lt;<span class="ident">S</span>&gt;);
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Dense</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">S</span>&gt; <span class="ident">Dense</span>&lt;<span class="ident">S</span>&gt;
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">StateID</span>,
 {
@@ -1732,8 +1732,8 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Dense</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">S</span>;
+<span class="kw">impl</span>&lt;<span class="ident">S</span>&gt; <span class="ident">Index</span>&lt;<span class="ident">u8</span>&gt; <span class="kw">for</span> <span class="ident">Dense</span>&lt;<span class="ident">S</span>&gt; {
+    <span class="kw">type</span> <span class="ident">Output</span> = <span class="ident">S</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">u8</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">S</span> {
@@ -1743,7 +1743,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">IndexMut</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Dense</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">S</span>&gt; <span class="ident">IndexMut</span>&lt;<span class="ident">u8</span>&gt; <span class="kw">for</span> <span class="ident">Dense</span>&lt;<span class="ident">S</span>&gt; {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">index_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">i</span>: <span class="ident">u8</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">S</span> {
         <span class="comment">// SAFETY: This is safe because all dense transitions have</span>
@@ -1764,18 +1764,18 @@
 <span class="doccomment">/// states close to the start state because it&#39;s likely these are the states</span>
 <span class="doccomment">/// that will be most frequently visited.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">enum</span> <span class="ident">Transitions</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="ident">Sparse</span>(<span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">u8</span>, <span class="ident">S</span>)<span class="op">&gt;</span>),
-    <span class="ident">Dense</span>(<span class="ident">Dense</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>),
+<span class="kw">enum</span> <span class="ident">Transitions</span>&lt;<span class="ident">S</span>&gt; {
+    <span class="ident">Sparse</span>(<span class="ident">Vec</span>&lt;(<span class="ident">u8</span>, <span class="ident">S</span>)&gt;),
+    <span class="ident">Dense</span>(<span class="ident">Dense</span>&lt;<span class="ident">S</span>&gt;),
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> <span class="ident">Transitions</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>&gt; <span class="ident">Transitions</span>&lt;<span class="ident">S</span>&gt; {
     <span class="kw">fn</span> <span class="ident">heap_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
             <span class="ident">Transitions::Sparse</span>(<span class="kw-2">ref</span> <span class="ident">sparse</span>) =&gt; {
-                <span class="ident">sparse</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">size_of</span>::<span class="op">&lt;</span>(<span class="ident">u8</span>, <span class="ident">S</span>)<span class="op">&gt;</span>()
+                <span class="ident">sparse</span>.<span class="ident">len</span>() * <span class="ident">size_of</span>::&lt;(<span class="ident">u8</span>, <span class="ident">S</span>)&gt;()
             }
-            <span class="ident">Transitions::Dense</span>(<span class="kw-2">ref</span> <span class="ident">dense</span>) =&gt; <span class="ident">dense</span>.<span class="ident">len</span>() <span class="op">*</span> <span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(),
+            <span class="ident">Transitions::Dense</span>(<span class="kw-2">ref</span> <span class="ident">dense</span>) =&gt; <span class="ident">dense</span>.<span class="ident">len</span>() * <span class="ident">size_of</span>::&lt;<span class="ident">S</span>&gt;(),
         }
     }
 
@@ -1783,7 +1783,7 @@
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
             <span class="ident">Transitions::Sparse</span>(<span class="kw-2">ref</span> <span class="ident">sparse</span>) =&gt; {
                 <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">b</span>, <span class="ident">id</span>) <span class="kw">in</span> <span class="ident">sparse</span> {
-                    <span class="kw">if</span> <span class="ident">b</span> <span class="op">==</span> <span class="ident">input</span> {
+                    <span class="kw">if</span> <span class="ident">b</span> == <span class="ident">input</span> {
                         <span class="kw">return</span> <span class="ident">id</span>;
                     }
                 }
@@ -1796,20 +1796,20 @@
     <span class="kw">fn</span> <span class="ident">set_next_state</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="ident">u8</span>, <span class="ident">next</span>: <span class="ident">S</span>) {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
             <span class="ident">Transitions::Sparse</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">sparse</span>) =&gt; {
-                <span class="kw">match</span> <span class="ident">sparse</span>.<span class="ident">binary_search_by_key</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>, <span class="op">|</span><span class="kw-2">&amp;</span>(<span class="ident">b</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">b</span>) {
-                    <span class="prelude-val">Ok</span>(<span class="ident">i</span>) =&gt; <span class="ident">sparse</span>[<span class="ident">i</span>] <span class="op">=</span> (<span class="ident">input</span>, <span class="ident">next</span>),
+                <span class="kw">match</span> <span class="ident">sparse</span>.<span class="ident">binary_search_by_key</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>, |<span class="kw-2">&amp;</span>(<span class="ident">b</span>, <span class="kw">_</span>)| <span class="ident">b</span>) {
+                    <span class="prelude-val">Ok</span>(<span class="ident">i</span>) =&gt; <span class="ident">sparse</span>[<span class="ident">i</span>] = (<span class="ident">input</span>, <span class="ident">next</span>),
                     <span class="prelude-val">Err</span>(<span class="ident">i</span>) =&gt; <span class="ident">sparse</span>.<span class="ident">insert</span>(<span class="ident">i</span>, (<span class="ident">input</span>, <span class="ident">next</span>)),
                 }
             }
             <span class="ident">Transitions::Dense</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">dense</span>) =&gt; {
-                <span class="ident">dense</span>[<span class="ident">input</span>] <span class="op">=</span> <span class="ident">next</span>;
+                <span class="ident">dense</span>[<span class="ident">input</span>] = <span class="ident">next</span>;
             }
         }
     }
 
     <span class="doccomment">/// Iterate over transitions in this state while skipping over transitions</span>
     <span class="doccomment">/// to `fail_id()`.</span>
-    <span class="kw">fn</span> <span class="ident">iter</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">u8</span>, <span class="ident">S</span>)<span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) {
+    <span class="kw">fn</span> <span class="ident">iter</span>&lt;<span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">u8</span>, <span class="ident">S</span>)&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
             <span class="ident">Transitions::Sparse</span>(<span class="kw-2">ref</span> <span class="ident">sparse</span>) =&gt; {
                 <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">b</span>, <span class="ident">id</span>) <span class="kw">in</span> <span class="ident">sparse</span> {
@@ -1818,8 +1818,8 @@
             }
             <span class="ident">Transitions::Dense</span>(<span class="kw-2">ref</span> <span class="ident">dense</span>) =&gt; {
                 <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">AllBytesIter::new</span>() {
-                    <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">dense</span>[<span class="ident">b</span>];
-                    <span class="kw">if</span> <span class="ident">id</span> <span class="op">!</span><span class="op">=</span> <span class="ident">fail_id</span>() {
+                    <span class="kw">let</span> <span class="ident">id</span> = <span class="ident">dense</span>[<span class="ident">b</span>];
+                    <span class="kw">if</span> <span class="ident">id</span> != <span class="ident">fail_id</span>() {
                         <span class="ident">f</span>(<span class="ident">b</span>, <span class="ident">id</span>);
                     }
                 }
@@ -1829,7 +1829,7 @@
 
     <span class="doccomment">/// Iterate over all transitions in this state according to the given</span>
     <span class="doccomment">/// equivalence classes, including transitions to `fail_id()`.</span>
-    <span class="kw">fn</span> <span class="ident">iter_all</span><span class="op">&lt;</span><span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">u8</span>, <span class="ident">S</span>)<span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">classes</span>: <span class="kw-2">&amp;</span><span class="ident">ByteClasses</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) {
+    <span class="kw">fn</span> <span class="ident">iter_all</span>&lt;<span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">u8</span>, <span class="ident">S</span>)&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">classes</span>: <span class="kw-2">&amp;</span><span class="ident">ByteClasses</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) {
         <span class="kw">if</span> <span class="ident">classes</span>.<span class="ident">is_singleton</span>() {
             <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
                 <span class="ident">Transitions::Sparse</span>(<span class="kw-2">ref</span> <span class="ident">sparse</span>) =&gt; {
@@ -1846,11 +1846,11 @@
             <span class="comment">// equivalence class.</span>
             <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
                 <span class="ident">Transitions::Sparse</span>(<span class="kw-2">ref</span> <span class="ident">sparse</span>) =&gt; {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_class</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-                    <span class="ident">sparse_iter</span>(<span class="ident">sparse</span>, <span class="op">|</span><span class="ident">b</span>, <span class="ident">next</span><span class="op">|</span> {
-                        <span class="kw">let</span> <span class="ident">class</span> <span class="op">=</span> <span class="ident">classes</span>.<span class="ident">get</span>(<span class="ident">b</span>);
-                        <span class="kw">if</span> <span class="ident">last_class</span> <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">class</span>) {
-                            <span class="ident">last_class</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">class</span>);
+                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">last_class</span> = <span class="prelude-val">None</span>;
+                    <span class="ident">sparse_iter</span>(<span class="ident">sparse</span>, |<span class="ident">b</span>, <span class="ident">next</span>| {
+                        <span class="kw">let</span> <span class="ident">class</span> = <span class="ident">classes</span>.<span class="ident">get</span>(<span class="ident">b</span>);
+                        <span class="kw">if</span> <span class="ident">last_class</span> != <span class="prelude-val">Some</span>(<span class="ident">class</span>) {
+                            <span class="ident">last_class</span> = <span class="prelude-val">Some</span>(<span class="ident">class</span>);
                             <span class="ident">f</span>(<span class="ident">b</span>, <span class="ident">next</span>);
                         }
                     })
@@ -1874,44 +1874,44 @@
 <span class="doccomment">/// is iterating over transitions, the caller can still mutate the NFA. This</span>
 <span class="doccomment">/// is useful when creating failure transitions.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">IterTransitionsMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> {
-    <span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
+<span class="kw">struct</span> <span class="ident">IterTransitionsMut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span>&gt; {
+    <span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt;,
     <span class="ident">state_id</span>: <span class="ident">S</span>,
     <span class="ident">cur</span>: <span class="ident">usize</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> <span class="ident">IterTransitionsMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>, <span class="ident">state_id</span>: <span class="ident">S</span>) -&gt; <span class="ident">IterTransitionsMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span>&gt; <span class="ident">IterTransitionsMut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt;, <span class="ident">state_id</span>: <span class="ident">S</span>) -&gt; <span class="ident">IterTransitionsMut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; {
         <span class="ident">IterTransitionsMut</span> { <span class="ident">nfa</span>, <span class="ident">state_id</span>, <span class="ident">cur</span>: <span class="number">0</span> }
     }
 
-    <span class="kw">fn</span> <span class="ident">nfa</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">nfa</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt; {
         <span class="self">self</span>.<span class="ident">nfa</span>
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">IterTransitionsMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">u8</span>, <span class="ident">S</span>);
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">IterTransitionsMut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; {
+    <span class="kw">type</span> <span class="ident">Item</span> = (<span class="ident">u8</span>, <span class="ident">S</span>);
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">u8</span>, <span class="ident">S</span>)<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">u8</span>, <span class="ident">S</span>)&gt; {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">states</span>[<span class="self">self</span>.<span class="ident">state_id</span>.<span class="ident">to_usize</span>()].<span class="ident">trans</span> {
             <span class="ident">Transitions::Sparse</span>(<span class="kw-2">ref</span> <span class="ident">sparse</span>) =&gt; {
-                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cur</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">sparse</span>.<span class="ident">len</span>() {
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cur</span> &gt;= <span class="ident">sparse</span>.<span class="ident">len</span>() {
                     <span class="kw">return</span> <span class="prelude-val">None</span>;
                 }
-                <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cur</span>;
-                <span class="self">self</span>.<span class="ident">cur</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                <span class="kw">let</span> <span class="ident">i</span> = <span class="self">self</span>.<span class="ident">cur</span>;
+                <span class="self">self</span>.<span class="ident">cur</span> += <span class="number">1</span>;
                 <span class="prelude-val">Some</span>(<span class="ident">sparse</span>[<span class="ident">i</span>])
             }
             <span class="ident">Transitions::Dense</span>(<span class="kw-2">ref</span> <span class="ident">dense</span>) =&gt; {
-                <span class="kw">while</span> <span class="self">self</span>.<span class="ident">cur</span> <span class="op">&lt;</span> <span class="ident">dense</span>.<span class="ident">len</span>() {
+                <span class="kw">while</span> <span class="self">self</span>.<span class="ident">cur</span> &lt; <span class="ident">dense</span>.<span class="ident">len</span>() {
                     <span class="comment">// There are always exactly 255 transitions in dense repr.</span>
-                    <span class="macro">debug_assert!</span>(<span class="self">self</span>.<span class="ident">cur</span> <span class="op">&lt;</span> <span class="number">256</span>);
+                    <span class="macro">debug_assert!</span>(<span class="self">self</span>.<span class="ident">cur</span> &lt; <span class="number">256</span>);
 
-                    <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cur</span> <span class="kw">as</span> <span class="ident">u8</span>;
-                    <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">dense</span>[<span class="ident">b</span>];
-                    <span class="self">self</span>.<span class="ident">cur</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                    <span class="kw">if</span> <span class="ident">id</span> <span class="op">!</span><span class="op">=</span> <span class="ident">fail_id</span>() {
+                    <span class="kw">let</span> <span class="ident">b</span> = <span class="self">self</span>.<span class="ident">cur</span> <span class="kw">as</span> <span class="ident">u8</span>;
+                    <span class="kw">let</span> <span class="ident">id</span> = <span class="ident">dense</span>[<span class="ident">b</span>];
+                    <span class="self">self</span>.<span class="ident">cur</span> += <span class="number">1</span>;
+                    <span class="kw">if</span> <span class="ident">id</span> != <span class="ident">fail_id</span>() {
                         <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="ident">id</span>));
                     }
                 }
@@ -1948,36 +1948,36 @@
         <span class="ident">Builder::default</span>()
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">P</span>, <span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">patterns</span>: <span class="ident">I</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build</span>&lt;<span class="ident">I</span>, <span class="ident">P</span>, <span class="ident">S</span>: <span class="ident">StateID</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">patterns</span>: <span class="ident">I</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt;&gt;
     <span class="kw">where</span>
-        <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">P</span><span class="op">&gt;</span>,
-        <span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+        <span class="ident">I</span>: <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = <span class="ident">P</span>&gt;,
+        <span class="ident">P</span>: <span class="ident">AsRef</span>&lt;[<span class="ident">u8</span>]&gt;,
     {
         <span class="ident">Compiler::new</span>(<span class="self">self</span>)<span class="question-mark">?</span>.<span class="ident">compile</span>(<span class="ident">patterns</span>)
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">match_kind</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">kind</span>: <span class="ident">MatchKind</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Builder</span> {
-        <span class="self">self</span>.<span class="ident">match_kind</span> <span class="op">=</span> <span class="ident">kind</span>;
+        <span class="self">self</span>.<span class="ident">match_kind</span> = <span class="ident">kind</span>;
         <span class="self">self</span>
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dense_depth</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">depth</span>: <span class="ident">usize</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Builder</span> {
-        <span class="self">self</span>.<span class="ident">dense_depth</span> <span class="op">=</span> <span class="ident">depth</span>;
+        <span class="self">self</span>.<span class="ident">dense_depth</span> = <span class="ident">depth</span>;
         <span class="self">self</span>
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prefilter</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Builder</span> {
-        <span class="self">self</span>.<span class="ident">prefilter</span> <span class="op">=</span> <span class="ident">yes</span>;
+        <span class="self">self</span>.<span class="ident">prefilter</span> = <span class="ident">yes</span>;
         <span class="self">self</span>
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">anchored</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Builder</span> {
-        <span class="self">self</span>.<span class="ident">anchored</span> <span class="op">=</span> <span class="ident">yes</span>;
+        <span class="self">self</span>.<span class="ident">anchored</span> = <span class="ident">yes</span>;
         <span class="self">self</span>
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ascii_case_insensitive</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Builder</span> {
-        <span class="self">self</span>.<span class="ident">ascii_case_insensitive</span> <span class="op">=</span> <span class="ident">yes</span>;
+        <span class="self">self</span>.<span class="ident">ascii_case_insensitive</span> = <span class="ident">yes</span>;
         <span class="self">self</span>
     }
 }
@@ -1986,15 +1986,15 @@
 <span class="doccomment">/// of an Aho-Corasick automaton. This roughly corresponds to the standard</span>
 <span class="doccomment">/// formulation described in textbooks.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">Compiler</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> {
+<span class="kw">struct</span> <span class="ident">Compiler</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span>&gt; {
     <span class="ident">builder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Builder</span>,
     <span class="ident">prefilter</span>: <span class="ident">prefilter::Builder</span>,
-    <span class="ident">nfa</span>: <span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
+    <span class="ident">nfa</span>: <span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt;,
     <span class="ident">byte_classes</span>: <span class="ident">ByteClassBuilder</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> <span class="ident">Compiler</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">builder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Builder</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Compiler</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span>&gt; <span class="ident">Compiler</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">builder</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Builder</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">Compiler</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt;&gt; {
         <span class="prelude-val">Ok</span>(<span class="ident">Compiler</span> {
             <span class="ident">builder</span>,
             <span class="ident">prefilter</span>: <span class="ident">prefilter::Builder::new</span>(<span class="ident">builder</span>.<span class="ident">match_kind</span>)
@@ -2014,10 +2014,10 @@
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">compile</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">P</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">patterns</span>: <span class="ident">I</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">compile</span>&lt;<span class="ident">I</span>, <span class="ident">P</span>&gt;(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">patterns</span>: <span class="ident">I</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt;&gt;
     <span class="kw">where</span>
-        <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">P</span><span class="op">&gt;</span>,
-        <span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+        <span class="ident">I</span>: <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = <span class="ident">P</span>&gt;,
+        <span class="ident">P</span>: <span class="ident">AsRef</span>&lt;[<span class="ident">u8</span>]&gt;,
     {
         <span class="self">self</span>.<span class="ident">add_state</span>(<span class="number">0</span>)<span class="question-mark">?</span>; <span class="comment">// the fail state, which is never entered</span>
         <span class="self">self</span>.<span class="ident">add_state</span>(<span class="number">0</span>)<span class="question-mark">?</span>; <span class="comment">// the dead state, only used for leftmost</span>
@@ -2025,7 +2025,7 @@
         <span class="self">self</span>.<span class="ident">build_trie</span>(<span class="ident">patterns</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">add_start_state_loop</span>();
         <span class="self">self</span>.<span class="ident">add_dead_state_loop</span>();
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">anchored</span> {
+        <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">anchored</span> {
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">match_kind</span>().<span class="ident">is_leftmost</span>() {
                 <span class="self">self</span>.<span class="ident">fill_failure_transitions_leftmost</span>();
             } <span class="kw">else</span> {
@@ -2033,9 +2033,9 @@
             }
         }
         <span class="self">self</span>.<span class="ident">close_start_state_loop</span>();
-        <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">byte_classes</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">byte_classes</span>.<span class="ident">build</span>();
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">anchored</span> {
-            <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">prefilter</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">prefilter</span>.<span class="ident">build</span>();
+        <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">byte_classes</span> = <span class="self">self</span>.<span class="ident">byte_classes</span>.<span class="ident">build</span>();
+        <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">anchored</span> {
+            <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">prefilter</span> = <span class="self">self</span>.<span class="ident">prefilter</span>.<span class="ident">build</span>();
         }
         <span class="self">self</span>.<span class="ident">calculate_size</span>();
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">nfa</span>)
@@ -2045,19 +2045,19 @@
     <span class="doccomment">/// automaton. Effectively, it creates the basic structure of the</span>
     <span class="doccomment">/// automaton, where every pattern given has a path from the start state to</span>
     <span class="doccomment">/// the end of the pattern.</span>
-    <span class="kw">fn</span> <span class="ident">build_trie</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">P</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">patterns</span>: <span class="ident">I</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">build_trie</span>&lt;<span class="ident">I</span>, <span class="ident">P</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">patterns</span>: <span class="ident">I</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt;
     <span class="kw">where</span>
-        <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">P</span><span class="op">&gt;</span>,
-        <span class="ident">P</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
+        <span class="ident">I</span>: <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = <span class="ident">P</span>&gt;,
+        <span class="ident">P</span>: <span class="ident">AsRef</span>&lt;[<span class="ident">u8</span>]&gt;,
     {
         <span class="lifetime">&#39;PATTERNS</span>: <span class="kw">for</span> (<span class="ident">pati</span>, <span class="ident">pat</span>) <span class="kw">in</span> <span class="ident">patterns</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">pat</span> <span class="op">=</span> <span class="ident">pat</span>.<span class="ident">as_ref</span>();
-            <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">max_pattern_len</span> <span class="op">=</span>
+            <span class="kw">let</span> <span class="ident">pat</span> = <span class="ident">pat</span>.<span class="ident">as_ref</span>();
+            <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">max_pattern_len</span> =
                 <span class="ident">cmp::max</span>(<span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">max_pattern_len</span>, <span class="ident">pat</span>.<span class="ident">len</span>());
-            <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">pattern_count</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">pattern_count</span> += <span class="number">1</span>;
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_id</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">saw_match</span> <span class="op">=</span> <span class="bool-val">false</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_id</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">saw_match</span> = <span class="bool-val">false</span>;
             <span class="kw">for</span> (<span class="ident">depth</span>, <span class="kw-2">&amp;</span><span class="ident">b</span>) <span class="kw">in</span> <span class="ident">pat</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
                 <span class="comment">// When leftmost-first match semantics are requested, we</span>
                 <span class="comment">// specifically stop adding patterns when a previously added</span>
@@ -2067,8 +2067,8 @@
                 <span class="comment">// is necessary for correctness. In fact, this is the only</span>
                 <span class="comment">// difference in the automaton between the implementations for</span>
                 <span class="comment">// leftmost-first and leftmost-longest.</span>
-                <span class="ident">saw_match</span> <span class="op">=</span> <span class="ident">saw_match</span> <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">prev</span>).<span class="ident">is_match</span>();
-                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">match_kind</span>.<span class="ident">is_leftmost_first</span>() <span class="op">&amp;&amp;</span> <span class="ident">saw_match</span> {
+                <span class="ident">saw_match</span> = <span class="ident">saw_match</span> || <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">prev</span>).<span class="ident">is_match</span>();
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">match_kind</span>.<span class="ident">is_leftmost_first</span>() &amp;&amp; <span class="ident">saw_match</span> {
                     <span class="comment">// Skip to the next pattern immediately. This avoids</span>
                     <span class="comment">// incorrectly adding a match after this loop terminates.</span>
                     <span class="kw">continue</span> <span class="lifetime">&#39;PATTERNS</span>;
@@ -2080,7 +2080,7 @@
                 <span class="comment">// NFA, but it would require a second pass over the patterns.</span>
                 <span class="self">self</span>.<span class="ident">byte_classes</span>.<span class="ident">set_range</span>(<span class="ident">b</span>, <span class="ident">b</span>);
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">ascii_case_insensitive</span> {
-                    <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">opposite_ascii_case</span>(<span class="ident">b</span>);
+                    <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">opposite_ascii_case</span>(<span class="ident">b</span>);
                     <span class="self">self</span>.<span class="ident">byte_classes</span>.<span class="ident">set_range</span>(<span class="ident">b</span>, <span class="ident">b</span>);
                 }
 
@@ -2091,17 +2091,17 @@
                 <span class="comment">// use a dense representation that uses more memory but is</span>
                 <span class="comment">// faster. Other states use a sparse representation that uses</span>
                 <span class="comment">// less memory but is slower.</span>
-                <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">prev</span>).<span class="ident">next_state</span>(<span class="ident">b</span>);
-                <span class="kw">if</span> <span class="ident">next</span> <span class="op">!</span><span class="op">=</span> <span class="ident">fail_id</span>() {
-                    <span class="ident">prev</span> <span class="op">=</span> <span class="ident">next</span>;
+                <span class="kw">let</span> <span class="ident">next</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">prev</span>).<span class="ident">next_state</span>(<span class="ident">b</span>);
+                <span class="kw">if</span> <span class="ident">next</span> != <span class="ident">fail_id</span>() {
+                    <span class="ident">prev</span> = <span class="ident">next</span>;
                 } <span class="kw">else</span> {
-                    <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">add_state</span>(<span class="ident">depth</span> <span class="op">+</span> <span class="number">1</span>)<span class="question-mark">?</span>;
+                    <span class="kw">let</span> <span class="ident">next</span> = <span class="self">self</span>.<span class="ident">add_state</span>(<span class="ident">depth</span> + <span class="number">1</span>)<span class="question-mark">?</span>;
                     <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state_mut</span>(<span class="ident">prev</span>).<span class="ident">set_next_state</span>(<span class="ident">b</span>, <span class="ident">next</span>);
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">ascii_case_insensitive</span> {
-                        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">opposite_ascii_case</span>(<span class="ident">b</span>);
+                        <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">opposite_ascii_case</span>(<span class="ident">b</span>);
                         <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state_mut</span>(<span class="ident">prev</span>).<span class="ident">set_next_state</span>(<span class="ident">b</span>, <span class="ident">next</span>);
                     }
-                    <span class="ident">prev</span> <span class="op">=</span> <span class="ident">next</span>;
+                    <span class="ident">prev</span> = <span class="ident">next</span>;
                 }
             }
             <span class="comment">// Once the pattern has been added, log the match in the final</span>
@@ -2221,20 +2221,20 @@
         <span class="comment">// out of the start state. We handle the start state specially because</span>
         <span class="comment">// we only want to follow non-self transitions. If we followed self</span>
         <span class="comment">// transitions, then this would never terminate.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">queue</span> <span class="op">=</span> <span class="ident">VecDeque::new</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">seen</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">queued_set</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">queue</span> = <span class="ident">VecDeque::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">seen</span> = <span class="self">self</span>.<span class="ident">queued_set</span>();
         <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">AllBytesIter::new</span>() {
-            <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start</span>().<span class="ident">next_state</span>(<span class="ident">b</span>);
-            <span class="kw">if</span> <span class="ident">next</span> <span class="op">!</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_id</span> {
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">seen</span>.<span class="ident">contains</span>(<span class="ident">next</span>) {
+            <span class="kw">let</span> <span class="ident">next</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start</span>().<span class="ident">next_state</span>(<span class="ident">b</span>);
+            <span class="kw">if</span> <span class="ident">next</span> != <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_id</span> {
+                <span class="kw">if</span> !<span class="ident">seen</span>.<span class="ident">contains</span>(<span class="ident">next</span>) {
                     <span class="ident">queue</span>.<span class="ident">push_back</span>(<span class="ident">next</span>);
                     <span class="ident">seen</span>.<span class="ident">insert</span>(<span class="ident">next</span>);
                 }
             }
         }
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">id</span>) <span class="op">=</span> <span class="ident">queue</span>.<span class="ident">pop_front</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">iter_transitions_mut</span>(<span class="ident">id</span>);
-            <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="ident">next</span>)) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">id</span>) = <span class="ident">queue</span>.<span class="ident">pop_front</span>() {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">iter_transitions_mut</span>(<span class="ident">id</span>);
+            <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="ident">next</span>)) = <span class="ident">it</span>.<span class="ident">next</span>() {
                 <span class="kw">if</span> <span class="ident">seen</span>.<span class="ident">contains</span>(<span class="ident">next</span>) {
                     <span class="comment">// The only way to visit a duplicate state in a transition</span>
                     <span class="comment">// list is when ASCII case insensitivity is enabled. In</span>
@@ -2247,12 +2247,12 @@
                 <span class="ident">queue</span>.<span class="ident">push_back</span>(<span class="ident">next</span>);
                 <span class="ident">seen</span>.<span class="ident">insert</span>(<span class="ident">next</span>);
 
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fail</span> <span class="op">=</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">id</span>).<span class="ident">fail</span>;
-                <span class="kw">while</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">next_state</span>(<span class="ident">b</span>) <span class="op">==</span> <span class="ident">fail_id</span>() {
-                    <span class="ident">fail</span> <span class="op">=</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">fail</span>;
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fail</span> = <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">id</span>).<span class="ident">fail</span>;
+                <span class="kw">while</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">next_state</span>(<span class="ident">b</span>) == <span class="ident">fail_id</span>() {
+                    <span class="ident">fail</span> = <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">fail</span>;
                 }
-                <span class="ident">fail</span> <span class="op">=</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">next_state</span>(<span class="ident">b</span>);
-                <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state_mut</span>(<span class="ident">next</span>).<span class="ident">fail</span> <span class="op">=</span> <span class="ident">fail</span>;
+                <span class="ident">fail</span> = <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">next_state</span>(<span class="ident">b</span>);
+                <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state_mut</span>(<span class="ident">next</span>).<span class="ident">fail</span> = <span class="ident">fail</span>;
                 <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">copy_matches</span>(<span class="ident">fail</span>, <span class="ident">next</span>);
             }
             <span class="comment">// If the start state is a match state, then this automaton can</span>
@@ -2306,21 +2306,21 @@
         <span class="doccomment">/// In the leftmost case, though, we need to track a bit more</span>
         <span class="doccomment">/// information. See comments below.</span>
         <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>)]</span>
-        <span class="kw">struct</span> <span class="ident">QueuedState</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+        <span class="kw">struct</span> <span class="ident">QueuedState</span>&lt;<span class="ident">S</span>&gt; {
             <span class="doccomment">/// The id of the state to visit.</span>
             <span class="ident">id</span>: <span class="ident">S</span>,
             <span class="doccomment">/// The depth at which the first match was observed in the path</span>
             <span class="doccomment">/// to this state. Note that this corresponds to the depth at</span>
             <span class="doccomment">/// which the beginning of the match was detected. If no match</span>
             <span class="doccomment">/// has been seen, then this is None.</span>
-            <span class="ident">match_at_depth</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
+            <span class="ident">match_at_depth</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;,
         }
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> <span class="ident">QueuedState</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+        <span class="kw">impl</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>&gt; <span class="ident">QueuedState</span>&lt;<span class="ident">S</span>&gt; {
             <span class="doccomment">/// Create a queued state corresponding to the given NFA&#39;s start</span>
             <span class="doccomment">/// state.</span>
-            <span class="kw">fn</span> <span class="ident">start</span>(<span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>) -&gt; <span class="ident">QueuedState</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">match_at_depth</span> <span class="op">=</span>
+            <span class="kw">fn</span> <span class="ident">start</span>(<span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt;) -&gt; <span class="ident">QueuedState</span>&lt;<span class="ident">S</span>&gt; {
+                <span class="kw">let</span> <span class="ident">match_at_depth</span> =
                     <span class="kw">if</span> <span class="ident">nfa</span>.<span class="ident">start</span>().<span class="ident">is_match</span>() { <span class="prelude-val">Some</span>(<span class="number">0</span>) } <span class="kw">else</span> { <span class="prelude-val">None</span> };
                 <span class="ident">QueuedState</span> { <span class="ident">id</span>: <span class="ident">nfa</span>.<span class="ident">start_id</span>, <span class="ident">match_at_depth</span> }
             }
@@ -2329,10 +2329,10 @@
             <span class="doccomment">/// corresponding to a single transition from this queued state.</span>
             <span class="kw">fn</span> <span class="ident">next_queued_state</span>(
                 <span class="kw-2">&amp;</span><span class="self">self</span>,
-                <span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
+                <span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt;,
                 <span class="ident">id</span>: <span class="ident">S</span>,
-            ) -&gt; <span class="ident">QueuedState</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">match_at_depth</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">next_match_at_depth</span>(<span class="ident">nfa</span>, <span class="ident">id</span>);
+            ) -&gt; <span class="ident">QueuedState</span>&lt;<span class="ident">S</span>&gt; {
+                <span class="kw">let</span> <span class="ident">match_at_depth</span> = <span class="self">self</span>.<span class="ident">next_match_at_depth</span>(<span class="ident">nfa</span>, <span class="ident">id</span>);
                 <span class="ident">QueuedState</span> { <span class="ident">id</span>, <span class="ident">match_at_depth</span> }
             }
 
@@ -2341,9 +2341,9 @@
             <span class="doccomment">/// transition from this queued state.</span>
             <span class="kw">fn</span> <span class="ident">next_match_at_depth</span>(
                 <span class="kw-2">&amp;</span><span class="self">self</span>,
-                <span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
+                <span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt;,
                 <span class="ident">next</span>: <span class="ident">S</span>,
-            ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+            ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt; {
                 <span class="comment">// This is a little tricky. If the previous state has already</span>
                 <span class="comment">// seen a match or if `next` isn&#39;t a match state, then nothing</span>
                 <span class="comment">// needs to change since a later state cannot find an earlier</span>
@@ -2353,9 +2353,9 @@
                     <span class="prelude-val">None</span> <span class="kw">if</span> <span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">next</span>).<span class="ident">is_match</span>() =&gt; {}
                     <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">None</span>,
                 }
-                <span class="kw">let</span> <span class="ident">depth</span> <span class="op">=</span> <span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">next</span>).<span class="ident">depth</span>
-                    <span class="op">-</span> <span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">next</span>).<span class="ident">get_longest_match_len</span>().<span class="ident">unwrap</span>()
-                    <span class="op">+</span> <span class="number">1</span>;
+                <span class="kw">let</span> <span class="ident">depth</span> = <span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">next</span>).<span class="ident">depth</span>
+                    - <span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">next</span>).<span class="ident">get_longest_match_len</span>().<span class="ident">unwrap</span>()
+                    + <span class="number">1</span>;
                 <span class="prelude-val">Some</span>(<span class="ident">depth</span>)
             }
         }
@@ -2364,14 +2364,14 @@
         <span class="comment">// out of the start state. We handle the start state specially because</span>
         <span class="comment">// we only want to follow non-self transitions. If we followed self</span>
         <span class="comment">// transitions, then this would never terminate.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">queue</span>: <span class="ident">VecDeque</span><span class="op">&lt;</span><span class="ident">QueuedState</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">VecDeque::new</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">seen</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">queued_set</span>();
-        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="ident">QueuedState::start</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nfa</span>);
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">queue</span>: <span class="ident">VecDeque</span>&lt;<span class="ident">QueuedState</span>&lt;<span class="ident">S</span>&gt;&gt; = <span class="ident">VecDeque::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">seen</span> = <span class="self">self</span>.<span class="ident">queued_set</span>();
+        <span class="kw">let</span> <span class="ident">start</span> = <span class="ident">QueuedState::start</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nfa</span>);
         <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">AllBytesIter::new</span>() {
-            <span class="kw">let</span> <span class="ident">next_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start</span>().<span class="ident">next_state</span>(<span class="ident">b</span>);
-            <span class="kw">if</span> <span class="ident">next_id</span> <span class="op">!</span><span class="op">=</span> <span class="ident">start</span>.<span class="ident">id</span> {
-                <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="ident">start</span>.<span class="ident">next_queued_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nfa</span>, <span class="ident">next_id</span>);
-                <span class="kw">if</span> <span class="op">!</span><span class="ident">seen</span>.<span class="ident">contains</span>(<span class="ident">next</span>.<span class="ident">id</span>) {
+            <span class="kw">let</span> <span class="ident">next_id</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start</span>().<span class="ident">next_state</span>(<span class="ident">b</span>);
+            <span class="kw">if</span> <span class="ident">next_id</span> != <span class="ident">start</span>.<span class="ident">id</span> {
+                <span class="kw">let</span> <span class="ident">next</span> = <span class="ident">start</span>.<span class="ident">next_queued_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nfa</span>, <span class="ident">next_id</span>);
+                <span class="kw">if</span> !<span class="ident">seen</span>.<span class="ident">contains</span>(<span class="ident">next</span>.<span class="ident">id</span>) {
                     <span class="ident">queue</span>.<span class="ident">push_back</span>(<span class="ident">next</span>);
                     <span class="ident">seen</span>.<span class="ident">insert</span>(<span class="ident">next</span>.<span class="ident">id</span>);
                 }
@@ -2384,18 +2384,18 @@
                 <span class="comment">// N.B. This is a special case of the more general handling</span>
                 <span class="comment">// found below.</span>
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">next_id</span>).<span class="ident">is_match</span>() {
-                    <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state_mut</span>(<span class="ident">next_id</span>).<span class="ident">fail</span> <span class="op">=</span> <span class="ident">dead_id</span>();
+                    <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state_mut</span>(<span class="ident">next_id</span>).<span class="ident">fail</span> = <span class="ident">dead_id</span>();
                 }
             }
         }
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">item</span>) <span class="op">=</span> <span class="ident">queue</span>.<span class="ident">pop_front</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">any_trans</span> <span class="op">=</span> <span class="bool-val">false</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">iter_transitions_mut</span>(<span class="ident">item</span>.<span class="ident">id</span>);
-            <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="ident">next_id</span>)) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-                <span class="ident">any_trans</span> <span class="op">=</span> <span class="bool-val">true</span>;
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">item</span>) = <span class="ident">queue</span>.<span class="ident">pop_front</span>() {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">any_trans</span> = <span class="bool-val">false</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">iter_transitions_mut</span>(<span class="ident">item</span>.<span class="ident">id</span>);
+            <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="ident">next_id</span>)) = <span class="ident">it</span>.<span class="ident">next</span>() {
+                <span class="ident">any_trans</span> = <span class="bool-val">true</span>;
 
                 <span class="comment">// Queue up the next state.</span>
-                <span class="kw">let</span> <span class="ident">next</span> <span class="op">=</span> <span class="ident">item</span>.<span class="ident">next_queued_state</span>(<span class="ident">it</span>.<span class="ident">nfa</span>(), <span class="ident">next_id</span>);
+                <span class="kw">let</span> <span class="ident">next</span> = <span class="ident">item</span>.<span class="ident">next_queued_state</span>(<span class="ident">it</span>.<span class="ident">nfa</span>(), <span class="ident">next_id</span>);
                 <span class="kw">if</span> <span class="ident">seen</span>.<span class="ident">contains</span>(<span class="ident">next</span>.<span class="ident">id</span>) {
                     <span class="comment">// The only way to visit a duplicate state in a transition</span>
                     <span class="comment">// list is when ASCII case insensitivity is enabled. In</span>
@@ -2409,11 +2409,11 @@
                 <span class="ident">seen</span>.<span class="ident">insert</span>(<span class="ident">next</span>.<span class="ident">id</span>);
 
                 <span class="comment">// Find the failure state for next. Same as standard.</span>
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fail</span> <span class="op">=</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">item</span>.<span class="ident">id</span>).<span class="ident">fail</span>;
-                <span class="kw">while</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">next_state</span>(<span class="ident">b</span>) <span class="op">==</span> <span class="ident">fail_id</span>() {
-                    <span class="ident">fail</span> <span class="op">=</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">fail</span>;
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fail</span> = <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">item</span>.<span class="ident">id</span>).<span class="ident">fail</span>;
+                <span class="kw">while</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">next_state</span>(<span class="ident">b</span>) == <span class="ident">fail_id</span>() {
+                    <span class="ident">fail</span> = <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">fail</span>;
                 }
-                <span class="ident">fail</span> <span class="op">=</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">next_state</span>(<span class="ident">b</span>);
+                <span class="ident">fail</span> = <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">next_state</span>(<span class="ident">b</span>);
 
                 <span class="comment">// This is the key difference from the standard formulation.</span>
                 <span class="comment">// Namely, if we&#39;ve seen a match, then we only want a failure</span>
@@ -2448,11 +2448,11 @@
                 <span class="comment">// failures. Write out the automatons for them and try to work</span>
                 <span class="comment">// backwards by figuring out which failure transitions should</span>
                 <span class="comment">// be removed. You should arrive at the same rule used below.</span>
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">match_depth</span>) <span class="op">=</span> <span class="ident">next</span>.<span class="ident">match_at_depth</span> {
-                    <span class="kw">let</span> <span class="ident">fail_depth</span> <span class="op">=</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">depth</span>;
-                    <span class="kw">let</span> <span class="ident">next_depth</span> <span class="op">=</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">next</span>.<span class="ident">id</span>).<span class="ident">depth</span>;
-                    <span class="kw">if</span> <span class="ident">next_depth</span> <span class="op">-</span> <span class="ident">match_depth</span> <span class="op">+</span> <span class="number">1</span> <span class="op">&gt;</span> <span class="ident">fail_depth</span> {
-                        <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state_mut</span>(<span class="ident">next</span>.<span class="ident">id</span>).<span class="ident">fail</span> <span class="op">=</span> <span class="ident">dead_id</span>();
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">match_depth</span>) = <span class="ident">next</span>.<span class="ident">match_at_depth</span> {
+                    <span class="kw">let</span> <span class="ident">fail_depth</span> = <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">fail</span>).<span class="ident">depth</span>;
+                    <span class="kw">let</span> <span class="ident">next_depth</span> = <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">next</span>.<span class="ident">id</span>).<span class="ident">depth</span>;
+                    <span class="kw">if</span> <span class="ident">next_depth</span> - <span class="ident">match_depth</span> + <span class="number">1</span> &gt; <span class="ident">fail_depth</span> {
+                        <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state_mut</span>(<span class="ident">next</span>.<span class="ident">id</span>).<span class="ident">fail</span> = <span class="ident">dead_id</span>();
                         <span class="kw">continue</span>;
                     }
                     <span class="macro">assert_ne!</span>(
@@ -2463,14 +2463,14 @@
                          back to the start state in leftmost searching&quot;</span>,
                     );
                 }
-                <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state_mut</span>(<span class="ident">next</span>.<span class="ident">id</span>).<span class="ident">fail</span> <span class="op">=</span> <span class="ident">fail</span>;
+                <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state_mut</span>(<span class="ident">next</span>.<span class="ident">id</span>).<span class="ident">fail</span> = <span class="ident">fail</span>;
                 <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">copy_matches</span>(<span class="ident">fail</span>, <span class="ident">next</span>.<span class="ident">id</span>);
             }
             <span class="comment">// If there are no transitions for this state and if it&#39;s a match</span>
             <span class="comment">// state, then we must set its failure transition to the dead</span>
             <span class="comment">// state since we never want it to restart the search.</span>
-            <span class="kw">if</span> <span class="op">!</span><span class="ident">any_trans</span> <span class="op">&amp;&amp;</span> <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">item</span>.<span class="ident">id</span>).<span class="ident">is_match</span>() {
-                <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state_mut</span>(<span class="ident">item</span>.<span class="ident">id</span>).<span class="ident">fail</span> <span class="op">=</span> <span class="ident">dead_id</span>();
+            <span class="kw">if</span> !<span class="ident">any_trans</span> &amp;&amp; <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state</span>(<span class="ident">item</span>.<span class="ident">id</span>).<span class="ident">is_match</span>() {
+                <span class="ident">it</span>.<span class="ident">nfa</span>().<span class="ident">state_mut</span>(<span class="ident">item</span>.<span class="ident">id</span>).<span class="ident">fail</span> = <span class="ident">dead_id</span>();
             }
             <span class="comment">// We don&#39;t need to copy empty matches from the start state here</span>
             <span class="comment">// because that&#39;s only necessary for overlapping matches and</span>
@@ -2484,7 +2484,7 @@
     <span class="doccomment">/// it is the only way to visit the same state twice. Otherwise, this</span>
     <span class="doccomment">/// returns an inert set that nevers adds anything and always reports</span>
     <span class="doccomment">/// `false` for every member test.</span>
-    <span class="kw">fn</span> <span class="ident">queued_set</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueuedSet</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">queued_set</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">QueuedSet</span>&lt;<span class="ident">S</span>&gt; {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">ascii_case_insensitive</span> {
             <span class="ident">QueuedSet::active</span>()
         } <span class="kw">else</span> {
@@ -2502,10 +2502,10 @@
     <span class="doccomment">/// construction depends on transitions to `fail_id` to determine whether a</span>
     <span class="doccomment">/// state already exists or not.</span>
     <span class="kw">fn</span> <span class="ident">add_start_state_loop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">let</span> <span class="ident">start_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_id</span>;
-        <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_mut</span>();
+        <span class="kw">let</span> <span class="ident">start_id</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_id</span>;
+        <span class="kw">let</span> <span class="ident">start</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_mut</span>();
         <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">AllBytesIter::new</span>() {
-            <span class="kw">if</span> <span class="ident">start</span>.<span class="ident">next_state</span>(<span class="ident">b</span>) <span class="op">==</span> <span class="ident">fail_id</span>() {
+            <span class="kw">if</span> <span class="ident">start</span>.<span class="ident">next_state</span>(<span class="ident">b</span>) == <span class="ident">fail_id</span>() {
                 <span class="ident">start</span>.<span class="ident">set_next_state</span>(<span class="ident">b</span>, <span class="ident">start_id</span>);
             }
         }
@@ -2527,12 +2527,12 @@
     <span class="doccomment">/// searching should stop.</span>
     <span class="kw">fn</span> <span class="ident">close_start_state_loop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">anchored</span>
-            <span class="op">|</span><span class="op">|</span> (<span class="self">self</span>.<span class="ident">match_kind</span>().<span class="ident">is_leftmost</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start</span>().<span class="ident">is_match</span>())
+            || (<span class="self">self</span>.<span class="ident">match_kind</span>().<span class="ident">is_leftmost</span>() &amp;&amp; <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start</span>().<span class="ident">is_match</span>())
         {
-            <span class="kw">let</span> <span class="ident">start_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_id</span>;
-            <span class="kw">let</span> <span class="ident">start</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_mut</span>();
+            <span class="kw">let</span> <span class="ident">start_id</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_id</span>;
+            <span class="kw">let</span> <span class="ident">start</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start_mut</span>();
             <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">AllBytesIter::new</span>() {
-                <span class="kw">if</span> <span class="ident">start</span>.<span class="ident">next_state</span>(<span class="ident">b</span>) <span class="op">==</span> <span class="ident">start_id</span> {
+                <span class="kw">if</span> <span class="ident">start</span>.<span class="ident">next_state</span>(<span class="ident">b</span>) == <span class="ident">start_id</span> {
                     <span class="ident">start</span>.<span class="ident">set_next_state</span>(<span class="ident">b</span>, <span class="ident">dead_id</span>());
                 }
             }
@@ -2543,7 +2543,7 @@
     <span class="doccomment">/// Normally, missing transitions map back to the failure state, but the</span>
     <span class="doccomment">/// point of the dead state is to act as a sink that can never be escaped.</span>
     <span class="kw">fn</span> <span class="ident">add_dead_state_loop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">let</span> <span class="ident">dead</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state_mut</span>(<span class="ident">dead_id</span>());
+        <span class="kw">let</span> <span class="ident">dead</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state_mut</span>(<span class="ident">dead_id</span>());
         <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">AllBytesIter::new</span>() {
             <span class="ident">dead</span>.<span class="ident">set_next_state</span>(<span class="ident">b</span>, <span class="ident">dead_id</span>());
         }
@@ -2551,11 +2551,11 @@
 
     <span class="doccomment">/// Computes the total amount of heap used by this NFA in bytes.</span>
     <span class="kw">fn</span> <span class="ident">calculate_size</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">size</span> <span class="op">=</span> <span class="number">0</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">size</span> = <span class="number">0</span>;
         <span class="kw">for</span> <span class="ident">state</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">states</span> {
-            <span class="ident">size</span> <span class="op">+</span><span class="op">=</span> <span class="ident">state</span>.<span class="ident">heap_bytes</span>();
+            <span class="ident">size</span> += <span class="ident">state</span>.<span class="ident">heap_bytes</span>();
         }
-        <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">heap_bytes</span> <span class="op">=</span> <span class="ident">size</span>;
+        <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">heap_bytes</span> = <span class="ident">size</span>;
     }
 
     <span class="doccomment">/// Add a new state to the underlying NFA with the given depth. The depth</span>
@@ -2563,8 +2563,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// If adding the new state would overflow the chosen state ID</span>
     <span class="doccomment">/// representation, then this returns an error.</span>
-    <span class="kw">fn</span> <span class="ident">add_state</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">depth</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">depth</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">dense_depth</span> {
+    <span class="kw">fn</span> <span class="ident">add_state</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">depth</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S</span>&gt; {
+        <span class="kw">if</span> <span class="ident">depth</span> &lt; <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">dense_depth</span> {
             <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">add_dense_state</span>(<span class="ident">depth</span>)
         } <span class="kw">else</span> {
             <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">add_sparse_state</span>(<span class="ident">depth</span>)
@@ -2585,26 +2585,26 @@
 <span class="doccomment">/// useful to avoid the performance and memory overhead of maintaining this</span>
 <span class="doccomment">/// set when it is not needed.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">QueuedSet</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="ident">set</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="kw">struct</span> <span class="ident">QueuedSet</span>&lt;<span class="ident">S</span>&gt; {
+    <span class="ident">set</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">BTreeSet</span>&lt;<span class="ident">S</span>&gt;&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> <span class="ident">QueuedSet</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>&gt; <span class="ident">QueuedSet</span>&lt;<span class="ident">S</span>&gt; {
     <span class="doccomment">/// Return an inert set that returns `false` for every state ID membership</span>
     <span class="doccomment">/// test.</span>
-    <span class="kw">fn</span> <span class="ident">inert</span>() -&gt; <span class="ident">QueuedSet</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">inert</span>() -&gt; <span class="ident">QueuedSet</span>&lt;<span class="ident">S</span>&gt; {
         <span class="ident">QueuedSet</span> { <span class="ident">set</span>: <span class="prelude-val">None</span> }
     }
 
     <span class="doccomment">/// Return an active set that tracks state ID membership.</span>
-    <span class="kw">fn</span> <span class="ident">active</span>() -&gt; <span class="ident">QueuedSet</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">active</span>() -&gt; <span class="ident">QueuedSet</span>&lt;<span class="ident">S</span>&gt; {
         <span class="ident">QueuedSet</span> { <span class="ident">set</span>: <span class="prelude-val">Some</span>(<span class="ident">BTreeSet::new</span>()) }
     }
 
     <span class="doccomment">/// Inserts the given state ID into this set. (If the set is inert, then</span>
     <span class="doccomment">/// this is a no-op.)</span>
     <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">state_id</span>: <span class="ident">S</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">set</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">set</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">set</span>) = <span class="self">self</span>.<span class="ident">set</span> {
             <span class="ident">set</span>.<span class="ident">insert</span>(<span class="ident">state_id</span>);
         }
     }
@@ -2637,49 +2637,49 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">AllBytesIter</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">u8</span>;
+    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">u8</span>;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="number">0</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">256</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="number">0</span> &gt;= <span class="number">256</span> {
             <span class="prelude-val">None</span>
         } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">u8</span>;
-            <span class="self">self</span>.<span class="number">0</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="kw">let</span> <span class="ident">b</span> = <span class="self">self</span>.<span class="number">0</span> <span class="kw">as</span> <span class="ident">u8</span>;
+            <span class="self">self</span>.<span class="number">0</span> += <span class="number">1</span>;
             <span class="prelude-val">Some</span>(<span class="ident">b</span>)
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
+<span class="kw">impl</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">NFA</span>&lt;<span class="ident">S</span>&gt; {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
         <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;NFA(&quot;</span>)<span class="question-mark">?</span>;
         <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;match_kind: {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">match_kind</span>)<span class="question-mark">?</span>;
         <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;prefilter: {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">prefilter</span>)<span class="question-mark">?</span>;
         <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="string">&quot;-&quot;</span>.<span class="ident">repeat</span>(<span class="number">79</span>))<span class="question-mark">?</span>;
         <span class="kw">for</span> (<span class="ident">id</span>, <span class="ident">s</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trans</span> <span class="op">=</span> <span class="macro">vec!</span>[];
-            <span class="ident">s</span>.<span class="ident">trans</span>.<span class="ident">iter</span>(<span class="op">|</span><span class="ident">byte</span>, <span class="ident">next</span><span class="op">|</span> {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trans</span> = <span class="macro">vec!</span>[];
+            <span class="ident">s</span>.<span class="ident">trans</span>.<span class="ident">iter</span>(|<span class="ident">byte</span>, <span class="ident">next</span>| {
                 <span class="comment">// The start state has a bunch of uninteresting transitions</span>
                 <span class="comment">// back into itself. It&#39;s questionable to hide them since they</span>
                 <span class="comment">// are critical to understanding the automaton, but they are</span>
                 <span class="comment">// very noisy without better formatting for contiugous ranges</span>
                 <span class="comment">// to the same state.</span>
-                <span class="kw">if</span> <span class="ident">id</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">start_id</span>.<span class="ident">to_usize</span>() <span class="op">&amp;&amp;</span> <span class="ident">next</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">start_id</span> {
+                <span class="kw">if</span> <span class="ident">id</span> == <span class="self">self</span>.<span class="ident">start_id</span>.<span class="ident">to_usize</span>() &amp;&amp; <span class="ident">next</span> == <span class="self">self</span>.<span class="ident">start_id</span> {
                     <span class="kw">return</span>;
                 }
                 <span class="comment">// Similarly, the dead state has a bunch of uninteresting</span>
                 <span class="comment">// transitions too.</span>
-                <span class="kw">if</span> <span class="ident">id</span> <span class="op">==</span> <span class="ident">dead_id</span>() {
+                <span class="kw">if</span> <span class="ident">id</span> == <span class="ident">dead_id</span>() {
                     <span class="kw">return</span>;
                 }
                 <span class="ident">trans</span>.<span class="ident">push</span>(<span class="macro">format!</span>(<span class="string">&quot;{} =&gt; {}&quot;</span>, <span class="ident">escape</span>(<span class="ident">byte</span>), <span class="ident">next</span>.<span class="ident">to_usize</span>()));
             });
             <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;{:04}: {}&quot;</span>, <span class="ident">id</span>, <span class="ident">trans</span>.<span class="ident">join</span>(<span class="string">&quot;, &quot;</span>))<span class="question-mark">?</span>;
 
-            <span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">s</span>
+            <span class="kw">let</span> <span class="ident">matches</span>: <span class="ident">Vec</span>&lt;<span class="ident">String</span>&gt; = <span class="ident">s</span>
                 .<span class="ident">matches</span>
                 .<span class="ident">iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="ident">pattern_id</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">pattern_id</span>.<span class="ident">to_string</span>())
+                .<span class="ident">map</span>(|<span class="kw-2">&amp;</span>(<span class="ident">pattern_id</span>, <span class="kw">_</span>)| <span class="ident">pattern_id</span>.<span class="ident">to_string</span>())
                 .<span class="ident">collect</span>();
             <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;  matches: {}&quot;</span>, <span class="ident">matches</span>.<span class="ident">join</span>(<span class="string">&quot;, &quot;</span>))<span class="question-mark">?</span>;
             <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;     fail: {}&quot;</span>, <span class="ident">s</span>.<span class="ident">fail</span>.<span class="ident">to_usize</span>())<span class="question-mark">?</span>;
@@ -2692,15 +2692,15 @@
 }
 
 <span class="doccomment">/// Iterate over all possible byte transitions given a sparse set.</span>
-<span class="kw">fn</span> <span class="ident">sparse_iter</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">StateID</span>, <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">u8</span>, <span class="ident">S</span>)<span class="op">&gt;</span>(<span class="ident">trans</span>: <span class="kw-2">&amp;</span>[(<span class="ident">u8</span>, <span class="ident">S</span>)], <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">byte</span> <span class="op">=</span> <span class="number">0u16</span>;
+<span class="kw">fn</span> <span class="ident">sparse_iter</span>&lt;<span class="ident">S</span>: <span class="ident">StateID</span>, <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">u8</span>, <span class="ident">S</span>)&gt;(<span class="ident">trans</span>: <span class="kw-2">&amp;</span>[(<span class="ident">u8</span>, <span class="ident">S</span>)], <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) {
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">byte</span> = <span class="number">0u16</span>;
     <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">b</span>, <span class="ident">id</span>) <span class="kw">in</span> <span class="ident">trans</span> {
-        <span class="kw">while</span> <span class="ident">byte</span> <span class="op">&lt;</span> (<span class="ident">b</span> <span class="kw">as</span> <span class="ident">u16</span>) {
+        <span class="kw">while</span> <span class="ident">byte</span> &lt; (<span class="ident">b</span> <span class="kw">as</span> <span class="ident">u16</span>) {
             <span class="ident">f</span>(<span class="ident">byte</span> <span class="kw">as</span> <span class="ident">u8</span>, <span class="ident">fail_id</span>());
-            <span class="ident">byte</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="ident">byte</span> += <span class="number">1</span>;
         }
         <span class="ident">f</span>(<span class="ident">b</span>, <span class="ident">id</span>);
-        <span class="ident">byte</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+        <span class="ident">byte</span> += <span class="number">1</span>;
     }
     <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">byte</span>..<span class="number">256</span> {
         <span class="ident">f</span>(<span class="ident">b</span> <span class="kw">as</span> <span class="ident">u8</span>, <span class="ident">fail_id</span>());
@@ -2711,13 +2711,13 @@
 <span class="doccomment">/// slice.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This panics if i == j.</span>
-<span class="kw">fn</span> <span class="ident">get_two_mut</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">xs</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">T</span>], <span class="ident">i</span>: <span class="ident">usize</span>, <span class="ident">j</span>: <span class="ident">usize</span>) -&gt; (<span class="kw-2">&amp;mut</span> <span class="ident">T</span>, <span class="kw-2">&amp;mut</span> <span class="ident">T</span>) {
-    <span class="macro">assert!</span>(<span class="ident">i</span> <span class="op">!</span><span class="op">=</span> <span class="ident">j</span>, <span class="string">&quot;{} must not be equal to {}&quot;</span>, <span class="ident">i</span>, <span class="ident">j</span>);
-    <span class="kw">if</span> <span class="ident">i</span> <span class="op">&lt;</span> <span class="ident">j</span> {
-        <span class="kw">let</span> (<span class="ident">before</span>, <span class="ident">after</span>) <span class="op">=</span> <span class="ident">xs</span>.<span class="ident">split_at_mut</span>(<span class="ident">j</span>);
+<span class="kw">fn</span> <span class="ident">get_two_mut</span>&lt;<span class="ident">T</span>&gt;(<span class="ident">xs</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">T</span>], <span class="ident">i</span>: <span class="ident">usize</span>, <span class="ident">j</span>: <span class="ident">usize</span>) -&gt; (<span class="kw-2">&amp;mut</span> <span class="ident">T</span>, <span class="kw-2">&amp;mut</span> <span class="ident">T</span>) {
+    <span class="macro">assert!</span>(<span class="ident">i</span> != <span class="ident">j</span>, <span class="string">&quot;{} must not be equal to {}&quot;</span>, <span class="ident">i</span>, <span class="ident">j</span>);
+    <span class="kw">if</span> <span class="ident">i</span> &lt; <span class="ident">j</span> {
+        <span class="kw">let</span> (<span class="ident">before</span>, <span class="ident">after</span>) = <span class="ident">xs</span>.<span class="ident">split_at_mut</span>(<span class="ident">j</span>);
         (<span class="kw-2">&amp;mut</span> <span class="ident">before</span>[<span class="ident">i</span>], <span class="kw-2">&amp;mut</span> <span class="ident">after</span>[<span class="number">0</span>])
     } <span class="kw">else</span> {
-        <span class="kw">let</span> (<span class="ident">before</span>, <span class="ident">after</span>) <span class="op">=</span> <span class="ident">xs</span>.<span class="ident">split_at_mut</span>(<span class="ident">i</span>);
+        <span class="kw">let</span> (<span class="ident">before</span>, <span class="ident">after</span>) = <span class="ident">xs</span>.<span class="ident">split_at_mut</span>(<span class="ident">i</span>);
         (<span class="kw-2">&amp;mut</span> <span class="ident">after</span>[<span class="number">0</span>], <span class="kw-2">&amp;mut</span> <span class="ident">before</span>[<span class="ident">j</span>])
     }
 }
@@ -2726,7 +2726,7 @@
 <span class="kw">fn</span> <span class="ident">escape</span>(<span class="ident">b</span>: <span class="ident">u8</span>) -&gt; <span class="ident">String</span> {
     <span class="kw">use</span> <span class="ident">std::ascii</span>;
 
-    <span class="ident">String::from_utf8</span>(<span class="ident">ascii::escape_default</span>(<span class="ident">b</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()).<span class="ident">unwrap</span>()
+    <span class="ident">String::from_utf8</span>(<span class="ident">ascii::escape_default</span>(<span class="ident">b</span>).<span class="ident">collect</span>::&lt;<span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt;&gt;()).<span class="ident">unwrap</span>()
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -2735,7 +2735,7 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">scratch</span>() {
-        <span class="kw">let</span> <span class="ident">nfa</span>: <span class="ident">NFA</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Builder::new</span>()
+        <span class="kw">let</span> <span class="ident">nfa</span>: <span class="ident">NFA</span>&lt;<span class="ident">usize</span>&gt; = <span class="ident">Builder::new</span>()
             .<span class="ident">dense_depth</span>(<span class="number">0</span>)
             <span class="comment">// .match_kind(MatchKind::LeftmostShortest)</span>
             <span class="comment">// .match_kind(MatchKind::LeftmostLongest)</span>
@@ -2753,4 +2753,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="aho_corasick" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="aho_corasick" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

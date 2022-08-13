@@ -38,25 +38,25 @@ unlocking a mutex instead of simply dropping the <code>MutexGuard</code>.</p>
 <span class="kw">use</span> <span class="ident">std::sync</span>::{<span class="ident">Arc</span>, <span class="ident">mpsc::channel</span>};
 <span class="kw">use</span> <span class="ident">std::thread</span>;
 
-<span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">10</span>;
+<span class="kw">const</span> <span class="ident">N</span>: <span class="ident">usize</span> = <span class="number">10</span>;
 
 <span class="comment">// Spawn a few threads to increment a shared variable (non-atomically), and</span>
 <span class="comment">// let the main thread know once all increments are done.</span>
 <span class="comment">//</span>
 <span class="comment">// Here we&#39;re using an Arc to share memory among threads, and the data inside</span>
 <span class="comment">// the Arc is protected with a mutex.</span>
-<span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="number">0</span>));
+<span class="kw">let</span> <span class="ident">data</span> = <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="number">0</span>));
 
-<span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) <span class="op">=</span> <span class="ident">channel</span>();
+<span class="kw">let</span> (<span class="ident">tx</span>, <span class="ident">rx</span>) = <span class="ident">channel</span>();
 <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">10</span> {
-    <span class="kw">let</span> (<span class="ident">data</span>, <span class="ident">tx</span>) <span class="op">=</span> (<span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>), <span class="ident">tx</span>.<span class="ident">clone</span>());
-    <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
+    <span class="kw">let</span> (<span class="ident">data</span>, <span class="ident">tx</span>) = (<span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>), <span class="ident">tx</span>.<span class="ident">clone</span>());
+    <span class="ident">thread::spawn</span>(<span class="kw">move</span> || {
         <span class="comment">// The shared state can only be accessed once the lock is held.</span>
         <span class="comment">// Our non-atomic increment is safe because we&#39;re the only thread</span>
         <span class="comment">// which can access the shared state when the lock is held.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">lock</span>();
-        <span class="kw-2">*</span><span class="ident">data</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">data</span> <span class="op">==</span> <span class="ident">N</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> = <span class="ident">data</span>.<span class="ident">lock</span>();
+        <span class="kw-2">*</span><span class="ident">data</span> += <span class="number">1</span>;
+        <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">data</span> == <span class="ident">N</span> {
             <span class="ident">tx</span>.<span class="ident">send</span>(()).<span class="ident">unwrap</span>();
         }
         <span class="comment">// the lock is unlocked here when `data` goes out of scope.</span>
@@ -64,4 +64,4 @@ unlocking a mutex instead of simply dropping the <code>MutexGuard</code>.</p>
 }
 
 <span class="ident">rx</span>.<span class="ident">recv</span>().<span class="ident">unwrap</span>();</code></pre></div>
-</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="parking_lot" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="parking_lot" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

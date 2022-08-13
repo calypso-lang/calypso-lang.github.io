@@ -294,7 +294,7 @@
 <span class="kw">use</span> <span class="ident">sparse_set::SparseSet</span>;
 <span class="kw">use</span> <span class="ident">state_id</span>::{<span class="ident">dead_id</span>, <span class="ident">StateID</span>};
 
-<span class="kw">type</span> <span class="ident">DFARepr</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">dense::Repr</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>, <span class="ident">S</span><span class="op">&gt;</span>;
+<span class="kw">type</span> <span class="ident">DFARepr</span>&lt;<span class="ident">S</span>&gt; = <span class="ident">dense::Repr</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">S</span>&gt;, <span class="ident">S</span>&gt;;
 
 <span class="doccomment">/// A determinizer converts an NFA to a DFA.</span>
 <span class="doccomment">///</span>
@@ -310,27 +310,27 @@
 <span class="doccomment">/// The lifetime variable `&#39;a` refers to the lifetime of the NFA being</span>
 <span class="doccomment">/// converted to a DFA.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Determinizer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Determinizer</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span>&gt; {
     <span class="doccomment">/// The NFA we&#39;re converting into a DFA.</span>
     <span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">NFA</span>,
     <span class="doccomment">/// The DFA we&#39;re building.</span>
-    <span class="ident">dfa</span>: <span class="ident">DFARepr</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
+    <span class="ident">dfa</span>: <span class="ident">DFARepr</span>&lt;<span class="ident">S</span>&gt;,
     <span class="doccomment">/// Each DFA state being built is defined as an *ordered* set of NFA</span>
     <span class="doccomment">/// states, along with a flag indicating whether the state is a match</span>
     <span class="doccomment">/// state or not.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// This is never empty. The first state is always a dummy state such that</span>
     <span class="doccomment">/// a state id == 0 corresponds to a dead state.</span>
-    <span class="ident">builder_states</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">State</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">builder_states</span>: <span class="ident">Vec</span>&lt;<span class="ident">Rc</span>&lt;<span class="ident">State</span>&gt;&gt;,
     <span class="doccomment">/// A cache of DFA states that already exist and can be easily looked up</span>
     <span class="doccomment">/// via ordered sets of NFA states.</span>
-    <span class="ident">cache</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">State</span><span class="op">&gt;</span>, <span class="ident">S</span><span class="op">&gt;</span>,
+    <span class="ident">cache</span>: <span class="ident">HashMap</span>&lt;<span class="ident">Rc</span>&lt;<span class="ident">State</span>&gt;, <span class="ident">S</span>&gt;,
     <span class="doccomment">/// Scratch space for a stack of NFA states to visit, for depth first</span>
     <span class="doccomment">/// visiting without recursion.</span>
-    <span class="ident">stack</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">nfa::StateID</span><span class="op">&gt;</span>,
+    <span class="ident">stack</span>: <span class="ident">Vec</span>&lt;<span class="ident">nfa::StateID</span>&gt;,
     <span class="doccomment">/// Scratch space for storing an ordered sequence of NFA states, for</span>
     <span class="doccomment">/// amortizing allocation.</span>
-    <span class="ident">scratch_nfa_states</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">nfa::StateID</span><span class="op">&gt;</span>,
+    <span class="ident">scratch_nfa_states</span>: <span class="ident">Vec</span>&lt;<span class="ident">nfa::StateID</span>&gt;,
     <span class="doccomment">/// Whether to build a DFA that finds the longest possible match.</span>
     <span class="ident">longest_match</span>: <span class="ident">bool</span>,
 }
@@ -341,14 +341,14 @@
     <span class="doccomment">/// Whether this state is a match state or not.</span>
     <span class="ident">is_match</span>: <span class="ident">bool</span>,
     <span class="doccomment">/// An ordered sequence of NFA states that make up this DFA state.</span>
-    <span class="ident">nfa_states</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">nfa::StateID</span><span class="op">&gt;</span>,
+    <span class="ident">nfa_states</span>: <span class="ident">Vec</span>&lt;<span class="ident">nfa::StateID</span>&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span><span class="op">&gt;</span> <span class="ident">Determinizer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">StateID</span>&gt; <span class="ident">Determinizer</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; {
     <span class="doccomment">/// Create a new determinizer for converting the given NFA to a DFA.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">NFA</span>) -&gt; <span class="ident">Determinizer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">dead</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">State::dead</span>());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> <span class="op">=</span> <span class="ident">HashMap::default</span>();
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">nfa</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">NFA</span>) -&gt; <span class="ident">Determinizer</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; {
+        <span class="kw">let</span> <span class="ident">dead</span> = <span class="ident">Rc::new</span>(<span class="ident">State::dead</span>());
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> = <span class="ident">HashMap::default</span>();
         <span class="ident">cache</span>.<span class="ident">insert</span>(<span class="ident">dead</span>.<span class="ident">clone</span>(), <span class="ident">dead_id</span>());
 
         <span class="ident">Determinizer</span> {
@@ -364,9 +364,9 @@
 
     <span class="doccomment">/// Instruct the determinizer to use equivalence classes as the transition</span>
     <span class="doccomment">/// alphabet instead of all possible byte values.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_byte_classes</span>(<span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="ident">Determinizer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">byte_classes</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">byte_classes</span>().<span class="ident">clone</span>();
-        <span class="self">self</span>.<span class="ident">dfa</span> <span class="op">=</span> <span class="ident">DFARepr::empty_with_byte_classes</span>(<span class="ident">byte_classes</span>)
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_byte_classes</span>(<span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="ident">Determinizer</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; {
+        <span class="kw">let</span> <span class="ident">byte_classes</span> = <span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">byte_classes</span>().<span class="ident">clone</span>();
+        <span class="self">self</span>.<span class="ident">dfa</span> = <span class="ident">DFARepr::empty_with_byte_classes</span>(<span class="ident">byte_classes</span>)
             .<span class="ident">anchored</span>(<span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">is_anchored</span>());
         <span class="self">self</span>
     }
@@ -374,22 +374,22 @@
     <span class="doccomment">/// Instruct the determinizer to build a DFA that recognizes the longest</span>
     <span class="doccomment">/// possible match instead of the leftmost first match. This is useful when</span>
     <span class="doccomment">/// constructing reverse DFAs for finding the start of a match.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">longest_match</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) -&gt; <span class="ident">Determinizer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">longest_match</span> <span class="op">=</span> <span class="ident">yes</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">longest_match</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) -&gt; <span class="ident">Determinizer</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; {
+        <span class="self">self</span>.<span class="ident">longest_match</span> = <span class="ident">yes</span>;
         <span class="self">self</span>
     }
 
     <span class="doccomment">/// Build the DFA. If there was a problem constructing the DFA (e.g., if</span>
     <span class="doccomment">/// the chosen state identifier representation is too small), then an error</span>
     <span class="doccomment">/// is returned.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">DFARepr</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">representative_bytes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="op">=</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">DFARepr</span>&lt;<span class="ident">S</span>&gt;&gt; {
+        <span class="kw">let</span> <span class="ident">representative_bytes</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; =
             <span class="self">self</span>.<span class="ident">dfa</span>.<span class="ident">byte_classes</span>().<span class="ident">representatives</span>().<span class="ident">collect</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sparse</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_sparse_set</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">uncompiled</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="self">self</span>.<span class="ident">add_start</span>(<span class="kw-2">&amp;mut</span> <span class="ident">sparse</span>)<span class="question-mark">?</span>];
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">dfa_id</span>) <span class="op">=</span> <span class="ident">uncompiled</span>.<span class="ident">pop</span>() {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sparse</span> = <span class="self">self</span>.<span class="ident">new_sparse_set</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">uncompiled</span> = <span class="macro">vec!</span>[<span class="self">self</span>.<span class="ident">add_start</span>(<span class="kw-2">&amp;mut</span> <span class="ident">sparse</span>)<span class="question-mark">?</span>];
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">dfa_id</span>) = <span class="ident">uncompiled</span>.<span class="ident">pop</span>() {
             <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">b</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">representative_bytes</span> {
-                <span class="kw">let</span> (<span class="ident">next_dfa_id</span>, <span class="ident">is_new</span>) <span class="op">=</span>
+                <span class="kw">let</span> (<span class="ident">next_dfa_id</span>, <span class="ident">is_new</span>) =
                     <span class="self">self</span>.<span class="ident">cached_state</span>(<span class="ident">dfa_id</span>, <span class="ident">b</span>, <span class="kw-2">&amp;mut</span> <span class="ident">sparse</span>)<span class="question-mark">?</span>;
                 <span class="self">self</span>.<span class="ident">dfa</span>.<span class="ident">add_transition</span>(<span class="ident">dfa_id</span>, <span class="ident">b</span>, <span class="ident">next_dfa_id</span>);
                 <span class="kw">if</span> <span class="ident">is_new</span> {
@@ -402,8 +402,8 @@
         <span class="comment">// the beginning. This permits a DFA&#39;s match loop to detect a match</span>
         <span class="comment">// condition by merely inspecting the current state&#39;s identifier, and</span>
         <span class="comment">// avoids the need for any additional auxiliary storage.</span>
-        <span class="kw">let</span> <span class="ident">is_match</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> <span class="op">=</span>
-            <span class="self">self</span>.<span class="ident">builder_states</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">is_match</span>).<span class="ident">collect</span>();
+        <span class="kw">let</span> <span class="ident">is_match</span>: <span class="ident">Vec</span>&lt;<span class="ident">bool</span>&gt; =
+            <span class="self">self</span>.<span class="ident">builder_states</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="ident">s</span>| <span class="ident">s</span>.<span class="ident">is_match</span>).<span class="ident">collect</span>();
         <span class="self">self</span>.<span class="ident">dfa</span>.<span class="ident">shuffle_match_states</span>(<span class="kw-2">&amp;</span><span class="ident">is_match</span>);
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">dfa</span>)
     }
@@ -425,21 +425,21 @@
         <span class="ident">dfa_id</span>: <span class="ident">S</span>,
         <span class="ident">b</span>: <span class="ident">u8</span>,
         <span class="ident">sparse</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SparseSet</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">S</span>, <span class="ident">bool</span>)<span class="op">&gt;</span> {
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(<span class="ident">S</span>, <span class="ident">bool</span>)&gt; {
         <span class="ident">sparse</span>.<span class="ident">clear</span>();
         <span class="comment">// Compute the set of all reachable NFA states, including epsilons.</span>
         <span class="self">self</span>.<span class="ident">next</span>(<span class="ident">dfa_id</span>, <span class="ident">b</span>, <span class="ident">sparse</span>);
         <span class="comment">// Build a candidate state and check if it has already been built.</span>
-        <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_state</span>(<span class="ident">sparse</span>);
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">cached_id</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>) {
+        <span class="kw">let</span> <span class="ident">state</span> = <span class="self">self</span>.<span class="ident">new_state</span>(<span class="ident">sparse</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">cached_id</span>) = <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">state</span>) {
             <span class="comment">// Since we have a cached state, put the constructed state&#39;s</span>
             <span class="comment">// memory back into our scratch space, so that it can be reused.</span>
-            <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span>
+            <span class="kw">let</span> <span class="kw">_</span> =
                 <span class="ident">mem::replace</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">scratch_nfa_states</span>, <span class="ident">state</span>.<span class="ident">nfa_states</span>);
             <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">cached_id</span>, <span class="bool-val">false</span>));
         }
         <span class="comment">// Nothing was in the cache, so add this state to the cache.</span>
-        <span class="self">self</span>.<span class="ident">add_state</span>(<span class="ident">state</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> (<span class="ident">s</span>, <span class="bool-val">true</span>))
+        <span class="self">self</span>.<span class="ident">add_state</span>(<span class="ident">state</span>).<span class="ident">map</span>(|<span class="ident">s</span>| (<span class="ident">s</span>, <span class="bool-val">true</span>))
     }
 
     <span class="doccomment">/// Compute the set of all eachable NFA states, including the full epsilon</span>
@@ -447,21 +447,21 @@
     <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">dfa_id</span>: <span class="ident">S</span>, <span class="ident">b</span>: <span class="ident">u8</span>, <span class="ident">next_nfa_states</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SparseSet</span>) {
         <span class="ident">next_nfa_states</span>.<span class="ident">clear</span>();
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">builder_states</span>[<span class="ident">dfa_id</span>.<span class="ident">to_usize</span>()].<span class="ident">nfa_states</span>.<span class="ident">len</span>() {
-            <span class="kw">let</span> <span class="ident">nfa_id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">builder_states</span>[<span class="ident">dfa_id</span>.<span class="ident">to_usize</span>()].<span class="ident">nfa_states</span>[<span class="ident">i</span>];
+            <span class="kw">let</span> <span class="ident">nfa_id</span> = <span class="self">self</span>.<span class="ident">builder_states</span>[<span class="ident">dfa_id</span>.<span class="ident">to_usize</span>()].<span class="ident">nfa_states</span>[<span class="ident">i</span>];
             <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">nfa_id</span>) {
                 <span class="ident">nfa::State::Union</span> { .. }
-                <span class="op">|</span> <span class="ident">nfa::State::Fail</span>
-                <span class="op">|</span> <span class="ident">nfa::State::Match</span> =&gt; {}
+                | <span class="ident">nfa::State::Fail</span>
+                | <span class="ident">nfa::State::Match</span> =&gt; {}
                 <span class="ident">nfa::State::Range</span> { <span class="ident">range</span>: <span class="kw-2">ref</span> <span class="ident">r</span> } =&gt; {
-                    <span class="kw">if</span> <span class="ident">r</span>.<span class="ident">start</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">b</span> <span class="op">&amp;&amp;</span> <span class="ident">b</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">r</span>.<span class="ident">end</span> {
+                    <span class="kw">if</span> <span class="ident">r</span>.<span class="ident">start</span> &lt;= <span class="ident">b</span> &amp;&amp; <span class="ident">b</span> &lt;= <span class="ident">r</span>.<span class="ident">end</span> {
                         <span class="self">self</span>.<span class="ident">epsilon_closure</span>(<span class="ident">r</span>.<span class="ident">next</span>, <span class="ident">next_nfa_states</span>);
                     }
                 }
                 <span class="ident">nfa::State::Sparse</span> { <span class="kw-2">ref</span> <span class="ident">ranges</span> } =&gt; {
                     <span class="kw">for</span> <span class="ident">r</span> <span class="kw">in</span> <span class="ident">ranges</span>.<span class="ident">iter</span>() {
-                        <span class="kw">if</span> <span class="ident">r</span>.<span class="ident">start</span> <span class="op">&gt;</span> <span class="ident">b</span> {
+                        <span class="kw">if</span> <span class="ident">r</span>.<span class="ident">start</span> &gt; <span class="ident">b</span> {
                             <span class="kw">break</span>;
-                        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">r</span>.<span class="ident">start</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">b</span> <span class="op">&amp;&amp;</span> <span class="ident">b</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">r</span>.<span class="ident">end</span> {
+                        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">r</span>.<span class="ident">start</span> &lt;= <span class="ident">b</span> &amp;&amp; <span class="ident">b</span> &lt;= <span class="ident">r</span>.<span class="ident">end</span> {
                             <span class="self">self</span>.<span class="ident">epsilon_closure</span>(<span class="ident">r</span>.<span class="ident">next</span>, <span class="ident">next_nfa_states</span>);
                             <span class="kw">break</span>;
                         }
@@ -473,13 +473,13 @@
 
     <span class="doccomment">/// Compute the epsilon closure for the given NFA state.</span>
     <span class="kw">fn</span> <span class="ident">epsilon_closure</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">start</span>: <span class="ident">nfa::StateID</span>, <span class="ident">set</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SparseSet</span>) {
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">start</span>).<span class="ident">is_epsilon</span>() {
+        <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">start</span>).<span class="ident">is_epsilon</span>() {
             <span class="ident">set</span>.<span class="ident">insert</span>(<span class="ident">start</span>);
             <span class="kw">return</span>;
         }
 
         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">start</span>);
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">id</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>() {
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">id</span>) = <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>() {
             <span class="kw">loop</span> {
                 <span class="kw">if</span> <span class="ident">set</span>.<span class="ident">contains</span>(<span class="ident">id</span>) {
                     <span class="kw">break</span>;
@@ -487,11 +487,11 @@
                 <span class="ident">set</span>.<span class="ident">insert</span>(<span class="ident">id</span>);
                 <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">state</span>(<span class="ident">id</span>) {
                     <span class="ident">nfa::State::Range</span> { .. }
-                    <span class="op">|</span> <span class="ident">nfa::State::Sparse</span> { .. }
-                    <span class="op">|</span> <span class="ident">nfa::State::Fail</span>
-                    <span class="op">|</span> <span class="ident">nfa::State::Match</span> =&gt; <span class="kw">break</span>,
+                    | <span class="ident">nfa::State::Sparse</span> { .. }
+                    | <span class="ident">nfa::State::Fail</span>
+                    | <span class="ident">nfa::State::Match</span> =&gt; <span class="kw">break</span>,
                     <span class="ident">nfa::State::Union</span> { <span class="kw-2">ref</span> <span class="ident">alternates</span> } =&gt; {
-                        <span class="ident">id</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">alternates</span>.<span class="ident">get</span>(<span class="number">0</span>) {
+                        <span class="ident">id</span> = <span class="kw">match</span> <span class="ident">alternates</span>.<span class="ident">get</span>(<span class="number">0</span>) {
                             <span class="prelude-val">None</span> =&gt; <span class="kw">break</span>,
                             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">id</span>) =&gt; <span class="ident">id</span>,
                         };
@@ -506,11 +506,11 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// The sparse set given is used for scratch space, and must have capacity</span>
     <span class="doccomment">/// equal to the total number of NFA states. Its contents are unspecified.</span>
-    <span class="kw">fn</span> <span class="ident">add_start</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">sparse</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SparseSet</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">add_start</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">sparse</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SparseSet</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S</span>&gt; {
         <span class="ident">sparse</span>.<span class="ident">clear</span>();
         <span class="self">self</span>.<span class="ident">epsilon_closure</span>(<span class="self">self</span>.<span class="ident">nfa</span>.<span class="ident">start</span>(), <span class="ident">sparse</span>);
-        <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">new_state</span>(<span class="kw-2">&amp;</span><span class="ident">sparse</span>);
-        <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">add_state</span>(<span class="ident">state</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">state</span> = <span class="self">self</span>.<span class="ident">new_state</span>(<span class="kw-2">&amp;</span><span class="ident">sparse</span>);
+        <span class="kw">let</span> <span class="ident">id</span> = <span class="self">self</span>.<span class="ident">add_state</span>(<span class="ident">state</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">dfa</span>.<span class="ident">set_start_state</span>(<span class="ident">id</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">id</span>)
     }
@@ -519,9 +519,9 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// The state initially has no transitions. That is, it transitions to the</span>
     <span class="doccomment">/// dead state for all possible inputs.</span>
-    <span class="kw">fn</span> <span class="ident">add_state</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">state</span>: <span class="ident">State</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dfa</span>.<span class="ident">add_empty_state</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">rstate</span> <span class="op">=</span> <span class="ident">Rc::new</span>(<span class="ident">state</span>);
+    <span class="kw">fn</span> <span class="ident">add_state</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">state</span>: <span class="ident">State</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S</span>&gt; {
+        <span class="kw">let</span> <span class="ident">id</span> = <span class="self">self</span>.<span class="ident">dfa</span>.<span class="ident">add_empty_state</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">rstate</span> = <span class="ident">Rc::new</span>(<span class="ident">state</span>);
         <span class="self">self</span>.<span class="ident">builder_states</span>.<span class="ident">push</span>(<span class="ident">rstate</span>.<span class="ident">clone</span>());
         <span class="self">self</span>.<span class="ident">cache</span>.<span class="ident">insert</span>(<span class="ident">rstate</span>, <span class="ident">id</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">id</span>)
@@ -529,7 +529,7 @@
 
     <span class="doccomment">/// Convert the given set of ordered NFA states to a DFA state.</span>
     <span class="kw">fn</span> <span class="ident">new_state</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">set</span>: <span class="kw-2">&amp;</span><span class="ident">SparseSet</span>) -&gt; <span class="ident">State</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> <span class="op">=</span> <span class="ident">State</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> = <span class="ident">State</span> {
             <span class="ident">is_match</span>: <span class="bool-val">false</span>,
             <span class="ident">nfa_states</span>: <span class="ident">mem::replace</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">scratch_nfa_states</span>, <span class="macro">vec!</span>[]),
         };
@@ -547,8 +547,8 @@
                     <span class="kw">break</span>;
                 }
                 <span class="ident">nfa::State::Match</span> =&gt; {
-                    <span class="ident">state</span>.<span class="ident">is_match</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                    <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">longest_match</span> {
+                    <span class="ident">state</span>.<span class="ident">is_match</span> = <span class="bool-val">true</span>;
+                    <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">longest_match</span> {
                         <span class="kw">break</span>;
                     }
                 }
@@ -571,4 +571,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="regex_automata" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="regex_automata" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

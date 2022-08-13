@@ -438,7 +438,7 @@
 
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::registry</span>::{<span class="self">self</span>, <span class="ident">LookupSpan</span>, <span class="ident">SpanRef</span>};
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">filter::FilterId</span>, <span class="ident">registry::Registry</span>};
 <span class="doccomment">/// Represents information about the current context provided to [`Layer`]s by the</span>
 <span class="doccomment">/// wrapped [`Subscriber`].</span>
@@ -466,8 +466,8 @@
 <span class="doccomment">/// [stored data]: crate::registry::SpanRef</span>
 <span class="doccomment">/// [`LookupSpan`]: crate::registry::LookupSpan</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="ident">subscriber</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">S</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Context</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; {
+    <span class="ident">subscriber</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">S</span>&gt;,
     <span class="doccomment">/// The bitmask of all [`Filtered`] layers that currently apply in this</span>
     <span class="doccomment">/// context. If there is only a single [`Filtered`] wrapping the layer that</span>
     <span class="doccomment">/// produced this context, then this is that filter&#39;s ID. Otherwise, if we</span>
@@ -478,13 +478,13 @@
     <span class="doccomment">/// [`Filtered`]: crate::filter::Filtered</span>
     <span class="doccomment">/// [`FilterId`]: crate::filter::FilterId</span>
     <span class="doccomment">/// [`and`]: crate::filter::FilterId::and</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
     <span class="ident">filter</span>: <span class="ident">FilterId</span>,
 }
 
 <span class="comment">// === impl Context ===</span>
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; <span class="ident">Context</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt;
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Subscriber</span>,
 {
@@ -492,7 +492,7 @@
         <span class="self">Self</span> {
             <span class="ident">subscriber</span>: <span class="prelude-val">Some</span>(<span class="ident">subscriber</span>),
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>)]</span>
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>)]</span>
             <span class="ident">filter</span>: <span class="ident">FilterId::none</span>(),
         }
     }
@@ -509,9 +509,9 @@
 
     <span class="doccomment">/// Returns whether the wrapped subscriber would enable the current span.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">metadata</span>: <span class="kw-2">&amp;</span><span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">subscriber</span>
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">subscriber</span><span class="op">|</span> <span class="ident">subscriber</span>.<span class="ident">enabled</span>(<span class="ident">metadata</span>))
+            .<span class="ident">map</span>(|<span class="ident">subscriber</span>| <span class="ident">subscriber</span>.<span class="ident">enabled</span>(<span class="ident">metadata</span>))
             <span class="comment">// If this context is `None`, we are registering a callsite, so</span>
             <span class="comment">// return `true` so that the layer does not incorrectly assume that</span>
             <span class="comment">// the inner subscriber has disabled this metadata.</span>
@@ -539,8 +539,8 @@
     <span class="doccomment">/// [`enabled`]: tracing_core::subscriber::Subscriber::enabled()</span>
     <span class="doccomment">/// [`Context::enabled`]: Context::enabled()</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">event</span>: <span class="kw-2">&amp;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">subscriber</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">subscriber</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">event</span>: <span class="kw-2">&amp;</span><span class="ident">Event</span>&lt;<span class="lifetime">&#39;_</span>&gt;) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">subscriber</span>) = <span class="self">self</span>.<span class="ident">subscriber</span> {
             <span class="ident">subscriber</span>.<span class="ident">event</span>(<span class="ident">event</span>);
         }
     }
@@ -602,9 +602,9 @@
     <span class="doccomment">///     declaration&lt;/a&gt; for details.</span>
     <span class="doccomment">/// &lt;/pre&gt;</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">event_span</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">event</span>: <span class="kw-2">&amp;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SpanRef</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">event_span</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">event</span>: <span class="kw-2">&amp;</span><span class="ident">Event</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">SpanRef</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">S</span>&gt;&gt;
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span> <span class="ident">LookupSpan</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>,
+        <span class="ident">S</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;lookup</span>&gt; <span class="ident">LookupSpan</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;,
     {
         <span class="kw">if</span> <span class="ident">event</span>.<span class="ident">is_root</span>() {
             <span class="prelude-val">None</span>
@@ -612,7 +612,7 @@
             <span class="self">self</span>.<span class="ident">lookup_current</span>()
         } <span class="kw">else</span> {
             <span class="comment">// TODO(eliza): this should handle parent IDs</span>
-            <span class="ident">event</span>.<span class="ident">parent</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">id</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">span</span>(<span class="ident">id</span>))
+            <span class="ident">event</span>.<span class="ident">parent</span>().<span class="ident">and_then</span>(|<span class="ident">id</span>| <span class="self">self</span>.<span class="ident">span</span>(<span class="ident">id</span>))
         }
     }
 
@@ -621,11 +621,11 @@
     <span class="doccomment">/// If this returns `None`, then no span exists for that ID (either it has</span>
     <span class="doccomment">/// closed or the ID is invalid).</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">metadata</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">Metadata</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">metadata</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">Metadata</span>&lt;<span class="lifetime">&#39;static</span>&gt;&gt;
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span> <span class="ident">LookupSpan</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>,
+        <span class="ident">S</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;lookup</span>&gt; <span class="ident">LookupSpan</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;,
     {
-        <span class="kw">let</span> <span class="ident">span</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">span</span>(<span class="ident">id</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">span</span> = <span class="self">self</span>.<span class="ident">span</span>(<span class="ident">id</span>)<span class="question-mark">?</span>;
         <span class="prelude-val">Some</span>(<span class="ident">span</span>.<span class="ident">metadata</span>())
     }
 
@@ -644,16 +644,16 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// [stored data]: crate::registry::SpanRef</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">span</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">registry::SpanRef</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">span</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">registry::SpanRef</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">S</span>&gt;&gt;
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span> <span class="ident">LookupSpan</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>,
+        <span class="ident">S</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;lookup</span>&gt; <span class="ident">LookupSpan</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;,
     {
-        <span class="kw">let</span> <span class="ident">span</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">subscriber</span>.<span class="ident">as_ref</span>()<span class="question-mark">?</span>.<span class="ident">span</span>(<span class="ident">id</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">span</span> = <span class="self">self</span>.<span class="ident">subscriber</span>.<span class="ident">as_ref</span>()<span class="question-mark">?</span>.<span class="ident">span</span>(<span class="ident">id</span>)<span class="question-mark">?</span>;
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
         <span class="kw">return</span> <span class="ident">span</span>.<span class="ident">try_with_filter</span>(<span class="self">self</span>.<span class="ident">filter</span>);
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>))]</span>
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>))]</span>
         <span class="prelude-val">Some</span>(<span class="ident">span</span>)
     }
 
@@ -669,9 +669,9 @@
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exists</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>) -&gt; <span class="ident">bool</span>
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span> <span class="ident">LookupSpan</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>,
+        <span class="ident">S</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;lookup</span>&gt; <span class="ident">LookupSpan</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;,
     {
-        <span class="self">self</span>.<span class="ident">subscriber</span>.<span class="ident">as_ref</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">span</span>(<span class="ident">id</span>)).<span class="ident">is_some</span>()
+        <span class="self">self</span>.<span class="ident">subscriber</span>.<span class="ident">as_ref</span>().<span class="ident">and_then</span>(|<span class="ident">s</span>| <span class="ident">s</span>.<span class="ident">span</span>(<span class="ident">id</span>)).<span class="ident">is_some</span>()
     }
 
     <span class="doccomment">/// Returns [stored data] for the span that the wrapped subscriber considers</span>
@@ -689,14 +689,14 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// [stored data]: crate::registry::SpanRef</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lookup_current</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">registry::SpanRef</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lookup_current</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">registry::SpanRef</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">S</span>&gt;&gt;
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span> <span class="ident">LookupSpan</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>,
+        <span class="ident">S</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;lookup</span>&gt; <span class="ident">LookupSpan</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;,
     {
-        <span class="kw">let</span> <span class="ident">subscriber</span> <span class="op">=</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">subscriber</span>.<span class="ident">as_ref</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">current</span> <span class="op">=</span> <span class="ident">subscriber</span>.<span class="ident">current_span</span>();
-        <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="ident">current</span>.<span class="ident">id</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">span</span> <span class="op">=</span> <span class="ident">subscriber</span>.<span class="ident">span</span>(<span class="ident">id</span>);
+        <span class="kw">let</span> <span class="ident">subscriber</span> = <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">subscriber</span>.<span class="ident">as_ref</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">current</span> = <span class="ident">subscriber</span>.<span class="ident">current_span</span>();
+        <span class="kw">let</span> <span class="ident">id</span> = <span class="ident">current</span>.<span class="ident">id</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">span</span> = <span class="ident">subscriber</span>.<span class="ident">span</span>(<span class="ident">id</span>);
         <span class="macro">debug_assert!</span>(
             <span class="ident">span</span>.<span class="ident">is_some</span>(),
             <span class="string">&quot;the subscriber should have data for the current span ({:?})!&quot;</span>,
@@ -705,9 +705,9 @@
 
         <span class="comment">// If we found a span, and our per-layer filter enables it, return that</span>
         <span class="comment">// span!</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
         {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">span</span>) <span class="op">=</span> <span class="ident">span</span><span class="question-mark">?</span>.<span class="ident">try_with_filter</span>(<span class="self">self</span>.<span class="ident">filter</span>) {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">span</span>) = <span class="ident">span</span><span class="question-mark">?</span>.<span class="ident">try_with_filter</span>(<span class="self">self</span>.<span class="ident">filter</span>) {
                 <span class="prelude-val">Some</span>(<span class="ident">span</span>)
             } <span class="kw">else</span> {
                 <span class="comment">// Otherwise, the span at the *top* of the stack is disabled by</span>
@@ -724,7 +724,7 @@
             }
         }
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>))]</span>
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>))]</span>
         <span class="ident">span</span>
     }
 
@@ -735,19 +735,19 @@
     <span class="comment">// factored out to prevent the loop and (potentially-recursive) subscriber</span>
     <span class="comment">// downcasting from being inlined if `lookup_current` is inlined.</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">never</span>)]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">lookup_current_filtered</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>(
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
+    <span class="kw">fn</span> <span class="ident">lookup_current_filtered</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">subscriber</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;lookup</span> <span class="ident">S</span>,
-    ) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">registry::SpanRef</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span>, <span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">registry::SpanRef</span>&lt;<span class="lifetime">&#39;lookup</span>, <span class="ident">S</span>&gt;&gt;
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">LookupSpan</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>,
+        <span class="ident">S</span>: <span class="ident">LookupSpan</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;,
     {
-        <span class="kw">let</span> <span class="ident">registry</span> <span class="op">=</span> (<span class="ident">subscriber</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Subscriber</span>).<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">Registry</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">registry</span> = (<span class="ident">subscriber</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Subscriber</span>).<span class="ident">downcast_ref</span>::&lt;<span class="ident">Registry</span>&gt;()<span class="question-mark">?</span>;
         <span class="ident">registry</span>
             .<span class="ident">span_stack</span>()
             .<span class="ident">iter</span>()
-            .<span class="ident">find_map</span>(<span class="op">|</span><span class="ident">id</span><span class="op">|</span> <span class="ident">subscriber</span>.<span class="ident">span</span>(<span class="ident">id</span>)<span class="question-mark">?</span>.<span class="ident">try_with_filter</span>(<span class="self">self</span>.<span class="ident">filter</span>))
+            .<span class="ident">find_map</span>(|<span class="ident">id</span>| <span class="ident">subscriber</span>.<span class="ident">span</span>(<span class="ident">id</span>)<span class="question-mark">?</span>.<span class="ident">try_with_filter</span>(<span class="self">self</span>.<span class="ident">filter</span>))
     }
 
     <span class="doccomment">/// Returns an iterator over the [stored data] for all the spans in the</span>
@@ -770,9 +770,9 @@
     <span class="doccomment">/// &lt;/pre&gt;</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [stored data]: crate::registry::SpanRef</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">span_scope</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">registry::Scope</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">span_scope</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">registry::Scope</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">S</span>&gt;&gt;
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span> <span class="ident">LookupSpan</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>,
+        <span class="ident">S</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;lookup</span>&gt; <span class="ident">LookupSpan</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;,
     {
         <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">span</span>(<span class="ident">id</span>)<span class="question-mark">?</span>.<span class="ident">scope</span>())
     }
@@ -797,14 +797,14 @@
     <span class="doccomment">/// &lt;/pre&gt;</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [stored data]: crate::registry::SpanRef</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">event_scope</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">event</span>: <span class="kw-2">&amp;</span><span class="ident">Event</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">registry::Scope</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">event_scope</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">event</span>: <span class="kw-2">&amp;</span><span class="ident">Event</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">registry::Scope</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">S</span>&gt;&gt;
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span> <span class="ident">LookupSpan</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>,
+        <span class="ident">S</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;lookup</span>&gt; <span class="ident">LookupSpan</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;,
     {
         <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">event_span</span>(<span class="ident">event</span>)<span class="question-mark">?</span>.<span class="ident">scope</span>())
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">with_filter</span>(<span class="self">self</span>, <span class="ident">filter</span>: <span class="ident">FilterId</span>) -&gt; <span class="self">Self</span> {
         <span class="comment">// If we already have our own `FilterId`, combine it with the provided</span>
         <span class="comment">// one. That way, the new `FilterId` will consider a span to be disabled</span>
@@ -812,22 +812,22 @@
         <span class="comment">// layers &quot;above&quot; us in the stack.</span>
         <span class="comment">//</span>
         <span class="comment">// See the doc comment for `FilterId::and` for details.</span>
-        <span class="kw">let</span> <span class="ident">filter</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">filter</span>.<span class="ident">and</span>(<span class="ident">filter</span>);
+        <span class="kw">let</span> <span class="ident">filter</span> = <span class="self">self</span>.<span class="ident">filter</span>.<span class="ident">and</span>(<span class="ident">filter</span>);
         <span class="self">Self</span> { <span class="ident">filter</span>, ..<span class="self">self</span> }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">is_enabled_for</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">span</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>, <span class="ident">filter</span>: <span class="ident">FilterId</span>) -&gt; <span class="ident">bool</span>
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span> <span class="ident">LookupSpan</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>,
+        <span class="ident">S</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;lookup</span>&gt; <span class="ident">LookupSpan</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;,
     {
         <span class="self">self</span>.<span class="ident">is_enabled_inner</span>(<span class="ident">span</span>, <span class="ident">filter</span>).<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">if_enabled_for</span>(<span class="self">self</span>, <span class="ident">span</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>, <span class="ident">filter</span>: <span class="ident">FilterId</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">if_enabled_for</span>(<span class="self">self</span>, <span class="ident">span</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>, <span class="ident">filter</span>: <span class="ident">FilterId</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span> <span class="ident">LookupSpan</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>,
+        <span class="ident">S</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;lookup</span>&gt; <span class="ident">LookupSpan</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;,
     {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_enabled_inner</span>(<span class="ident">span</span>, <span class="ident">filter</span>)<span class="question-mark">?</span> {
             <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">with_filter</span>(<span class="ident">filter</span>))
@@ -836,37 +836,37 @@
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">is_enabled_inner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">span</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>, <span class="ident">filter</span>: <span class="ident">FilterId</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
+    <span class="kw">fn</span> <span class="ident">is_enabled_inner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">span</span>: <span class="kw-2">&amp;</span><span class="ident">span::Id</span>, <span class="ident">filter</span>: <span class="ident">FilterId</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">bool</span>&gt;
     <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span> <span class="ident">LookupSpan</span><span class="op">&lt;</span><span class="lifetime">&#39;lookup</span><span class="op">&gt;</span>,
+        <span class="ident">S</span>: <span class="kw">for</span>&lt;<span class="lifetime">&#39;lookup</span>&gt; <span class="ident">LookupSpan</span>&lt;<span class="lifetime">&#39;lookup</span>&gt;,
     {
         <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">span</span>(<span class="ident">span</span>)<span class="question-mark">?</span>.<span class="ident">is_enabled_for</span>(<span class="ident">filter</span>))
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; <span class="ident">Context</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; {
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">none</span>() -&gt; <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">subscriber</span>: <span class="prelude-val">None</span>,
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>)]</span>
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>)]</span>
             <span class="ident">filter</span>: <span class="ident">FilterId::none</span>(),
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Context</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">S</span>&gt; {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">subscriber</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">subscriber</span>.<span class="ident">as_ref</span>().<span class="ident">copied</span>();
+        <span class="kw">let</span> <span class="ident">subscriber</span> = <span class="self">self</span>.<span class="ident">subscriber</span>.<span class="ident">as_ref</span>().<span class="ident">copied</span>();
         <span class="ident">Context</span> {
             <span class="ident">subscriber</span>,
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>))]</span>
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;registry&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
             <span class="ident">filter</span>: <span class="self">self</span>.<span class="ident">filter</span>,
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="tracing_subscriber" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="tracing_subscriber" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

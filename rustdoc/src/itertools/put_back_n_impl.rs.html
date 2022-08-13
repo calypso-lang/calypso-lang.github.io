@@ -68,8 +68,8 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Iterator element type is `I::Item`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">Iterator</span><span class="op">&gt;</span> {
-    <span class="ident">top</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I::Item</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PutBackN</span>&lt;<span class="ident">I</span>: <span class="ident">Iterator</span>&gt; {
+    <span class="ident">top</span>: <span class="ident">Vec</span>&lt;<span class="ident">I::Item</span>&gt;,
     <span class="ident">iter</span>: <span class="ident">I</span>,
 }
 
@@ -77,7 +77,7 @@
 <span class="doccomment">/// of the iteration.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Iterator element type is `I::Item`.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">put_back_n</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span>(<span class="ident">iterable</span>: <span class="ident">I</span>) -&gt; <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">I::IntoIter</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">put_back_n</span>&lt;<span class="ident">I</span>&gt;(<span class="ident">iterable</span>: <span class="ident">I</span>) -&gt; <span class="ident">PutBackN</span>&lt;<span class="ident">I::IntoIter</span>&gt;
     <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">IntoIterator</span>
 {
     <span class="ident">PutBackN</span> {
@@ -86,7 +86,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">Iterator</span><span class="op">&gt;</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="ident">I</span>: <span class="ident">Iterator</span>&gt; <span class="ident">PutBackN</span>&lt;<span class="ident">I</span>&gt; {
     <span class="doccomment">/// Puts x in front of the iterator.</span>
     <span class="doccomment">/// The values are yielded in order of the most recently put back</span>
     <span class="doccomment">/// values first.</span>
@@ -107,18 +107,18 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">I</span>: <span class="ident">Iterator</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">PutBackN</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">I::Item</span>;
+<span class="kw">impl</span>&lt;<span class="ident">I</span>: <span class="ident">Iterator</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">PutBackN</span>&lt;<span class="ident">I</span>&gt; {
+    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">I::Item</span>;
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">top</span>.<span class="ident">pop</span>().<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">next</span>())
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
+        <span class="self">self</span>.<span class="ident">top</span>.<span class="ident">pop</span>().<span class="ident">or_else</span>(|| <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">next</span>())
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
         <span class="ident">size_hint::add_scalar</span>(<span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">size_hint</span>(), <span class="self">self</span>.<span class="ident">top</span>.<span class="ident">len</span>())
     }
 }
 
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

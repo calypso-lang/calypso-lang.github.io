@@ -385,14 +385,14 @@
 
 <span class="doccomment">/// An NFA simulation matching engine.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Fsm</span><span class="op">&lt;</span><span class="lifetime">&#39;r</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Fsm</span>&lt;<span class="lifetime">&#39;r</span>, <span class="ident">I</span>&gt; {
     <span class="doccomment">/// The sequence of opcodes (among other things) that is actually executed.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The program may be byte oriented or Unicode codepoint oriented.</span>
     <span class="ident">prog</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;r</span> <span class="ident">Program</span>,
     <span class="doccomment">/// An explicit stack used for following epsilon transitions. (This is</span>
     <span class="doccomment">/// borrowed from the cache.)</span>
-    <span class="ident">stack</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;r</span> <span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FollowEpsilon</span><span class="op">&gt;</span>,
+    <span class="ident">stack</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;r</span> <span class="kw-2">mut</span> <span class="ident">Vec</span>&lt;<span class="ident">FollowEpsilon</span>&gt;,
     <span class="doccomment">/// The input to search.</span>
     <span class="ident">input</span>: <span class="ident">I</span>,
 }
@@ -404,7 +404,7 @@
     <span class="ident">clist</span>: <span class="ident">Threads</span>,
     <span class="ident">nlist</span>: <span class="ident">Threads</span>,
     <span class="doccomment">/// An explicit stack used for following epsilon transitions.</span>
-    <span class="ident">stack</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">FollowEpsilon</span><span class="op">&gt;</span>,
+    <span class="ident">stack</span>: <span class="ident">Vec</span>&lt;<span class="ident">FollowEpsilon</span>&gt;,
 }
 
 <span class="doccomment">/// An ordered set of NFA states and their captures.</span>
@@ -416,7 +416,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// It is stored in row-major order, where the columns are the capture</span>
     <span class="doccomment">/// slots and the rows are the states.</span>
-    <span class="ident">caps</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Slot</span><span class="op">&gt;</span>,
+    <span class="ident">caps</span>: <span class="ident">Vec</span>&lt;<span class="ident">Slot</span>&gt;,
     <span class="doccomment">/// The number of capture slots stored per thread. (Every capture has</span>
     <span class="doccomment">/// two slots.)</span>
     <span class="ident">slots_per_thread</span>: <span class="ident">usize</span>,
@@ -440,7 +440,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;r</span>, <span class="ident">I</span>: <span class="ident">Input</span><span class="op">&gt;</span> <span class="ident">Fsm</span><span class="op">&lt;</span><span class="lifetime">&#39;r</span>, <span class="ident">I</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;r</span>, <span class="ident">I</span>: <span class="ident">Input</span>&gt; <span class="ident">Fsm</span>&lt;<span class="lifetime">&#39;r</span>, <span class="ident">I</span>&gt; {
     <span class="doccomment">/// Execute the NFA matching engine.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// If there&#39;s a match, `exec` returns `true` and populates the given</span>
@@ -455,11 +455,11 @@
         <span class="ident">start</span>: <span class="ident">usize</span>,
         <span class="ident">end</span>: <span class="ident">usize</span>,
     ) -&gt; <span class="ident">bool</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> <span class="op">=</span> <span class="ident">cache</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">let</span> <span class="ident">cache</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">cache</span>.<span class="ident">pikevm</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cache</span> = <span class="ident">cache</span>.<span class="ident">borrow_mut</span>();
+        <span class="kw">let</span> <span class="ident">cache</span> = <span class="kw-2">&amp;mut</span> <span class="ident">cache</span>.<span class="ident">pikevm</span>;
         <span class="ident">cache</span>.<span class="ident">clist</span>.<span class="ident">resize</span>(<span class="ident">prog</span>.<span class="ident">len</span>(), <span class="ident">prog</span>.<span class="ident">captures</span>.<span class="ident">len</span>());
         <span class="ident">cache</span>.<span class="ident">nlist</span>.<span class="ident">resize</span>(<span class="ident">prog</span>.<span class="ident">len</span>(), <span class="ident">prog</span>.<span class="ident">captures</span>.<span class="ident">len</span>());
-        <span class="kw">let</span> <span class="ident">at</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">at</span>(<span class="ident">start</span>);
+        <span class="kw">let</span> <span class="ident">at</span> = <span class="ident">input</span>.<span class="ident">at</span>(<span class="ident">start</span>);
         <span class="ident">Fsm</span> { <span class="ident">prog</span>, <span class="ident">stack</span>: <span class="kw-2">&amp;mut</span> <span class="ident">cache</span>.<span class="ident">stack</span>, <span class="ident">input</span> }.<span class="ident">exec_</span>(
             <span class="kw-2">&amp;mut</span> <span class="ident">cache</span>.<span class="ident">clist</span>,
             <span class="kw-2">&amp;mut</span> <span class="ident">cache</span>.<span class="ident">nlist</span>,
@@ -481,8 +481,8 @@
         <span class="kw-2">mut</span> <span class="ident">at</span>: <span class="ident">InputAt</span>,
         <span class="ident">end</span>: <span class="ident">usize</span>,
     ) -&gt; <span class="ident">bool</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">matched</span> <span class="op">=</span> <span class="bool-val">false</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">all_matched</span> <span class="op">=</span> <span class="bool-val">false</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">matched</span> = <span class="bool-val">false</span>;
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">all_matched</span> = <span class="bool-val">false</span>;
         <span class="ident">clist</span>.<span class="ident">set</span>.<span class="ident">clear</span>();
         <span class="ident">nlist</span>.<span class="ident">set</span>.<span class="ident">clear</span>();
         <span class="lifetime">&#39;LOOP</span>: <span class="kw">loop</span> {
@@ -497,9 +497,9 @@
                 <span class="comment">//</span>
                 <span class="comment">// 2. If the expression starts with a &#39;^&#39; we can terminate as</span>
                 <span class="comment">//    soon as the last thread dies.</span>
-                <span class="kw">if</span> (<span class="ident">matched</span> <span class="op">&amp;&amp;</span> <span class="ident">matches</span>.<span class="ident">len</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span>)
-                    <span class="op">|</span><span class="op">|</span> <span class="ident">all_matched</span>
-                    <span class="op">|</span><span class="op">|</span> (<span class="op">!</span><span class="ident">at</span>.<span class="ident">is_start</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">is_anchored_start</span>)
+                <span class="kw">if</span> (<span class="ident">matched</span> &amp;&amp; <span class="ident">matches</span>.<span class="ident">len</span>() &lt;= <span class="number">1</span>)
+                    || <span class="ident">all_matched</span>
+                    || (!<span class="ident">at</span>.<span class="ident">is_start</span>() &amp;&amp; <span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">is_anchored_start</span>)
                 {
                     <span class="kw">break</span>;
                 }
@@ -507,8 +507,8 @@
                 <span class="comment">// 3. If there&#39;s a literal prefix for the program, try to</span>
                 <span class="comment">//    jump ahead quickly. If it can&#39;t be found, then we can</span>
                 <span class="comment">//    bail out early.</span>
-                <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">prefixes</span>.<span class="ident">is_empty</span>() {
-                    <span class="ident">at</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">input</span>.<span class="ident">prefix_at</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">prefixes</span>, <span class="ident">at</span>) {
+                <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">prefixes</span>.<span class="ident">is_empty</span>() {
+                    <span class="ident">at</span> = <span class="kw">match</span> <span class="self">self</span>.<span class="ident">input</span>.<span class="ident">prefix_at</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">prefixes</span>, <span class="ident">at</span>) {
                         <span class="prelude-val">None</span> =&gt; <span class="kw">break</span>,
                         <span class="prelude-val">Some</span>(<span class="ident">at</span>) =&gt; <span class="ident">at</span>,
                     };
@@ -519,7 +519,7 @@
             <span class="comment">// a state starting at the current position in the input for the</span>
             <span class="comment">// beginning of the program only if we don&#39;t already have a match.</span>
             <span class="kw">if</span> <span class="ident">clist</span>.<span class="ident">set</span>.<span class="ident">is_empty</span>()
-                <span class="op">|</span><span class="op">|</span> (<span class="op">!</span><span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">is_anchored_start</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">all_matched</span>)
+                || (!<span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">is_anchored_start</span> &amp;&amp; !<span class="ident">all_matched</span>)
             {
                 <span class="self">self</span>.<span class="ident">add</span>(<span class="kw-2">&amp;mut</span> <span class="ident">clist</span>, <span class="ident">slots</span>, <span class="number">0</span>, <span class="ident">at</span>);
             }
@@ -527,9 +527,9 @@
             <span class="comment">// before the current character. For stepping through the machine,</span>
             <span class="comment">// we can to look at the current character, so we advance the</span>
             <span class="comment">// input.</span>
-            <span class="kw">let</span> <span class="ident">at_next</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">input</span>.<span class="ident">at</span>(<span class="ident">at</span>.<span class="ident">next_pos</span>());
+            <span class="kw">let</span> <span class="ident">at_next</span> = <span class="self">self</span>.<span class="ident">input</span>.<span class="ident">at</span>(<span class="ident">at</span>.<span class="ident">next_pos</span>());
             <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">clist</span>.<span class="ident">set</span>.<span class="ident">len</span>() {
-                <span class="kw">let</span> <span class="ident">ip</span> <span class="op">=</span> <span class="ident">clist</span>.<span class="ident">set</span>[<span class="ident">i</span>];
+                <span class="kw">let</span> <span class="ident">ip</span> = <span class="ident">clist</span>.<span class="ident">set</span>[<span class="ident">i</span>];
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">step</span>(
                     <span class="kw-2">&amp;mut</span> <span class="ident">nlist</span>,
                     <span class="ident">matches</span>,
@@ -539,14 +539,14 @@
                     <span class="ident">at</span>,
                     <span class="ident">at_next</span>,
                 ) {
-                    <span class="ident">matched</span> <span class="op">=</span> <span class="bool-val">true</span>;
-                    <span class="ident">all_matched</span> <span class="op">=</span> <span class="ident">all_matched</span> <span class="op">|</span><span class="op">|</span> <span class="ident">matches</span>.<span class="ident">iter</span>().<span class="ident">all</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">b</span><span class="op">|</span> <span class="ident">b</span>);
+                    <span class="ident">matched</span> = <span class="bool-val">true</span>;
+                    <span class="ident">all_matched</span> = <span class="ident">all_matched</span> || <span class="ident">matches</span>.<span class="ident">iter</span>().<span class="ident">all</span>(|<span class="kw-2">&amp;</span><span class="ident">b</span>| <span class="ident">b</span>);
                     <span class="kw">if</span> <span class="ident">quit_after_match</span> {
                         <span class="comment">// If we only care if a match occurs (not its</span>
                         <span class="comment">// position), then we can quit right now.</span>
                         <span class="kw">break</span> <span class="lifetime">&#39;LOOP</span>;
                     }
-                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">matches</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span> {
+                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">prog</span>.<span class="ident">matches</span>.<span class="ident">len</span>() == <span class="number">1</span> {
                         <span class="comment">// We don&#39;t need to check the rest of the threads</span>
                         <span class="comment">// in this set because we&#39;ve matched something</span>
                         <span class="comment">// (&quot;leftmost-first&quot;). However, we still need to check</span>
@@ -559,10 +559,10 @@
                     }
                 }
             }
-            <span class="kw">if</span> <span class="ident">at</span>.<span class="ident">pos</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="ident">end</span> {
+            <span class="kw">if</span> <span class="ident">at</span>.<span class="ident">pos</span>() &gt;= <span class="ident">end</span> {
                 <span class="kw">break</span>;
             }
-            <span class="ident">at</span> <span class="op">=</span> <span class="ident">at_next</span>;
+            <span class="ident">at</span> = <span class="ident">at_next</span>;
             <span class="ident">mem::swap</span>(<span class="ident">clist</span>, <span class="ident">nlist</span>);
             <span class="ident">nlist</span>.<span class="ident">set</span>.<span class="ident">clear</span>();
         }
@@ -586,7 +586,7 @@
         <span class="ident">nlist</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Threads</span>,
         <span class="ident">matches</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">bool</span>],
         <span class="ident">slots</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">Slot</span>],
-        <span class="ident">thread_caps</span>: <span class="kw-2">&amp;mut</span> [<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>],
+        <span class="ident">thread_caps</span>: <span class="kw-2">&amp;mut</span> [<span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;],
         <span class="ident">ip</span>: <span class="ident">usize</span>,
         <span class="ident">at</span>: <span class="ident">InputAt</span>,
         <span class="ident">at_next</span>: <span class="ident">InputAt</span>,
@@ -594,16 +594,16 @@
         <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::prog::Inst</span>::<span class="kw-2">*</span>;
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">prog</span>[<span class="ident">ip</span>] {
             <span class="ident">Match</span>(<span class="ident">match_slot</span>) =&gt; {
-                <span class="kw">if</span> <span class="ident">match_slot</span> <span class="op">&lt;</span> <span class="ident">matches</span>.<span class="ident">len</span>() {
-                    <span class="ident">matches</span>[<span class="ident">match_slot</span>] <span class="op">=</span> <span class="bool-val">true</span>;
+                <span class="kw">if</span> <span class="ident">match_slot</span> &lt; <span class="ident">matches</span>.<span class="ident">len</span>() {
+                    <span class="ident">matches</span>[<span class="ident">match_slot</span>] = <span class="bool-val">true</span>;
                 }
                 <span class="kw">for</span> (<span class="ident">slot</span>, <span class="ident">val</span>) <span class="kw">in</span> <span class="ident">slots</span>.<span class="ident">iter_mut</span>().<span class="ident">zip</span>(<span class="ident">thread_caps</span>.<span class="ident">iter</span>()) {
-                    <span class="kw-2">*</span><span class="ident">slot</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">val</span>;
+                    <span class="kw-2">*</span><span class="ident">slot</span> = <span class="kw-2">*</span><span class="ident">val</span>;
                 }
                 <span class="bool-val">true</span>
             }
             <span class="ident">Char</span>(<span class="kw-2">ref</span> <span class="ident">inst</span>) =&gt; {
-                <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">c</span> <span class="op">==</span> <span class="ident">at</span>.<span class="ident">char</span>() {
+                <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">c</span> == <span class="ident">at</span>.<span class="ident">char</span>() {
                     <span class="self">self</span>.<span class="ident">add</span>(<span class="ident">nlist</span>, <span class="ident">thread_caps</span>, <span class="ident">inst</span>.<span class="ident">goto</span>, <span class="ident">at_next</span>);
                 }
                 <span class="bool-val">false</span>
@@ -615,14 +615,14 @@
                 <span class="bool-val">false</span>
             }
             <span class="ident">Bytes</span>(<span class="kw-2">ref</span> <span class="ident">inst</span>) =&gt; {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) <span class="op">=</span> <span class="ident">at</span>.<span class="ident">byte</span>() {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">b</span>) = <span class="ident">at</span>.<span class="ident">byte</span>() {
                     <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">matches</span>(<span class="ident">b</span>) {
                         <span class="self">self</span>.<span class="ident">add</span>(<span class="ident">nlist</span>, <span class="ident">thread_caps</span>, <span class="ident">inst</span>.<span class="ident">goto</span>, <span class="ident">at_next</span>);
                     }
                 }
                 <span class="bool-val">false</span>
             }
-            <span class="ident">EmptyLook</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Save</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Split</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">false</span>,
+            <span class="ident">EmptyLook</span>(<span class="kw">_</span>) | <span class="ident">Save</span>(<span class="kw">_</span>) | <span class="ident">Split</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">false</span>,
         }
     }
 
@@ -631,18 +631,18 @@
     <span class="kw">fn</span> <span class="ident">add</span>(
         <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
         <span class="ident">nlist</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Threads</span>,
-        <span class="ident">thread_caps</span>: <span class="kw-2">&amp;mut</span> [<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>],
+        <span class="ident">thread_caps</span>: <span class="kw-2">&amp;mut</span> [<span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;],
         <span class="ident">ip</span>: <span class="ident">usize</span>,
         <span class="ident">at</span>: <span class="ident">InputAt</span>,
     ) {
         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">FollowEpsilon::IP</span>(<span class="ident">ip</span>));
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">frame</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>() {
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">frame</span>) = <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>() {
             <span class="kw">match</span> <span class="ident">frame</span> {
                 <span class="ident">FollowEpsilon::IP</span>(<span class="ident">ip</span>) =&gt; {
                     <span class="self">self</span>.<span class="ident">add_step</span>(<span class="ident">nlist</span>, <span class="ident">thread_caps</span>, <span class="ident">ip</span>, <span class="ident">at</span>);
                 }
                 <span class="ident">FollowEpsilon::Capture</span> { <span class="ident">slot</span>, <span class="ident">pos</span> } =&gt; {
-                    <span class="ident">thread_caps</span>[<span class="ident">slot</span>] <span class="op">=</span> <span class="ident">pos</span>;
+                    <span class="ident">thread_caps</span>[<span class="ident">slot</span>] = <span class="ident">pos</span>;
                 }
             }
         }
@@ -652,7 +652,7 @@
     <span class="kw">fn</span> <span class="ident">add_step</span>(
         <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
         <span class="ident">nlist</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Threads</span>,
-        <span class="ident">thread_caps</span>: <span class="kw-2">&amp;mut</span> [<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>],
+        <span class="ident">thread_caps</span>: <span class="kw-2">&amp;mut</span> [<span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;],
         <span class="kw-2">mut</span> <span class="ident">ip</span>: <span class="ident">usize</span>,
         <span class="ident">at</span>: <span class="ident">InputAt</span>,
     ) {
@@ -670,27 +670,27 @@
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">prog</span>[<span class="ident">ip</span>] {
                 <span class="ident">EmptyLook</span>(<span class="kw-2">ref</span> <span class="ident">inst</span>) =&gt; {
                     <span class="kw">if</span> <span class="self">self</span>.<span class="ident">input</span>.<span class="ident">is_empty_match</span>(<span class="ident">at</span>, <span class="ident">inst</span>) {
-                        <span class="ident">ip</span> <span class="op">=</span> <span class="ident">inst</span>.<span class="ident">goto</span>;
+                        <span class="ident">ip</span> = <span class="ident">inst</span>.<span class="ident">goto</span>;
                     }
                 }
                 <span class="ident">Save</span>(<span class="kw-2">ref</span> <span class="ident">inst</span>) =&gt; {
-                    <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">slot</span> <span class="op">&lt;</span> <span class="ident">thread_caps</span>.<span class="ident">len</span>() {
+                    <span class="kw">if</span> <span class="ident">inst</span>.<span class="ident">slot</span> &lt; <span class="ident">thread_caps</span>.<span class="ident">len</span>() {
                         <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">FollowEpsilon::Capture</span> {
                             <span class="ident">slot</span>: <span class="ident">inst</span>.<span class="ident">slot</span>,
                             <span class="ident">pos</span>: <span class="ident">thread_caps</span>[<span class="ident">inst</span>.<span class="ident">slot</span>],
                         });
-                        <span class="ident">thread_caps</span>[<span class="ident">inst</span>.<span class="ident">slot</span>] <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">at</span>.<span class="ident">pos</span>());
+                        <span class="ident">thread_caps</span>[<span class="ident">inst</span>.<span class="ident">slot</span>] = <span class="prelude-val">Some</span>(<span class="ident">at</span>.<span class="ident">pos</span>());
                     }
-                    <span class="ident">ip</span> <span class="op">=</span> <span class="ident">inst</span>.<span class="ident">goto</span>;
+                    <span class="ident">ip</span> = <span class="ident">inst</span>.<span class="ident">goto</span>;
                 }
                 <span class="ident">Split</span>(<span class="kw-2">ref</span> <span class="ident">inst</span>) =&gt; {
                     <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">FollowEpsilon::IP</span>(<span class="ident">inst</span>.<span class="ident">goto2</span>));
-                    <span class="ident">ip</span> <span class="op">=</span> <span class="ident">inst</span>.<span class="ident">goto1</span>;
+                    <span class="ident">ip</span> = <span class="ident">inst</span>.<span class="ident">goto1</span>;
                 }
-                <span class="ident">Match</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Char</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Ranges</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Bytes</span>(<span class="kw">_</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="ident">nlist</span>.<span class="ident">caps</span>(<span class="ident">ip</span>);
+                <span class="ident">Match</span>(<span class="kw">_</span>) | <span class="ident">Char</span>(<span class="kw">_</span>) | <span class="ident">Ranges</span>(<span class="kw">_</span>) | <span class="ident">Bytes</span>(<span class="kw">_</span>) =&gt; {
+                    <span class="kw">let</span> <span class="ident">t</span> = <span class="kw-2">&amp;mut</span> <span class="ident">nlist</span>.<span class="ident">caps</span>(<span class="ident">ip</span>);
                     <span class="kw">for</span> (<span class="ident">slot</span>, <span class="ident">val</span>) <span class="kw">in</span> <span class="ident">t</span>.<span class="ident">iter_mut</span>().<span class="ident">zip</span>(<span class="ident">thread_caps</span>.<span class="ident">iter</span>()) {
-                        <span class="kw-2">*</span><span class="ident">slot</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">val</span>;
+                        <span class="kw-2">*</span><span class="ident">slot</span> = <span class="kw-2">*</span><span class="ident">val</span>;
                     }
                     <span class="kw">return</span>;
                 }
@@ -705,18 +705,18 @@
     }
 
     <span class="kw">fn</span> <span class="ident">resize</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">num_insts</span>: <span class="ident">usize</span>, <span class="ident">ncaps</span>: <span class="ident">usize</span>) {
-        <span class="kw">if</span> <span class="ident">num_insts</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">set</span>.<span class="ident">capacity</span>() {
+        <span class="kw">if</span> <span class="ident">num_insts</span> == <span class="self">self</span>.<span class="ident">set</span>.<span class="ident">capacity</span>() {
             <span class="kw">return</span>;
         }
-        <span class="self">self</span>.<span class="ident">slots_per_thread</span> <span class="op">=</span> <span class="ident">ncaps</span> <span class="op">*</span> <span class="number">2</span>;
-        <span class="self">self</span>.<span class="ident">set</span> <span class="op">=</span> <span class="ident">SparseSet::new</span>(<span class="ident">num_insts</span>);
-        <span class="self">self</span>.<span class="ident">caps</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="prelude-val">None</span>; <span class="self">self</span>.<span class="ident">slots_per_thread</span> <span class="op">*</span> <span class="ident">num_insts</span>];
+        <span class="self">self</span>.<span class="ident">slots_per_thread</span> = <span class="ident">ncaps</span> * <span class="number">2</span>;
+        <span class="self">self</span>.<span class="ident">set</span> = <span class="ident">SparseSet::new</span>(<span class="ident">num_insts</span>);
+        <span class="self">self</span>.<span class="ident">caps</span> = <span class="macro">vec!</span>[<span class="prelude-val">None</span>; <span class="self">self</span>.<span class="ident">slots_per_thread</span> * <span class="ident">num_insts</span>];
     }
 
-    <span class="kw">fn</span> <span class="ident">caps</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">pc</span>: <span class="ident">usize</span>) -&gt; <span class="kw-2">&amp;mut</span> [<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>] {
-        <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="ident">pc</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">slots_per_thread</span>;
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">caps</span>[<span class="ident">i</span>..<span class="ident">i</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">slots_per_thread</span>]
+    <span class="kw">fn</span> <span class="ident">caps</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">pc</span>: <span class="ident">usize</span>) -&gt; <span class="kw-2">&amp;mut</span> [<span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;] {
+        <span class="kw">let</span> <span class="ident">i</span> = <span class="ident">pc</span> * <span class="self">self</span>.<span class="ident">slots_per_thread</span>;
+        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">caps</span>[<span class="ident">i</span>..<span class="ident">i</span> + <span class="self">self</span>.<span class="ident">slots_per_thread</span>]
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="regex" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="regex" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

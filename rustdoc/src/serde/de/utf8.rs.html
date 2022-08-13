@@ -46,35 +46,35 @@
 <span id="46">46</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">lib</span>::<span class="kw-2">*</span>;
 
-<span class="kw">const</span> <span class="ident">TAG_CONT</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0b1000_0000</span>;
-<span class="kw">const</span> <span class="ident">TAG_TWO_B</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0b1100_0000</span>;
-<span class="kw">const</span> <span class="ident">TAG_THREE_B</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0b1110_0000</span>;
-<span class="kw">const</span> <span class="ident">TAG_FOUR_B</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0b1111_0000</span>;
-<span class="kw">const</span> <span class="ident">MAX_ONE_B</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x80</span>;
-<span class="kw">const</span> <span class="ident">MAX_TWO_B</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x800</span>;
-<span class="kw">const</span> <span class="ident">MAX_THREE_B</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x10000</span>;
+<span class="kw">const</span> <span class="ident">TAG_CONT</span>: <span class="ident">u8</span> = <span class="number">0b1000_0000</span>;
+<span class="kw">const</span> <span class="ident">TAG_TWO_B</span>: <span class="ident">u8</span> = <span class="number">0b1100_0000</span>;
+<span class="kw">const</span> <span class="ident">TAG_THREE_B</span>: <span class="ident">u8</span> = <span class="number">0b1110_0000</span>;
+<span class="kw">const</span> <span class="ident">TAG_FOUR_B</span>: <span class="ident">u8</span> = <span class="number">0b1111_0000</span>;
+<span class="kw">const</span> <span class="ident">MAX_ONE_B</span>: <span class="ident">u32</span> = <span class="number">0x80</span>;
+<span class="kw">const</span> <span class="ident">MAX_TWO_B</span>: <span class="ident">u32</span> = <span class="number">0x800</span>;
+<span class="kw">const</span> <span class="ident">MAX_THREE_B</span>: <span class="ident">u32</span> = <span class="number">0x10000</span>;
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">encode</span>(<span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="ident">Encode</span> {
-    <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">c</span> <span class="kw">as</span> <span class="ident">u32</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">4</span>];
-    <span class="kw">let</span> <span class="ident">pos</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">code</span> <span class="op">&lt;</span> <span class="ident">MAX_ONE_B</span> {
-        <span class="ident">buf</span>[<span class="number">3</span>] <span class="op">=</span> <span class="ident">code</span> <span class="kw">as</span> <span class="ident">u8</span>;
+    <span class="kw">let</span> <span class="ident">code</span> = <span class="ident">c</span> <span class="kw">as</span> <span class="ident">u32</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> = [<span class="number">0</span>; <span class="number">4</span>];
+    <span class="kw">let</span> <span class="ident">pos</span> = <span class="kw">if</span> <span class="ident">code</span> &lt; <span class="ident">MAX_ONE_B</span> {
+        <span class="ident">buf</span>[<span class="number">3</span>] = <span class="ident">code</span> <span class="kw">as</span> <span class="ident">u8</span>;
         <span class="number">3</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">code</span> <span class="op">&lt;</span> <span class="ident">MAX_TWO_B</span> {
-        <span class="ident">buf</span>[<span class="number">2</span>] <span class="op">=</span> (<span class="ident">code</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">6</span> <span class="op">&amp;</span> <span class="number">0x1F</span>) <span class="kw">as</span> <span class="ident">u8</span> <span class="op">|</span> <span class="ident">TAG_TWO_B</span>;
-        <span class="ident">buf</span>[<span class="number">3</span>] <span class="op">=</span> (<span class="ident">code</span> <span class="op">&amp;</span> <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> <span class="op">|</span> <span class="ident">TAG_CONT</span>;
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">code</span> &lt; <span class="ident">MAX_TWO_B</span> {
+        <span class="ident">buf</span>[<span class="number">2</span>] = (<span class="ident">code</span> &gt;&gt; <span class="number">6</span> &amp; <span class="number">0x1F</span>) <span class="kw">as</span> <span class="ident">u8</span> | <span class="ident">TAG_TWO_B</span>;
+        <span class="ident">buf</span>[<span class="number">3</span>] = (<span class="ident">code</span> &amp; <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> | <span class="ident">TAG_CONT</span>;
         <span class="number">2</span>
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">code</span> <span class="op">&lt;</span> <span class="ident">MAX_THREE_B</span> {
-        <span class="ident">buf</span>[<span class="number">1</span>] <span class="op">=</span> (<span class="ident">code</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">12</span> <span class="op">&amp;</span> <span class="number">0x0F</span>) <span class="kw">as</span> <span class="ident">u8</span> <span class="op">|</span> <span class="ident">TAG_THREE_B</span>;
-        <span class="ident">buf</span>[<span class="number">2</span>] <span class="op">=</span> (<span class="ident">code</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">6</span> <span class="op">&amp;</span> <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> <span class="op">|</span> <span class="ident">TAG_CONT</span>;
-        <span class="ident">buf</span>[<span class="number">3</span>] <span class="op">=</span> (<span class="ident">code</span> <span class="op">&amp;</span> <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> <span class="op">|</span> <span class="ident">TAG_CONT</span>;
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">code</span> &lt; <span class="ident">MAX_THREE_B</span> {
+        <span class="ident">buf</span>[<span class="number">1</span>] = (<span class="ident">code</span> &gt;&gt; <span class="number">12</span> &amp; <span class="number">0x0F</span>) <span class="kw">as</span> <span class="ident">u8</span> | <span class="ident">TAG_THREE_B</span>;
+        <span class="ident">buf</span>[<span class="number">2</span>] = (<span class="ident">code</span> &gt;&gt; <span class="number">6</span> &amp; <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> | <span class="ident">TAG_CONT</span>;
+        <span class="ident">buf</span>[<span class="number">3</span>] = (<span class="ident">code</span> &amp; <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> | <span class="ident">TAG_CONT</span>;
         <span class="number">1</span>
     } <span class="kw">else</span> {
-        <span class="ident">buf</span>[<span class="number">0</span>] <span class="op">=</span> (<span class="ident">code</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">18</span> <span class="op">&amp;</span> <span class="number">0x07</span>) <span class="kw">as</span> <span class="ident">u8</span> <span class="op">|</span> <span class="ident">TAG_FOUR_B</span>;
-        <span class="ident">buf</span>[<span class="number">1</span>] <span class="op">=</span> (<span class="ident">code</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">12</span> <span class="op">&amp;</span> <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> <span class="op">|</span> <span class="ident">TAG_CONT</span>;
-        <span class="ident">buf</span>[<span class="number">2</span>] <span class="op">=</span> (<span class="ident">code</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">6</span> <span class="op">&amp;</span> <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> <span class="op">|</span> <span class="ident">TAG_CONT</span>;
-        <span class="ident">buf</span>[<span class="number">3</span>] <span class="op">=</span> (<span class="ident">code</span> <span class="op">&amp;</span> <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> <span class="op">|</span> <span class="ident">TAG_CONT</span>;
+        <span class="ident">buf</span>[<span class="number">0</span>] = (<span class="ident">code</span> &gt;&gt; <span class="number">18</span> &amp; <span class="number">0x07</span>) <span class="kw">as</span> <span class="ident">u8</span> | <span class="ident">TAG_FOUR_B</span>;
+        <span class="ident">buf</span>[<span class="number">1</span>] = (<span class="ident">code</span> &gt;&gt; <span class="number">12</span> &amp; <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> | <span class="ident">TAG_CONT</span>;
+        <span class="ident">buf</span>[<span class="number">2</span>] = (<span class="ident">code</span> &gt;&gt; <span class="number">6</span> &amp; <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> | <span class="ident">TAG_CONT</span>;
+        <span class="ident">buf</span>[<span class="number">3</span>] = (<span class="ident">code</span> &amp; <span class="number">0x3F</span>) <span class="kw">as</span> <span class="ident">u8</span> | <span class="ident">TAG_CONT</span>;
         <span class="number">0</span>
     };
     <span class="ident">Encode</span> { <span class="ident">buf</span>: <span class="ident">buf</span>, <span class="ident">pos</span>: <span class="ident">pos</span> }
@@ -91,4 +91,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="serde" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="serde" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

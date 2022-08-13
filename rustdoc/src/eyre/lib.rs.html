@@ -1568,7 +1568,7 @@
 <span class="doccomment">//! [`simple-eyre`]: https://github.com/yaahc/simple-eyre</span>
 <span class="doccomment">//! [`color-spantrace`]: https://github.com/yaahc/color-spantrace</span>
 <span class="doccomment">//! [`color-backtrace`]: https://github.com/athre0z/color-backtrace</span>
-<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> <span class="op">=</span> <span class="string">&quot;https://docs.rs/eyre/0.6.8&quot;</span>)]</span>
+<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> = <span class="string">&quot;https://docs.rs/eyre/0.6.8&quot;</span>)]</span>
 <span class="attribute">#![<span class="ident">warn</span>(
     <span class="ident">missing_debug_implementations</span>,
     <span class="ident">missing_docs</span>,
@@ -1709,20 +1709,20 @@
 <span class="doccomment">/// [`hook`]: fn.set_hook.html</span>
 <span class="attribute">#[<span class="ident">must_use</span>]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Report</span> {
-    <span class="ident">inner</span>: <span class="ident">ManuallyDrop</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">ErrorImpl</span><span class="op">&lt;</span>()<span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">inner</span>: <span class="ident">ManuallyDrop</span>&lt;<span class="ident">Box</span>&lt;<span class="ident">ErrorImpl</span>&lt;()&gt;&gt;&gt;,
 }
 
-<span class="kw">type</span> <span class="ident">ErrorHook</span> <span class="op">=</span>
-    <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">EyreHandler</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="lifetime">&#39;static</span><span class="op">&gt;</span>;
+<span class="kw">type</span> <span class="ident">ErrorHook</span> =
+    <span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> + <span class="lifetime">&#39;static</span>)) -&gt; <span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">EyreHandler</span>&gt; + <span class="ident">Sync</span> + <span class="ident">Send</span> + <span class="lifetime">&#39;static</span>&gt;;
 
-<span class="kw">static</span> <span class="ident">HOOK</span>: <span class="ident">OnceCell</span><span class="op">&lt;</span><span class="ident">ErrorHook</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">OnceCell::new</span>();
+<span class="kw">static</span> <span class="ident">HOOK</span>: <span class="ident">OnceCell</span>&lt;<span class="ident">ErrorHook</span>&gt; = <span class="ident">OnceCell::new</span>();
 
 <span class="doccomment">/// Error indicating that `set_hook` was unable to install the provided ErrorHook</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">InstallError</span>;
 
 <span class="kw">impl</span> <span class="ident">core::fmt::Display</span> <span class="kw">for</span> <span class="ident">InstallError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">core::fmt::Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">core::fmt::Result</span> {
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;cannot install provided ErrorHook, a hook has already been installed&quot;</span>)
     }
 }
@@ -1825,25 +1825,25 @@
 <span class="doccomment">///     }</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_hook</span>(<span class="ident">hook</span>: <span class="ident">ErrorHook</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">InstallError</span><span class="op">&gt;</span> {
-    <span class="ident">HOOK</span>.<span class="ident">set</span>(<span class="ident">hook</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">InstallError</span>)
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_hook</span>(<span class="ident">hook</span>: <span class="ident">ErrorHook</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">InstallError</span>&gt; {
+    <span class="ident">HOOK</span>.<span class="ident">set</span>(<span class="ident">hook</span>).<span class="ident">map_err</span>(|<span class="kw">_</span>| <span class="ident">InstallError</span>)
 }
 
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">track_caller</span>, <span class="ident">track_caller</span>)]</span>
 <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">track_caller</span>), <span class="ident">allow</span>(<span class="ident">unused_mut</span>))]</span>
-<span class="kw">fn</span> <span class="ident">capture_handler</span>(<span class="ident">error</span>: <span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">EyreHandler</span><span class="op">&gt;</span> {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;auto-install&quot;</span>))]</span>
-    <span class="kw">let</span> <span class="ident">hook</span> <span class="op">=</span> <span class="ident">HOOK</span>
+<span class="kw">fn</span> <span class="ident">capture_handler</span>(<span class="ident">error</span>: <span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> + <span class="lifetime">&#39;static</span>)) -&gt; <span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">EyreHandler</span>&gt; {
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;auto-install&quot;</span>))]</span>
+    <span class="kw">let</span> <span class="ident">hook</span> = <span class="ident">HOOK</span>
         .<span class="ident">get</span>()
         .<span class="ident">expect</span>(<span class="string">&quot;a handler must always be installed if the `auto-install` feature is disabled&quot;</span>)
         .<span class="ident">as_ref</span>();
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;auto-install&quot;</span>)]</span>
-    <span class="kw">let</span> <span class="ident">hook</span> <span class="op">=</span> <span class="ident">HOOK</span>
-        .<span class="ident">get_or_init</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Box::new</span>(<span class="ident">DefaultHandler::default_with</span>))
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;auto-install&quot;</span>)]</span>
+    <span class="kw">let</span> <span class="ident">hook</span> = <span class="ident">HOOK</span>
+        .<span class="ident">get_or_init</span>(|| <span class="ident">Box::new</span>(<span class="ident">DefaultHandler::default_with</span>))
         .<span class="ident">as_ref</span>();
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">handler</span> <span class="op">=</span> <span class="ident">hook</span>(<span class="ident">error</span>);
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">handler</span> = <span class="ident">hook</span>(<span class="ident">error</span>);
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">track_caller</span>)]</span>
     {
@@ -1855,20 +1855,20 @@
 
 <span class="kw">impl</span> <span class="kw">dyn</span> <span class="ident">EyreHandler</span> {
     <span class="doccomment">///</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">EyreHandler</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is</span>&lt;<span class="ident">T</span>: <span class="ident">EyreHandler</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="comment">// Get `TypeId` of the type this function is instantiated with.</span>
-        <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">core::any::TypeId::of</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>();
+        <span class="kw">let</span> <span class="ident">t</span> = <span class="ident">core::any::TypeId::of</span>::&lt;<span class="ident">T</span>&gt;();
 
         <span class="comment">// Get `TypeId` of the type in the trait object (`self`).</span>
-        <span class="kw">let</span> <span class="ident">concrete</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">type_id</span>();
+        <span class="kw">let</span> <span class="ident">concrete</span> = <span class="self">self</span>.<span class="ident">type_id</span>();
 
         <span class="comment">// Compare both `TypeId`s on equality.</span>
-        <span class="ident">t</span> <span class="op">==</span> <span class="ident">concrete</span>
+        <span class="ident">t</span> == <span class="ident">concrete</span>
     }
 
     <span class="doccomment">///</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">downcast_ref</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">EyreHandler</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">downcast_ref</span>&lt;<span class="ident">T</span>: <span class="ident">EyreHandler</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">T</span>&gt; {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is</span>::&lt;<span class="ident">T</span>&gt;() {
             <span class="kw">unsafe</span> { <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span>(<span class="self">self</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="kw">dyn</span> <span class="ident">EyreHandler</span> <span class="kw">as</span> <span class="kw-2">*const</span> <span class="ident">T</span>)) }
         } <span class="kw">else</span> {
             <span class="prelude-val">None</span>
@@ -1876,8 +1876,8 @@
     }
 
     <span class="doccomment">///</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">downcast_mut</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">EyreHandler</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>() {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">downcast_mut</span>&lt;<span class="ident">T</span>: <span class="ident">EyreHandler</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut</span> <span class="ident">T</span>&gt; {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is</span>::&lt;<span class="ident">T</span>&gt;() {
             <span class="kw">unsafe</span> { <span class="prelude-val">Some</span>(<span class="kw-2">&amp;mut</span> <span class="kw-2">*</span>(<span class="self">self</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="kw">dyn</span> <span class="ident">EyreHandler</span> <span class="kw">as</span> <span class="kw-2">*mut</span> <span class="ident">T</span>)) }
         } <span class="kw">else</span> {
             <span class="prelude-val">None</span>
@@ -1886,7 +1886,7 @@
 }
 
 <span class="doccomment">/// Error Report Handler trait for customizing `eyre::Report`</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">EyreHandler</span>: <span class="ident">core::any::Any</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">EyreHandler</span>: <span class="ident">core::any::Any</span> + <span class="ident">Send</span> + <span class="ident">Sync</span> {
     <span class="doccomment">/// Define the report format</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Used to override the report format of `eyre::Report`</span>
@@ -1941,15 +1941,15 @@
     <span class="doccomment">/// ```</span>
     <span class="kw">fn</span> <span class="ident">debug</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">error</span>: <span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>),
-        <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
+        <span class="ident">error</span>: <span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> + <span class="lifetime">&#39;static</span>),
+        <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; <span class="ident">core::fmt::Result</span>;
 
     <span class="doccomment">/// Override for the `Display` format</span>
     <span class="kw">fn</span> <span class="ident">display</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">error</span>: <span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>),
-        <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
+        <span class="ident">error</span>: <span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> + <span class="lifetime">&#39;static</span>),
+        <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; <span class="ident">core::fmt::Result</span> {
         <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>)<span class="question-mark">?</span>;
 
@@ -1964,7 +1964,7 @@
 
     <span class="doccomment">/// Store the location of the caller who constructed this error report</span>
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_variables</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">track_caller</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">location</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">std::panic::Location</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>) {}
+    <span class="kw">fn</span> <span class="ident">track_caller</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">location</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">std::panic::Location</span>&lt;<span class="lifetime">&#39;static</span>&gt;) {}
 }
 
 <span class="doccomment">/// The default provided error report handler for `eyre::Report`.</span>
@@ -1973,9 +1973,9 @@
 <span class="doccomment">/// error did not already capture one.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DefaultHandler</span> {
-    <span class="ident">backtrace</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Backtrace</span><span class="op">&gt;</span>,
+    <span class="ident">backtrace</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">Backtrace</span>&gt;,
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">track_caller</span>)]</span>
-    <span class="ident">location</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">std::panic::Location</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">location</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">std::panic::Location</span>&lt;<span class="lifetime">&#39;static</span>&gt;&gt;,
 }
 
 <span class="kw">impl</span> <span class="ident">DefaultHandler</span> {
@@ -2006,9 +2006,9 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// ```</span>
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_variables</span>)]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;auto-install&quot;</span>), <span class="ident">allow</span>(<span class="ident">dead_code</span>))]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default_with</span>(<span class="ident">error</span>: <span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>)) -&gt; <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">EyreHandler</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">backtrace</span> <span class="op">=</span> <span class="macro">backtrace_if_absent!</span>(<span class="ident">error</span>);
+    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;auto-install&quot;</span>), <span class="ident">allow</span>(<span class="ident">dead_code</span>))]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default_with</span>(<span class="ident">error</span>: <span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> + <span class="lifetime">&#39;static</span>)) -&gt; <span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">EyreHandler</span>&gt; {
+        <span class="kw">let</span> <span class="ident">backtrace</span> = <span class="macro">backtrace_if_absent!</span>(<span class="ident">error</span>);
 
         <span class="ident">Box::new</span>(<span class="self">Self</span> {
             <span class="ident">backtrace</span>,
@@ -2019,7 +2019,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">core::fmt::Debug</span> <span class="kw">for</span> <span class="ident">DefaultHandler</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">core::fmt::Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">core::fmt::Result</span> {
         <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;DefaultHandler&quot;</span>)
             .<span class="ident">field</span>(
                 <span class="string">&quot;backtrace&quot;</span>,
@@ -2035,8 +2035,8 @@
 <span class="kw">impl</span> <span class="ident">EyreHandler</span> <span class="kw">for</span> <span class="ident">DefaultHandler</span> {
     <span class="kw">fn</span> <span class="ident">debug</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">error</span>: <span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>),
-        <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
+        <span class="ident">error</span>: <span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">StdError</span> + <span class="lifetime">&#39;static</span>),
+        <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">core::fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; <span class="ident">core::fmt::Result</span> {
         <span class="kw">use</span> <span class="ident">core::fmt::Write</span> <span class="kw">as</span> <span class="kw">_</span>;
 
@@ -2046,9 +2046,9 @@
 
         <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cause</span>) <span class="op">=</span> <span class="ident">error</span>.<span class="ident">source</span>() {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cause</span>) = <span class="ident">error</span>.<span class="ident">source</span>() {
             <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;\n\nCaused by:&quot;</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">multiple</span> <span class="op">=</span> <span class="ident">cause</span>.<span class="ident">source</span>().<span class="ident">is_some</span>();
+            <span class="kw">let</span> <span class="ident">multiple</span> = <span class="ident">cause</span>.<span class="ident">source</span>().<span class="ident">is_some</span>();
             <span class="kw">for</span> (<span class="ident">n</span>, <span class="ident">error</span>) <span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::chain::Chain::new</span>(<span class="ident">cause</span>).<span class="ident">enumerate</span>() {
                 <span class="macro">writeln!</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">multiple</span> {
@@ -2059,9 +2059,9 @@
             }
         }
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">track_caller</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;track-caller&quot;</span>))]</span>
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">track_caller</span>, <span class="ident">feature</span> = <span class="string">&quot;track-caller&quot;</span>))]</span>
         {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">location</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">location</span> {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">location</span>) = <span class="self">self</span>.<span class="ident">location</span> {
                 <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;\n\nLocation:\n&quot;</span>)<span class="question-mark">?</span>;
                 <span class="macro">write!</span>(<span class="ident">indenter::indented</span>(<span class="ident">f</span>), <span class="string">&quot;{}&quot;</span>, <span class="ident">location</span>)<span class="question-mark">?</span>;
             }
@@ -2071,12 +2071,12 @@
         {
             <span class="kw">use</span> <span class="ident">std::backtrace::BacktraceStatus</span>;
 
-            <span class="kw">let</span> <span class="ident">backtrace</span> <span class="op">=</span> <span class="self">self</span>
+            <span class="kw">let</span> <span class="ident">backtrace</span> = <span class="self">self</span>
                 .<span class="ident">backtrace</span>
                 .<span class="ident">as_ref</span>()
-                .<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">error</span>.<span class="ident">backtrace</span>())
+                .<span class="ident">or_else</span>(|| <span class="ident">error</span>.<span class="ident">backtrace</span>())
                 .<span class="ident">expect</span>(<span class="string">&quot;backtrace capture failed&quot;</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">BacktraceStatus::Captured</span> <span class="op">=</span> <span class="ident">backtrace</span>.<span class="ident">status</span>() {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">BacktraceStatus::Captured</span> = <span class="ident">backtrace</span>.<span class="ident">status</span>() {
                 <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;\n\nStack backtrace:\n{}&quot;</span>, <span class="ident">backtrace</span>)<span class="question-mark">?</span>;
             }
         }
@@ -2085,8 +2085,8 @@
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">track_caller</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">track_caller</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">location</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">std::panic::Location</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span>) {
-        <span class="self">self</span>.<span class="ident">location</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">location</span>);
+    <span class="kw">fn</span> <span class="ident">track_caller</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">location</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">std::panic::Location</span>&lt;<span class="lifetime">&#39;static</span>&gt;) {
+        <span class="self">self</span>.<span class="ident">location</span> = <span class="prelude-val">Some</span>(<span class="ident">location</span>);
     }
 }
 
@@ -2111,8 +2111,8 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_debug_implementations</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Chain</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">state</span>: <span class="ident"><span class="kw">crate</span>::chain::ChainState</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Chain</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="ident">state</span>: <span class="ident"><span class="kw">crate</span>::chain::ChainState</span>&lt;<span class="lifetime">&#39;a</span>&gt;,
 }
 
 <span class="doccomment">/// type alias for `Result&lt;T, Report&gt;`</span>
@@ -2163,7 +2163,7 @@
 <span class="doccomment">///     Ok(())</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span> <span class="op">=</span> <span class="ident">Report</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">core::result::Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">E</span> = <span class="ident">Report</span>&gt; = <span class="ident">core::result::Result</span>&lt;<span class="ident">T</span>, <span class="ident">E</span>&gt;;
 
 <span class="doccomment">/// Provides the `wrap_err` method for `Result`.</span>
 <span class="doccomment">///</span>
@@ -2334,32 +2334,32 @@
 <span class="doccomment">///         # panic!(&quot;expected downcast to succeed&quot;);</span>
 <span class="doccomment">///     }</span>
 <span class="doccomment">///     ```</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">WrapErr</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span>: <span class="ident">context::private::Sealed</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">WrapErr</span>&lt;<span class="ident">T</span>, <span class="ident">E</span>&gt;: <span class="ident">context::private::Sealed</span> {
     <span class="doccomment">/// Wrap the error value with a new adhoc error</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">track_caller</span>, <span class="ident">track_caller</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">wrap_err</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Report</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">wrap_err</span>&lt;<span class="ident">D</span>&gt;(<span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">Report</span>&gt;
     <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">Display</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>;
+        <span class="ident">D</span>: <span class="ident">Display</span> + <span class="ident">Send</span> + <span class="ident">Sync</span> + <span class="lifetime">&#39;static</span>;
 
     <span class="doccomment">/// Wrap the error value with a new adhoc error that is evaluated lazily</span>
     <span class="doccomment">/// only once an error does occur.</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">track_caller</span>, <span class="ident">track_caller</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">wrap_err_with</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Report</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">wrap_err_with</span>&lt;<span class="ident">D</span>, <span class="ident">F</span>&gt;(<span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">Report</span>&gt;
     <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">Display</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+        <span class="ident">D</span>: <span class="ident">Display</span> + <span class="ident">Send</span> + <span class="ident">Sync</span> + <span class="lifetime">&#39;static</span>,
         <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">D</span>;
 
     <span class="doccomment">/// Compatibility re-export of wrap_err for interopt with `anyhow`</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">track_caller</span>, <span class="ident">track_caller</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">context</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Report</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">context</span>&lt;<span class="ident">D</span>&gt;(<span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">Report</span>&gt;
     <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">Display</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>;
+        <span class="ident">D</span>: <span class="ident">Display</span> + <span class="ident">Send</span> + <span class="ident">Sync</span> + <span class="lifetime">&#39;static</span>;
 
     <span class="doccomment">/// Compatibility re-export of wrap_err_with for interopt with `anyhow`</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">track_caller</span>, <span class="ident">track_caller</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">with_context</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Report</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">with_context</span>&lt;<span class="ident">D</span>, <span class="ident">F</span>&gt;(<span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">Report</span>&gt;
     <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">Display</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+        <span class="ident">D</span>: <span class="ident">Display</span> + <span class="ident">Send</span> + <span class="ident">Sync</span> + <span class="lifetime">&#39;static</span>,
         <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">D</span>;
 }
 
@@ -2406,33 +2406,33 @@
 <span class="doccomment">///         .ok_or_else(|| eyre!(&quot;the thing wasnt in the list&quot;))</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ContextCompat</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>: <span class="ident">context::private::Sealed</span> {
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ContextCompat</span>&lt;<span class="ident">T</span>&gt;: <span class="ident">context::private::Sealed</span> {
     <span class="doccomment">/// Compatibility version of `wrap_err` for creating new errors with new source on `Option`</span>
     <span class="doccomment">/// when porting from `anyhow`</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">track_caller</span>, <span class="ident">track_caller</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">context</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Report</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">context</span>&lt;<span class="ident">D</span>&gt;(<span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">Report</span>&gt;
     <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">Display</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>;
+        <span class="ident">D</span>: <span class="ident">Display</span> + <span class="ident">Send</span> + <span class="ident">Sync</span> + <span class="lifetime">&#39;static</span>;
 
     <span class="doccomment">/// Compatibility version of `wrap_err_with` for creating new errors with new source on `Option`</span>
     <span class="doccomment">/// when porting from `anyhow`</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">track_caller</span>, <span class="ident">track_caller</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">with_context</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Report</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">with_context</span>&lt;<span class="ident">D</span>, <span class="ident">F</span>&gt;(<span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">Report</span>&gt;
     <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">Display</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+        <span class="ident">D</span>: <span class="ident">Display</span> + <span class="ident">Send</span> + <span class="ident">Sync</span> + <span class="lifetime">&#39;static</span>,
         <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">D</span>;
 
     <span class="doccomment">/// Compatibility re-export of `context` for porting from `anyhow` to `eyre`</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">track_caller</span>, <span class="ident">track_caller</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">wrap_err</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Report</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">wrap_err</span>&lt;<span class="ident">D</span>&gt;(<span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">Report</span>&gt;
     <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">Display</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>;
+        <span class="ident">D</span>: <span class="ident">Display</span> + <span class="ident">Send</span> + <span class="ident">Sync</span> + <span class="lifetime">&#39;static</span>;
 
     <span class="doccomment">/// Compatibility re-export of `with_context` for porting from `anyhow` to `eyre`</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">track_caller</span>, <span class="ident">track_caller</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">wrap_err_with</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Report</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">wrap_err_with</span>&lt;<span class="ident">D</span>, <span class="ident">F</span>&gt;(<span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">Report</span>&gt;
     <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">Display</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+        <span class="ident">D</span>: <span class="ident">Display</span> + <span class="ident">Send</span> + <span class="ident">Sync</span> + <span class="lifetime">&#39;static</span>,
         <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">D</span>;
 }
 
@@ -2455,9 +2455,9 @@
     }
 
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">track_caller</span>, <span class="ident">track_caller</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_adhoc</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(<span class="ident">message</span>: <span class="ident">M</span>) -&gt; <span class="ident">Report</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_adhoc</span>&lt;<span class="ident">M</span>&gt;(<span class="ident">message</span>: <span class="ident">M</span>) -&gt; <span class="ident">Report</span>
     <span class="kw">where</span>
-        <span class="ident">M</span>: <span class="ident">Display</span> <span class="op">+</span> <span class="ident">Debug</span> <span class="op">+</span> <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Sync</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+        <span class="ident">M</span>: <span class="ident">Display</span> + <span class="ident">Debug</span> + <span class="ident">Send</span> + <span class="ident">Sync</span> + <span class="lifetime">&#39;static</span>,
     {
         <span class="ident">Report::from_adhoc</span>(<span class="ident">message</span>)
     }
@@ -2465,13 +2465,13 @@
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="attribute">#[<span class="ident">cold</span>]</span>
     <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">track_caller</span>, <span class="ident">track_caller</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">format_err</span>(<span class="ident">args</span>: <span class="ident">Arguments</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">Report</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">format_err</span>(<span class="ident">args</span>: <span class="ident">Arguments</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">Report</span> {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">eyre_no_fmt_arguments_as_str</span>)]</span>
-        <span class="kw">let</span> <span class="ident">fmt_arguments_as_str</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+        <span class="kw">let</span> <span class="ident">fmt_arguments_as_str</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>&gt; = <span class="prelude-val">None</span>;
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">eyre_no_fmt_arguments_as_str</span>))]</span>
-        <span class="kw">let</span> <span class="ident">fmt_arguments_as_str</span> <span class="op">=</span> <span class="ident">args</span>.<span class="ident">as_str</span>();
+        <span class="kw">let</span> <span class="ident">fmt_arguments_as_str</span> = <span class="ident">args</span>.<span class="ident">as_str</span>();
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">message</span>) <span class="op">=</span> <span class="ident">fmt_arguments_as_str</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">message</span>) = <span class="ident">fmt_arguments_as_str</span> {
             <span class="comment">// eyre!(&quot;literal&quot;), can downcast to &amp;&#39;static str</span>
             <span class="ident">Report::msg</span>(<span class="ident">message</span>)
         } <span class="kw">else</span> {
@@ -2481,4 +2481,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="eyre" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="eyre" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

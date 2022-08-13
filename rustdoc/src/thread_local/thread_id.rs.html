@@ -144,7 +144,7 @@
 <span class="doccomment">/// indefinitely when it is used by many short-lived threads.</span>
 <span class="kw">struct</span> <span class="ident">ThreadIdManager</span> {
     <span class="ident">free_from</span>: <span class="ident">usize</span>,
-    <span class="ident">free_list</span>: <span class="ident">BinaryHeap</span><span class="op">&lt;</span><span class="ident">Reverse</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">free_list</span>: <span class="ident">BinaryHeap</span>&lt;<span class="ident">Reverse</span>&lt;<span class="ident">usize</span>&gt;&gt;,
 }
 <span class="kw">impl</span> <span class="ident">ThreadIdManager</span> {
     <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="ident">ThreadIdManager</span> {
@@ -154,11 +154,11 @@
         }
     }
     <span class="kw">fn</span> <span class="ident">alloc</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">id</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">free_list</span>.<span class="ident">pop</span>() {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">id</span>) = <span class="self">self</span>.<span class="ident">free_list</span>.<span class="ident">pop</span>() {
             <span class="ident">id</span>.<span class="number">0</span>
         } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">id</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">free_from</span>;
-            <span class="self">self</span>.<span class="ident">free_from</span> <span class="op">=</span> <span class="self">self</span>
+            <span class="kw">let</span> <span class="ident">id</span> = <span class="self">self</span>.<span class="ident">free_from</span>;
+            <span class="self">self</span>.<span class="ident">free_from</span> = <span class="self">self</span>
                 .<span class="ident">free_from</span>
                 .<span class="ident">checked_add</span>(<span class="number">1</span>)
                 .<span class="ident">expect</span>(<span class="string">&quot;Ran out of thread IDs&quot;</span>);
@@ -169,8 +169,8 @@
         <span class="self">self</span>.<span class="ident">free_list</span>.<span class="ident">push</span>(<span class="ident">Reverse</span>(<span class="ident">id</span>));
     }
 }
-<span class="kw">static</span> <span class="ident">THREAD_ID_MANAGER</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">ThreadIdManager</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Mutex::new</span>(<span class="ident">ThreadIdManager::new</span>()));
+<span class="kw">static</span> <span class="ident">THREAD_ID_MANAGER</span>: <span class="ident">Lazy</span>&lt;<span class="ident">Mutex</span>&lt;<span class="ident">ThreadIdManager</span>&gt;&gt; =
+    <span class="ident">Lazy::new</span>(|| <span class="ident">Mutex::new</span>(<span class="ident">ThreadIdManager::new</span>()));
 
 <span class="doccomment">/// Data which is unique to the current thread while it is running.</span>
 <span class="doccomment">/// A thread ID may be reused after a thread exits.</span>
@@ -187,9 +187,9 @@
 }
 <span class="kw">impl</span> <span class="ident">Thread</span> {
     <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">id</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Thread</span> {
-        <span class="kw">let</span> <span class="ident">bucket</span> <span class="op">=</span> <span class="ident">usize::from</span>(<span class="ident">POINTER_WIDTH</span>) <span class="op">-</span> <span class="ident">id</span>.<span class="ident">leading_zeros</span>() <span class="kw">as</span> <span class="ident">usize</span>;
-        <span class="kw">let</span> <span class="ident">bucket_size</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">bucket</span>.<span class="ident">saturating_sub</span>(<span class="number">1</span>);
-        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">id</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> { <span class="ident">id</span> <span class="op">^</span> <span class="ident">bucket_size</span> } <span class="kw">else</span> { <span class="number">0</span> };
+        <span class="kw">let</span> <span class="ident">bucket</span> = <span class="ident">usize::from</span>(<span class="ident">POINTER_WIDTH</span>) - <span class="ident">id</span>.<span class="ident">leading_zeros</span>() <span class="kw">as</span> <span class="ident">usize</span>;
+        <span class="kw">let</span> <span class="ident">bucket_size</span> = <span class="number">1</span> &lt;&lt; <span class="ident">bucket</span>.<span class="ident">saturating_sub</span>(<span class="number">1</span>);
+        <span class="kw">let</span> <span class="ident">index</span> = <span class="kw">if</span> <span class="ident">id</span> != <span class="number">0</span> { <span class="ident">id</span> ^ <span class="ident">bucket_size</span> } <span class="kw">else</span> { <span class="number">0</span> };
 
         <span class="ident">Thread</span> {
             <span class="ident">id</span>,
@@ -213,44 +213,44 @@
     }
 }
 
-<span class="macro">thread_local!</span>(<span class="kw">static</span> <span class="ident">THREAD_HOLDER</span>: <span class="ident">ThreadHolder</span> <span class="op">=</span> <span class="ident">ThreadHolder::new</span>());
+<span class="macro">thread_local!</span>(<span class="kw">static</span> <span class="ident">THREAD_HOLDER</span>: <span class="ident">ThreadHolder</span> = <span class="ident">ThreadHolder::new</span>());
 
 <span class="doccomment">/// Get the current thread.</span>
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get</span>() -&gt; <span class="ident">Thread</span> {
-    <span class="ident">THREAD_HOLDER</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">holder</span><span class="op">|</span> <span class="ident">holder</span>.<span class="number">0</span>)
+    <span class="ident">THREAD_HOLDER</span>.<span class="ident">with</span>(|<span class="ident">holder</span>| <span class="ident">holder</span>.<span class="number">0</span>)
 }
 
 <span class="attribute">#[<span class="ident">test</span>]</span>
 <span class="kw">fn</span> <span class="ident">test_thread</span>() {
-    <span class="kw">let</span> <span class="ident">thread</span> <span class="op">=</span> <span class="ident">Thread::new</span>(<span class="number">0</span>);
+    <span class="kw">let</span> <span class="ident">thread</span> = <span class="ident">Thread::new</span>(<span class="number">0</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">id</span>, <span class="number">0</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">bucket</span>, <span class="number">0</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">bucket_size</span>, <span class="number">1</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">index</span>, <span class="number">0</span>);
 
-    <span class="kw">let</span> <span class="ident">thread</span> <span class="op">=</span> <span class="ident">Thread::new</span>(<span class="number">1</span>);
+    <span class="kw">let</span> <span class="ident">thread</span> = <span class="ident">Thread::new</span>(<span class="number">1</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">id</span>, <span class="number">1</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">bucket</span>, <span class="number">1</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">bucket_size</span>, <span class="number">1</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">index</span>, <span class="number">0</span>);
 
-    <span class="kw">let</span> <span class="ident">thread</span> <span class="op">=</span> <span class="ident">Thread::new</span>(<span class="number">2</span>);
+    <span class="kw">let</span> <span class="ident">thread</span> = <span class="ident">Thread::new</span>(<span class="number">2</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">id</span>, <span class="number">2</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">bucket</span>, <span class="number">2</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">bucket_size</span>, <span class="number">2</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">index</span>, <span class="number">0</span>);
 
-    <span class="kw">let</span> <span class="ident">thread</span> <span class="op">=</span> <span class="ident">Thread::new</span>(<span class="number">3</span>);
+    <span class="kw">let</span> <span class="ident">thread</span> = <span class="ident">Thread::new</span>(<span class="number">3</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">id</span>, <span class="number">3</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">bucket</span>, <span class="number">2</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">bucket_size</span>, <span class="number">2</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">index</span>, <span class="number">1</span>);
 
-    <span class="kw">let</span> <span class="ident">thread</span> <span class="op">=</span> <span class="ident">Thread::new</span>(<span class="number">19</span>);
+    <span class="kw">let</span> <span class="ident">thread</span> = <span class="ident">Thread::new</span>(<span class="number">19</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">id</span>, <span class="number">19</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">bucket</span>, <span class="number">5</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">bucket_size</span>, <span class="number">16</span>);
     <span class="macro">assert_eq!</span>(<span class="ident">thread</span>.<span class="ident">index</span>, <span class="number">3</span>);
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thread_local" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="thread_local" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

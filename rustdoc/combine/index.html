@@ -19,7 +19,7 @@ automatically construct good error messages.</p>
 <span class="kw">use</span> <span class="ident">combine</span>::{<span class="ident">Parser</span>, <span class="ident">EasyParser</span>};
 <span class="kw">use</span> <span class="ident">combine::stream::position</span>;
 <span class="kw">use</span> <span class="ident">combine::parser::char</span>::{<span class="ident">digit</span>, <span class="ident">letter</span>};
-<span class="kw">const</span> <span class="ident">MSG</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">r#&quot;Parse error at line: 1, column: 1
+<span class="kw">const</span> <span class="ident">MSG</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> = <span class="string">r#&quot;Parse error at line: 1, column: 1
 Unexpected `|`
 Expected digit or letter
 &quot;#</span>;
@@ -27,7 +27,7 @@ Expected digit or letter
 <span class="kw">fn</span> <span class="ident">main</span>() {
     <span class="comment">// Wrapping a `&amp;str` with `State` provides automatic line and column tracking. If `State`</span>
     <span class="comment">// was not used the positions would instead only be pointers into the `&amp;str`</span>
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">digit</span>().<span class="ident">or</span>(<span class="ident">letter</span>()).<span class="ident">easy_parse</span>(<span class="ident">position::Stream::new</span>(<span class="string">&quot;|&quot;</span>)) {
+    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) = <span class="ident">digit</span>().<span class="ident">or</span>(<span class="ident">letter</span>()).<span class="ident">easy_parse</span>(<span class="ident">position::Stream::new</span>(<span class="string">&quot;|&quot;</span>)) {
         <span class="macro">assert_eq!</span>(<span class="ident">MSG</span>, <span class="macro">format!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>));
     }
 }</code></pre></div>
@@ -59,16 +59,16 @@ need to customize the errors your parsers return you should not need to use this
 
 <span class="kw">fn</span> <span class="ident">main</span>() {
     <span class="comment">//Parse spaces first and use the with method to only keep the result of the next parser</span>
-    <span class="kw">let</span> <span class="ident">integer</span> <span class="op">=</span> <span class="ident">spaces</span>()
+    <span class="kw">let</span> <span class="ident">integer</span> = <span class="ident">spaces</span>()
         <span class="comment">//parse a string of digits into an i32</span>
-        .<span class="ident">with</span>(<span class="ident">many1</span>(<span class="ident">digit</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="ident">string</span>: <span class="ident">String</span><span class="op">|</span> <span class="ident">string</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>()));
+        .<span class="ident">with</span>(<span class="ident">many1</span>(<span class="ident">digit</span>()).<span class="ident">map</span>(|<span class="ident">string</span>: <span class="ident">String</span>| <span class="ident">string</span>.<span class="ident">parse</span>::&lt;<span class="ident">i32</span>&gt;().<span class="ident">unwrap</span>()));
 
     <span class="comment">//Parse integers separated by commas, skipping whitespace</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">integer_list</span> <span class="op">=</span> <span class="ident">sep_by</span>(<span class="ident">integer</span>, <span class="ident">spaces</span>().<span class="ident">skip</span>(<span class="ident">char</span>(<span class="string">&#39;,&#39;</span>)));
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">integer_list</span> = <span class="ident">sep_by</span>(<span class="ident">integer</span>, <span class="ident">spaces</span>().<span class="ident">skip</span>(<span class="ident">char</span>(<span class="string">&#39;,&#39;</span>)));
 
     <span class="comment">//Call parse with the input to execute the parser</span>
-    <span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">&quot;1234, 45,78&quot;</span>;
-    <span class="kw">let</span> <span class="ident">result</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>), <span class="ident">easy::ParseError</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span>
+    <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;1234, 45,78&quot;</span>;
+    <span class="kw">let</span> <span class="ident">result</span>: <span class="prelude-ty">Result</span>&lt;(<span class="ident">Vec</span>&lt;<span class="ident">i32</span>&gt;, <span class="kw-2">&amp;</span><span class="ident">str</span>), <span class="ident">easy::ParseError</span>&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>&gt;&gt; =
         <span class="ident">integer_list</span>.<span class="ident">easy_parse</span>(<span class="ident">input</span>);
     <span class="kw">match</span> <span class="ident">result</span> {
         <span class="prelude-val">Ok</span>((<span class="ident">value</span>, <span class="ident">_remaining_input</span>)) =&gt; <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">value</span>),
@@ -94,37 +94,37 @@ on stable rust.</p>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Expr</span> {
     <span class="ident">Id</span>(<span class="ident">String</span>),
-    <span class="ident">Array</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Expr</span><span class="op">&gt;</span>),
-    <span class="ident">Pair</span>(<span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Expr</span><span class="op">&gt;</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Expr</span><span class="op">&gt;</span>)
+    <span class="ident">Array</span>(<span class="ident">Vec</span>&lt;<span class="ident">Expr</span>&gt;),
+    <span class="ident">Pair</span>(<span class="ident">Box</span>&lt;<span class="ident">Expr</span>&gt;, <span class="ident">Box</span>&lt;<span class="ident">Expr</span>&gt;)
 }
 
 <span class="comment">// `impl Parser` can be used to create reusable parsers with zero overhead</span>
-<span class="kw">fn</span> <span class="ident">expr_</span><span class="op">&lt;</span><span class="ident">Input</span><span class="op">&gt;</span>() -&gt; <span class="kw">impl</span> <span class="ident">Parser</span><span class="op">&lt;</span> <span class="ident">Input</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Expr</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">Input</span>: <span class="ident">Stream</span><span class="op">&lt;</span><span class="ident">Token</span> <span class="op">=</span> <span class="ident">char</span><span class="op">&gt;</span>,
+<span class="kw">fn</span> <span class="ident">expr_</span>&lt;<span class="ident">Input</span>&gt;() -&gt; <span class="kw">impl</span> <span class="ident">Parser</span>&lt; <span class="ident">Input</span>, <span class="ident">Output</span> = <span class="ident">Expr</span>&gt;
+    <span class="kw">where</span> <span class="ident">Input</span>: <span class="ident">Stream</span>&lt;<span class="ident">Token</span> = <span class="ident">char</span>&gt;,
           <span class="comment">// Necessary due to rust-lang/rust#24159</span>
-          <span class="ident">Input::Error</span>: <span class="ident">ParseError</span><span class="op">&lt;</span><span class="ident">Input::Token</span>, <span class="ident">Input::Range</span>, <span class="ident">Input::Position</span><span class="op">&gt;</span>,
+          <span class="ident">Input::Error</span>: <span class="ident">ParseError</span>&lt;<span class="ident">Input::Token</span>, <span class="ident">Input::Range</span>, <span class="ident">Input::Position</span>&gt;,
 {
-    <span class="kw">let</span> <span class="ident">word</span> <span class="op">=</span> <span class="ident">many1</span>(<span class="ident">letter</span>());
+    <span class="kw">let</span> <span class="ident">word</span> = <span class="ident">many1</span>(<span class="ident">letter</span>());
 
     <span class="comment">// A parser which skips past whitespace.</span>
     <span class="comment">// Since we aren&#39;t interested in knowing that our expression parser</span>
     <span class="comment">// could have accepted additional whitespace between the tokens we also silence the error.</span>
-    <span class="kw">let</span> <span class="ident">skip_spaces</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> <span class="ident">spaces</span>().<span class="ident">silent</span>();
+    <span class="kw">let</span> <span class="ident">skip_spaces</span> = || <span class="ident">spaces</span>().<span class="ident">silent</span>();
 
     <span class="comment">//Creates a parser which parses a char and skips any trailing whitespace</span>
-    <span class="kw">let</span> <span class="ident">lex_char</span> <span class="op">=</span> <span class="op">|</span><span class="ident">c</span><span class="op">|</span> <span class="ident">char</span>(<span class="ident">c</span>).<span class="ident">skip</span>(<span class="ident">skip_spaces</span>());
+    <span class="kw">let</span> <span class="ident">lex_char</span> = |<span class="ident">c</span>| <span class="ident">char</span>(<span class="ident">c</span>).<span class="ident">skip</span>(<span class="ident">skip_spaces</span>());
 
-    <span class="kw">let</span> <span class="ident">comma_list</span> <span class="op">=</span> <span class="ident">sep_by</span>(<span class="ident">expr</span>(), <span class="ident">lex_char</span>(<span class="string">&#39;,&#39;</span>));
-    <span class="kw">let</span> <span class="ident">array</span> <span class="op">=</span> <span class="ident">between</span>(<span class="ident">lex_char</span>(<span class="string">&#39;[&#39;</span>), <span class="ident">lex_char</span>(<span class="string">&#39;]&#39;</span>), <span class="ident">comma_list</span>);
+    <span class="kw">let</span> <span class="ident">comma_list</span> = <span class="ident">sep_by</span>(<span class="ident">expr</span>(), <span class="ident">lex_char</span>(<span class="string">&#39;,&#39;</span>));
+    <span class="kw">let</span> <span class="ident">array</span> = <span class="ident">between</span>(<span class="ident">lex_char</span>(<span class="string">&#39;[&#39;</span>), <span class="ident">lex_char</span>(<span class="string">&#39;]&#39;</span>), <span class="ident">comma_list</span>);
 
     <span class="comment">//We can use tuples to run several parsers in sequence</span>
     <span class="comment">//The resulting type is a tuple containing each parsers output</span>
-    <span class="kw">let</span> <span class="ident">pair</span> <span class="op">=</span> (<span class="ident">lex_char</span>(<span class="string">&#39;(&#39;</span>),
+    <span class="kw">let</span> <span class="ident">pair</span> = (<span class="ident">lex_char</span>(<span class="string">&#39;(&#39;</span>),
                 <span class="ident">expr</span>(),
                 <span class="ident">lex_char</span>(<span class="string">&#39;,&#39;</span>),
                 <span class="ident">expr</span>(),
                 <span class="ident">lex_char</span>(<span class="string">&#39;)&#39;</span>))
-                   .<span class="ident">map</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">Expr::Pair</span>(<span class="ident">Box::new</span>(<span class="ident">t</span>.<span class="number">1</span>), <span class="ident">Box::new</span>(<span class="ident">t</span>.<span class="number">3</span>)));
+                   .<span class="ident">map</span>(|<span class="ident">t</span>| <span class="ident">Expr::Pair</span>(<span class="ident">Box::new</span>(<span class="ident">t</span>.<span class="number">1</span>), <span class="ident">Box::new</span>(<span class="ident">t</span>.<span class="number">3</span>)));
 
     <span class="ident">choice</span>((
         <span class="ident">word</span>.<span class="ident">map</span>(<span class="ident">Expr::Id</span>),
@@ -143,16 +143,16 @@ on stable rust.</p>
 <span class="comment">// emulate `impl Parser`)</span>
 <span class="macro">parser!</span>{
     <span class="kw">fn</span> <span class="ident">expr</span>[<span class="ident">Input</span>]()(<span class="ident">Input</span>) -&gt; <span class="ident">Expr</span>
-    <span class="kw">where</span> [<span class="ident">Input</span>: <span class="ident">Stream</span><span class="op">&lt;</span><span class="ident">Token</span> <span class="op">=</span> <span class="ident">char</span><span class="op">&gt;</span>]
+    <span class="kw">where</span> [<span class="ident">Input</span>: <span class="ident">Stream</span>&lt;<span class="ident">Token</span> = <span class="ident">char</span>&gt;]
     {
         <span class="ident">expr_</span>()
     }
 }
 
 <span class="kw">fn</span> <span class="ident">main</span>() {
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">expr</span>()
+    <span class="kw">let</span> <span class="ident">result</span> = <span class="ident">expr</span>()
         .<span class="ident">parse</span>(<span class="string">&quot;[[], (hello, world), [rust]]&quot;</span>);
-    <span class="kw">let</span> <span class="ident">expr</span> <span class="op">=</span> <span class="ident">Expr::Array</span>(<span class="macro">vec!</span>[
+    <span class="kw">let</span> <span class="ident">expr</span> = <span class="ident">Expr::Array</span>(<span class="macro">vec!</span>[
           <span class="ident">Expr::Array</span>(<span class="ident">Vec::new</span>())
         , <span class="ident">Expr::Pair</span>(<span class="ident">Box::new</span>(<span class="ident">Expr::Id</span>(<span class="string">&quot;hello&quot;</span>.<span class="ident">to_string</span>())),
                      <span class="ident">Box::new</span>(<span class="ident">Expr::Id</span>(<span class="string">&quot;world&quot;</span>.<span class="ident">to_string</span>())))
@@ -247,4 +247,4 @@ Never consumes any input.</p>
 successful or not.
 <code>O</code> is the type that is output on success.
 <code>Input</code> is the specific stream type used in the parser.</p>
-</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="combine" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="combine" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

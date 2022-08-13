@@ -186,20 +186,20 @@
     <span class="ident">Parser</span>,
 };
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Input</span>: <span class="ident">Stream</span>, <span class="ident">O</span><span class="op">&gt;</span> <span class="ident">Parser</span><span class="op">&lt;</span><span class="ident">Input</span><span class="op">&gt;</span>
-    <span class="kw">for</span> <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span><span class="op">&lt;</span><span class="ident">O</span>, <span class="ident">Input</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;a</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">Input</span>: <span class="ident">Stream</span>, <span class="ident">O</span>&gt; <span class="ident">Parser</span>&lt;<span class="ident">Input</span>&gt;
+    <span class="kw">for</span> <span class="kw">dyn</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span>&lt;<span class="ident">O</span>, <span class="ident">Input</span>&gt; + <span class="lifetime">&#39;a</span>
 {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">O</span>;
-    <span class="kw">type</span> <span class="ident">PartialState</span> <span class="op">=</span> ();
+    <span class="kw">type</span> <span class="ident">Output</span> = <span class="ident">O</span>;
+    <span class="kw">type</span> <span class="ident">PartialState</span> = ();
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_lazy</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">ParseResult</span><span class="op">&lt;</span><span class="ident">O</span>, <span class="ident">Input::Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">parse_lazy</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">ParseResult</span>&lt;<span class="ident">O</span>, <span class="ident">Input::Error</span>&gt; {
         <span class="self">self</span>(<span class="ident">input</span>).<span class="ident">into</span>()
     }
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FnParser</span><span class="op">&lt;</span><span class="ident">Input</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">F</span>, <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw">fn</span>(<span class="ident">Input</span>) -&gt; <span class="ident">Input</span><span class="op">&gt;</span>);
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">FnParser</span>&lt;<span class="ident">Input</span>, <span class="ident">F</span>&gt;(<span class="ident">F</span>, <span class="ident">PhantomData</span>&lt;<span class="kw">fn</span>(<span class="ident">Input</span>) -&gt; <span class="ident">Input</span>&gt;);
 
 <span class="doccomment">/// Wraps a function, turning it into a parser.</span>
 <span class="doccomment">///</span>
@@ -237,51 +237,51 @@
 <span class="doccomment">/// assert_eq!(result, Ok(8));</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parser</span><span class="op">&lt;</span><span class="ident">Input</span>, <span class="ident">O</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">FnParser</span><span class="op">&lt;</span><span class="ident">Input</span>, <span class="ident">F</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">parser</span>&lt;<span class="ident">Input</span>, <span class="ident">O</span>, <span class="ident">F</span>&gt;(<span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">FnParser</span>&lt;<span class="ident">Input</span>, <span class="ident">F</span>&gt;
 <span class="kw">where</span>
     <span class="ident">Input</span>: <span class="ident">Stream</span>,
-    <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span><span class="op">&lt;</span><span class="ident">O</span>, <span class="ident">Input</span><span class="op">&gt;</span>,
+    <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span>&lt;<span class="ident">O</span>, <span class="ident">Input</span>&gt;,
 {
     <span class="ident">FnParser</span>(<span class="ident">f</span>, <span class="ident">PhantomData</span>)
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Input</span>, <span class="ident">O</span>, <span class="ident">F</span><span class="op">&gt;</span> <span class="ident">Parser</span><span class="op">&lt;</span><span class="ident">Input</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">FnParser</span><span class="op">&lt;</span><span class="ident">Input</span>, <span class="ident">F</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">Input</span>, <span class="ident">O</span>, <span class="ident">F</span>&gt; <span class="ident">Parser</span>&lt;<span class="ident">Input</span>&gt; <span class="kw">for</span> <span class="ident">FnParser</span>&lt;<span class="ident">Input</span>, <span class="ident">F</span>&gt;
 <span class="kw">where</span>
     <span class="ident">Input</span>: <span class="ident">Stream</span>,
-    <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span><span class="op">&lt;</span><span class="ident">O</span>, <span class="ident">Input</span><span class="op">&gt;</span>,
+    <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span>&lt;<span class="ident">O</span>, <span class="ident">Input</span>&gt;,
 {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">O</span>;
-    <span class="kw">type</span> <span class="ident">PartialState</span> <span class="op">=</span> ();
+    <span class="kw">type</span> <span class="ident">Output</span> = <span class="ident">O</span>;
+    <span class="kw">type</span> <span class="ident">PartialState</span> = ();
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_lazy</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">ParseResult</span><span class="op">&lt;</span><span class="ident">O</span>, <span class="ident">Input::Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">parse_lazy</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">ParseResult</span>&lt;<span class="ident">O</span>, <span class="ident">Input::Error</span>&gt; {
         (<span class="self">self</span>.<span class="number">0</span>)(<span class="ident">input</span>).<span class="ident">into</span>()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Input</span>, <span class="ident">O</span><span class="op">&gt;</span> <span class="ident">Parser</span><span class="op">&lt;</span><span class="ident">Input</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw">fn</span>(<span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span><span class="op">&lt;</span><span class="ident">O</span>, <span class="ident">Input</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">Input</span>, <span class="ident">O</span>&gt; <span class="ident">Parser</span>&lt;<span class="ident">Input</span>&gt; <span class="kw">for</span> <span class="kw">fn</span>(<span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span>&lt;<span class="ident">O</span>, <span class="ident">Input</span>&gt;
 <span class="kw">where</span>
     <span class="ident">Input</span>: <span class="ident">Stream</span>,
 {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">O</span>;
-    <span class="kw">type</span> <span class="ident">PartialState</span> <span class="op">=</span> ();
+    <span class="kw">type</span> <span class="ident">Output</span> = <span class="ident">O</span>;
+    <span class="kw">type</span> <span class="ident">PartialState</span> = ();
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_lazy</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">ParseResult</span><span class="op">&lt;</span><span class="ident">O</span>, <span class="ident">Input::Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">parse_lazy</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">ParseResult</span>&lt;<span class="ident">O</span>, <span class="ident">Input::Error</span>&gt; {
         <span class="self">self</span>(<span class="ident">input</span>).<span class="ident">into</span>()
     }
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EnvParser</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">T</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EnvParser</span>&lt;<span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">T</span>&gt;
 <span class="kw">where</span>
     <span class="ident">Input</span>: <span class="ident">Stream</span>,
 {
     <span class="ident">env</span>: <span class="ident">E</span>,
-    <span class="ident">parser</span>: <span class="kw">fn</span>(<span class="ident">E</span>, <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Input</span><span class="op">&gt;</span>,
+    <span class="ident">parser</span>: <span class="kw">fn</span>(<span class="ident">E</span>, <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span>&lt;<span class="ident">T</span>, <span class="ident">Input</span>&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">EnvParser</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">T</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">T</span>&gt; <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">EnvParser</span>&lt;<span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">T</span>&gt;
 <span class="kw">where</span>
     <span class="ident">Input</span>: <span class="ident">Stream</span>,
     <span class="ident">E</span>: <span class="ident">Clone</span>,
@@ -294,16 +294,16 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Input</span>, <span class="ident">E</span>, <span class="ident">O</span><span class="op">&gt;</span> <span class="ident">Parser</span><span class="op">&lt;</span><span class="ident">Input</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EnvParser</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">O</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="ident">Input</span>, <span class="ident">E</span>, <span class="ident">O</span>&gt; <span class="ident">Parser</span>&lt;<span class="ident">Input</span>&gt; <span class="kw">for</span> <span class="ident">EnvParser</span>&lt;<span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">O</span>&gt;
 <span class="kw">where</span>
     <span class="ident">E</span>: <span class="ident">Clone</span>,
     <span class="ident">Input</span>: <span class="ident">Stream</span>,
 {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">O</span>;
-    <span class="kw">type</span> <span class="ident">PartialState</span> <span class="op">=</span> ();
+    <span class="kw">type</span> <span class="ident">Output</span> = <span class="ident">O</span>;
+    <span class="kw">type</span> <span class="ident">PartialState</span> = ();
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_lazy</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">ParseResult</span><span class="op">&lt;</span><span class="ident">O</span>, <span class="ident">Input::Error</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">parse_lazy</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">ParseResult</span>&lt;<span class="ident">O</span>, <span class="ident">Input::Error</span>&gt; {
         (<span class="self">self</span>.<span class="ident">parser</span>)(<span class="self">self</span>.<span class="ident">env</span>.<span class="ident">clone</span>(), <span class="ident">input</span>).<span class="ident">into</span>()
     }
 }
@@ -346,10 +346,10 @@
 <span class="doccomment">/// assert_eq!(result, Ok((0, &quot;&quot;)));</span>
 <span class="doccomment">/// # }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">env_parser</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">O</span><span class="op">&gt;</span>(
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">env_parser</span>&lt;<span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">O</span>&gt;(
     <span class="ident">env</span>: <span class="ident">E</span>,
-    <span class="ident">parser</span>: <span class="kw">fn</span>(<span class="ident">E</span>, <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span><span class="op">&lt;</span><span class="ident">O</span>, <span class="ident">Input</span><span class="op">&gt;</span>,
-) -&gt; <span class="ident">EnvParser</span><span class="op">&lt;</span><span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">O</span><span class="op">&gt;</span>
+    <span class="ident">parser</span>: <span class="kw">fn</span>(<span class="ident">E</span>, <span class="kw-2">&amp;mut</span> <span class="ident">Input</span>) -&gt; <span class="ident">StdParseResult</span>&lt;<span class="ident">O</span>, <span class="ident">Input</span>&gt;,
+) -&gt; <span class="ident">EnvParser</span>&lt;<span class="ident">E</span>, <span class="ident">Input</span>, <span class="ident">O</span>&gt;
 <span class="kw">where</span>
     <span class="ident">E</span>: <span class="ident">Clone</span>,
     <span class="ident">Input</span>: <span class="ident">Stream</span>,
@@ -357,4 +357,4 @@
     <span class="ident">EnvParser</span> { <span class="ident">env</span>, <span class="ident">parser</span> }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="combine" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="combine" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

@@ -622,7 +622,7 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PipeReader</span>(<span class="ident">File</span>);
 
 <span class="kw">impl</span> <span class="ident">PipeReader</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">PipeReader</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">PipeReader</span>&gt; {
         <span class="comment">// Do *not* use File::try_clone here. It&#39;s buggy on windows. See</span>
         <span class="comment">// comments on windows.rs::dup().</span>
         <span class="ident">sys::dup</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>).<span class="ident">map</span>(<span class="ident">PipeReader</span>)
@@ -630,19 +630,19 @@
 }
 
 <span class="kw">impl</span> <span class="ident">io::Read</span> <span class="kw">for</span> <span class="ident">PipeReader</span> {
-    <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">read</span>(<span class="ident">buf</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">io::Read</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PipeReader</span> {
-    <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file_ref</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">io::Read</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PipeReader</span> {
+    <span class="kw">fn</span> <span class="ident">read</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file_ref</span> = <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
         <span class="ident">file_ref</span>.<span class="ident">read</span>(<span class="ident">buf</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PipeReader</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Stdio</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">PipeReader</span>&gt; <span class="kw">for</span> <span class="ident">Stdio</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">p</span>: <span class="ident">PipeReader</span>) -&gt; <span class="ident">Stdio</span> {
         <span class="ident">p</span>.<span class="number">0</span>.<span class="ident">into</span>()
     }
@@ -657,7 +657,7 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PipeWriter</span>(<span class="ident">File</span>);
 
 <span class="kw">impl</span> <span class="ident">PipeWriter</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">PipeWriter</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">PipeWriter</span>&gt; {
         <span class="comment">// Do *not* use File::try_clone here. It&#39;s buggy on windows. See</span>
         <span class="comment">// comments on windows.rs::dup().</span>
         <span class="ident">sys::dup</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>).<span class="ident">map</span>(<span class="ident">PipeWriter</span>)
@@ -665,28 +665,28 @@
 }
 
 <span class="kw">impl</span> <span class="ident">io::Write</span> <span class="kw">for</span> <span class="ident">PipeWriter</span> {
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">write</span>(<span class="ident">buf</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">flush</span>()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">io::Write</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PipeWriter</span> {
-    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file_ref</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">io::Write</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">PipeWriter</span> {
+    <span class="kw">fn</span> <span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">usize</span>&gt; {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file_ref</span> = <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
         <span class="ident">file_ref</span>.<span class="ident">write</span>(<span class="ident">buf</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file_ref</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
+    <span class="kw">fn</span> <span class="ident">flush</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">file_ref</span> = <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>;
         <span class="ident">file_ref</span>.<span class="ident">flush</span>()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">PipeWriter</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Stdio</span> {
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">PipeWriter</span>&gt; <span class="kw">for</span> <span class="ident">Stdio</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">p</span>: <span class="ident">PipeWriter</span>) -&gt; <span class="ident">Stdio</span> {
         <span class="ident">p</span>.<span class="number">0</span>.<span class="ident">into</span>()
     }
@@ -702,7 +702,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// [`PipeReader`]: struct.PipeReader.html</span>
 <span class="doccomment">/// [`PipeWriter`]: struct.PipeWriter.html</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pipe</span>() -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span>(<span class="ident">PipeReader</span>, <span class="ident">PipeWriter</span>)<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pipe</span>() -&gt; <span class="ident">io::Result</span>&lt;(<span class="ident">PipeReader</span>, <span class="ident">PipeWriter</span>)&gt; {
     <span class="ident">sys::pipe</span>()
 }
 
@@ -720,7 +720,7 @@
 <span class="doccomment">/// [`Into&lt;Stdio&gt;`]: https://doc.rust-lang.org/std/process/struct.Stdio.html</span>
 <span class="doccomment">/// [`Command::stdin`]: https://doc.rust-lang.org/std/process/struct.Command.html#method.stdin</span>
 <span class="doccomment">/// [`Stdio::inherit`]: https://doc.rust-lang.org/std/process/struct.Stdio.html#method.inherit</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dup_stdin</span>() -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">PipeReader</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dup_stdin</span>() -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">PipeReader</span>&gt; {
     <span class="ident">sys::dup</span>(<span class="kw-2">&amp;</span><span class="ident">io::stdin</span>()).<span class="ident">map</span>(<span class="ident">PipeReader</span>)
 }
 
@@ -739,7 +739,7 @@
 <span class="doccomment">/// [`Command::stdout`]: https://doc.rust-lang.org/std/process/struct.Command.html#method.stdout</span>
 <span class="doccomment">/// [`Command::stderr`]: https://doc.rust-lang.org/std/process/struct.Command.html#method.stderr</span>
 <span class="doccomment">/// [`Stdio::inherit`]: https://doc.rust-lang.org/std/process/struct.Stdio.html#method.inherit</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dup_stdout</span>() -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">PipeWriter</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dup_stdout</span>() -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">PipeWriter</span>&gt; {
     <span class="ident">sys::dup</span>(<span class="kw-2">&amp;</span><span class="ident">io::stdout</span>()).<span class="ident">map</span>(<span class="ident">PipeWriter</span>)
 }
 
@@ -758,15 +758,15 @@
 <span class="doccomment">/// [`Command::stdout`]: https://doc.rust-lang.org/std/process/struct.Command.html#method.stdout</span>
 <span class="doccomment">/// [`Command::stderr`]: https://doc.rust-lang.org/std/process/struct.Command.html#method.stderr</span>
 <span class="doccomment">/// [`Stdio::inherit`]: https://doc.rust-lang.org/std/process/struct.Stdio.html#method.inherit</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dup_stderr</span>() -&gt; <span class="ident">io::Result</span><span class="op">&lt;</span><span class="ident">PipeWriter</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dup_stderr</span>() -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">PipeWriter</span>&gt; {
     <span class="ident">sys::dup</span>(<span class="kw-2">&amp;</span><span class="ident">io::stderr</span>()).<span class="ident">map</span>(<span class="ident">PipeWriter</span>)
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-<span class="attribute">#[<span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;unix.rs&quot;</span>]</span>
+<span class="attribute">#[<span class="ident">path</span> = <span class="string">&quot;unix.rs&quot;</span>]</span>
 <span class="kw">mod</span> <span class="ident">sys</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="attribute">#[<span class="ident">path</span> <span class="op">=</span> <span class="string">&quot;windows.rs&quot;</span>]</span>
+<span class="attribute">#[<span class="ident">path</span> = <span class="string">&quot;windows.rs&quot;</span>]</span>
 <span class="kw">mod</span> <span class="ident">sys</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -782,20 +782,20 @@
         <span class="comment">// This project defines some associated binaries for testing, and we shell out to them in</span>
         <span class="comment">// these tests. `cargo test` doesn&#39;t automatically build associated binaries, so this</span>
         <span class="comment">// function takes care of building them explicitly, with the right debug/release flavor.</span>
-        <span class="kw">static</span> <span class="ident">CARGO_BUILD_ONCE</span>: <span class="ident">Once</span> <span class="op">=</span> <span class="ident">Once::new</span>();
-        <span class="ident">CARGO_BUILD_ONCE</span>.<span class="ident">call_once</span>(<span class="op">|</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">build_command</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="string">&quot;cargo&quot;</span>);
+        <span class="kw">static</span> <span class="ident">CARGO_BUILD_ONCE</span>: <span class="ident">Once</span> = <span class="ident">Once::new</span>();
+        <span class="ident">CARGO_BUILD_ONCE</span>.<span class="ident">call_once</span>(|| {
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">build_command</span> = <span class="ident">Command::new</span>(<span class="string">&quot;cargo&quot;</span>);
             <span class="ident">build_command</span>.<span class="ident">args</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;build&quot;</span>, <span class="string">&quot;--quiet&quot;</span>]);
-            <span class="kw">if</span> <span class="op">!</span><span class="macro">cfg!</span>(<span class="ident">debug_assertions</span>) {
+            <span class="kw">if</span> !<span class="macro">cfg!</span>(<span class="ident">debug_assertions</span>) {
                 <span class="ident">build_command</span>.<span class="ident">arg</span>(<span class="string">&quot;--release&quot;</span>);
             }
-            <span class="kw">let</span> <span class="ident">build_status</span> <span class="op">=</span> <span class="ident">build_command</span>.<span class="ident">status</span>().<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">build_status</span> = <span class="ident">build_command</span>.<span class="ident">status</span>().<span class="ident">unwrap</span>();
             <span class="macro">assert!</span>(
                 <span class="ident">build_status</span>.<span class="ident">success</span>(),
                 <span class="string">&quot;Cargo failed to build associated binaries.&quot;</span>
             );
         });
-        <span class="kw">let</span> <span class="ident">flavor</span> <span class="op">=</span> <span class="kw">if</span> <span class="macro">cfg!</span>(<span class="ident">debug_assertions</span>) {
+        <span class="kw">let</span> <span class="ident">flavor</span> = <span class="kw">if</span> <span class="macro">cfg!</span>(<span class="ident">debug_assertions</span>) {
             <span class="string">&quot;debug&quot;</span>
         } <span class="kw">else</span> {
             <span class="string">&quot;release&quot;</span>
@@ -808,11 +808,11 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_pipe_some_data</span>() {
-        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>) <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>) = <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
         <span class="comment">// A small write won&#39;t fill the pipe buffer, so it won&#39;t block this thread.</span>
         <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="string">b&quot;some stuff&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">drop</span>(<span class="ident">writer</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">String::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> = <span class="ident">String::new</span>();
         <span class="ident">reader</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;mut</span> <span class="ident">out</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">out</span>, <span class="string">&quot;some stuff&quot;</span>);
     }
@@ -821,34 +821,34 @@
     <span class="kw">fn</span> <span class="ident">test_pipe_some_data_with_refs</span>() {
         <span class="comment">// As with `File`, there&#39;s a second set of impls for shared</span>
         <span class="comment">// refs. Test those.</span>
-        <span class="kw">let</span> (<span class="ident">reader</span>, <span class="ident">writer</span>) <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader_ref</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">reader</span>;
+        <span class="kw">let</span> (<span class="ident">reader</span>, <span class="ident">writer</span>) = <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader_ref</span> = <span class="kw-2">&amp;</span><span class="ident">reader</span>;
         {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">writer_ref</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">writer</span>;
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">writer_ref</span> = <span class="kw-2">&amp;</span><span class="ident">writer</span>;
             <span class="comment">// A small write won&#39;t fill the pipe buffer, so it won&#39;t block this thread.</span>
             <span class="ident">writer_ref</span>.<span class="ident">write_all</span>(<span class="string">b&quot;some stuff&quot;</span>).<span class="ident">unwrap</span>();
         }
         <span class="ident">drop</span>(<span class="ident">writer</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">String::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> = <span class="ident">String::new</span>();
         <span class="ident">reader_ref</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;mut</span> <span class="ident">out</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">out</span>, <span class="string">&quot;some stuff&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_pipe_no_data</span>() {
-        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="ident">writer</span>) <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="ident">writer</span>) = <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
         <span class="ident">drop</span>(<span class="ident">writer</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">String::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> = <span class="ident">String::new</span>();
         <span class="ident">reader</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;mut</span> <span class="ident">out</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">out</span>, <span class="string">&quot;&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_pipe_a_megabyte_of_data_from_another_thread</span>() {
-        <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="macro">vec!</span>[<span class="number">0xff</span>; <span class="number">1_000_000</span>];
-        <span class="kw">let</span> <span class="ident">data_copy</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">clone</span>();
-        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>) <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">joiner</span> <span class="op">=</span> <span class="ident">thread::spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
+        <span class="kw">let</span> <span class="ident">data</span> = <span class="macro">vec!</span>[<span class="number">0xff</span>; <span class="number">1_000_000</span>];
+        <span class="kw">let</span> <span class="ident">data_copy</span> = <span class="ident">data</span>.<span class="ident">clone</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">reader</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>) = <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">joiner</span> = <span class="ident">thread::spawn</span>(<span class="kw">move</span> || {
             <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="kw-2">&amp;</span><span class="ident">data_copy</span>).<span class="ident">unwrap</span>();
             <span class="comment">// This drop happens automatically, so writing it out here is mostly</span>
             <span class="comment">// just for clarity. For what it&#39;s worth, it also guards against</span>
@@ -857,7 +857,7 @@
             <span class="comment">// explicit drop forces `writer` to move.</span>
             <span class="ident">drop</span>(<span class="ident">writer</span>);
         });
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> = <span class="ident">Vec::new</span>();
         <span class="ident">reader</span>.<span class="ident">read_to_end</span>(<span class="kw-2">&amp;mut</span> <span class="ident">out</span>).<span class="ident">unwrap</span>();
         <span class="ident">joiner</span>.<span class="ident">join</span>().<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">out</span>, <span class="ident">data</span>);
@@ -866,22 +866,22 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_pipes_are_not_inheritable</span>() {
         <span class="comment">// Create pipes for a child process.</span>
-        <span class="kw">let</span> (<span class="ident">input_reader</span>, <span class="kw-2">mut</span> <span class="ident">input_writer</span>) <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">output_reader</span>, <span class="ident">output_writer</span>) <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="ident">input_reader</span>, <span class="kw-2">mut</span> <span class="ident">input_writer</span>) = <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">output_reader</span>, <span class="ident">output_writer</span>) = <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
 
         <span class="comment">// Create a bunch of duplicated copies, which we&#39;ll close later. This</span>
         <span class="comment">// tests that duplication preserves non-inheritability.</span>
-        <span class="kw">let</span> <span class="ident">ir_dup</span> <span class="op">=</span> <span class="ident">input_reader</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">iw_dup</span> <span class="op">=</span> <span class="ident">input_writer</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">or_dup</span> <span class="op">=</span> <span class="ident">output_reader</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">ow_dup</span> <span class="op">=</span> <span class="ident">output_writer</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">ir_dup</span> = <span class="ident">input_reader</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">iw_dup</span> = <span class="ident">input_writer</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">or_dup</span> = <span class="ident">output_reader</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">ow_dup</span> = <span class="ident">output_writer</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
 
         <span class="comment">// Spawn the child. Note that this temporary Command object takes</span>
         <span class="comment">// ownership of our copies of the child&#39;s stdin and stdout, and then</span>
         <span class="comment">// closes them immediately when it drops. That stops us from blocking</span>
         <span class="comment">// our own read below. We use our own simple implementation of cat for</span>
         <span class="comment">// compatibility with Windows.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">child</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="ident">path_to_exe</span>(<span class="string">&quot;cat&quot;</span>))
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">child</span> = <span class="ident">Command::new</span>(<span class="ident">path_to_exe</span>(<span class="string">&quot;cat&quot;</span>))
             .<span class="ident">stdin</span>(<span class="ident">input_reader</span>)
             .<span class="ident">stdout</span>(<span class="ident">output_writer</span>)
             .<span class="ident">spawn</span>()
@@ -902,7 +902,7 @@
         <span class="comment">// inherited the write end of its own stdin, then it will never exit,</span>
         <span class="comment">// and this read will block forever. That&#39;s what this test is all</span>
         <span class="comment">// about.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> = <span class="ident">Vec::new</span>();
         <span class="ident">output_reader</span>.<span class="ident">read_to_end</span>(<span class="kw-2">&amp;mut</span> <span class="ident">output</span>).<span class="ident">unwrap</span>();
         <span class="ident">child</span>.<span class="ident">wait</span>().<span class="ident">unwrap</span>();
 
@@ -916,7 +916,7 @@
         <span class="comment">// parent_stderr() to swap the outputs for another child that it spawns.</span>
 
         <span class="comment">// Create pipes for a child process.</span>
-        <span class="kw">let</span> (<span class="ident">reader</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>) <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="ident">reader</span>, <span class="kw-2">mut</span> <span class="ident">writer</span>) = <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
 
         <span class="comment">// Write input. This shouldn&#39;t block because it&#39;s small. Then close the write end, or else</span>
         <span class="comment">// the child will hang.</span>
@@ -926,7 +926,7 @@
         <span class="comment">// Use `swap` to run `cat_both`. `cat_both will read &quot;quack&quot; from stdin</span>
         <span class="comment">// and write it to stdout and stderr with different tags. But because we</span>
         <span class="comment">// run it inside `swap`, the tags in the output should be backwards.</span>
-        <span class="kw">let</span> <span class="ident">output</span> <span class="op">=</span> <span class="ident">Command::new</span>(<span class="ident">path_to_exe</span>(<span class="string">&quot;swap&quot;</span>))
+        <span class="kw">let</span> <span class="ident">output</span> = <span class="ident">Command::new</span>(<span class="ident">path_to_exe</span>(<span class="string">&quot;swap&quot;</span>))
             .<span class="ident">arg</span>(<span class="ident">path_to_exe</span>(<span class="string">&quot;cat_both&quot;</span>))
             .<span class="ident">stdin</span>(<span class="ident">reader</span>)
             .<span class="ident">output</span>()
@@ -948,41 +948,41 @@
     <span class="kw">fn</span> <span class="ident">test_parent_handles_dont_close</span>() {
         <span class="comment">// Open and close each parent pipe multiple times. If this closes the</span>
         <span class="comment">// original, subsequent opens should fail.</span>
-        <span class="kw">let</span> <span class="ident">stdin</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::dup_stdin</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">stdin</span> = <span class="ident"><span class="kw">crate</span>::dup_stdin</span>().<span class="ident">unwrap</span>();
         <span class="ident">drop</span>(<span class="ident">stdin</span>);
-        <span class="kw">let</span> <span class="ident">stdin</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::dup_stdin</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">stdin</span> = <span class="ident"><span class="kw">crate</span>::dup_stdin</span>().<span class="ident">unwrap</span>();
         <span class="ident">drop</span>(<span class="ident">stdin</span>);
 
-        <span class="kw">let</span> <span class="ident">stdout</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::dup_stdout</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">stdout</span> = <span class="ident"><span class="kw">crate</span>::dup_stdout</span>().<span class="ident">unwrap</span>();
         <span class="ident">drop</span>(<span class="ident">stdout</span>);
-        <span class="kw">let</span> <span class="ident">stdout</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::dup_stdout</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">stdout</span> = <span class="ident"><span class="kw">crate</span>::dup_stdout</span>().<span class="ident">unwrap</span>();
         <span class="ident">drop</span>(<span class="ident">stdout</span>);
 
-        <span class="kw">let</span> <span class="ident">stderr</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::dup_stderr</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">stderr</span> = <span class="ident"><span class="kw">crate</span>::dup_stderr</span>().<span class="ident">unwrap</span>();
         <span class="ident">drop</span>(<span class="ident">stderr</span>);
-        <span class="kw">let</span> <span class="ident">stderr</span> <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::dup_stderr</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="ident">stderr</span> = <span class="ident"><span class="kw">crate</span>::dup_stderr</span>().<span class="ident">unwrap</span>();
         <span class="ident">drop</span>(<span class="ident">stderr</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_try_clone</span>() {
-        <span class="kw">let</span> (<span class="ident">reader</span>, <span class="ident">writer</span>) <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader_clone</span> <span class="op">=</span> <span class="ident">reader</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">writer_clone</span> <span class="op">=</span> <span class="ident">writer</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="ident">reader</span>, <span class="ident">writer</span>) = <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader_clone</span> = <span class="ident">reader</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">writer_clone</span> = <span class="ident">writer</span>.<span class="ident">try_clone</span>().<span class="ident">unwrap</span>();
         <span class="comment">// A small write won&#39;t fill the pipe buffer, so it won&#39;t block this thread.</span>
         <span class="ident">writer_clone</span>.<span class="ident">write_all</span>(<span class="string">b&quot;some stuff&quot;</span>).<span class="ident">unwrap</span>();
         <span class="ident">drop</span>(<span class="ident">writer</span>);
         <span class="ident">drop</span>(<span class="ident">writer_clone</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> <span class="op">=</span> <span class="ident">String::new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> = <span class="ident">String::new</span>();
         <span class="ident">reader_clone</span>.<span class="ident">read_to_string</span>(<span class="kw-2">&amp;mut</span> <span class="ident">out</span>).<span class="ident">unwrap</span>();
         <span class="macro">assert_eq!</span>(<span class="ident">out</span>, <span class="string">&quot;some stuff&quot;</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_debug</span>() {
-        <span class="kw">let</span> (<span class="ident">reader</span>, <span class="ident">writer</span>) <span class="op">=</span> <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
+        <span class="kw">let</span> (<span class="ident">reader</span>, <span class="ident">writer</span>) = <span class="ident"><span class="kw">crate</span>::pipe</span>().<span class="ident">unwrap</span>();
         <span class="macro">format!</span>(<span class="string">&quot;{:?} {:?}&quot;</span>, <span class="ident">reader</span>, <span class="ident">writer</span>);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="os_pipe" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="os_pipe" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

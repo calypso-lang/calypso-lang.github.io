@@ -74,11 +74,11 @@
 <span class="comment">// note: we&#39;re omitting ws and newlines here, because</span>
 <span class="comment">// they should be part of the formatted values</span>
 <span class="comment">// array-open  = %x5B ws-newline  ; [</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">ARRAY_OPEN</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;[&#39;</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">ARRAY_OPEN</span>: <span class="ident">u8</span> = <span class="string">b&#39;[&#39;</span>;
 <span class="comment">// array-close = ws-newline %x5D  ; ]</span>
-<span class="kw">const</span> <span class="ident">ARRAY_CLOSE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;]&#39;</span>;
+<span class="kw">const</span> <span class="ident">ARRAY_CLOSE</span>: <span class="ident">u8</span> = <span class="string">b&#39;]&#39;</span>;
 <span class="comment">// array-sep = ws %x2C ws  ; , Comma</span>
-<span class="kw">const</span> <span class="ident">ARRAY_SEP</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="string">b&#39;,&#39;</span>;
+<span class="kw">const</span> <span class="ident">ARRAY_SEP</span>: <span class="ident">u8</span> = <span class="string">b&#39;,&#39;</span>;
 
 <span class="comment">// note: this rule is modified</span>
 <span class="comment">// array-values = [ ( array-value array-sep array-values ) /</span>
@@ -88,11 +88,11 @@
         <span class="ident">optional</span>(
             <span class="ident">recognize_with_value</span>(
                 <span class="ident">sep_end_by1</span>(<span class="ident">array_value</span>(), <span class="ident">byte</span>(<span class="ident">ARRAY_SEP</span>))
-            ).<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">r</span>, <span class="ident">v</span>): (<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">Array</span>)<span class="op">|</span> (<span class="ident">v</span>, <span class="ident">r</span>[<span class="ident">r</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>] <span class="op">==</span> <span class="string">b&#39;,&#39;</span>))
+            ).<span class="ident">map</span>(|(<span class="ident">r</span>, <span class="ident">v</span>): (<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>], <span class="ident">Array</span>)| (<span class="ident">v</span>, <span class="ident">r</span>[<span class="ident">r</span>.<span class="ident">len</span>() - <span class="number">1</span>] == <span class="string">b&#39;,&#39;</span>))
         ),
         <span class="ident">ws_comment_newline</span>(),
-    ).<span class="ident">and_then</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="ident">std::str::Utf8Error</span><span class="op">&gt;</span>(<span class="op">|</span>(<span class="ident">array</span>, <span class="ident">trailing</span>)<span class="op">|</span> {
-        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">array</span>, <span class="ident">comma</span>) <span class="op">=</span> <span class="ident">array</span>.<span class="ident">unwrap_or_default</span>();
+    ).<span class="ident">and_then</span>::&lt;<span class="kw">_</span>, <span class="kw">_</span>, <span class="ident">std::str::Utf8Error</span>&gt;(|(<span class="ident">array</span>, <span class="ident">trailing</span>)| {
+        <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">array</span>, <span class="ident">comma</span>) = <span class="ident">array</span>.<span class="ident">unwrap_or_default</span>();
         <span class="ident">array</span>.<span class="ident">set_trailing_comma</span>(<span class="ident">comma</span>);
         <span class="ident">array</span>.<span class="ident">set_trailing</span>(<span class="ident">std::str::from_utf8</span>(<span class="ident">trailing</span>)<span class="question-mark">?</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">array</span>)
@@ -104,8 +104,8 @@
         <span class="ident">ws_comment_newline</span>(),
         <span class="ident">value</span>(),
         <span class="ident">ws_comment_newline</span>(),
-    )).<span class="ident">and_then</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="kw">_</span>, <span class="ident">std::str::Utf8Error</span><span class="op">&gt;</span>(<span class="op">|</span>(<span class="ident">ws1</span>, <span class="ident">v</span>, <span class="ident">ws2</span>)<span class="op">|</span> {
-        <span class="kw">let</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">decorated</span>(
+    )).<span class="ident">and_then</span>::&lt;<span class="kw">_</span>, <span class="kw">_</span>, <span class="ident">std::str::Utf8Error</span>&gt;(|(<span class="ident">ws1</span>, <span class="ident">v</span>, <span class="ident">ws2</span>)| {
+        <span class="kw">let</span> <span class="ident">v</span> = <span class="ident">v</span>.<span class="ident">decorated</span>(
             <span class="ident">std::str::from_utf8</span>(<span class="ident">ws1</span>)<span class="question-mark">?</span>,
             <span class="ident">std::str::from_utf8</span>(<span class="ident">ws2</span>)<span class="question-mark">?</span>,
         );
@@ -113,4 +113,4 @@
     })
 });
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="toml_edit" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="toml_edit" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

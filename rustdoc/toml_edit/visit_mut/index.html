@@ -15,9 +15,9 @@ input by invoking the right visitor method of each of its fields.</p>
     <span class="comment">/* ... */</span>
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">visit_item_mut</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="ident">v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">node</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Item</span>)
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">visit_item_mut</span>&lt;<span class="ident">V</span>&gt;(<span class="ident">v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">node</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Item</span>)
 <span class="kw">where</span>
-    <span class="ident">V</span>: <span class="ident">VisitMut</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="ident">V</span>: <span class="ident">VisitMut</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
 {
     <span class="kw">match</span> <span class="ident">node</span> {
         <span class="ident">Item::None</span> =&gt; {}
@@ -37,12 +37,12 @@ input by invoking the right visitor method of each of its fields.</p>
 
 <span class="kw">impl</span> <span class="ident">VisitMut</span> <span class="kw">for</span> <span class="ident">FloatToString</span> {
     <span class="kw">fn</span> <span class="ident">visit_value_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Value</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Value::Float</span>(<span class="ident">f</span>) <span class="op">=</span> <span class="ident">node</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Value::Float</span>(<span class="ident">f</span>) = <span class="ident">node</span> {
             <span class="comment">// Convert the float to a string.</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">Formatted::new</span>(<span class="macro">format!</span>(<span class="string">&quot;{:.2}&quot;</span>, <span class="ident">f</span>.<span class="ident">value</span>()));
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> = <span class="ident">Formatted::new</span>(<span class="macro">format!</span>(<span class="string">&quot;{:.2}&quot;</span>, <span class="ident">f</span>.<span class="ident">value</span>()));
             <span class="comment">// Copy over the formatting.</span>
             <span class="ident">std::mem::swap</span>(<span class="ident">s</span>.<span class="ident">decor_mut</span>(), <span class="ident">f</span>.<span class="ident">decor_mut</span>());
-            <span class="kw-2">*</span><span class="ident">node</span> <span class="op">=</span> <span class="ident">Value::String</span>(<span class="ident">s</span>);
+            <span class="kw-2">*</span><span class="ident">node</span> = <span class="ident">Value::String</span>(<span class="ident">s</span>);
         }
         <span class="comment">// Most of the time, you will also need to call the default implementation to recurse</span>
         <span class="comment">// further down the document tree.</span>
@@ -50,16 +50,16 @@ input by invoking the right visitor method of each of its fields.</p>
     }
 }
 
-<span class="kw">let</span> <span class="ident">input</span> <span class="op">=</span> <span class="string">r#&quot;
+<span class="kw">let</span> <span class="ident">input</span> = <span class="string">r#&quot;
 banana = 3.26
 table = { apple = 4.5 }
 &quot;#</span>;
 
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">document</span>: <span class="ident">Document</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>();
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visitor</span> <span class="op">=</span> <span class="ident">FloatToString</span>;
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">document</span>: <span class="ident">Document</span> = <span class="ident">input</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>();
+<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visitor</span> = <span class="ident">FloatToString</span>;
 <span class="ident">visitor</span>.<span class="ident">visit_document_mut</span>(<span class="kw-2">&amp;mut</span> <span class="ident">document</span>);
 
-<span class="kw">let</span> <span class="ident">output</span> <span class="op">=</span> <span class="string">r#&quot;
+<span class="kw">let</span> <span class="ident">output</span> = <span class="string">r#&quot;
 banana = &quot;3.26&quot;
 table = { apple = &quot;4.50&quot; }
 &quot;#</span>;
@@ -68,4 +68,4 @@ table = { apple = &quot;4.50&quot; }
 <p>For a more complex example where the visitor has internal state, see <code>examples/visit.rs</code>
 <a href="https://github.com/ordian/toml_edit/blob/master/examples/visit.rs">on GitHub</a>.</p>
 </div></details><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.VisitMut.html" title="toml_edit::visit_mut::VisitMut trait">VisitMut</a></div><div class="item-right docblock-short"><p>Document tree traversal to mutate an exclusive borrow of a document tree in-place.</p>
-</div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_array_mut.html" title="toml_edit::visit_mut::visit_array_mut fn">visit_array_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_array_of_tables_mut.html" title="toml_edit::visit_mut::visit_array_of_tables_mut fn">visit_array_of_tables_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_document_mut.html" title="toml_edit::visit_mut::visit_document_mut fn">visit_document_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_inline_table_mut.html" title="toml_edit::visit_mut::visit_inline_table_mut fn">visit_inline_table_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_item_mut.html" title="toml_edit::visit_mut::visit_item_mut fn">visit_item_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_table_like_kv_mut.html" title="toml_edit::visit_mut::visit_table_like_kv_mut fn">visit_table_like_kv_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_table_like_mut.html" title="toml_edit::visit_mut::visit_table_like_mut fn">visit_table_like_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_table_mut.html" title="toml_edit::visit_mut::visit_table_mut fn">visit_table_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_value_mut.html" title="toml_edit::visit_mut::visit_value_mut fn">visit_value_mut</a></div><div class="item-right docblock-short"></div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="toml_edit" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_array_mut.html" title="toml_edit::visit_mut::visit_array_mut fn">visit_array_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_array_of_tables_mut.html" title="toml_edit::visit_mut::visit_array_of_tables_mut fn">visit_array_of_tables_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_document_mut.html" title="toml_edit::visit_mut::visit_document_mut fn">visit_document_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_inline_table_mut.html" title="toml_edit::visit_mut::visit_inline_table_mut fn">visit_inline_table_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_item_mut.html" title="toml_edit::visit_mut::visit_item_mut fn">visit_item_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_table_like_kv_mut.html" title="toml_edit::visit_mut::visit_table_like_kv_mut fn">visit_table_like_kv_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_table_like_mut.html" title="toml_edit::visit_mut::visit_table_like_mut fn">visit_table_like_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_table_mut.html" title="toml_edit::visit_mut::visit_table_mut fn">visit_table_mut</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.visit_value_mut.html" title="toml_edit::visit_mut::visit_value_mut fn">visit_value_mut</a></div><div class="item-right docblock-short"></div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="toml_edit" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

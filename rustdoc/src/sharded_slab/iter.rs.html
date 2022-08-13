@@ -41,34 +41,34 @@
 <span class="kw">use</span> <span class="ident">std::slice</span>;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UniqueIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident"><span class="kw">crate</span>::cfg::Config</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">shards</span>: <span class="ident">shard::IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">C</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">pages</span>: <span class="ident">slice::Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">page::Shared</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">C</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">slots</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">page::Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">UniqueIter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident"><span class="kw">crate</span>::cfg::Config</span>&gt; {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">shards</span>: <span class="ident">shard::IterMut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt;, <span class="ident">C</span>&gt;,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">pages</span>: <span class="ident">slice::Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">page::Shared</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt;, <span class="ident">C</span>&gt;&gt;,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">slots</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">page::Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt;&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident"><span class="kw">crate</span>::cfg::Config</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">UniqueIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>;
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>: <span class="ident"><span class="kw">crate</span>::cfg::Config</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">UniqueIter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">C</span>&gt; {
+    <span class="kw">type</span> <span class="ident">Item</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
         <span class="macro">test_println!</span>(<span class="string">&quot;UniqueIter::next&quot;</span>);
         <span class="kw">loop</span> {
             <span class="macro">test_println!</span>(<span class="string">&quot;-&gt; try next slot&quot;</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">item</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">slots</span>.<span class="ident">as_mut</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">slots</span><span class="op">|</span> <span class="ident">slots</span>.<span class="ident">next</span>()) {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">item</span>) = <span class="self">self</span>.<span class="ident">slots</span>.<span class="ident">as_mut</span>().<span class="ident">and_then</span>(|<span class="ident">slots</span>| <span class="ident">slots</span>.<span class="ident">next</span>()) {
                 <span class="macro">test_println!</span>(<span class="string">&quot;-&gt; found an item!&quot;</span>);
                 <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">item</span>);
             }
 
             <span class="macro">test_println!</span>(<span class="string">&quot;-&gt; try next page&quot;</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">page</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">pages</span>.<span class="ident">next</span>() {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">page</span>) = <span class="self">self</span>.<span class="ident">pages</span>.<span class="ident">next</span>() {
                 <span class="macro">test_println!</span>(<span class="string">&quot;-&gt; found another page&quot;</span>);
-                <span class="self">self</span>.<span class="ident">slots</span> <span class="op">=</span> <span class="ident">page</span>.<span class="ident">iter</span>();
+                <span class="self">self</span>.<span class="ident">slots</span> = <span class="ident">page</span>.<span class="ident">iter</span>();
                 <span class="kw">continue</span>;
             }
 
             <span class="macro">test_println!</span>(<span class="string">&quot;-&gt; try next shard&quot;</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">shard</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">next</span>() {
+            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">shard</span>) = <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">next</span>() {
                 <span class="macro">test_println!</span>(<span class="string">&quot;-&gt; found another shard&quot;</span>);
-                <span class="self">self</span>.<span class="ident">pages</span> <span class="op">=</span> <span class="ident">shard</span>.<span class="ident">iter</span>();
+                <span class="self">self</span>.<span class="ident">pages</span> = <span class="ident">shard</span>.<span class="ident">iter</span>();
             } <span class="kw">else</span> {
                 <span class="macro">test_println!</span>(<span class="string">&quot;-&gt; all done!&quot;</span>);
                 <span class="kw">return</span> <span class="prelude-val">None</span>;
@@ -77,4 +77,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="sharded_slab" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="sharded_slab" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

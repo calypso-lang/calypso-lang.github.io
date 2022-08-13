@@ -58,9 +58,9 @@ return type of any fallible function.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">eyre::Result</span>;
 
-<span class="kw">fn</span> <span class="ident">get_cluster_info</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ClusterMap</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">config</span> <span class="op">=</span> <span class="ident">std::fs::read_to_string</span>(<span class="string">&quot;cluster.json&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">map</span>: <span class="ident">ClusterMap</span> <span class="op">=</span> <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>)<span class="question-mark">?</span>;
+<span class="kw">fn</span> <span class="ident">get_cluster_info</span>() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">ClusterMap</span>&gt; {
+    <span class="kw">let</span> <span class="ident">config</span> = <span class="ident">std::fs::read_to_string</span>(<span class="string">&quot;cluster.json&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">map</span>: <span class="ident">ClusterMap</span> = <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">config</span>)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="ident">map</span>)
 }</code></pre></div>
 </li>
@@ -73,12 +73,12 @@ the middle of.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">eyre</span>::{<span class="ident">WrapErr</span>, <span class="prelude-ty">Result</span>};
 
-<span class="kw">fn</span> <span class="ident">main</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">main</span>() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
     ...
     <span class="ident">it</span>.<span class="ident">detach</span>().<span class="ident">wrap_err</span>(<span class="string">&quot;Failed to detach the important thing&quot;</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">content</span> <span class="op">=</span> <span class="ident">std::fs::read</span>(<span class="ident">path</span>)
-        .<span class="ident">wrap_err_with</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format!</span>(<span class="string">&quot;Failed to read instrs from {}&quot;</span>, <span class="ident">path</span>))<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="ident">content</span> = <span class="ident">std::fs::read</span>(<span class="ident">path</span>)
+        .<span class="ident">wrap_err_with</span>(|| <span class="macro">format!</span>(<span class="string">&quot;Failed to read instrs from {}&quot;</span>, <span class="ident">path</span>))<span class="question-mark">?</span>;
     ...
 }</code></pre></div>
 <div class="example-wrap"><pre class="language-console"><code>Error: Failed to read instrs from ./path/to/instrs.json
@@ -91,7 +91,7 @@ mutable reference as needed.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="comment">// If the error was caused by redaction, then return a</span>
 <span class="comment">// tombstone instead of the content.</span>
-<span class="kw">match</span> <span class="ident">root_cause</span>.<span class="ident">downcast_ref</span>::<span class="op">&lt;</span><span class="ident">DataStoreError</span><span class="op">&gt;</span>() {
+<span class="kw">match</span> <span class="ident">root_cause</span>.<span class="ident">downcast_ref</span>::&lt;<span class="ident">DataStoreError</span>&gt;() {
     <span class="prelude-val">Some</span>(<span class="ident">DataStoreError::Censored</span>(<span class="kw">_</span>)) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">Poll::Ready</span>(<span class="ident">REDACTED_CONTENT</span>)),
     <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">error</span>),
 }</code></pre></div>
@@ -182,14 +182,14 @@ anyhow:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">anyhow::Context</span>;
 
-<span class="kw">let</span> <span class="ident">opt</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-<span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">opt</span>.<span class="ident">context</span>(<span class="string">&quot;new error message&quot;</span>);</code></pre></div>
+<span class="kw">let</span> <span class="ident">opt</span>: <span class="prelude-ty">Option</span>&lt;()&gt; = <span class="prelude-val">None</span>;
+<span class="kw">let</span> <span class="ident">result</span> = <span class="ident">opt</span>.<span class="ident">context</span>(<span class="string">&quot;new error message&quot;</span>);</code></pre></div>
 <p>With <code>eyre</code> we want users to write:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">eyre</span>::{<span class="ident">eyre</span>, <span class="prelude-ty">Result</span>};
 
-<span class="kw">let</span> <span class="ident">opt</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-<span class="kw">let</span> <span class="ident">result</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">opt</span>.<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">eyre!</span>(<span class="string">&quot;new error message&quot;</span>));</code></pre></div>
+<span class="kw">let</span> <span class="ident">opt</span>: <span class="prelude-ty">Option</span>&lt;()&gt; = <span class="prelude-val">None</span>;
+<span class="kw">let</span> <span class="ident">result</span>: <span class="prelude-ty">Result</span>&lt;()&gt; = <span class="ident">opt</span>.<span class="ident">ok_or_else</span>(|| <span class="macro">eyre!</span>(<span class="string">&quot;new error message&quot;</span>));</code></pre></div>
 <p><strong>NOTE</strong>: However, to help with porting we do provide a <code>ContextCompat</code> trait which
 implements <code>context</code> for options which you can import to make existing
 <code>.context</code> calls compile.</p>
@@ -206,4 +206,4 @@ implements <code>context</code> for options which you can import to make existin
 </div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.set_hook.html" title="eyre::set_hook fn">set_hook</a></div><div class="item-right docblock-short"><p>Install the provided error hook for constructing EyreHandlers when converting
 Errors to Reports</p>
 </div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.Result.html" title="eyre::Result type">Result</a></div><div class="item-right docblock-short"><p>type alias for <code>Result&lt;T, Report&gt;</code></p>
-</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="eyre" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="eyre" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

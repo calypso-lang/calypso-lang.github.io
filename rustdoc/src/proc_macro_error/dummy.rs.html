@@ -269,34 +269,34 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::check_correctness</span>;
 
 <span class="macro">thread_local!</span> {
-    <span class="kw">static</span> <span class="ident">DUMMY_IMPL</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TokenStream</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">RefCell::new</span>(<span class="prelude-val">None</span>);
+    <span class="kw">static</span> <span class="ident">DUMMY_IMPL</span>: <span class="ident">RefCell</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">TokenStream</span>&gt;&gt; = <span class="ident">RefCell::new</span>(<span class="prelude-val">None</span>);
 }
 
 <span class="doccomment">/// Sets dummy token stream which will be appended to `compile_error!(msg);...`</span>
 <span class="doccomment">/// invocations in case you&#39;ll emit any errors.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// See [guide](../index.html#guide).</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_dummy</span>(<span class="ident">dummy</span>: <span class="ident">TokenStream</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TokenStream</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_dummy</span>(<span class="ident">dummy</span>: <span class="ident">TokenStream</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">TokenStream</span>&gt; {
     <span class="ident">check_correctness</span>();
-    <span class="ident">DUMMY_IMPL</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">old_dummy</span><span class="op">|</span> <span class="ident">old_dummy</span>.<span class="ident">replace</span>(<span class="prelude-val">Some</span>(<span class="ident">dummy</span>)))
+    <span class="ident">DUMMY_IMPL</span>.<span class="ident">with</span>(|<span class="ident">old_dummy</span>| <span class="ident">old_dummy</span>.<span class="ident">replace</span>(<span class="prelude-val">Some</span>(<span class="ident">dummy</span>)))
 }
 
 <span class="doccomment">/// Same as [`set_dummy`] but, instead of resetting, appends tokens to the</span>
 <span class="doccomment">/// existing dummy (if any). Behaves as `set_dummy` if no dummy is present.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">append_dummy</span>(<span class="ident">dummy</span>: <span class="ident">TokenStream</span>) {
     <span class="ident">check_correctness</span>();
-    <span class="ident">DUMMY_IMPL</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">old_dummy</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cell</span> <span class="op">=</span> <span class="ident">old_dummy</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ts</span>) <span class="op">=</span> <span class="ident">cell</span>.<span class="ident">as_mut</span>() {
+    <span class="ident">DUMMY_IMPL</span>.<span class="ident">with</span>(|<span class="ident">old_dummy</span>| {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cell</span> = <span class="ident">old_dummy</span>.<span class="ident">borrow_mut</span>();
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ts</span>) = <span class="ident">cell</span>.<span class="ident">as_mut</span>() {
             <span class="ident">ts</span>.<span class="ident">extend</span>(<span class="ident">dummy</span>);
         } <span class="kw">else</span> {
-            <span class="kw-2">*</span><span class="ident">cell</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">dummy</span>);
+            <span class="kw-2">*</span><span class="ident">cell</span> = <span class="prelude-val">Some</span>(<span class="ident">dummy</span>);
         }
     });
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">cleanup</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">TokenStream</span><span class="op">&gt;</span> {
-    <span class="ident">DUMMY_IMPL</span>.<span class="ident">with</span>(<span class="op">|</span><span class="ident">old_dummy</span><span class="op">|</span> <span class="ident">old_dummy</span>.<span class="ident">replace</span>(<span class="prelude-val">None</span>))
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">cleanup</span>() -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">TokenStream</span>&gt; {
+    <span class="ident">DUMMY_IMPL</span>.<span class="ident">with</span>(|<span class="ident">old_dummy</span>| <span class="ident">old_dummy</span>.<span class="ident">replace</span>(<span class="prelude-val">None</span>))
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="proc_macro_error" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="proc_macro_error" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

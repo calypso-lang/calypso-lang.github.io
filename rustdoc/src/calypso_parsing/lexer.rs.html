@@ -339,10 +339,10 @@
 <span class="kw">use</span> <span class="ident">calypso_common::gcx::GlobalCtxt</span>;
 <span class="kw">use</span> <span class="ident">calypso_diagnostic::prelude</span>::<span class="kw-2">*</span>;
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Lexeme</span><span class="op">&lt;</span><span class="lifetime">&#39;lex</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Spanned</span><span class="op">&lt;</span>(<span class="ident">Token</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;lex</span> <span class="ident">str</span>)<span class="op">&gt;</span>;
+<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Lexeme</span>&lt;<span class="lifetime">&#39;lex</span>&gt; = <span class="ident">Spanned</span>&lt;(<span class="ident">Token</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;lex</span> <span class="ident">str</span>)&gt;;
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Logos</span>)]</span>
-<span class="attribute">#[<span class="ident">logos</span>(<span class="ident">extras</span> <span class="op">=</span> (<span class="ident">usize</span>, <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">GlobalCtxt</span><span class="op">&gt;</span>))]</span>
+<span class="attribute">#[<span class="ident">logos</span>(<span class="ident">extras</span> = (<span class="ident">usize</span>, <span class="ident">Arc</span>&lt;<span class="ident">GlobalCtxt</span>&gt;))]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Token</span> {
     <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&lt;&lt;=&quot;</span>)]</span>
     <span class="ident">LtLtEq</span>,
@@ -457,9 +457,9 @@
     <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;_[A-Za-z0-9_]+|[A-Za-z][A-Za-z0-9_]*&quot;</span>, <span class="ident">ident</span>)]</span>
     <span class="ident">IdentLike</span>(<span class="ident">IdentLike</span>),
 
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;///(.*)\n?&quot;</span>, <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">CommentProps::doc</span>())]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;//!(.*)\n?&quot;</span>, <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">CommentProps::inner_doc</span>())]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;//(.*)\n?&quot;</span>,  <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">CommentProps::default</span>())]</span>
+    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;///(.*)\n?&quot;</span>, |<span class="kw">_</span>| <span class="ident">CommentProps::doc</span>())]</span>
+    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;//!(.*)\n?&quot;</span>, |<span class="kw">_</span>| <span class="ident">CommentProps::inner_doc</span>())]</span>
+    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;//(.*)\n?&quot;</span>,  |<span class="kw">_</span>| <span class="ident">CommentProps::default</span>())]</span>
     <span class="ident">Comment</span>(<span class="ident">CommentProps</span>),
 
     <span class="comment">// #[regex(&quot;[\n]+&quot;, |lex| lex.span().len())]</span>
@@ -477,13 +477,13 @@
     <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;&#39;([^\n\r&#39;\\\\]|(\\\\([nrt\\\\0&#39;\&quot;]|x[0-9a-fA-F][0-9a-fA-F]|u\\{[0-9a-fA-F][0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?\\})))&#39;&quot;</span>)]</span>
     <span class="ident">Char</span>,
 
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0x[0-9a-fA-F][0-9a-fA-F_]*[su]?&quot;</span>, <span class="op">|</span><span class="ident">lex</span><span class="op">|</span> <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Hexadecimal</span>))]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0o[0-7][0-7_]*[su]?&quot;</span>, <span class="op">|</span><span class="ident">lex</span><span class="op">|</span> <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Octal</span>))]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0b[01][01_]*[su]?&quot;</span>, <span class="op">|</span><span class="ident">lex</span><span class="op">|</span> <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Binary</span>))]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0d[0-9][0-9_]*[su]?&quot;</span>, <span class="op">|</span><span class="ident">lex</span><span class="op">|</span> <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Decimal</span>))]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*\\.[0-9][0-9_]*(e[+-]?[0-9][0-9_]*)?&quot;</span>, <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Numeral::Float</span> { <span class="ident">from_integer</span>: <span class="bool-val">false</span> })]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*e[+-]?[0-9][0-9_]*&quot;</span>, <span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Numeral::Float</span> { <span class="ident">from_integer</span>: <span class="bool-val">false</span> })]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*[suf]?&quot;</span>, <span class="op">|</span><span class="ident">lex</span><span class="op">|</span> <span class="ident">integer_numeral</span>(<span class="ident">lex</span>))]</span>
+    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0x[0-9a-fA-F][0-9a-fA-F_]*[su]?&quot;</span>, |<span class="ident">lex</span>| <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Hexadecimal</span>))]</span>
+    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0o[0-7][0-7_]*[su]?&quot;</span>, |<span class="ident">lex</span>| <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Octal</span>))]</span>
+    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0b[01][01_]*[su]?&quot;</span>, |<span class="ident">lex</span>| <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Binary</span>))]</span>
+    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0d[0-9][0-9_]*[su]?&quot;</span>, |<span class="ident">lex</span>| <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Decimal</span>))]</span>
+    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*\\.[0-9][0-9_]*(e[+-]?[0-9][0-9_]*)?&quot;</span>, |<span class="kw">_</span>| <span class="ident">Numeral::Float</span> { <span class="ident">from_integer</span>: <span class="bool-val">false</span> })]</span>
+    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*e[+-]?[0-9][0-9_]*&quot;</span>, |<span class="kw">_</span>| <span class="ident">Numeral::Float</span> { <span class="ident">from_integer</span>: <span class="bool-val">false</span> })]</span>
+    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*[suf]?&quot;</span>, |<span class="ident">lex</span>| <span class="ident">integer_numeral</span>(<span class="ident">lex</span>))]</span>
     <span class="ident">Numeral</span>(<span class="ident">Numeral</span>),
 
     <span class="attribute">#[<span class="ident">regex</span>(
@@ -500,8 +500,8 @@
     <span class="ident">Keyword</span>(<span class="ident">Keyword</span>),
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ident</span>(<span class="ident">lex</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Lexer</span><span class="op">&lt;</span><span class="ident">Token</span><span class="op">&gt;</span>) -&gt; <span class="ident">IdentLike</span> {
-    <span class="kw">let</span> <span class="ident">sym</span> <span class="op">=</span> <span class="ident">Symbol::intern</span>(<span class="ident">lex</span>.<span class="ident">slice</span>());
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ident</span>(<span class="ident">lex</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Lexer</span>&lt;<span class="ident">Token</span>&gt;) -&gt; <span class="ident">IdentLike</span> {
+    <span class="kw">let</span> <span class="ident">sym</span> = <span class="ident">Symbol::intern</span>(<span class="ident">lex</span>.<span class="ident">slice</span>());
 
     <span class="kw">match</span> <span class="ident">Keyword::try_from</span>(<span class="ident">sym</span>) {
         <span class="prelude-val">Ok</span>(<span class="ident">kw</span>) =&gt; <span class="ident">IdentLike::Keyword</span>(<span class="ident">kw</span>),
@@ -533,7 +533,7 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">radix_numeral</span>(<span class="ident">lex</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Lexer</span><span class="op">&lt;</span><span class="ident">Token</span><span class="op">&gt;</span>, <span class="ident">radix</span>: <span class="ident">Radix</span>) -&gt; <span class="ident">Numeral</span> {
+<span class="kw">fn</span> <span class="ident">radix_numeral</span>(<span class="ident">lex</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Lexer</span>&lt;<span class="ident">Token</span>&gt;, <span class="ident">radix</span>: <span class="ident">Radix</span>) -&gt; <span class="ident">Numeral</span> {
     <span class="kw">match</span> <span class="ident">lex</span>.<span class="ident">slice</span>().<span class="ident">chars</span>().<span class="ident">last</span>() {
         <span class="prelude-val">Some</span>(<span class="string">&#39;s&#39;</span>) =&gt; <span class="ident">Numeral::Integer</span> {
             <span class="ident">suffix</span>: <span class="prelude-val">Some</span>(<span class="ident">Suffix::Sint</span>),
@@ -550,7 +550,7 @@
     }
 }
 
-<span class="kw">fn</span> <span class="ident">integer_numeral</span>(<span class="ident">lex</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Lexer</span><span class="op">&lt;</span><span class="ident">Token</span><span class="op">&gt;</span>) -&gt; <span class="ident">Numeral</span> {
+<span class="kw">fn</span> <span class="ident">integer_numeral</span>(<span class="ident">lex</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Lexer</span>&lt;<span class="ident">Token</span>&gt;) -&gt; <span class="ident">Numeral</span> {
     <span class="kw">match</span> <span class="ident">lex</span>.<span class="ident">slice</span>().<span class="ident">chars</span>().<span class="ident">last</span>() {
         <span class="prelude-val">Some</span>(<span class="string">&#39;s&#39;</span>) =&gt; <span class="ident">Numeral::Integer</span> {
             <span class="ident">suffix</span>: <span class="prelude-val">Some</span>(<span class="ident">Suffix::Sint</span>),
@@ -572,12 +572,12 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">tokens</span>(
     <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">str</span>,
     <span class="ident">file_id</span>: <span class="ident">usize</span>,
-    <span class="ident">gcx</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">GlobalCtxt</span><span class="op">&gt;</span>,
-) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">Lexeme</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">lex</span> <span class="op">=</span> <span class="ident">Token::lexer_with_extras</span>(<span class="ident">source</span>, (<span class="ident">file_id</span>, <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>)));
-    <span class="kw">let</span> <span class="ident">gcx2</span> <span class="op">=</span> <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>);
+    <span class="ident">gcx</span>: <span class="ident">Arc</span>&lt;<span class="ident">GlobalCtxt</span>&gt;,
+) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="ident">Lexeme</span>&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    <span class="kw">let</span> <span class="ident">lex</span> = <span class="ident">Token::lexer_with_extras</span>(<span class="ident">source</span>, (<span class="ident">file_id</span>, <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>)));
+    <span class="kw">let</span> <span class="ident">gcx2</span> = <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>);
     <span class="ident">lex</span>.<span class="ident">spanned</span>()
-        .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">tok</span>, <span class="ident">span</span>)<span class="op">|</span> {
+        .<span class="ident">map</span>(|(<span class="ident">tok</span>, <span class="ident">span</span>)| {
             (
                 <span class="ident">tok</span>,
                 <span class="ident">u32::try_from</span>(<span class="ident">span</span>.<span class="ident">start</span>).<span class="ident">expect</span>(<span class="string">&quot;span.start &lt;= u32::MAX&quot;</span>)
@@ -585,9 +585,9 @@
             )
         })
         .<span class="ident">map</span>(<span class="ident">Spanned::from</span>)
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> (<span class="ident">x</span>, <span class="bool-val">false</span>))
-        .<span class="ident">coalesce</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">a</span>, <span class="kw-2">mut</span> <span class="ident">b</span><span class="op">|</span> {
-            <span class="kw">if</span> <span class="ident">a</span>.<span class="number">0</span>.<span class="ident">value</span>() <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">Token::Error</span> {
+        .<span class="ident">map</span>(|<span class="ident">x</span>| (<span class="ident">x</span>, <span class="bool-val">false</span>))
+        .<span class="ident">coalesce</span>(<span class="kw">move</span> |<span class="ident">a</span>, <span class="kw-2">mut</span> <span class="ident">b</span>| {
+            <span class="kw">if</span> <span class="ident">a</span>.<span class="number">0</span>.<span class="ident">value</span>() == <span class="kw-2">&amp;</span><span class="ident">Token::Error</span> {
                 <span class="comment">// Mark errors on quotes/apostrophes as fatal, as they probably</span>
                 <span class="comment">// are. The worst case is that they aren&#39;t, and the user is</span>
                 <span class="comment">// mildly annoyed. With the current state of logos, however,</span>
@@ -595,12 +595,12 @@
                 <span class="comment">// n-token-lookahead, which I&#39;d rather not do for this at the</span>
                 <span class="comment">// moment.</span>
                 <span class="kw">if</span> <span class="ident">source</span>
-                    .<span class="ident">get</span>(<span class="ident">Range</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">a</span>.<span class="number">0</span>.<span class="ident">span</span>()))
-                    .<span class="ident">map_or</span>(<span class="bool-val">false</span>, <span class="op">|</span><span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">|</span> <span class="ident">x</span> <span class="op">==</span> <span class="string">&quot;\&#39;&quot;</span> <span class="op">|</span><span class="op">|</span> <span class="ident">x</span> <span class="op">==</span> <span class="string">&quot;\&quot;&quot;</span>)
+                    .<span class="ident">get</span>(<span class="ident">Range</span>::&lt;<span class="ident">usize</span>&gt;<span class="ident">::from</span>(<span class="ident">a</span>.<span class="number">0</span>.<span class="ident">span</span>()))
+                    .<span class="ident">map_or</span>(<span class="bool-val">false</span>, |<span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>| <span class="ident">x</span> == <span class="string">&quot;\&#39;&quot;</span> || <span class="ident">x</span> == <span class="string">&quot;\&quot;&quot;</span>)
                 {
                     <span class="ident">gcx2</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
                         <span class="ident">EnsembleBuilder::new</span>()
-                            .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                            .<span class="ident">error</span>(|<span class="ident">b</span>| {
                                 <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0001&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0001</span>)).<span class="ident">label</span>(
                                     <span class="ident">LabelStyle::Primary</span>,
                                     <span class="prelude-val">None</span>,
@@ -615,10 +615,10 @@
                 <span class="comment">// Don&#39;t coalesce if there is a fatal error, and mark when it happened</span>
                 <span class="comment">// (and when was after it happened, so we know where to stop)</span>
                 <span class="kw">if</span> <span class="ident">gcx2</span>.<span class="ident">grcx</span>.<span class="ident">read</span>().<span class="ident">fatal</span>().<span class="ident">is_some</span>() {
-                    <span class="ident">b</span>.<span class="number">1</span> <span class="op">=</span> <span class="bool-val">true</span>;
+                    <span class="ident">b</span>.<span class="number">1</span> = <span class="bool-val">true</span>;
                     <span class="kw">return</span> <span class="prelude-val">Err</span>((<span class="ident">a</span>, <span class="ident">b</span>));
                 }
-                <span class="kw">if</span> <span class="ident">b</span>.<span class="number">0</span>.<span class="ident">value</span>() <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">Token::Error</span> {
+                <span class="kw">if</span> <span class="ident">b</span>.<span class="number">0</span>.<span class="ident">value</span>() == <span class="kw-2">&amp;</span><span class="ident">Token::Error</span> {
                     <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">Spanned::new</span>(<span class="ident">a</span>.<span class="number">0</span>.<span class="ident">span</span>().<span class="ident">to</span>(<span class="ident">b</span>.<span class="number">0</span>.<span class="ident">span</span>()), <span class="ident">Token::Error</span>), <span class="bool-val">false</span>));
                 }
             }
@@ -626,13 +626,13 @@
             <span class="prelude-val">Err</span>((<span class="ident">a</span>, <span class="ident">b</span>))
         })
         <span class="comment">// Stop after when there&#39;s a fatal error</span>
-        .<span class="ident">take_while</span>(<span class="kw">move</span> <span class="op">|</span>(<span class="kw">_</span>, <span class="ident">end</span>)<span class="op">|</span> <span class="op">!</span><span class="kw-2">*</span><span class="ident">end</span>)
-        .<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span>(<span class="ident">x</span>, <span class="ident">end</span>)<span class="op">|</span> {
-            <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">value</span>() <span class="op">==</span> <span class="kw-2">&amp;</span><span class="ident">Token::Error</span> <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">end</span> {
+        .<span class="ident">take_while</span>(<span class="kw">move</span> |(<span class="kw">_</span>, <span class="ident">end</span>)| !<span class="kw-2">*</span><span class="ident">end</span>)
+        .<span class="ident">map</span>(<span class="kw">move</span> |(<span class="ident">x</span>, <span class="ident">end</span>)| {
+            <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">value</span>() == <span class="kw-2">&amp;</span><span class="ident">Token::Error</span> &amp;&amp; !<span class="ident">end</span> {
                 <span class="comment">// Report non-fatal syntax errors</span>
                 <span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_syncd</span>(
                     <span class="ident">EnsembleBuilder::new</span>()
-                        .<span class="ident">error</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> {
+                        .<span class="ident">error</span>(|<span class="ident">b</span>| {
                             <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0001&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0001</span>)).<span class="ident">label</span>(
                                 <span class="ident">LabelStyle::Primary</span>,
                                 <span class="prelude-val">None</span>,
@@ -645,14 +645,14 @@
             }
             <span class="ident">x</span>
         })
-        .<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">x</span><span class="op">|</span> {
-            <span class="kw">let</span> <span class="ident">tok</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">value</span>();
-            <span class="kw">let</span> <span class="ident">sp</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">span</span>();
+        .<span class="ident">map</span>(<span class="kw">move</span> |<span class="ident">x</span>| {
+            <span class="kw">let</span> <span class="ident">tok</span> = <span class="ident">x</span>.<span class="ident">value</span>();
+            <span class="kw">let</span> <span class="ident">sp</span> = <span class="ident">x</span>.<span class="ident">span</span>();
             <span class="comment">// Spans provided by logos will be valid except in extraordinary</span>
             <span class="comment">// circumstances.</span>
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">source</span>.<span class="ident">get</span>(<span class="ident">Range</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="ident">::from</span>(<span class="ident">sp</span>)).<span class="ident">unwrap</span>();
+            <span class="kw">let</span> <span class="ident">s</span> = <span class="ident">source</span>.<span class="ident">get</span>(<span class="ident">Range</span>::&lt;<span class="ident">usize</span>&gt;<span class="ident">::from</span>(<span class="ident">sp</span>)).<span class="ident">unwrap</span>();
             <span class="ident">Spanned::new</span>(<span class="ident">sp</span>, (<span class="kw-2">*</span><span class="ident">tok</span>, <span class="ident">s</span>))
         })
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_parsing" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_parsing" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

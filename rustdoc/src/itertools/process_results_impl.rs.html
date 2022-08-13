@@ -101,48 +101,48 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// Used by [`process_results`](crate::process_results), see its docs</span>
 <span class="doccomment">/// for more information.</span>
-<span class="attribute">#[<span class="ident">must_use</span> <span class="op">=</span> <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]</span>
+<span class="attribute">#[<span class="ident">must_use</span> = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ProcessResults</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">I</span>, <span class="ident">E</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">error</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">E</span><span class="op">&gt;</span>,
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ProcessResults</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">I</span>, <span class="ident">E</span>: <span class="lifetime">&#39;a</span>&gt; {
+    <span class="ident">error</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="prelude-ty">Result</span>&lt;(), <span class="ident">E</span>&gt;,
     <span class="ident">iter</span>: <span class="ident">I</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">I</span>, <span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">ProcessResults</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">I</span>, <span class="ident">E</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">I</span>, <span class="ident">T</span>, <span class="ident">E</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">ProcessResults</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">I</span>, <span class="ident">E</span>&gt;
+    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">E</span>&gt;&gt;
 {
-    <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">T</span>;
+    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">T</span>;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">next</span>() {
             <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">x</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="ident">x</span>),
             <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">e</span>)) =&gt; {
-                <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">error</span> <span class="op">=</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">error</span> = <span class="prelude-val">Err</span>(<span class="ident">e</span>);
                 <span class="prelude-val">None</span>
             }
             <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
         (<span class="number">0</span>, <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">size_hint</span>().<span class="number">1</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">fold</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">init</span>: <span class="ident">B</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">B</span>
+    <span class="kw">fn</span> <span class="ident">fold</span>&lt;<span class="ident">B</span>, <span class="ident">F</span>&gt;(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">init</span>: <span class="ident">B</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">B</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Sized</span>,
         <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">B</span>, <span class="ident"><span class="self">Self</span>::Item</span>) -&gt; <span class="ident">B</span>,
     {
-        <span class="kw">let</span> <span class="ident">error</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">error</span>;
+        <span class="kw">let</span> <span class="ident">error</span> = <span class="self">self</span>.<span class="ident">error</span>;
         <span class="self">self</span>.<span class="ident">iter</span>
-            .<span class="ident">try_fold</span>(<span class="ident">init</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">opt</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">opt</span> {
+            .<span class="ident">try_fold</span>(<span class="ident">init</span>, |<span class="ident">acc</span>, <span class="ident">opt</span>| <span class="kw">match</span> <span class="ident">opt</span> {
                 <span class="prelude-val">Ok</span>(<span class="ident">x</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">f</span>(<span class="ident">acc</span>, <span class="ident">x</span>)),
                 <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
-                    <span class="kw-2">*</span><span class="ident">error</span> <span class="op">=</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+                    <span class="kw-2">*</span><span class="ident">error</span> = <span class="prelude-val">Err</span>(<span class="ident">e</span>);
                     <span class="prelude-val">Err</span>(<span class="ident">acc</span>)
                 }
             })
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>)
+            .<span class="ident">unwrap_or_else</span>(|<span class="ident">e</span>| <span class="ident">e</span>)
     }
 }
 
@@ -181,16 +181,16 @@
 <span class="doccomment">/// assert_eq!(first_max, Ok(3));</span>
 <span class="doccomment">/// assert!(second_max.is_err());</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">process_results</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">F</span>, <span class="ident">T</span>, <span class="ident">E</span>, <span class="ident">R</span><span class="op">&gt;</span>(<span class="ident">iterable</span>: <span class="ident">I</span>, <span class="ident">processor</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-          <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">ProcessResults</span><span class="op">&lt;</span><span class="ident">I::IntoIter</span>, <span class="ident">E</span><span class="op">&gt;</span>) -&gt; <span class="ident">R</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">process_results</span>&lt;<span class="ident">I</span>, <span class="ident">F</span>, <span class="ident">T</span>, <span class="ident">E</span>, <span class="ident">R</span>&gt;(<span class="ident">iterable</span>: <span class="ident">I</span>, <span class="ident">processor</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">R</span>, <span class="ident">E</span>&gt;
+    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">E</span>&gt;&gt;,
+          <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">ProcessResults</span>&lt;<span class="ident">I::IntoIter</span>, <span class="ident">E</span>&gt;) -&gt; <span class="ident">R</span>
 {
-    <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="ident">iterable</span>.<span class="ident">into_iter</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">error</span> <span class="op">=</span> <span class="prelude-val">Ok</span>(());
+    <span class="kw">let</span> <span class="ident">iter</span> = <span class="ident">iterable</span>.<span class="ident">into_iter</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">error</span> = <span class="prelude-val">Ok</span>(());
 
-    <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">processor</span>(<span class="ident">ProcessResults</span> { <span class="ident">error</span>: <span class="kw-2">&amp;mut</span> <span class="ident">error</span>, <span class="ident">iter</span> });
+    <span class="kw">let</span> <span class="ident">result</span> = <span class="ident">processor</span>(<span class="ident">ProcessResults</span> { <span class="ident">error</span>: <span class="kw-2">&amp;mut</span> <span class="ident">error</span>, <span class="ident">iter</span> });
 
-    <span class="ident">error</span>.<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">result</span>)
+    <span class="ident">error</span>.<span class="ident">map</span>(|<span class="kw">_</span>| <span class="ident">result</span>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

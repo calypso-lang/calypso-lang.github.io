@@ -372,8 +372,8 @@
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">level</span>: <span class="ident">Level</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">span_range</span>: <span class="ident">SpanRange</span>,
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">msg</span>: <span class="ident">String</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">suggestions</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">SuggestionKind</span>, <span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SpanRange</span><span class="op">&gt;</span>)<span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">children</span>: <span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">SpanRange</span>, <span class="ident">String</span>)<span class="op">&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">suggestions</span>: <span class="ident">Vec</span>&lt;(<span class="ident">SuggestionKind</span>, <span class="ident">String</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">SpanRange</span>&gt;)&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">children</span>: <span class="ident">Vec</span>&lt;(<span class="ident">SpanRange</span>, <span class="ident">String</span>)&gt;,
 }
 
 <span class="doccomment">/// A collection of methods that do not exist in `proc_macro::Diagnostic`</span>
@@ -526,7 +526,7 @@
     <span class="doccomment">/// # Warnings</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Warnings are not emitted on stable and beta, but this function will abort anyway.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">abort</span>(<span class="self">self</span>) -&gt; <span class="op">!</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">abort</span>(<span class="self">self</span>) -&gt; ! {
         <span class="self">self</span>.<span class="ident">emit</span>();
         <span class="ident">abort_now</span>()
     }
@@ -547,14 +547,14 @@
 <span class="kw">impl</span> <span class="ident">Diagnostic</span> {
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">span_suggestion</span>(<span class="self">self</span>, <span class="ident">span</span>: <span class="ident">Span</span>, <span class="ident">suggestion</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">msg</span>: <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
         <span class="kw">match</span> <span class="ident">suggestion</span> {
-            <span class="string">&quot;help&quot;</span> <span class="op">|</span> <span class="string">&quot;hint&quot;</span> =&gt; <span class="self">self</span>.<span class="ident">span_help</span>(<span class="ident">span</span>, <span class="ident">msg</span>),
+            <span class="string">&quot;help&quot;</span> | <span class="string">&quot;hint&quot;</span> =&gt; <span class="self">self</span>.<span class="ident">span_help</span>(<span class="ident">span</span>, <span class="ident">msg</span>),
             <span class="kw">_</span> =&gt; <span class="self">self</span>.<span class="ident">span_note</span>(<span class="ident">span</span>, <span class="ident">msg</span>),
         }
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">suggestion</span>(<span class="self">self</span>, <span class="ident">suggestion</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">msg</span>: <span class="ident">String</span>) -&gt; <span class="self">Self</span> {
         <span class="kw">match</span> <span class="ident">suggestion</span> {
-            <span class="string">&quot;help&quot;</span> <span class="op">|</span> <span class="string">&quot;hint&quot;</span> =&gt; <span class="self">self</span>.<span class="ident">help</span>(<span class="ident">msg</span>),
+            <span class="string">&quot;help&quot;</span> | <span class="string">&quot;hint&quot;</span> =&gt; <span class="self">self</span>.<span class="ident">help</span>(<span class="ident">msg</span>),
             <span class="kw">_</span> =&gt; <span class="self">self</span>.<span class="ident">note</span>(<span class="ident">msg</span>),
         }
     }
@@ -577,16 +577,16 @@
             <span class="ident">span_range</span>: <span class="ident">SpanRange</span>,
             <span class="ident">level</span>: <span class="kw-2">&amp;</span><span class="ident">Level</span>,
             <span class="ident">msg</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-            <span class="ident">suggestions</span>: <span class="kw-2">&amp;</span>[(<span class="ident">SuggestionKind</span>, <span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SpanRange</span><span class="op">&gt;</span>)],
+            <span class="ident">suggestions</span>: <span class="kw-2">&amp;</span>[(<span class="ident">SuggestionKind</span>, <span class="ident">String</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">SpanRange</span>&gt;)],
         ) -&gt; <span class="ident">TokenStream</span> {
-            <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">level</span> <span class="op">==</span> <span class="ident">Level::Warning</span> {
+            <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">level</span> == <span class="ident">Level::Warning</span> {
                 <span class="kw">return</span> <span class="ident">TokenStream::new</span>();
             }
 
-            <span class="kw">let</span> <span class="ident">message</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">suggestions</span>.<span class="ident">is_empty</span>() {
+            <span class="kw">let</span> <span class="ident">message</span> = <span class="kw">if</span> <span class="ident">suggestions</span>.<span class="ident">is_empty</span>() {
                 <span class="ident">Cow::Borrowed</span>(<span class="ident">msg</span>)
             } <span class="kw">else</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">message</span> <span class="op">=</span> <span class="ident">String::new</span>();
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">message</span> = <span class="ident">String::new</span>();
                 <span class="ident">ensure_lf</span>(<span class="kw-2">&amp;mut</span> <span class="ident">message</span>, <span class="ident">msg</span>);
                 <span class="ident">message</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
 
@@ -601,9 +601,9 @@
                 <span class="ident">Cow::Owned</span>(<span class="ident">message</span>)
             };
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">proc_macro2::Literal::string</span>(<span class="kw-2">&amp;</span><span class="ident">message</span>);
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">msg</span> = <span class="ident">proc_macro2::Literal::string</span>(<span class="kw-2">&amp;</span><span class="ident">message</span>);
             <span class="ident">msg</span>.<span class="ident">set_span</span>(<span class="ident">span_range</span>.<span class="ident">last</span>);
-            <span class="kw">let</span> <span class="ident">group</span> <span class="op">=</span> <span class="macro">quote_spanned!</span>(<span class="ident">span_range</span>.<span class="ident">last</span>=&gt; { #<span class="ident">msg</span> } );
+            <span class="kw">let</span> <span class="ident">group</span> = <span class="macro">quote_spanned!</span>(<span class="ident">span_range</span>.<span class="ident">last</span>=&gt; { #<span class="ident">msg</span> } );
             <span class="macro">quote_spanned!</span>(<span class="ident">span_range</span>.<span class="ident">first</span>=&gt; <span class="macro">compile_error!</span>#<span class="ident">group</span>)
         }
 
@@ -616,7 +616,7 @@
         <span class="ident">ts</span>.<span class="ident">extend</span>(
             <span class="self">self</span>.<span class="ident">children</span>
                 .<span class="ident">iter</span>()
-                .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">span_range</span>, <span class="ident">msg</span>)<span class="op">|</span> <span class="ident">diag_to_tokens</span>(<span class="kw-2">*</span><span class="ident">span_range</span>, <span class="kw-2">&amp;</span><span class="ident">Level::Error</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>, <span class="kw-2">&amp;</span>[])),
+                .<span class="ident">map</span>(|(<span class="ident">span_range</span>, <span class="ident">msg</span>)| <span class="ident">diag_to_tokens</span>(<span class="kw-2">*</span><span class="ident">span_range</span>, <span class="kw-2">&amp;</span><span class="ident">Level::Error</span>, <span class="kw-2">&amp;</span><span class="ident">msg</span>, <span class="kw-2">&amp;</span>[])),
         );
     }
 }
@@ -636,20 +636,20 @@
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;syn-error&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">syn::Error</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Diagnostic</span> {
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;syn-error&quot;</span>)]</span>
+<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">syn::Error</span>&gt; <span class="kw">for</span> <span class="ident">Diagnostic</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">syn::Error</span>) -&gt; <span class="self">Self</span> {
         <span class="kw">use</span> <span class="ident">proc_macro2</span>::{<span class="ident">Delimiter</span>, <span class="ident">TokenTree</span>};
 
-        <span class="kw">fn</span> <span class="ident">gut_error</span>(<span class="ident">ts</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">TokenTree</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">SpanRange</span>, <span class="ident">String</span>)<span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="ident">first</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ts</span>.<span class="ident">next</span>() {
+        <span class="kw">fn</span> <span class="ident">gut_error</span>(<span class="ident">ts</span>: <span class="kw-2">&amp;mut</span> <span class="kw">impl</span> <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="ident">TokenTree</span>&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">SpanRange</span>, <span class="ident">String</span>)&gt; {
+            <span class="kw">let</span> <span class="ident">first</span> = <span class="kw">match</span> <span class="ident">ts</span>.<span class="ident">next</span>() {
                 <span class="comment">// compile_error</span>
                 <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">None</span>,
                 <span class="prelude-val">Some</span>(<span class="ident">tt</span>) =&gt; <span class="ident">tt</span>.<span class="ident">span</span>(),
             };
             <span class="ident">ts</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(); <span class="comment">// !</span>
 
-            <span class="kw">let</span> <span class="ident">lit</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">ts</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>() {
+            <span class="kw">let</span> <span class="ident">lit</span> = <span class="kw">match</span> <span class="ident">ts</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>() {
                 <span class="ident">TokenTree::Group</span>(<span class="ident">group</span>) =&gt; {
                     <span class="comment">// Currently `syn` builds `compile_error!` invocations</span>
                     <span class="comment">// exclusively in `ident{&quot;...&quot;}` (braced) form which is not</span>
@@ -660,8 +660,8 @@
                     <span class="comment">// we will need to skip the `;` as well.</span>
                     <span class="comment">// Highly unlikely, but better safe than sorry.</span>
 
-                    <span class="kw">if</span> <span class="ident">group</span>.<span class="ident">delimiter</span>() <span class="op">==</span> <span class="ident">Delimiter::Parenthesis</span>
-                        <span class="op">|</span><span class="op">|</span> <span class="ident">group</span>.<span class="ident">delimiter</span>() <span class="op">==</span> <span class="ident">Delimiter::Bracket</span>
+                    <span class="kw">if</span> <span class="ident">group</span>.<span class="ident">delimiter</span>() == <span class="ident">Delimiter::Parenthesis</span>
+                        || <span class="ident">group</span>.<span class="ident">delimiter</span>() == <span class="ident">Delimiter::Bracket</span>
                     {
                         <span class="ident">ts</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>(); <span class="comment">// ;</span>
                     }
@@ -674,8 +674,8 @@
                 <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
             };
 
-            <span class="kw">let</span> <span class="ident">last</span> <span class="op">=</span> <span class="ident">lit</span>.<span class="ident">span</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">msg</span> <span class="op">=</span> <span class="ident">lit</span>.<span class="ident">to_string</span>();
+            <span class="kw">let</span> <span class="ident">last</span> = <span class="ident">lit</span>.<span class="ident">span</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">msg</span> = <span class="ident">lit</span>.<span class="ident">to_string</span>();
 
             <span class="comment">// &quot;abc&quot; =&gt; abc</span>
             <span class="ident">msg</span>.<span class="ident">pop</span>();
@@ -684,17 +684,17 @@
             <span class="prelude-val">Some</span>((<span class="ident">SpanRange</span> { <span class="ident">first</span>, <span class="ident">last</span> }, <span class="ident">msg</span>))
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ts</span> <span class="op">=</span> <span class="ident">err</span>.<span class="ident">to_compile_error</span>().<span class="ident">into_iter</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ts</span> = <span class="ident">err</span>.<span class="ident">to_compile_error</span>().<span class="ident">into_iter</span>();
 
-        <span class="kw">let</span> (<span class="ident">span_range</span>, <span class="ident">msg</span>) <span class="op">=</span> <span class="ident">gut_error</span>(<span class="kw-2">&amp;mut</span> <span class="ident">ts</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">Diagnostic::spanned_range</span>(<span class="ident">span_range</span>, <span class="ident">Level::Error</span>, <span class="ident">msg</span>);
+        <span class="kw">let</span> (<span class="ident">span_range</span>, <span class="ident">msg</span>) = <span class="ident">gut_error</span>(<span class="kw-2">&amp;mut</span> <span class="ident">ts</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> = <span class="ident">Diagnostic::spanned_range</span>(<span class="ident">span_range</span>, <span class="ident">Level::Error</span>, <span class="ident">msg</span>);
 
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">span_range</span>, <span class="ident">msg</span>)) <span class="op">=</span> <span class="ident">gut_error</span>(<span class="kw-2">&amp;mut</span> <span class="ident">ts</span>) {
-            <span class="ident">res</span> <span class="op">=</span> <span class="ident">res</span>.<span class="ident">span_range_error</span>(<span class="ident">span_range</span>, <span class="ident">msg</span>);
+        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">span_range</span>, <span class="ident">msg</span>)) = <span class="ident">gut_error</span>(<span class="kw-2">&amp;mut</span> <span class="ident">ts</span>) {
+            <span class="ident">res</span> = <span class="ident">res</span>.<span class="ident">span_range_error</span>(<span class="ident">span_range</span>, <span class="ident">msg</span>);
         }
 
         <span class="ident">res</span>
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="proc_macro_error" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (1b57946a4 2022-08-03)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="proc_macro_error" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>

@@ -88,95 +88,95 @@
 <span id="88">88</span>
 <span id="89">89</span>
 <span id="90">90</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::fmt</span>;
-<span class="kw">use</span> <span class="ident">std::iter::FusedIterator</span>;
-<span class="kw">use</span> <span class="ident">std::usize</span>;
-<span class="kw">use</span> <span class="ident">alloc::vec::Vec</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::iter::FusedIterator;
+<span class="kw">use </span>std::usize;
+<span class="kw">use </span>alloc::vec::Vec;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::combinations</span>::{<span class="ident">Combinations</span>, <span class="ident">combinations</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::size_hint</span>;
+<span class="kw">use </span><span class="kw">super</span>::combinations::{Combinations, combinations};
+<span class="kw">use </span><span class="kw">super</span>::size_hint;
 
-<span class="doccomment">/// An iterator to iterate through the powerset of the elements from an iterator.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.powerset()`](crate::Itertools::powerset) for more</span>
-<span class="doccomment">/// information.</span>
-<span class="attribute">#[<span class="ident">must_use</span> = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Powerset</span>&lt;<span class="ident">I</span>: <span class="ident">Iterator</span>&gt; {
-    <span class="ident">combs</span>: <span class="ident">Combinations</span>&lt;<span class="ident">I</span>&gt;,
-    <span class="comment">// Iterator `position` (equal to count of yielded elements).</span>
-    <span class="ident">pos</span>: <span class="ident">usize</span>,
+<span class="doccomment">/// An iterator to iterate through the powerset of the elements from an iterator.
+///
+/// See [`.powerset()`](crate::Itertools::powerset) for more
+/// information.
+</span><span class="attribute">#[must_use = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]
+</span><span class="kw">pub struct </span>Powerset&lt;I: Iterator&gt; {
+    combs: Combinations&lt;I&gt;,
+    <span class="comment">// Iterator `position` (equal to count of yielded elements).
+    </span>pos: usize,
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Powerset</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Clone</span> + <span class="ident">Iterator</span>,
-          <span class="ident">I::Item</span>: <span class="ident">Clone</span>,
+<span class="kw">impl</span>&lt;I&gt; Clone <span class="kw">for </span>Powerset&lt;I&gt;
+    <span class="kw">where </span>I: Clone + Iterator,
+          I::Item: Clone,
 {
-    <span class="macro">clone_fields!</span>(<span class="ident">combs</span>, <span class="ident">pos</span>);
+    <span class="macro">clone_fields!</span>(combs, pos);
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Powerset</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span> + <span class="ident">fmt::Debug</span>,
-          <span class="ident">I::Item</span>: <span class="ident">fmt::Debug</span>,
+<span class="kw">impl</span>&lt;I&gt; fmt::Debug <span class="kw">for </span>Powerset&lt;I&gt;
+    <span class="kw">where </span>I: Iterator + fmt::Debug,
+          I::Item: fmt::Debug,
 {
-    <span class="macro">debug_fmt_fields!</span>(<span class="ident">Powerset</span>, <span class="ident">combs</span>, <span class="ident">pos</span>);
+    <span class="macro">debug_fmt_fields!</span>(Powerset, combs, pos);
 }
 
-<span class="doccomment">/// Create a new `Powerset` from a clonable iterator.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">powerset</span>&lt;<span class="ident">I</span>&gt;(<span class="ident">src</span>: <span class="ident">I</span>) -&gt; <span class="ident">Powerset</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>,
-          <span class="ident">I::Item</span>: <span class="ident">Clone</span>,
+<span class="doccomment">/// Create a new `Powerset` from a clonable iterator.
+</span><span class="kw">pub fn </span>powerset&lt;I&gt;(src: I) -&gt; Powerset&lt;I&gt;
+    <span class="kw">where </span>I: Iterator,
+          I::Item: Clone,
 {
-    <span class="ident">Powerset</span> {
-        <span class="ident">combs</span>: <span class="ident">combinations</span>(<span class="ident">src</span>, <span class="number">0</span>),
-        <span class="ident">pos</span>: <span class="number">0</span>,
+    Powerset {
+        combs: combinations(src, <span class="number">0</span>),
+        pos: <span class="number">0</span>,
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Powerset</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">I</span>: <span class="ident">Iterator</span>,
-        <span class="ident">I::Item</span>: <span class="ident">Clone</span>,
+<span class="kw">impl</span>&lt;I&gt; Iterator <span class="kw">for </span>Powerset&lt;I&gt;
+    <span class="kw">where
+        </span>I: Iterator,
+        I::Item: Clone,
 {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">Vec</span>&lt;<span class="ident">I::Item</span>&gt;;
+    <span class="kw">type </span>Item = Vec&lt;I::Item&gt;;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">elt</span>) = <span class="self">self</span>.<span class="ident">combs</span>.<span class="ident">next</span>() {
-            <span class="self">self</span>.<span class="ident">pos</span> = <span class="self">self</span>.<span class="ident">pos</span>.<span class="ident">saturating_add</span>(<span class="number">1</span>);
-            <span class="prelude-val">Some</span>(<span class="ident">elt</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">combs</span>.<span class="ident">k</span>() &lt; <span class="self">self</span>.<span class="ident">combs</span>.<span class="ident">n</span>()
-            || <span class="self">self</span>.<span class="ident">combs</span>.<span class="ident">k</span>() == <span class="number">0</span>
-        {
-            <span class="self">self</span>.<span class="ident">combs</span>.<span class="ident">reset</span>(<span class="self">self</span>.<span class="ident">combs</span>.<span class="ident">k</span>() + <span class="number">1</span>);
-            <span class="self">self</span>.<span class="ident">combs</span>.<span class="ident">next</span>().<span class="ident">map</span>(|<span class="ident">elt</span>| {
-                <span class="self">self</span>.<span class="ident">pos</span> = <span class="self">self</span>.<span class="ident">pos</span>.<span class="ident">saturating_add</span>(<span class="number">1</span>);
-                <span class="ident">elt</span>
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(elt) = <span class="self">self</span>.combs.next() {
+            <span class="self">self</span>.pos = <span class="self">self</span>.pos.saturating_add(<span class="number">1</span>);
+            <span class="prelude-val">Some</span>(elt)
+        } <span class="kw">else if </span><span class="self">self</span>.combs.k() &lt; <span class="self">self</span>.combs.n()
+            || <span class="self">self</span>.combs.k() == <span class="number">0
+        </span>{
+            <span class="self">self</span>.combs.reset(<span class="self">self</span>.combs.k() + <span class="number">1</span>);
+            <span class="self">self</span>.combs.next().map(|elt| {
+                <span class="self">self</span>.pos = <span class="self">self</span>.pos.saturating_add(<span class="number">1</span>);
+                elt
             })
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
-        <span class="comment">// Total bounds for source iterator.</span>
-        <span class="kw">let</span> <span class="ident">src_total</span> = <span class="ident">size_hint::add_scalar</span>(<span class="self">self</span>.<span class="ident">combs</span>.<span class="ident">src</span>().<span class="ident">size_hint</span>(), <span class="self">self</span>.<span class="ident">combs</span>.<span class="ident">n</span>());
+    <span class="kw">fn </span>size_hint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (usize, <span class="prelude-ty">Option</span>&lt;usize&gt;) {
+        <span class="comment">// Total bounds for source iterator.
+        </span><span class="kw">let </span>src_total = size_hint::add_scalar(<span class="self">self</span>.combs.src().size_hint(), <span class="self">self</span>.combs.n());
 
-        <span class="comment">// Total bounds for self ( length(powerset(set) == 2 ^ length(set) )</span>
-        <span class="kw">let</span> <span class="ident">self_total</span> = <span class="ident">size_hint::pow_scalar_base</span>(<span class="number">2</span>, <span class="ident">src_total</span>);
+        <span class="comment">// Total bounds for self ( length(powerset(set) == 2 ^ length(set) )
+        </span><span class="kw">let </span>self_total = size_hint::pow_scalar_base(<span class="number">2</span>, src_total);
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">pos</span> &lt; <span class="ident">usize::MAX</span> {
-            <span class="comment">// Subtract count of elements already yielded from total.</span>
-            <span class="ident">size_hint::sub_scalar</span>(<span class="ident">self_total</span>, <span class="self">self</span>.<span class="ident">pos</span>)
-        } <span class="kw">else</span> {
-            <span class="comment">// Fallback: self.pos is saturated and no longer reliable.</span>
-            (<span class="number">0</span>, <span class="ident">self_total</span>.<span class="number">1</span>)
+        <span class="kw">if </span><span class="self">self</span>.pos &lt; usize::MAX {
+            <span class="comment">// Subtract count of elements already yielded from total.
+            </span>size_hint::sub_scalar(self_total, <span class="self">self</span>.pos)
+        } <span class="kw">else </span>{
+            <span class="comment">// Fallback: self.pos is saturated and no longer reliable.
+            </span>(<span class="number">0</span>, self_total.<span class="number">1</span>)
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">FusedIterator</span> <span class="kw">for</span> <span class="ident">Powerset</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">I</span>: <span class="ident">Iterator</span>,
-        <span class="ident">I::Item</span>: <span class="ident">Clone</span>,
+<span class="kw">impl</span>&lt;I&gt; FusedIterator <span class="kw">for </span>Powerset&lt;I&gt;
+    <span class="kw">where
+        </span>I: Iterator,
+        I::Item: Clone,
 {}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

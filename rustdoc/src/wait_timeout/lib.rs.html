@@ -66,73 +66,73 @@
 <span id="66">66</span>
 <span id="67">67</span>
 <span id="68">68</span>
-</pre><pre class="rust"><code><span class="doccomment">//! A crate to wait on a child process with a particular timeout.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This crate is an implementation for Unix and Windows of the ability to wait</span>
-<span class="doccomment">//! on a child process with a timeout specified. On Windows the implementation</span>
-<span class="doccomment">//! is fairly trivial as it&#39;s just a call to `WaitForSingleObject` with a</span>
-<span class="doccomment">//! timeout argument, but on Unix the implementation is much more involved. The</span>
-<span class="doccomment">//! current implementation registers a `SIGCHLD` handler and initializes some</span>
-<span class="doccomment">//! global state. This handler also works within multi-threaded environments.</span>
-<span class="doccomment">//! If your application is otherwise handling `SIGCHLD` then bugs may arise.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Example</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```no_run</span>
-<span class="doccomment">//! use std::process::Command;</span>
-<span class="doccomment">//! use wait_timeout::ChildExt;</span>
-<span class="doccomment">//! use std::time::Duration;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let mut child = Command::new(&quot;foo&quot;).spawn().unwrap();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let one_sec = Duration::from_secs(1);</span>
-<span class="doccomment">//! let status_code = match child.wait_timeout(one_sec).unwrap() {</span>
-<span class="doccomment">//!     Some(status) =&gt; status.code(),</span>
-<span class="doccomment">//!     None =&gt; {</span>
-<span class="doccomment">//!         // child hasn&#39;t exited yet</span>
-<span class="doccomment">//!         child.kill().unwrap();</span>
-<span class="doccomment">//!         child.wait().unwrap().code()</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//! ```</span>
+</pre><pre class="rust"><code><span class="doccomment">//! A crate to wait on a child process with a particular timeout.
+//!
+//! This crate is an implementation for Unix and Windows of the ability to wait
+//! on a child process with a timeout specified. On Windows the implementation
+//! is fairly trivial as it&#39;s just a call to `WaitForSingleObject` with a
+//! timeout argument, but on Unix the implementation is much more involved. The
+//! current implementation registers a `SIGCHLD` handler and initializes some
+//! global state. This handler also works within multi-threaded environments.
+//! If your application is otherwise handling `SIGCHLD` then bugs may arise.
+//!
+//! # Example
+//!
+//! ```no_run
+//! use std::process::Command;
+//! use wait_timeout::ChildExt;
+//! use std::time::Duration;
+//!
+//! let mut child = Command::new(&quot;foo&quot;).spawn().unwrap();
+//!
+//! let one_sec = Duration::from_secs(1);
+//! let status_code = match child.wait_timeout(one_sec).unwrap() {
+//!     Some(status) =&gt; status.code(),
+//!     None =&gt; {
+//!         // child hasn&#39;t exited yet
+//!         child.kill().unwrap();
+//!         child.wait().unwrap().code()
+//!     }
+//! };
+//! ```
 
-<span class="attribute">#![<span class="ident">deny</span>(<span class="ident">missing_docs</span>, <span class="ident">warnings</span>)]</span>
-<span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> = <span class="string">&quot;https://docs.rs/wait-timeout/0.1&quot;</span>)]</span>
+</span><span class="attribute">#![deny(missing_docs, warnings)]
+#![doc(html_root_url = <span class="string">&quot;https://docs.rs/wait-timeout/0.1&quot;</span>)]
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">libc</span>;
+#[cfg(unix)]
+</span><span class="kw">extern crate </span>libc;
 
-<span class="kw">use</span> <span class="ident">std::io</span>;
-<span class="kw">use</span> <span class="ident">std::process</span>::{<span class="ident">Child</span>, <span class="ident">ExitStatus</span>};
-<span class="kw">use</span> <span class="ident">std::time::Duration</span>;
+<span class="kw">use </span>std::io;
+<span class="kw">use </span>std::process::{Child, ExitStatus};
+<span class="kw">use </span>std::time::Duration;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span> <span class="attribute">#[<span class="ident">path</span> = <span class="string">&quot;unix.rs&quot;</span>]</span>
-<span class="kw">mod</span> <span class="ident">imp</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span> <span class="attribute">#[<span class="ident">path</span> = <span class="string">&quot;windows.rs&quot;</span>]</span>
-<span class="kw">mod</span> <span class="ident">imp</span>;
+<span class="attribute">#[cfg(unix)] #[path = <span class="string">&quot;unix.rs&quot;</span>]
+</span><span class="kw">mod </span>imp;
+<span class="attribute">#[cfg(windows)] #[path = <span class="string">&quot;windows.rs&quot;</span>]
+</span><span class="kw">mod </span>imp;
 
-<span class="doccomment">/// Extension methods for the standard `std::process::Child` type.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ChildExt</span> {
-    <span class="doccomment">/// Deprecated, use `wait_timeout` instead.</span>
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">wait_timeout_ms</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ms</span>: <span class="ident">u32</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">ExitStatus</span>&gt;&gt; {
-        <span class="self">self</span>.<span class="ident">wait_timeout</span>(<span class="ident">Duration::from_millis</span>(<span class="ident">ms</span> <span class="kw">as</span> <span class="ident">u64</span>))
+<span class="doccomment">/// Extension methods for the standard `std::process::Child` type.
+</span><span class="kw">pub trait </span>ChildExt {
+    <span class="doccomment">/// Deprecated, use `wait_timeout` instead.
+    </span><span class="attribute">#[doc(hidden)]
+    </span><span class="kw">fn </span>wait_timeout_ms(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ms: u32) -&gt; io::Result&lt;<span class="prelude-ty">Option</span>&lt;ExitStatus&gt;&gt; {
+        <span class="self">self</span>.wait_timeout(Duration::from_millis(ms <span class="kw">as </span>u64))
     }
 
-    <span class="doccomment">/// Wait for this child to exit, timing out after the duration `dur` has</span>
-    <span class="doccomment">/// elapsed.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If `Ok(None)` is returned then the timeout period elapsed without the</span>
-    <span class="doccomment">/// child exiting, and if `Ok(Some(..))` is returned then the child exited</span>
-    <span class="doccomment">/// with the specified exit code.</span>
-    <span class="kw">fn</span> <span class="ident">wait_timeout</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">dur</span>: <span class="ident">Duration</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">ExitStatus</span>&gt;&gt;;
+    <span class="doccomment">/// Wait for this child to exit, timing out after the duration `dur` has
+    /// elapsed.
+    ///
+    /// If `Ok(None)` is returned then the timeout period elapsed without the
+    /// child exiting, and if `Ok(Some(..))` is returned then the child exited
+    /// with the specified exit code.
+    </span><span class="kw">fn </span>wait_timeout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, dur: Duration) -&gt; io::Result&lt;<span class="prelude-ty">Option</span>&lt;ExitStatus&gt;&gt;;
 }
 
-<span class="kw">impl</span> <span class="ident">ChildExt</span> <span class="kw">for</span> <span class="ident">Child</span> {
-    <span class="kw">fn</span> <span class="ident">wait_timeout</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">dur</span>: <span class="ident">Duration</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">ExitStatus</span>&gt;&gt; {
-        <span class="ident">drop</span>(<span class="self">self</span>.<span class="ident">stdin</span>.<span class="ident">take</span>());
-        <span class="ident">imp::wait_timeout</span>(<span class="self">self</span>, <span class="ident">dur</span>)
+<span class="kw">impl </span>ChildExt <span class="kw">for </span>Child {
+    <span class="kw">fn </span>wait_timeout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, dur: Duration) -&gt; io::Result&lt;<span class="prelude-ty">Option</span>&lt;ExitStatus&gt;&gt; {
+        drop(<span class="self">self</span>.stdin.take());
+        imp::wait_timeout(<span class="self">self</span>, dur)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="wait_timeout" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="wait_timeout" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

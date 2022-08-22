@@ -300,307 +300,307 @@
 <span id="300">300</span>
 <span id="301">301</span>
 <span id="302">302</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::mem</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>std::mem;
 
-<span class="kw">use</span> <span class="ident">calypso_base::symbol::Symbol</span>;
+<span class="kw">use </span>calypso_base::symbol::Symbol;
 
-<span class="kw">use</span> <span class="ident">calypso_error</span>::{<span class="ident">eyre::Report</span>, <span class="ident">CalResult</span>};
-<span class="kw">use</span> <span class="ident">indexmap</span>::{<span class="ident">map::IntoIter</span>, <span class="ident">IndexMap</span>};
+<span class="kw">use </span>calypso_error::{eyre::Report, CalResult};
+<span class="kw">use </span>indexmap::{map::IntoIter, IndexMap};
 
-<span class="kw">mod</span> <span class="ident">parse</span>;
+<span class="kw">mod </span>parse;
 
-<span class="doccomment">/// A CCFF container file.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This will contain all the sections of data (somewhat</span>
-<span class="doccomment">/// similar in theory to ELF sections) as well as some basic metadata about the</span>
-<span class="doccomment">/// file: its [ABI version](Self::set_abiver) and</span>
-<span class="doccomment">/// [file type](Self::set_filety), both of which are user-defined.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// It also stores a list of [`Section`]s, which can be accessed and modified</span>
-<span class="doccomment">/// via methods on this structure such as [`get_section`][Self::get_section]</span>
-<span class="doccomment">/// and [`add_section`][Self::add_section]. The order of these sections is</span>
-<span class="doccomment">/// stored, however this is not guaranteed or required and may be changed in</span>
-<span class="doccomment">/// the future.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ContainerFile</span> {
-    <span class="ident">abiver</span>: <span class="ident">u16</span>,
-    <span class="ident">filety</span>: <span class="ident">u8</span>,
-    <span class="ident">sections</span>: <span class="ident">IndexMap</span>&lt;<span class="ident">Symbol</span>, <span class="ident">Section</span>&gt;,
+<span class="doccomment">/// A CCFF container file.
+///
+/// This will contain all the sections of data (somewhat
+/// similar in theory to ELF sections) as well as some basic metadata about the
+/// file: its [ABI version](Self::set_abiver) and
+/// [file type](Self::set_filety), both of which are user-defined.
+///
+/// It also stores a list of [`Section`]s, which can be accessed and modified
+/// via methods on this structure such as [`get_section`][Self::get_section]
+/// and [`add_section`][Self::add_section]. The order of these sections is
+/// stored, however this is not guaranteed or required and may be changed in
+/// the future.
+</span><span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>ContainerFile {
+    abiver: u16,
+    filety: u8,
+    sections: IndexMap&lt;Symbol, Section&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">ContainerFile</span> {
-    <span class="doccomment">/// Create a new container file. The ABI version (`abiver`) and file type</span>
-    <span class="doccomment">/// (`filety`) may be any arbitrary user-defined value.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">abiver</span>: <span class="ident">u16</span>, <span class="ident">filety</span>: <span class="ident">u8</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">abiver</span>,
-            <span class="ident">filety</span>,
-            <span class="ident">sections</span>: <span class="ident">IndexMap::new</span>(),
+<span class="kw">impl </span>ContainerFile {
+    <span class="doccomment">/// Create a new container file. The ABI version (`abiver`) and file type
+    /// (`filety`) may be any arbitrary user-defined value.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>new(abiver: u16, filety: u8) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            abiver,
+            filety,
+            sections: IndexMap::new(),
         }
     }
 
-    <span class="doccomment">/// Set the ABI version of the container file. This may be any arbitrary</span>
-    <span class="doccomment">/// user-defined value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_abiver</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">abiver</span>: <span class="ident">u16</span>) {
-        <span class="self">self</span>.<span class="ident">abiver</span> = <span class="ident">abiver</span>;
+    <span class="doccomment">/// Set the ABI version of the container file. This may be any arbitrary
+    /// user-defined value.
+    </span><span class="kw">pub fn </span>set_abiver(<span class="kw-2">&amp;mut </span><span class="self">self</span>, abiver: u16) {
+        <span class="self">self</span>.abiver = abiver;
     }
 
-    <span class="doccomment">/// Get the ABI version of the container file.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_abiver</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u16</span> {
-        <span class="self">self</span>.<span class="ident">abiver</span>
+    <span class="doccomment">/// Get the ABI version of the container file.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>get_abiver(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u16 {
+        <span class="self">self</span>.abiver
     }
 
-    <span class="doccomment">/// Set the file type of the container file. This may be any arbitrary</span>
-    <span class="doccomment">/// user-defined value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_filety</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">filety</span>: <span class="ident">u8</span>) {
-        <span class="self">self</span>.<span class="ident">filety</span> = <span class="ident">filety</span>;
+    <span class="doccomment">/// Set the file type of the container file. This may be any arbitrary
+    /// user-defined value.
+    </span><span class="kw">pub fn </span>set_filety(<span class="kw-2">&amp;mut </span><span class="self">self</span>, filety: u8) {
+        <span class="self">self</span>.filety = filety;
     }
 
-    <span class="doccomment">/// Get the file type of the container file.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_filety</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u8</span> {
-        <span class="self">self</span>.<span class="ident">filety</span>
+    <span class="doccomment">/// Get the file type of the container file.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>get_filety(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u8 {
+        <span class="self">self</span>.filety
     }
 
-    <span class="doccomment">/// Add a section to the container file. If there was already a section</span>
-    <span class="doccomment">/// with this name present, it will be replaced and returned.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function will panic if the name of the section was longer than 255</span>
-    <span class="doccomment">/// characters, if the name of the section contained non-printable ASCII</span>
-    <span class="doccomment">/// characters (less than `0x21` or greater than `0x7E`), or if there were</span>
-    <span class="doccomment">/// already 255 sections in the container file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_section</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="ident">Symbol</span>, <span class="ident">section</span>: <span class="ident">Section</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Section</span>&gt; {
-        <span class="kw">let</span> <span class="ident">name_as_str</span> = <span class="ident">name</span>.<span class="ident">as_str</span>();
+    <span class="doccomment">/// Add a section to the container file. If there was already a section
+    /// with this name present, it will be replaced and returned.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if the name of the section was longer than 255
+    /// characters, if the name of the section contained non-printable ASCII
+    /// characters (less than `0x21` or greater than `0x7E`), or if there were
+    /// already 255 sections in the container file.
+    </span><span class="kw">pub fn </span>add_section(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: Symbol, section: Section) -&gt; <span class="prelude-ty">Option</span>&lt;Section&gt; {
+        <span class="kw">let </span>name_as_str = name.as_str();
         <span class="macro">assert!</span>(
-            <span class="ident">name_as_str</span>.<span class="ident">len</span>() &lt;= <span class="number">255</span>,
-            <span class="string">&quot;section name must be shorter than 256 characters&quot;</span>
-        );
+            name_as_str.len() &lt;= <span class="number">255</span>,
+            <span class="string">&quot;section name must be shorter than 256 characters&quot;
+        </span>);
         <span class="macro">assert!</span>(
-            <span class="ident">name_as_str</span>.<span class="ident">chars</span>().<span class="ident">all</span>(|<span class="ident">c</span>| <span class="ident">c</span>.<span class="ident">is_ascii_graphic</span>()),
-            <span class="string">&quot;section name must not contain non-printable ASCII characters (less than `0x21` or greater than `0x7E`)&quot;</span>
-        );
+            name_as_str.chars().all(|c| c.is_ascii_graphic()),
+            <span class="string">&quot;section name must not contain non-printable ASCII characters (less than `0x21` or greater than `0x7E`)&quot;
+        </span>);
         <span class="macro">assert!</span>(
-            <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">len</span>() &lt;= <span class="number">255</span>,
-            <span class="string">&quot;container file can only contain up to 255 sections&quot;</span>
-        );
-        <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">insert</span>(<span class="ident">name</span>, <span class="ident">section</span>)
+            <span class="self">self</span>.sections.len() &lt;= <span class="number">255</span>,
+            <span class="string">&quot;container file can only contain up to 255 sections&quot;
+        </span>);
+        <span class="self">self</span>.sections.insert(name, section)
     }
 
-    <span class="doccomment">/// Remove a section from the container file. The removed section, if any,</span>
-    <span class="doccomment">/// will be returned.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remove_section</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="ident">Symbol</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Section</span>&gt; {
-        <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">shift_remove</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>)
+    <span class="doccomment">/// Remove a section from the container file. The removed section, if any,
+    /// will be returned.
+    </span><span class="kw">pub fn </span>remove_section(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: Symbol) -&gt; <span class="prelude-ty">Option</span>&lt;Section&gt; {
+        <span class="self">self</span>.sections.shift_remove(<span class="kw-2">&amp;</span>name)
     }
 
-    <span class="doccomment">/// Get a reference to a section in the container file.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_section</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="ident">Symbol</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">Section</span>&gt; {
-        <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>)
+    <span class="doccomment">/// Get a reference to a section in the container file.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>get_section(<span class="kw-2">&amp;</span><span class="self">self</span>, name: Symbol) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Section&gt; {
+        <span class="self">self</span>.sections.get(<span class="kw-2">&amp;</span>name)
     }
 
-    <span class="doccomment">/// Get a mutable reference to a section in the container file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_section_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="ident">Symbol</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut</span> <span class="ident">Section</span>&gt; {
-        <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>)
+    <span class="doccomment">/// Get a mutable reference to a section in the container file.
+    </span><span class="kw">pub fn </span>get_section_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: Symbol) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>Section&gt; {
+        <span class="self">self</span>.sections.get_mut(<span class="kw-2">&amp;</span>name)
     }
 
-    <span class="doccomment">/// Iterate over the sections in the container file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sections</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = (<span class="kw-2">&amp;</span><span class="ident">Symbol</span>, <span class="kw-2">&amp;</span><span class="ident">Section</span>)&gt; {
-        <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">iter</span>()
+    <span class="doccomment">/// Iterate over the sections in the container file.
+    </span><span class="kw">pub fn </span>sections(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (<span class="kw-2">&amp;</span>Symbol, <span class="kw-2">&amp;</span>Section)&gt; {
+        <span class="self">self</span>.sections.iter()
     }
 
-    <span class="doccomment">/// Iterate mutably over the sections in the container file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sections_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = (<span class="kw-2">&amp;</span><span class="ident">Symbol</span>, <span class="kw-2">&amp;mut</span> <span class="ident">Section</span>)&gt; {
-        <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">iter_mut</span>()
+    <span class="doccomment">/// Iterate mutably over the sections in the container file.
+    </span><span class="kw">pub fn </span>sections_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw">impl </span>Iterator&lt;Item = (<span class="kw-2">&amp;</span>Symbol, <span class="kw-2">&amp;mut </span>Section)&gt; {
+        <span class="self">self</span>.sections.iter_mut()
     }
 
-    <span class="doccomment">/// Get the size of the entire container file.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="number">4</span> <span class="comment">// magic bytes</span>
-        + <span class="ident">mem::size_of</span>::&lt;<span class="ident">u16</span>&gt;() <span class="comment">// abiver</span>
-        + <span class="ident">mem::size_of</span>::&lt;<span class="ident">u8</span>&gt;() <span class="comment">// filety</span>
-        + <span class="ident">mem::size_of</span>::&lt;<span class="ident">u8</span>&gt;() <span class="comment">// len(sections)</span>
-        + <span class="self">self</span>.<span class="ident">sections</span>().<span class="ident">map</span>(|(<span class="ident">name</span>, <span class="kw">_</span>)| <span class="ident">Section::sizeof</span>(<span class="kw-2">*</span><span class="ident">name</span>)).<span class="ident">sum</span>::&lt;<span class="ident">usize</span>&gt;()
-        + <span class="self">self</span>.<span class="ident">sections</span>().<span class="ident">map</span>(|(<span class="kw">_</span>, <span class="ident">section</span>)| <span class="ident">section</span>.<span class="ident">get_data</span>().<span class="ident">len</span>()).<span class="ident">sum</span>::&lt;<span class="ident">usize</span>&gt;()
+    <span class="doccomment">/// Get the size of the entire container file.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="number">4 </span><span class="comment">// magic bytes
+        </span>+ mem::size_of::&lt;u16&gt;() <span class="comment">// abiver
+        </span>+ mem::size_of::&lt;u8&gt;() <span class="comment">// filety
+        </span>+ mem::size_of::&lt;u8&gt;() <span class="comment">// len(sections)
+        </span>+ <span class="self">self</span>.sections().map(|(name, <span class="kw">_</span>)| Section::sizeof(<span class="kw-2">*</span>name)).sum::&lt;usize&gt;()
+        + <span class="self">self</span>.sections().map(|(<span class="kw">_</span>, section)| section.get_data().len()).sum::&lt;usize&gt;()
     }
 
-    <span class="doccomment">/// Decode this container file from the buffer provided.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function will return an error (specifically, a [`nom::Err`] boxed</span>
-    <span class="doccomment">/// in an [`eyre::Report`][calypso_error::eyre::Report]) if the input fails</span>
-    <span class="doccomment">/// to parse.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">decode</span>(<span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> [<span class="ident">u8</span>]) -&gt; <span class="ident">CalResult</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="prelude-val">Ok</span>(<span class="ident">parse::container_file</span>(<span class="ident">buf</span>)
-            .<span class="ident">map_err</span>(
-                <span class="comment">// This appears to be erroneously triggering here.</span>
-                <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::redundant_closure_for_method_calls</span>)]</span>
-                |<span class="ident">e</span>| <span class="ident">e</span>.<span class="ident">to_owned</span>(),
+    <span class="doccomment">/// Decode this container file from the buffer provided.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error (specifically, a [`nom::Err`] boxed
+    /// in an [`eyre::Report`][calypso_error::eyre::Report]) if the input fails
+    /// to parse.
+    </span><span class="kw">pub fn </span>decode(buf: <span class="kw-2">&amp;</span><span class="lifetime">&#39;_ </span>[u8]) -&gt; CalResult&lt;<span class="self">Self</span>&gt; {
+        <span class="prelude-val">Ok</span>(parse::container_file(buf)
+            .map_err(
+                <span class="comment">// This appears to be erroneously triggering here.
+                </span><span class="attribute">#[allow(clippy::redundant_closure_for_method_calls)]
+                </span>|e| e.to_owned(),
             )
-            .<span class="ident">map_err</span>(<span class="ident">Report::from</span>)<span class="question-mark">?</span>
-            .<span class="number">1</span>)
+            .map_err(Report::from)<span class="question-mark">?
+            </span>.<span class="number">1</span>)
     }
 
-    <span class="doccomment">/// Encode this container file to the buffer provided. To allocate a</span>
-    <span class="doccomment">/// sufficiently sized buffer, use [`Vec::with_capacity`] using the size</span>
-    <span class="doccomment">/// given by [`ContainerFile::size`].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function will panic if a section was too large (larger than</span>
-    <span class="doccomment">/// [`u32::MAX`] in bytes) or if there was too much data in the container</span>
-    <span class="doccomment">/// file (due to architectural limitations, they are capped at around 4GiB)</span>
-    <span class="comment">// We know that sections.len() will be &lt;=255 as we do not allow adding</span>
-    <span class="comment">// sections if there are already that amount.</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::cast_possible_truncation</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">encode_to</span>(<span class="self">self</span>, <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;) {
-        <span class="ident">buf</span>.<span class="ident">extend</span>(<span class="string">b&quot;CCFF&quot;</span>);
-        <span class="ident">buf</span>.<span class="ident">extend</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">abiver</span>.<span class="ident">to_le_bytes</span>());
-        <span class="ident">buf</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">filety</span>);
-        <span class="ident">buf</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u8</span>);
+    <span class="doccomment">/// Encode this container file to the buffer provided. To allocate a
+    /// sufficiently sized buffer, use [`Vec::with_capacity`] using the size
+    /// given by [`ContainerFile::size`].
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if a section was too large (larger than
+    /// [`u32::MAX`] in bytes) or if there was too much data in the container
+    /// file (due to architectural limitations, they are capped at around 4GiB)
+    </span><span class="comment">// We know that sections.len() will be &lt;=255 as we do not allow adding
+    // sections if there are already that amount.
+    </span><span class="attribute">#[allow(clippy::cast_possible_truncation)]
+    </span><span class="kw">pub fn </span>encode_to(<span class="self">self</span>, buf: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) {
+        buf.extend(<span class="string">b&quot;CCFF&quot;</span>);
+        buf.extend(<span class="kw-2">&amp;</span><span class="self">self</span>.abiver.to_le_bytes());
+        buf.push(<span class="self">self</span>.filety);
+        buf.push(<span class="self">self</span>.sections.len() <span class="kw">as </span>u8);
 
-        <span class="kw">let</span> <span class="ident">shdrs_size</span> = <span class="self">self</span>
-            .<span class="ident">sections</span>()
-            .<span class="ident">map</span>(|(<span class="ident">name</span>, <span class="kw">_</span>)| <span class="ident">Section::sizeof</span>(<span class="kw-2">*</span><span class="ident">name</span>))
-            .<span class="ident">sum</span>::&lt;<span class="ident">usize</span>&gt;();
+        <span class="kw">let </span>shdrs_size = <span class="self">self
+            </span>.sections()
+            .map(|(name, <span class="kw">_</span>)| Section::sizeof(<span class="kw-2">*</span>name))
+            .sum::&lt;usize&gt;();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> = <span class="ident">Vec::with_capacity</span>(
-            <span class="self">self</span>.<span class="ident">sections</span>()
-                .<span class="ident">map</span>(|(<span class="kw">_</span>, <span class="ident">section</span>)| <span class="ident">section</span>.<span class="ident">get_data</span>().<span class="ident">len</span>())
-                .<span class="ident">sum</span>(),
+        <span class="kw">let </span><span class="kw-2">mut </span>data = Vec::with_capacity(
+            <span class="self">self</span>.sections()
+                .map(|(<span class="kw">_</span>, section)| section.get_data().len())
+                .sum(),
         );
 
-        <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">into_iter</span>().<span class="ident">fold</span>(
-            (<span class="ident">buf</span>.<span class="ident">len</span>() + <span class="ident">shdrs_size</span>) <span class="kw">as</span> <span class="ident">u32</span>,
-            |<span class="ident">data_offset</span>, (<span class="ident">name</span>, <span class="ident">section</span>)| {
-                <span class="kw">let</span> <span class="ident">data_size</span> = <span class="ident">section</span>.<span class="ident">data</span>.<span class="ident">len</span>();
+        <span class="self">self</span>.sections.into_iter().fold(
+            (buf.len() + shdrs_size) <span class="kw">as </span>u32,
+            |data_offset, (name, section)| {
+                <span class="kw">let </span>data_size = section.data.len();
                 <span class="macro">assert!</span>(
-                    <span class="ident">data_size</span> &lt; <span class="ident">u32::MAX</span> <span class="kw">as</span> <span class="ident">usize</span>,
-                    <span class="string">&quot;section data must be less than 4GiB in size&quot;</span>
-                );
-                <span class="kw">let</span> <span class="ident">name</span> = <span class="ident">name</span>.<span class="ident">as_str</span>();
-                <span class="ident">data</span>.<span class="ident">extend</span>(<span class="ident">section</span>.<span class="ident">data</span>);
-                <span class="ident">buf</span>.<span class="ident">push</span>(<span class="ident">section</span>.<span class="ident">stype</span>);
-                <span class="ident">buf</span>.<span class="ident">extend</span>(<span class="kw-2">&amp;</span><span class="ident">section</span>.<span class="ident">flags</span>.<span class="ident">to_le_bytes</span>());
-                <span class="ident">buf</span>.<span class="ident">extend</span>(<span class="kw-2">&amp;</span><span class="ident">data_offset</span>.<span class="ident">to_le_bytes</span>());
-                <span class="ident">buf</span>.<span class="ident">extend</span>(<span class="kw-2">&amp;</span>(<span class="ident">data_size</span> <span class="kw">as</span> <span class="ident">u32</span>).<span class="ident">to_le_bytes</span>());
-                <span class="ident">buf</span>.<span class="ident">push</span>(<span class="ident">name</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u8</span>);
-                <span class="ident">buf</span>.<span class="ident">extend</span>(<span class="ident">name</span>.<span class="ident">as_bytes</span>());
+                    data_size &lt; u32::MAX <span class="kw">as </span>usize,
+                    <span class="string">&quot;section data must be less than 4GiB in size&quot;
+                </span>);
+                <span class="kw">let </span>name = name.as_str();
+                data.extend(section.data);
+                buf.push(section.stype);
+                buf.extend(<span class="kw-2">&amp;</span>section.flags.to_le_bytes());
+                buf.extend(<span class="kw-2">&amp;</span>data_offset.to_le_bytes());
+                buf.extend(<span class="kw-2">&amp;</span>(data_size <span class="kw">as </span>u32).to_le_bytes());
+                buf.push(name.len() <span class="kw">as </span>u8);
+                buf.extend(name.as_bytes());
 
-                <span class="ident">data_offset</span> + <span class="ident">data_size</span> <span class="kw">as</span> <span class="ident">u32</span>
+                data_offset + data_size <span class="kw">as </span>u32
             },
         );
-        <span class="ident">buf</span>.<span class="ident">extend</span>(<span class="ident">data</span>);
+        buf.extend(data);
     }
 
-    <span class="doccomment">/// Encode this container file to a newly allocated buffer.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">encode</span>(<span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> = <span class="ident">Vec::with_capacity</span>(<span class="self">self</span>.<span class="ident">size</span>());
-        <span class="self">self</span>.<span class="ident">encode_to</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buf</span>);
-        <span class="ident">buf</span>
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="ident">ContainerFile</span> {
-    <span class="kw">type</span> <span class="ident">IntoIter</span> = <span class="ident">IntoIter</span>&lt;<span class="ident">Symbol</span>, <span class="ident">Section</span>&gt;;
-    <span class="kw">type</span> <span class="ident">Item</span> = (<span class="ident">Symbol</span>, <span class="ident">Section</span>);
-
-    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::IntoIter</span> {
-        <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">into_iter</span>()
+    <span class="doccomment">/// Encode this container file to a newly allocated buffer.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>encode(<span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>buf = Vec::with_capacity(<span class="self">self</span>.size());
+        <span class="self">self</span>.encode_to(<span class="kw-2">&amp;mut </span>buf);
+        buf
     }
 }
 
-<span class="doccomment">/// The section is the actual container of data with in a CCFF container file.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// It stores some basic metadata: a [section type](Section::set_type) and</span>
-<span class="doccomment">/// [flags](Section::set_flags), both of which are user-defined. The data can</span>
-<span class="doccomment">/// be accessed and modified via the [`get_data`](Self::get_data),</span>
-<span class="doccomment">/// [`get_data_mut`](Self::get_data_mut), and [`set_data`](Self::set_data)</span>
-<span class="doccomment">/// functions.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Section</span> {
-    <span class="ident">stype</span>: <span class="ident">u8</span>,
-    <span class="ident">flags</span>: <span class="ident">u32</span>,
-    <span class="ident">offset</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">u32</span>&gt;,
-    <span class="ident">data</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;,
+<span class="kw">impl </span>IntoIterator <span class="kw">for </span>ContainerFile {
+    <span class="kw">type </span>IntoIter = IntoIter&lt;Symbol, Section&gt;;
+    <span class="kw">type </span>Item = (Symbol, Section);
+
+    <span class="kw">fn </span>into_iter(<span class="self">self</span>) -&gt; <span class="self">Self</span>::IntoIter {
+        <span class="self">self</span>.sections.into_iter()
+    }
 }
 
-<span class="kw">impl</span> <span class="ident">Section</span> {
-    <span class="doccomment">/// Create a section. The section type (`stype`) or flags may be any</span>
-    <span class="doccomment">/// arbitrary user-defined value.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">stype</span>: <span class="ident">u8</span>, <span class="ident">flags</span>: <span class="ident">u32</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">stype</span>,
-            <span class="ident">flags</span>,
-            <span class="ident">offset</span>: <span class="prelude-val">None</span>,
-            <span class="ident">data</span>: <span class="ident">Vec::new</span>(),
+<span class="doccomment">/// The section is the actual container of data with in a CCFF container file.
+///
+/// It stores some basic metadata: a [section type](Section::set_type) and
+/// [flags](Section::set_flags), both of which are user-defined. The data can
+/// be accessed and modified via the [`get_data`](Self::get_data),
+/// [`get_data_mut`](Self::get_data_mut), and [`set_data`](Self::set_data)
+/// functions.
+</span><span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>Section {
+    stype: u8,
+    flags: u32,
+    offset: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    data: Vec&lt;u8&gt;,
+}
+
+<span class="kw">impl </span>Section {
+    <span class="doccomment">/// Create a section. The section type (`stype`) or flags may be any
+    /// arbitrary user-defined value.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>new(stype: u8, flags: u32) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            stype,
+            flags,
+            offset: <span class="prelude-val">None</span>,
+            data: Vec::new(),
         }
     }
 
-    <span class="doccomment">/// Set the type of the section. This may be any arbitrary user-defined</span>
-    <span class="doccomment">/// value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_type</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">stype</span>: <span class="ident">u8</span>) {
-        <span class="self">self</span>.<span class="ident">stype</span> = <span class="ident">stype</span>;
+    <span class="doccomment">/// Set the type of the section. This may be any arbitrary user-defined
+    /// value.
+    </span><span class="kw">pub fn </span>set_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>, stype: u8) {
+        <span class="self">self</span>.stype = stype;
     }
 
-    <span class="doccomment">/// Get the type of the section.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u8</span> {
-        <span class="self">self</span>.<span class="ident">stype</span>
+    <span class="doccomment">/// Get the type of the section.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>get_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u8 {
+        <span class="self">self</span>.stype
     }
 
-    <span class="doccomment">/// Set the flags of the section. This may be any arbitrary user-defined</span>
-    <span class="doccomment">/// value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_flags</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">flags</span>: <span class="ident">u32</span>) {
-        <span class="self">self</span>.<span class="ident">flags</span> = <span class="ident">flags</span>;
+    <span class="doccomment">/// Set the flags of the section. This may be any arbitrary user-defined
+    /// value.
+    </span><span class="kw">pub fn </span>set_flags(<span class="kw-2">&amp;mut </span><span class="self">self</span>, flags: u32) {
+        <span class="self">self</span>.flags = flags;
     }
 
-    <span class="doccomment">/// Get the flags of the section.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_flags</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u32</span> {
-        <span class="self">self</span>.<span class="ident">flags</span>
+    <span class="doccomment">/// Get the flags of the section.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>get_flags(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
+        <span class="self">self</span>.flags
     }
 
-    <span class="doccomment">/// Set the data of the section. This may be any arbitrary user-defined</span>
-    <span class="doccomment">/// data. The previous data will be returned.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_data</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="ident">mem::replace</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">data</span>, <span class="ident">data</span>)
+    <span class="doccomment">/// Set the data of the section. This may be any arbitrary user-defined
+    /// data. The previous data will be returned.
+    </span><span class="kw">pub fn </span>set_data(<span class="kw-2">&amp;mut </span><span class="self">self</span>, data: Vec&lt;u8&gt;) -&gt; Vec&lt;u8&gt; {
+        mem::replace(<span class="kw-2">&amp;mut </span><span class="self">self</span>.data, data)
     }
 
-    <span class="doccomment">/// Get a reference to the data of the section.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">data</span>
+    <span class="doccomment">/// Get a reference to the data of the section.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>get_data(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[u8] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.data
     }
 
-    <span class="doccomment">/// Get a mutable reference to the data of the section.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_data_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">data</span>
+    <span class="doccomment">/// Get a mutable reference to the data of the section.
+    </span><span class="kw">pub fn </span>get_data_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt; {
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>.data
     }
 
-    <span class="doccomment">/// Get the offset of the data in the container file. This is only present</span>
-    <span class="doccomment">/// when loading from a file and cannot be set manually in order to prevent</span>
-    <span class="doccomment">/// errors.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">u32</span>&gt; {
-        <span class="self">self</span>.<span class="ident">offset</span>
+    <span class="doccomment">/// Get the offset of the data in the container file. This is only present
+    /// when loading from a file and cannot be set manually in order to prevent
+    /// errors.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>get_offset(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u32&gt; {
+        <span class="self">self</span>.offset
     }
 
-    <span class="kw">fn</span> <span class="ident">sizeof</span>(<span class="ident">name</span>: <span class="ident">Symbol</span>) -&gt; <span class="ident">usize</span> {
-        <span class="ident">mem::size_of</span>::&lt;<span class="ident">u8</span>&gt;() <span class="comment">// type</span>
-            + <span class="ident">mem::size_of</span>::&lt;<span class="ident">u32</span>&gt;() <span class="comment">// flags</span>
-            + <span class="ident">mem::size_of</span>::&lt;<span class="ident">u32</span>&gt;() <span class="comment">// offset</span>
-            + <span class="ident">mem::size_of</span>::&lt;<span class="ident">u32</span>&gt;() <span class="comment">// size</span>
-            + <span class="ident">mem::size_of</span>::&lt;<span class="ident">u8</span>&gt;() <span class="comment">// sizeof(name)</span>
-            + <span class="ident">name</span>.<span class="ident">as_str</span>().<span class="ident">len</span>() <span class="comment">// name</span>
-    }
+    <span class="kw">fn </span>sizeof(name: Symbol) -&gt; usize {
+        mem::size_of::&lt;u8&gt;() <span class="comment">// type
+            </span>+ mem::size_of::&lt;u32&gt;() <span class="comment">// flags
+            </span>+ mem::size_of::&lt;u32&gt;() <span class="comment">// offset
+            </span>+ mem::size_of::&lt;u32&gt;() <span class="comment">// size
+            </span>+ mem::size_of::&lt;u8&gt;() <span class="comment">// sizeof(name)
+            </span>+ name.as_str().len() <span class="comment">// name
+    </span>}
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_filety" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_filety" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

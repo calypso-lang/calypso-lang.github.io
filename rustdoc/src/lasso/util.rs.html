@@ -594,601 +594,601 @@
 <span id="594">594</span>
 <span id="595">595</span>
 <span id="596">596</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">keys::Key</span>, <span class="ident">reader::RodeoReader</span>, <span class="ident">resolver::RodeoResolver</span>, <span class="ident">single_threaded::Rodeo</span>};
-<span class="kw">use</span> <span class="ident">core</span>::{<span class="ident">fmt</span>, <span class="ident">iter</span>, <span class="ident">marker::PhantomData</span>, <span class="ident">num::NonZeroUsize</span>, <span class="ident">slice</span>};
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{keys::Key, reader::RodeoReader, resolver::RodeoResolver, single_threaded::Rodeo};
+<span class="kw">use </span>core::{fmt, iter, marker::PhantomData, num::NonZeroUsize, slice};
 
-<span class="doccomment">/// A continence type for an error from an interner</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">LassoResult</span>&lt;<span class="ident">T</span>&gt; = <span class="ident">core::result::Result</span>&lt;<span class="ident">T</span>, <span class="ident">LassoError</span>&gt;;
+<span class="doccomment">/// A continence type for an error from an interner
+</span><span class="kw">pub type </span>LassoResult&lt;T&gt; = core::result::Result&lt;T, LassoError&gt;;
 
-<span class="doccomment">/// An error encountered while using an interner</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LassoError</span> {
-    <span class="ident">kind</span>: <span class="ident">LassoErrorKind</span>,
+<span class="doccomment">/// An error encountered while using an interner
+</span><span class="attribute">#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+</span><span class="kw">pub struct </span>LassoError {
+    kind: LassoErrorKind,
 }
 
-<span class="kw">impl</span> <span class="ident">LassoError</span> {
-    <span class="doccomment">/// Gets the kind of error that occurred</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">kind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">LassoErrorKind</span> {
-        <span class="self">self</span>.<span class="ident">kind</span>
+<span class="kw">impl </span>LassoError {
+    <span class="doccomment">/// Gets the kind of error that occurred
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub const fn </span>kind(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; LassoErrorKind {
+        <span class="self">self</span>.kind
     }
 }
 
-<span class="kw">impl</span> <span class="ident">LassoError</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">kind</span>: <span class="ident">LassoErrorKind</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">kind</span> }
+<span class="kw">impl </span>LassoError {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const fn </span>new(kind: LassoErrorKind) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ kind }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">LassoError</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Lasso encountered an error: {}&quot;</span>, <span class="self">self</span>.<span class="ident">kind</span>)
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>LassoError {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="macro">write!</span>(f, <span class="string">&quot;Lasso encountered an error: {}&quot;</span>, <span class="self">self</span>.kind)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>))]</span>
-<span class="kw">impl</span> <span class="ident">std::error::Error</span> <span class="kw">for</span> <span class="ident">LassoError</span> {}
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;no-std&quot;</span>))]
+</span><span class="kw">impl </span>std::error::Error <span class="kw">for </span>LassoError {}
 
-<span class="doccomment">/// The kind of error that occurred</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">LassoErrorKind</span> {
-    <span class="doccomment">/// A memory limit set using [`MemoryLimits`] was reached, and no more memory could be allocated</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`MemoryLimits`]: crate::MemoryLimits</span>
-    <span class="ident">MemoryLimitReached</span>,
-    <span class="doccomment">/// A [`Key`] implementation returned `None`, meaning it could not produce any more keys</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`Key`]: crate::Key</span>
-    <span class="ident">KeySpaceExhaustion</span>,
-    <span class="doccomment">/// A memory allocation failed</span>
-    <span class="ident">FailedAllocation</span>,
+<span class="doccomment">/// The kind of error that occurred
+</span><span class="attribute">#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+</span><span class="kw">pub enum </span>LassoErrorKind {
+    <span class="doccomment">/// A memory limit set using [`MemoryLimits`] was reached, and no more memory could be allocated
+    ///
+    /// [`MemoryLimits`]: crate::MemoryLimits
+    </span>MemoryLimitReached,
+    <span class="doccomment">/// A [`Key`] implementation returned `None`, meaning it could not produce any more keys
+    ///
+    /// [`Key`]: crate::Key
+    </span>KeySpaceExhaustion,
+    <span class="doccomment">/// A memory allocation failed
+    </span>FailedAllocation,
 }
 
-<span class="kw">impl</span> <span class="ident">LassoErrorKind</span> {
-    <span class="doccomment">/// A memory limit set using [`MemoryLimits`] was reached, and no more memory could be allocated</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`MemoryLimits`]: crate::MemoryLimits</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_memory_limit</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span> == <span class="ident"><span class="self">Self</span>::MemoryLimitReached</span>
+<span class="kw">impl </span>LassoErrorKind {
+    <span class="doccomment">/// A memory limit set using [`MemoryLimits`] was reached, and no more memory could be allocated
+    ///
+    /// [`MemoryLimits`]: crate::MemoryLimits
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>is_memory_limit(<span class="self">self</span>) -&gt; bool {
+        <span class="self">self </span>== <span class="self">Self</span>::MemoryLimitReached
     }
 
-    <span class="doccomment">/// A [`Key`] implementation returned `None`, meaning it could not produce any more keys</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`Key`]: crate::Key</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_keyspace_exhaustion</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span> == <span class="ident"><span class="self">Self</span>::KeySpaceExhaustion</span>
+    <span class="doccomment">/// A [`Key`] implementation returned `None`, meaning it could not produce any more keys
+    ///
+    /// [`Key`]: crate::Key
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>is_keyspace_exhaustion(<span class="self">self</span>) -&gt; bool {
+        <span class="self">self </span>== <span class="self">Self</span>::KeySpaceExhaustion
     }
 
-    <span class="doccomment">/// A memory allocation failed</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_failed_alloc</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span> == <span class="ident"><span class="self">Self</span>::FailedAllocation</span>
+    <span class="doccomment">/// A memory allocation failed
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>is_failed_alloc(<span class="self">self</span>) -&gt; bool {
+        <span class="self">self </span>== <span class="self">Self</span>::FailedAllocation
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">LassoErrorKind</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::MemoryLimitReached</span> =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;The configured memory limit was reached&quot;</span>),
-            <span class="ident"><span class="self">Self</span>::KeySpaceExhaustion</span> =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;The key space was exhausted&quot;</span>),
-            <span class="ident"><span class="self">Self</span>::FailedAllocation</span> =&gt; <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Failed to allocate memory&quot;</span>),
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>LassoErrorKind {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::MemoryLimitReached =&gt; f.write_str(<span class="string">&quot;The configured memory limit was reached&quot;</span>),
+            <span class="self">Self</span>::KeySpaceExhaustion =&gt; f.write_str(<span class="string">&quot;The key space was exhausted&quot;</span>),
+            <span class="self">Self</span>::FailedAllocation =&gt; f.write_str(<span class="string">&quot;Failed to allocate memory&quot;</span>),
         }
     }
 }
 
-<span class="doccomment">/// The amount of strings and bytes that an interner can hold before reallocating</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Capacity</span> {
-    <span class="doccomment">/// The number of strings that will be allocated</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">strings</span>: <span class="ident">usize</span>,
-    <span class="doccomment">/// The number of bytes that will be allocated</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">bytes</span>: <span class="ident">NonZeroUsize</span>,
+<span class="doccomment">/// The amount of strings and bytes that an interner can hold before reallocating
+</span><span class="attribute">#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+</span><span class="kw">pub struct </span>Capacity {
+    <span class="doccomment">/// The number of strings that will be allocated
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) strings: usize,
+    <span class="doccomment">/// The number of bytes that will be allocated
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) bytes: NonZeroUsize,
 }
 
-<span class="kw">impl</span> <span class="ident">Capacity</span> {
-    <span class="doccomment">/// Create a new `Capacity` with the number of strings that the interner will hold</span>
-    <span class="doccomment">/// and the number of bytes that the interner will hold</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">strings</span>: <span class="ident">usize</span>, <span class="ident">bytes</span>: <span class="ident">NonZeroUsize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">strings</span>, <span class="ident">bytes</span> }
+<span class="kw">impl </span>Capacity {
+    <span class="doccomment">/// Create a new `Capacity` with the number of strings that the interner will hold
+    /// and the number of bytes that the interner will hold
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>new(strings: usize, bytes: NonZeroUsize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ strings, bytes }
     }
 
-    <span class="doccomment">/// Create a new `Capacity` with the number of strings that the interner will hold</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">for_strings</span>(<span class="ident">strings</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">strings</span>,
-            ..<span class="ident"><span class="self">Self</span>::default</span>()
+    <span class="doccomment">/// Create a new `Capacity` with the number of strings that the interner will hold
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>for_strings(strings: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            strings,
+            ..<span class="self">Self</span>::default()
         }
     }
 
-    <span class="doccomment">/// Create a new `Capacity` with the number of bytes that the interner will hold</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">for_bytes</span>(<span class="ident">bytes</span>: <span class="ident">NonZeroUsize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">bytes</span>,
-            ..<span class="ident"><span class="self">Self</span>::default</span>()
+    <span class="doccomment">/// Create a new `Capacity` with the number of bytes that the interner will hold
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>for_bytes(bytes: NonZeroUsize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            bytes,
+            ..<span class="self">Self</span>::default()
         }
     }
 
-    <span class="doccomment">/// Produces the smallest `Capacity` with enough room for zero strings and a single byte</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">minimal</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">strings</span>: <span class="number">0</span>,
-            <span class="comment">// Safety: 1 is not 0</span>
-            <span class="ident">bytes</span>: <span class="kw">unsafe</span> { <span class="ident">NonZeroUsize::new_unchecked</span>(<span class="number">1</span>) },
+    <span class="doccomment">/// Produces the smallest `Capacity` with enough room for zero strings and a single byte
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>minimal() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            strings: <span class="number">0</span>,
+            <span class="comment">// Safety: 1 is not 0
+            </span>bytes: <span class="kw">unsafe </span>{ NonZeroUsize::new_unchecked(<span class="number">1</span>) },
         }
     }
 
-    <span class="doccomment">/// Returns the number of strings this capacity will allocate</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">strings</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">strings</span>
+    <span class="doccomment">/// Returns the number of strings this capacity will allocate
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>strings(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.strings
     }
 
-    <span class="doccomment">/// Returns the number of bytes this capacity will allocate</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">NonZeroUsize</span> {
-        <span class="self">self</span>.<span class="ident">bytes</span>
-    }
-}
-
-<span class="doccomment">/// Creates a `Capacity` that will hold 50 strings and 4096 bytes</span>
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Capacity</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">strings</span>: <span class="number">50</span>,
-            <span class="comment">// Safety: 4096 is not 0</span>
-            <span class="ident">bytes</span>: <span class="kw">unsafe</span> { <span class="ident">NonZeroUsize::new_unchecked</span>(<span class="number">4096</span>) },
-        }
+    <span class="doccomment">/// Returns the number of bytes this capacity will allocate
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; NonZeroUsize {
+        <span class="self">self</span>.bytes
     }
 }
 
-<span class="doccomment">/// Settings for the memory consumption of an interner</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// By default `max_memory_usage` is set to `usize::MAX`</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MemoryLimits</span> {
-    <span class="doccomment">/// The maximum memory an interner will allocate</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">max_memory_usage</span>: <span class="ident">usize</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">MemoryLimits</span> {
-    <span class="doccomment">/// Create a new `MemoryLimits` with the number of bytes that the interner can allocate</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">max_memory_usage</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">max_memory_usage</span> }
-    }
-
-    <span class="doccomment">/// Create a new `MemoryLimits` with the number of bytes that the interner can allocate</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">for_memory_usage</span>(<span class="ident">max_memory_usage</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> { <span class="ident">max_memory_usage</span> }
-    }
-
-    <span class="doccomment">/// Returns the maximum memory usage this `MemoryLimits` can allocate</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">max_memory_usage</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">max_memory_usage</span>
-    }
-}
-
-<span class="doccomment">/// Creates a `MemoryLimits` with `max_memory_usage` set to `usize::max_value()`</span>
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">MemoryLimits</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">max_memory_usage</span>: <span class="ident">usize::max_value</span>(),
+<span class="doccomment">/// Creates a `Capacity` that will hold 50 strings and 4096 bytes
+</span><span class="kw">impl </span>Default <span class="kw">for </span>Capacity {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            strings: <span class="number">50</span>,
+            <span class="comment">// Safety: 4096 is not 0
+            </span>bytes: <span class="kw">unsafe </span>{ NonZeroUsize::new_unchecked(<span class="number">4096</span>) },
         }
     }
 }
 
-<span class="doccomment">/// An iterator over an interner&#39;s strings and keys</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">must_use</span> = <span class="string">&quot;iterators are lazy and do nothing unless consumed&quot;</span>]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; {
-    <span class="ident">iter</span>: <span class="ident">iter::Enumerate</span>&lt;<span class="ident">slice::Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>&gt;&gt;,
-    <span class="ident">__key</span>: <span class="ident">PhantomData</span>&lt;<span class="ident">K</span>&gt;,
+<span class="doccomment">/// Settings for the memory consumption of an interner
+///
+/// By default `max_memory_usage` is set to `usize::MAX`
+</span><span class="attribute">#[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+</span><span class="kw">pub struct </span>MemoryLimits {
+    <span class="doccomment">/// The maximum memory an interner will allocate
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) max_memory_usage: usize,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_rodeo</span>&lt;<span class="ident">S</span>&gt;(<span class="ident">rodeo</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Rodeo</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt;) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">iter</span>: <span class="ident">rodeo</span>.<span class="ident">strings</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>(),
-            <span class="ident">__key</span>: <span class="ident">PhantomData</span>,
-        }
+<span class="kw">impl </span>MemoryLimits {
+    <span class="doccomment">/// Create a new `MemoryLimits` with the number of bytes that the interner can allocate
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>new(max_memory_usage: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ max_memory_usage }
     }
 
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_reader</span>&lt;<span class="ident">S</span>&gt;(<span class="ident">rodeo</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt;) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">iter</span>: <span class="ident">rodeo</span>.<span class="ident">strings</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>(),
-            <span class="ident">__key</span>: <span class="ident">PhantomData</span>,
-        }
+    <span class="doccomment">/// Create a new `MemoryLimits` with the number of bytes that the interner can allocate
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>for_memory_usage(max_memory_usage: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{ max_memory_usage }
     }
 
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_resolver</span>(<span class="ident">rodeo</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">RodeoResolver</span>&lt;<span class="ident">K</span>&gt;) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">iter</span>: <span class="ident">rodeo</span>.<span class="ident">strings</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>(),
-            <span class="ident">__key</span>: <span class="ident">PhantomData</span>,
-        }
+    <span class="doccomment">/// Returns the maximum memory usage this `MemoryLimits` can allocate
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>max_memory_usage(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.max_memory_usage
     }
 }
 
-<span class="kw">fn</span> <span class="ident">iter_element</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt;((<span class="ident">key</span>, <span class="ident">string</span>): (<span class="ident">usize</span>, &amp;&amp;<span class="lifetime">&#39;a</span> <span class="ident">str</span>)) -&gt; (<span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>)
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Key</span>,
+<span class="doccomment">/// Creates a `MemoryLimits` with `max_memory_usage` set to `usize::max_value()`
+</span><span class="kw">impl </span>Default <span class="kw">for </span>MemoryLimits {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            max_memory_usage: usize::max_value(),
+        }
+    }
+}
+
+<span class="doccomment">/// An iterator over an interner&#39;s strings and keys
+</span><span class="attribute">#[derive(Clone, Debug)]
+#[must_use = <span class="string">&quot;iterators are lazy and do nothing unless consumed&quot;</span>]
+</span><span class="kw">pub struct </span>Iter&lt;<span class="lifetime">&#39;a</span>, K&gt; {
+    iter: iter::Enumerate&lt;slice::Iter&lt;<span class="lifetime">&#39;a</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;&gt;,
+    __key: PhantomData&lt;K&gt;,
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K&gt; Iter&lt;<span class="lifetime">&#39;a</span>, K&gt; {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_rodeo&lt;S&gt;(rodeo: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Rodeo&lt;K, S&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            iter: rodeo.strings.iter().enumerate(),
+            __key: PhantomData,
+        }
+    }
+
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_reader&lt;S&gt;(rodeo: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>RodeoReader&lt;K, S&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            iter: rodeo.strings.iter().enumerate(),
+            __key: PhantomData,
+        }
+    }
+
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_resolver(rodeo: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>RodeoResolver&lt;K&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            iter: rodeo.strings.iter().enumerate(),
+            __key: PhantomData,
+        }
+    }
+}
+
+<span class="kw">fn </span>iter_element&lt;<span class="lifetime">&#39;a</span>, K&gt;((key, string): (usize, &amp;&amp;<span class="lifetime">&#39;a </span>str)) -&gt; (K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str)
+<span class="kw">where
+    </span>K: Key,
 {
     (
-        <span class="ident">K::try_from_usize</span>(<span class="ident">key</span>).<span class="ident">unwrap_or_else</span>(|| <span class="macro">unreachable!</span>()),
-        <span class="kw-2">*</span><span class="ident">string</span>,
+        K::try_from_usize(key).unwrap_or_else(|| <span class="macro">unreachable!</span>()),
+        <span class="kw-2">*</span>string,
     )
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Key</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K&gt; Iterator <span class="kw">for </span>Iter&lt;<span class="lifetime">&#39;a</span>, K&gt;
+<span class="kw">where
+    </span>K: Key,
 {
-    <span class="kw">type</span> <span class="ident">Item</span> = (<span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>);
+    <span class="kw">type </span>Item = (K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str);
 
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
-        <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">map</span>(<span class="ident">iter_element</span>)
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="self">self</span>.iter.next().map(iter_element)
     }
 
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
-        <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">size_hint</span>()
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>size_hint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (usize, <span class="prelude-ty">Option</span>&lt;usize&gt;) {
+        <span class="self">self</span>.iter.size_hint()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; <span class="ident">DoubleEndedIterator</span> <span class="kw">for</span> <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Key</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K&gt; DoubleEndedIterator <span class="kw">for </span>Iter&lt;<span class="lifetime">&#39;a</span>, K&gt;
+<span class="kw">where
+    </span>K: Key,
 {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>)&gt; {
-        <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">next_back</span>().<span class="ident">map</span>(<span class="ident">iter_element</span>)
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>next_back(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str)&gt; {
+        <span class="self">self</span>.iter.next_back().map(iter_element)
     }
 
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">nth_back</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>)&gt; {
-        <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">nth_back</span>(<span class="ident">n</span>).<span class="ident">map</span>(<span class="ident">iter_element</span>)
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>nth_back(<span class="kw-2">&amp;mut </span><span class="self">self</span>, n: usize) -&gt; <span class="prelude-ty">Option</span>&lt;(K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str)&gt; {
+        <span class="self">self</span>.iter.nth_back(n).map(iter_element)
     }
 }
 
-<span class="comment">// iter::Enumerate is exact-size if its underlying iterator is exact-size, which slice::Iter is.</span>
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="ident">Key</span>&gt; <span class="ident">ExactSizeIterator</span> <span class="kw">for</span> <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; {}
+<span class="comment">// iter::Enumerate is exact-size if its underlying iterator is exact-size, which slice::Iter is.
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: Key&gt; ExactSizeIterator <span class="kw">for </span>Iter&lt;<span class="lifetime">&#39;a</span>, K&gt; {}
 
-<span class="comment">// iter::Enumerate is fused if its underlying iterator is fused, which slice::Iter is.</span>
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="ident">Key</span>&gt; <span class="ident">iter::FusedIterator</span> <span class="kw">for</span> <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; {}
+<span class="comment">// iter::Enumerate is fused if its underlying iterator is fused, which slice::Iter is.
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: Key&gt; iter::FusedIterator <span class="kw">for </span>Iter&lt;<span class="lifetime">&#39;a</span>, K&gt; {}
 
-<span class="comment">// #[derive(Debug)]</span>
-<span class="comment">// pub struct LockedIter&lt;&#39;a, K: Key&gt; {</span>
-<span class="comment">//     iter: iter::Enumerate&lt;slice::Iter&lt;&#39;a, &amp;&#39;a str&gt;&gt;,</span>
-<span class="comment">//     #[cfg(not(feature = &quot;parking_locks&quot;))]</span>
-<span class="comment">//     __guard: std::sync::MutexGuard&lt;&#39;a, Vec&lt;&amp;&#39;static str&gt;&gt;,</span>
-<span class="comment">//     __key: PhantomData&lt;K&gt;,</span>
-<span class="comment">// }</span>
-<span class="comment">//</span>
-<span class="comment">// impl&lt;&#39;a, K: Key&gt; LockedIter&lt;&#39;a, K&gt; {</span>
-<span class="comment">//     #[cfg_attr(feature = &quot;inline-more&quot;, inline)]</span>
-<span class="comment">//     fn from_threaded&lt;H: BuildHasher + Clone&gt;(rodeo: &amp;&#39;a ThreadedRodeo&lt;K, H&gt;) -&gt; Self {</span>
-<span class="comment">//         let guard = rodeo.strings.lock().unwrap();</span>
-<span class="comment">//</span>
-<span class="comment">//         Self {</span>
-<span class="comment">//             iter: guard.iter().enumerate(),</span>
-<span class="comment">//             #[cfg(not(feature = &quot;parking_locks&quot;))]</span>
-<span class="comment">//             __guard: guard,</span>
-<span class="comment">//             __key: PhantomData,</span>
-<span class="comment">//         }</span>
-<span class="comment">//     }</span>
-<span class="comment">// }</span>
+<span class="comment">// #[derive(Debug)]
+// pub struct LockedIter&lt;&#39;a, K: Key&gt; {
+//     iter: iter::Enumerate&lt;slice::Iter&lt;&#39;a, &amp;&#39;a str&gt;&gt;,
+//     #[cfg(not(feature = &quot;parking_locks&quot;))]
+//     __guard: std::sync::MutexGuard&lt;&#39;a, Vec&lt;&amp;&#39;static str&gt;&gt;,
+//     __key: PhantomData&lt;K&gt;,
+// }
+//
+// impl&lt;&#39;a, K: Key&gt; LockedIter&lt;&#39;a, K&gt; {
+//     #[cfg_attr(feature = &quot;inline-more&quot;, inline)]
+//     fn from_threaded&lt;H: BuildHasher + Clone&gt;(rodeo: &amp;&#39;a ThreadedRodeo&lt;K, H&gt;) -&gt; Self {
+//         let guard = rodeo.strings.lock().unwrap();
+//
+//         Self {
+//             iter: guard.iter().enumerate(),
+//             #[cfg(not(feature = &quot;parking_locks&quot;))]
+//             __guard: guard,
+//             __key: PhantomData,
+//         }
+//     }
+// }
 
-<span class="doccomment">/// An iterator over an interner&#39;s strings</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">must_use</span> = <span class="string">&quot;iterators are lazy and do nothing unless consumed&quot;</span>]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Strings</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; {
-    <span class="ident">iter</span>: <span class="ident">slice::Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>&gt;,
-    <span class="ident">__key</span>: <span class="ident">PhantomData</span>&lt;<span class="ident">K</span>&gt;,
+</span><span class="doccomment">/// An iterator over an interner&#39;s strings
+</span><span class="attribute">#[derive(Clone, Debug)]
+#[must_use = <span class="string">&quot;iterators are lazy and do nothing unless consumed&quot;</span>]
+</span><span class="kw">pub struct </span>Strings&lt;<span class="lifetime">&#39;a</span>, K&gt; {
+    iter: slice::Iter&lt;<span class="lifetime">&#39;a</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
+    __key: PhantomData&lt;K&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; <span class="ident">Strings</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_rodeo</span>&lt;<span class="ident">H</span>&gt;(<span class="ident">rodeo</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Rodeo</span>&lt;<span class="ident">K</span>, <span class="ident">H</span>&gt;) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">iter</span>: <span class="ident">rodeo</span>.<span class="ident">strings</span>.<span class="ident">iter</span>(),
-            <span class="ident">__key</span>: <span class="ident">PhantomData</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K&gt; Strings&lt;<span class="lifetime">&#39;a</span>, K&gt; {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_rodeo&lt;H&gt;(rodeo: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Rodeo&lt;K, H&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            iter: rodeo.strings.iter(),
+            __key: PhantomData,
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_reader</span>&lt;<span class="ident">H</span>&gt;(<span class="ident">rodeo</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">H</span>&gt;) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">iter</span>: <span class="ident">rodeo</span>.<span class="ident">strings</span>.<span class="ident">iter</span>(),
-            <span class="ident">__key</span>: <span class="ident">PhantomData</span>,
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_reader&lt;H&gt;(rodeo: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>RodeoReader&lt;K, H&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            iter: rodeo.strings.iter(),
+            __key: PhantomData,
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_resolver</span>(<span class="ident">rodeo</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">RodeoResolver</span>&lt;<span class="ident">K</span>&gt;) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">iter</span>: <span class="ident">rodeo</span>.<span class="ident">strings</span>.<span class="ident">iter</span>(),
-            <span class="ident">__key</span>: <span class="ident">PhantomData</span>,
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_resolver(rodeo: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>RodeoResolver&lt;K&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            iter: rodeo.strings.iter(),
+            __key: PhantomData,
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Strings</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K&gt; Iterator <span class="kw">for </span>Strings&lt;<span class="lifetime">&#39;a</span>, K&gt; {
+    <span class="kw">type </span>Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str;
 
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
-        <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">copied</span>()
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="self">self</span>.iter.next().copied()
     }
 
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
-        <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">size_hint</span>()
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>size_hint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (usize, <span class="prelude-ty">Option</span>&lt;usize&gt;) {
+        <span class="self">self</span>.iter.size_hint()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; <span class="ident">DoubleEndedIterator</span> <span class="kw">for</span> <span class="ident">Strings</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Key</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K&gt; DoubleEndedIterator <span class="kw">for </span>Strings&lt;<span class="lifetime">&#39;a</span>, K&gt;
+<span class="kw">where
+    </span>K: Key,
 {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>&gt; {
-        <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">next_back</span>().<span class="ident">copied</span>()
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>next_back(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt; {
+        <span class="self">self</span>.iter.next_back().copied()
     }
 
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">nth_back</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>&gt; {
-        <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">nth_back</span>(<span class="ident">n</span>).<span class="ident">copied</span>()
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>nth_back(<span class="kw-2">&amp;mut </span><span class="self">self</span>, n: usize) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt; {
+        <span class="self">self</span>.iter.nth_back(n).copied()
     }
 }
 
-<span class="comment">// slice::Iter is exact-size.</span>
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; <span class="ident">ExactSizeIterator</span> <span class="kw">for</span> <span class="ident">Strings</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; {}
+<span class="comment">// slice::Iter is exact-size.
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K&gt; ExactSizeIterator <span class="kw">for </span>Strings&lt;<span class="lifetime">&#39;a</span>, K&gt; {}
 
-<span class="comment">// slice::Iter is fused.</span>
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="ident">Key</span>&gt; <span class="ident">iter::FusedIterator</span> <span class="kw">for</span> <span class="ident">Strings</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt; {}
+<span class="comment">// slice::Iter is fused.
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: Key&gt; iter::FusedIterator <span class="kw">for </span>Strings&lt;<span class="lifetime">&#39;a</span>, K&gt; {}
 
-<span class="macro">macro_rules!</span> <span class="ident">compile</span> {
+<span class="macro">macro_rules! </span>compile {
     ($(
-        <span class="kw">if</span> <span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">meta</span>:<span class="ident">meta</span>]</span> {
-            $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">item</span>:<span class="ident">item</span>)*
-        } $(<span class="kw">else</span> <span class="kw">if</span> <span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">else_if_meta</span>:<span class="ident">meta</span>]</span> {
-            $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">else_if_item</span>:<span class="ident">item</span>)*
-        })* $(<span class="kw">else</span> {
-            $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">else_item</span>:<span class="ident">item</span>)*
-        })<span class="question-mark">?</span>
-    )+) =&gt; {
+        <span class="kw">if </span><span class="attribute">#[<span class="macro-nonterminal">$meta</span>:meta] </span>{
+            $(<span class="macro-nonterminal">$item</span>:item)*
+        } $(<span class="kw">else if </span><span class="attribute">#[<span class="macro-nonterminal">$else_if_meta</span>:meta] </span>{
+            $(<span class="macro-nonterminal">$else_if_item</span>:item)*
+        })* $(<span class="kw">else </span>{
+            $(<span class="macro-nonterminal">$else_item</span>:item)*
+        })<span class="question-mark">?
+    </span>)+) =&gt; {
         $(
             $(
-                <span class="attribute">#[<span class="ident">cfg</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">meta</span>)]</span>
-                <span class="macro-nonterminal">$</span><span class="macro-nonterminal">item</span>
-            )*
+                <span class="attribute">#[cfg(<span class="macro-nonterminal">$meta</span>)]
+                </span><span class="macro-nonterminal">$item
+            </span>)*
 
             <span class="macro">compile!</span>{
-                @<span class="ident">inner</span>
-                ( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">meta</span>, )
-                $(<span class="kw">else</span> <span class="kw">if</span> <span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">else_if_meta</span>]</span> {
-                    $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">else_if_item</span> )*
-                })* $(<span class="kw">else</span> {
-                    $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">else_item</span> )*
-                })<span class="question-mark">?</span>
-            }
+                @inner
+                ( <span class="macro-nonterminal">$meta</span>, )
+                $(<span class="kw">else if </span><span class="attribute">#[<span class="macro-nonterminal">$else_if_meta</span>] </span>{
+                    $( <span class="macro-nonterminal">$else_if_item </span>)*
+                })* $(<span class="kw">else </span>{
+                    $( <span class="macro-nonterminal">$else_item </span>)*
+                })<span class="question-mark">?
+            </span>}
         )+
     };
 
-    (@<span class="ident">recurse</span>
-        ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">prev_metas</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>)
-        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">new_meta</span>:<span class="ident">meta</span>)
-        $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rem</span>:<span class="ident">tt</span>)*
+    (@recurse
+        ($(<span class="macro-nonterminal">$prev_metas</span>:tt)<span class="kw-2">*</span>)
+        (<span class="macro-nonterminal">$new_meta</span>:meta)
+        $(<span class="macro-nonterminal">$rem</span>:tt)*
     ) =&gt; {
         <span class="macro">compile!</span>{
-            @<span class="ident">inner</span>
-            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prev_metas</span> )* <span class="macro-nonterminal">$</span><span class="macro-nonterminal">new_meta</span>,)
-            $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">rem</span> )*
+            @inner
+            ($( <span class="macro-nonterminal">$prev_metas </span>)* <span class="macro-nonterminal">$new_meta</span>,)
+            $( <span class="macro-nonterminal">$rem </span>)*
         }
     };
 
-    (@<span class="ident">inner</span>
-        <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prev_metas</span>:<span class="ident">tt</span>
-        <span class="kw">else</span> <span class="kw">if</span> <span class="attribute">#[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">meta</span>:<span class="ident">meta</span>]</span> {
-            $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">else_if_item</span>:<span class="ident">item</span>)*
+    (@inner
+        <span class="macro-nonterminal">$prev_metas</span>:tt
+        <span class="kw">else if </span><span class="attribute">#[<span class="macro-nonterminal">$meta</span>:meta] </span>{
+            $(<span class="macro-nonterminal">$else_if_item</span>:item)*
         }
-        $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">rem</span>:<span class="ident">tt</span>)*
+        $(<span class="macro-nonterminal">$rem</span>:tt)*
 
     ) =&gt; {
         $(
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">any</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prev_metas</span>), <span class="macro-nonterminal">$</span><span class="macro-nonterminal">meta</span>))]</span>
-            <span class="macro-nonterminal">$</span><span class="macro-nonterminal">else_if_item</span>
-        )*
+            <span class="attribute">#[cfg(all(not(any <span class="macro-nonterminal">$prev_metas</span>), <span class="macro-nonterminal">$meta</span>))]
+            </span><span class="macro-nonterminal">$else_if_item
+        </span>)*
 
-        <span class="macro">compile!</span> {
-            @<span class="ident">recurse</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prev_metas</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">meta</span>) $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">rem</span> )*
+        <span class="macro">compile! </span>{
+            @recurse <span class="macro-nonterminal">$prev_metas </span>(<span class="macro-nonterminal">$meta</span>) $( <span class="macro-nonterminal">$rem </span>)*
         }
     };
 
-    (@<span class="ident">inner</span>
-        <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prev_metas</span>:<span class="ident">tt</span>
-        <span class="kw">else</span> {
-            $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">else_item</span>:<span class="ident">item</span>)*
+    (@inner
+        <span class="macro-nonterminal">$prev_metas</span>:tt
+        <span class="kw">else </span>{
+            $(<span class="macro-nonterminal">$else_item</span>:item)*
         }
     )=&gt;{
         $(
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prev_metas</span>))]</span>
-            <span class="macro-nonterminal">$</span><span class="macro-nonterminal">else_item</span>
-        )*
+            <span class="attribute">#[cfg(not(any <span class="macro-nonterminal">$prev_metas</span>))]
+            </span><span class="macro-nonterminal">$else_item
+        </span>)*
     };
 
-    (@<span class="ident">inner</span> ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">prev_metas</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>))=&gt;{};
+    (@inner ($(<span class="macro-nonterminal">$prev_metas</span>:tt)<span class="kw-2">*</span>))=&gt;{};
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">index_unchecked</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">slice</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">idx</span>:<span class="ident">expr</span>) =&gt; {{
-        <span class="kw">let</span> <span class="ident">elem</span>: <span class="kw-2">&amp;</span><span class="kw">_</span> = <span class="kw">if</span> <span class="macro">cfg!</span>(<span class="ident">debug_assertions</span>) {
-            <span class="macro-nonterminal">$</span><span class="macro-nonterminal">slice</span>[<span class="macro-nonterminal">$</span><span class="macro-nonterminal">idx</span>]
-        } <span class="kw">else</span> {
-            <span class="macro-nonterminal">$</span><span class="macro-nonterminal">slice</span>.<span class="ident">get_unchecked</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">idx</span>)
+<span class="macro">macro_rules! </span>index_unchecked {
+    (<span class="macro-nonterminal">$slice</span>:expr, <span class="macro-nonterminal">$idx</span>:expr) =&gt; {{
+        <span class="kw">let </span>elem: <span class="kw-2">&amp;</span><span class="kw">_ </span>= <span class="kw">if </span><span class="macro">cfg!</span>(debug_assertions) {
+            <span class="macro-nonterminal">$slice</span>[<span class="macro-nonterminal">$idx</span>]
+        } <span class="kw">else </span>{
+            <span class="macro-nonterminal">$slice</span>.get_unchecked(<span class="macro-nonterminal">$idx</span>)
         };
 
-        <span class="ident">elem</span>
+        elem
     }};
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">new_capacity</span>() {
-        <span class="kw">let</span> <span class="ident">capacity</span> = <span class="ident">Capacity::new</span>(<span class="number">100</span>, <span class="ident">NonZeroUsize::new</span>(<span class="number">100</span>).<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">100</span>, <span class="ident">capacity</span>.<span class="ident">strings</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">100</span>, <span class="ident">capacity</span>.<span class="ident">bytes</span>.<span class="ident">get</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>new_capacity() {
+        <span class="kw">let </span>capacity = Capacity::new(<span class="number">100</span>, NonZeroUsize::new(<span class="number">100</span>).unwrap());
+        <span class="macro">assert_eq!</span>(<span class="number">100</span>, capacity.strings());
+        <span class="macro">assert_eq!</span>(<span class="number">100</span>, capacity.bytes.get());
 
-        <span class="kw">let</span> <span class="ident">capacity</span> = <span class="ident">Capacity::default</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">capacity</span>.<span class="ident">strings</span>, <span class="ident">capacity</span>.<span class="ident">strings</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">capacity</span>.<span class="ident">bytes</span>, <span class="ident">capacity</span>.<span class="ident">bytes</span>());
+        <span class="kw">let </span>capacity = Capacity::default();
+        <span class="macro">assert_eq!</span>(capacity.strings, capacity.strings());
+        <span class="macro">assert_eq!</span>(capacity.bytes, capacity.bytes());
 
-        <span class="kw">let</span> <span class="ident">capacity</span> = <span class="ident">Capacity::for_strings</span>(<span class="number">10</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">capacity</span>.<span class="ident">strings</span>(), <span class="number">10</span>);
+        <span class="kw">let </span>capacity = Capacity::for_strings(<span class="number">10</span>);
+        <span class="macro">assert_eq!</span>(capacity.strings(), <span class="number">10</span>);
 
-        <span class="kw">let</span> <span class="ident">capacity</span> = <span class="ident">Capacity::for_bytes</span>(<span class="ident">NonZeroUsize::new</span>(<span class="number">10</span>).<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">capacity</span>.<span class="ident">bytes</span>().<span class="ident">get</span>(), <span class="number">10</span>);
+        <span class="kw">let </span>capacity = Capacity::for_bytes(NonZeroUsize::new(<span class="number">10</span>).unwrap());
+        <span class="macro">assert_eq!</span>(capacity.bytes().get(), <span class="number">10</span>);
 
-        <span class="kw">let</span> <span class="ident">capacity</span> = <span class="ident">Capacity::minimal</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">capacity</span>.<span class="ident">strings</span>(), <span class="number">0</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">capacity</span>.<span class="ident">bytes</span>().<span class="ident">get</span>(), <span class="number">1</span>);
+        <span class="kw">let </span>capacity = Capacity::minimal();
+        <span class="macro">assert_eq!</span>(capacity.strings(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(capacity.bytes().get(), <span class="number">1</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">iter_rodeo</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-        <span class="kw">let</span> <span class="ident">a</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
-        <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;B&quot;</span>);
-        <span class="kw">let</span> <span class="ident">c</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;C&quot;</span>);
-        <span class="kw">let</span> <span class="ident">d</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;D&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>iter_rodeo() {
+        <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+        <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
+        <span class="kw">let </span>b = rodeo.get_or_intern(<span class="string">&quot;B&quot;</span>);
+        <span class="kw">let </span>c = rodeo.get_or_intern(<span class="string">&quot;C&quot;</span>);
+        <span class="kw">let </span>d = rodeo.get_or_intern(<span class="string">&quot;D&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> = <span class="ident">Iter::from_rodeo</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>iter = Iter::from_rodeo(<span class="kw-2">&amp;</span>rodeo);
 
-        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">a</span>, <span class="string">&quot;A&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="string">&quot;B&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">c</span>, <span class="string">&quot;C&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">d</span>, <span class="string">&quot;D&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
+        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), iter.size_hint());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((a, <span class="string">&quot;A&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((b, <span class="string">&quot;B&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((c, <span class="string">&quot;C&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((d, <span class="string">&quot;D&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
+        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), iter.size_hint());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">iter_reader</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-        <span class="kw">let</span> <span class="ident">a</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
-        <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;B&quot;</span>);
-        <span class="kw">let</span> <span class="ident">c</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;C&quot;</span>);
-        <span class="kw">let</span> <span class="ident">d</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;D&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>iter_reader() {
+        <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+        <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
+        <span class="kw">let </span>b = rodeo.get_or_intern(<span class="string">&quot;B&quot;</span>);
+        <span class="kw">let </span>c = rodeo.get_or_intern(<span class="string">&quot;C&quot;</span>);
+        <span class="kw">let </span>d = rodeo.get_or_intern(<span class="string">&quot;D&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> = <span class="ident">Iter::from_reader</span>(<span class="kw-2">&amp;</span><span class="ident">reader</span>);
+        <span class="kw">let </span>reader = rodeo.into_reader();
+        <span class="kw">let </span><span class="kw-2">mut </span>iter = Iter::from_reader(<span class="kw-2">&amp;</span>reader);
 
-        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">a</span>, <span class="string">&quot;A&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="string">&quot;B&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">c</span>, <span class="string">&quot;C&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">d</span>, <span class="string">&quot;D&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
+        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), iter.size_hint());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((a, <span class="string">&quot;A&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((b, <span class="string">&quot;B&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((c, <span class="string">&quot;C&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((d, <span class="string">&quot;D&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
+        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), iter.size_hint());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">iter_resolver</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-        <span class="kw">let</span> <span class="ident">a</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
-        <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;B&quot;</span>);
-        <span class="kw">let</span> <span class="ident">c</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;C&quot;</span>);
-        <span class="kw">let</span> <span class="ident">d</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;D&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>iter_resolver() {
+        <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+        <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
+        <span class="kw">let </span>b = rodeo.get_or_intern(<span class="string">&quot;B&quot;</span>);
+        <span class="kw">let </span>c = rodeo.get_or_intern(<span class="string">&quot;C&quot;</span>);
+        <span class="kw">let </span>d = rodeo.get_or_intern(<span class="string">&quot;D&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_resolver</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> = <span class="ident">Iter::from_resolver</span>(<span class="kw-2">&amp;</span><span class="ident">resolver</span>);
+        <span class="kw">let </span>resolver = rodeo.into_resolver();
+        <span class="kw">let </span><span class="kw-2">mut </span>iter = Iter::from_resolver(<span class="kw-2">&amp;</span>resolver);
 
-        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">a</span>, <span class="string">&quot;A&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="string">&quot;B&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">c</span>, <span class="string">&quot;C&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">d</span>, <span class="string">&quot;D&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
+        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), iter.size_hint());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((a, <span class="string">&quot;A&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((b, <span class="string">&quot;B&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((c, <span class="string">&quot;C&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((d, <span class="string">&quot;D&quot;</span>)), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
+        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), iter.size_hint());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">strings_rodeo</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;B&quot;</span>);
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;C&quot;</span>);
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;D&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>strings_rodeo() {
+        <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+        rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
+        rodeo.get_or_intern(<span class="string">&quot;B&quot;</span>);
+        rodeo.get_or_intern(<span class="string">&quot;C&quot;</span>);
+        rodeo.get_or_intern(<span class="string">&quot;D&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> = <span class="ident">Strings::from_rodeo</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>iter = Strings::from_rodeo(<span class="kw-2">&amp;</span>rodeo);
 
-        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;A&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;B&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;C&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;D&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
+        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), iter.size_hint());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;A&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;B&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;C&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;D&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
+        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), iter.size_hint());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">strings_reader</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;B&quot;</span>);
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;C&quot;</span>);
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;D&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>strings_reader() {
+        <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+        rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
+        rodeo.get_or_intern(<span class="string">&quot;B&quot;</span>);
+        rodeo.get_or_intern(<span class="string">&quot;C&quot;</span>);
+        rodeo.get_or_intern(<span class="string">&quot;D&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> = <span class="ident">Strings::from_reader</span>(<span class="kw-2">&amp;</span><span class="ident">reader</span>);
+        <span class="kw">let </span>reader = rodeo.into_reader();
+        <span class="kw">let </span><span class="kw-2">mut </span>iter = Strings::from_reader(<span class="kw-2">&amp;</span>reader);
 
-        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;A&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;B&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;C&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;D&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
+        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), iter.size_hint());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;A&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;B&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;C&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;D&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
+        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), iter.size_hint());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">strings_resolver</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;B&quot;</span>);
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;C&quot;</span>);
-        <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;D&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>strings_resolver() {
+        <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+        rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
+        rodeo.get_or_intern(<span class="string">&quot;B&quot;</span>);
+        rodeo.get_or_intern(<span class="string">&quot;C&quot;</span>);
+        rodeo.get_or_intern(<span class="string">&quot;D&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_resolver</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> = <span class="ident">Strings::from_resolver</span>(<span class="kw-2">&amp;</span><span class="ident">resolver</span>);
+        <span class="kw">let </span>resolver = rodeo.into_resolver();
+        <span class="kw">let </span><span class="kw-2">mut </span>iter = Strings::from_resolver(<span class="kw-2">&amp;</span>resolver);
 
-        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;A&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;B&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;C&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;D&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">iter</span>.<span class="ident">next</span>());
-        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), <span class="ident">iter</span>.<span class="ident">size_hint</span>());
+        <span class="macro">assert_eq!</span>((<span class="number">4</span>, <span class="prelude-val">Some</span>(<span class="number">4</span>)), iter.size_hint());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;A&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;B&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;C&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;D&quot;</span>), iter.next());
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
+        <span class="macro">assert_eq!</span>((<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>)), iter.size_hint());
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -247,201 +247,201 @@
 <span id="247">247</span>
 <span id="248">248</span>
 <span id="249">249</span>
-</pre><pre class="rust"><code><span class="comment">// Copyright 2015 Nicholas Allegra (comex).</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; or</span>
-<span class="comment">// the MIT license &lt;https://opensource.org/licenses/MIT&gt;, at your option. This file may not be</span>
-<span class="comment">// copied, modified, or distributed except according to those terms.</span>
+</pre><pre class="rust"><code><span class="comment">// Copyright 2015 Nicholas Allegra (comex).
+// Licensed under the Apache License, Version 2.0 &lt;https://www.apache.org/licenses/LICENSE-2.0&gt; or
+// the MIT license &lt;https://opensource.org/licenses/MIT&gt;, at your option. This file may not be
+// copied, modified, or distributed except according to those terms.
 
-<span class="doccomment">//! Same idea as (but implementation not directly based on) the Python shlex module.  However, this</span>
-<span class="doccomment">//! implementation does not support any of the Python module&#39;s customization because it makes</span>
-<span class="doccomment">//! parsing slower and is fairly useless.  You only get the default settings of shlex.split, which</span>
-<span class="doccomment">//! mimic the POSIX shell:</span>
-<span class="doccomment">//! &lt;https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html&gt;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This implementation also deviates from the Python version in not treating `\r` specially, which</span>
-<span class="doccomment">//! I believe is more compliant.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The algorithms in this crate are oblivious to UTF-8 high bytes, so they iterate over the bytes</span>
-<span class="doccomment">//! directly as a micro-optimization.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Disabling the `std` feature (which is enabled by default) will allow the crate to work in</span>
-<span class="doccomment">//! `no_std` environments, where the `alloc` crate, and a global allocator, are available.</span>
+</span><span class="doccomment">//! Same idea as (but implementation not directly based on) the Python shlex module.  However, this
+//! implementation does not support any of the Python module&#39;s customization because it makes
+//! parsing slower and is fairly useless.  You only get the default settings of shlex.split, which
+//! mimic the POSIX shell:
+//! &lt;https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html&gt;
+//!
+//! This implementation also deviates from the Python version in not treating `\r` specially, which
+//! I believe is more compliant.
+//!
+//! The algorithms in this crate are oblivious to UTF-8 high bytes, so they iterate over the bytes
+//! directly as a micro-optimization.
+//!
+//! Disabling the `std` feature (which is enabled by default) will allow the crate to work in
+//! `no_std` environments, where the `alloc` crate, and a global allocator, are available.
 
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>), <span class="ident">no_std</span>)]</span>
+</span><span class="attribute">#![cfg_attr(not(feature = <span class="string">&quot;std&quot;</span>), no_std)]
 
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">alloc</span>;
-<span class="kw">use</span> <span class="ident">alloc::vec::Vec</span>;
-<span class="kw">use</span> <span class="ident">alloc::borrow::Cow</span>;
-<span class="kw">use</span> <span class="ident">alloc::string::String</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">use</span> <span class="ident">alloc::vec</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">use</span> <span class="ident">alloc::borrow::ToOwned</span>;
+</span><span class="kw">extern crate </span>alloc;
+<span class="kw">use </span>alloc::vec::Vec;
+<span class="kw">use </span>alloc::borrow::Cow;
+<span class="kw">use </span>alloc::string::String;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">use </span>alloc::vec;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">use </span>alloc::borrow::ToOwned;
 
-<span class="doccomment">/// An iterator that takes an input string and splits it into the words using the same syntax as</span>
-<span class="doccomment">/// the POSIX shell.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Shlex</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="ident">in_iter</span>: <span class="ident">core::str::Bytes</span>&lt;<span class="lifetime">&#39;a</span>&gt;,
-    <span class="doccomment">/// The number of newlines read so far, plus one.</span>
-    <span class="kw">pub</span> <span class="ident">line_no</span>: <span class="ident">usize</span>,
-    <span class="doccomment">/// An input string is erroneous if it ends while inside a quotation or right after an</span>
-    <span class="doccomment">/// unescaped backslash.  Since Iterator does not have a mechanism to return an error, if that</span>
-    <span class="doccomment">/// happens, Shlex just throws out the last token, ends the iteration, and sets &#39;had_error&#39; to</span>
-    <span class="doccomment">/// true; best to check it after you&#39;re done iterating.</span>
-    <span class="kw">pub</span> <span class="ident">had_error</span>: <span class="ident">bool</span>,
+<span class="doccomment">/// An iterator that takes an input string and splits it into the words using the same syntax as
+/// the POSIX shell.
+</span><span class="kw">pub struct </span>Shlex&lt;<span class="lifetime">&#39;a</span>&gt; {
+    in_iter: core::str::Bytes&lt;<span class="lifetime">&#39;a</span>&gt;,
+    <span class="doccomment">/// The number of newlines read so far, plus one.
+    </span><span class="kw">pub </span>line_no: usize,
+    <span class="doccomment">/// An input string is erroneous if it ends while inside a quotation or right after an
+    /// unescaped backslash.  Since Iterator does not have a mechanism to return an error, if that
+    /// happens, Shlex just throws out the last token, ends the iteration, and sets &#39;had_error&#39; to
+    /// true; best to check it after you&#39;re done iterating.
+    </span><span class="kw">pub </span>had_error: bool,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Shlex</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">in_str</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Shlex</span> {
-            <span class="ident">in_iter</span>: <span class="ident">in_str</span>.<span class="ident">bytes</span>(),
-            <span class="ident">line_no</span>: <span class="number">1</span>,
-            <span class="ident">had_error</span>: <span class="bool-val">false</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Shlex&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">pub fn </span>new(in_str: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str) -&gt; <span class="self">Self </span>{
+        Shlex {
+            in_iter: in_str.bytes(),
+            line_no: <span class="number">1</span>,
+            had_error: <span class="bool-val">false</span>,
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_word</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">ch</span>: <span class="ident">u8</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">String</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; = <span class="ident">Vec::new</span>();
-        <span class="kw">loop</span> {
-            <span class="kw">match</span> <span class="ident">ch</span> <span class="kw">as</span> <span class="ident">char</span> {
-                <span class="string">&#39;&quot;&#39;</span> =&gt; <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(()) = <span class="self">self</span>.<span class="ident">parse_double</span>(<span class="kw-2">&amp;mut</span> <span class="ident">result</span>) {
-                    <span class="self">self</span>.<span class="ident">had_error</span> = <span class="bool-val">true</span>;
-                    <span class="kw">return</span> <span class="prelude-val">None</span>;
+    <span class="kw">fn </span>parse_word(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>ch: u8) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>result: Vec&lt;u8&gt; = Vec::new();
+        <span class="kw">loop </span>{
+            <span class="kw">match </span>ch <span class="kw">as </span>char {
+                <span class="string">&#39;&quot;&#39; </span>=&gt; <span class="kw">if let </span><span class="prelude-val">Err</span>(()) = <span class="self">self</span>.parse_double(<span class="kw-2">&amp;mut </span>result) {
+                    <span class="self">self</span>.had_error = <span class="bool-val">true</span>;
+                    <span class="kw">return </span><span class="prelude-val">None</span>;
                 },
-                <span class="string">&#39;\&#39;&#39;</span> =&gt; <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(()) = <span class="self">self</span>.<span class="ident">parse_single</span>(<span class="kw-2">&amp;mut</span> <span class="ident">result</span>) {
-                    <span class="self">self</span>.<span class="ident">had_error</span> = <span class="bool-val">true</span>;
-                    <span class="kw">return</span> <span class="prelude-val">None</span>;
+                <span class="string">&#39;\&#39;&#39; </span>=&gt; <span class="kw">if let </span><span class="prelude-val">Err</span>(()) = <span class="self">self</span>.parse_single(<span class="kw-2">&amp;mut </span>result) {
+                    <span class="self">self</span>.had_error = <span class="bool-val">true</span>;
+                    <span class="kw">return </span><span class="prelude-val">None</span>;
                 },
-                <span class="string">&#39;\\&#39;</span> =&gt; <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ch2</span>) = <span class="self">self</span>.<span class="ident">next_char</span>() {
-                    <span class="kw">if</span> <span class="ident">ch2</span> != <span class="string">&#39;\n&#39;</span> <span class="kw">as</span> <span class="ident">u8</span> { <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">ch2</span>); }
-                } <span class="kw">else</span> {
-                    <span class="self">self</span>.<span class="ident">had_error</span> = <span class="bool-val">true</span>;
-                    <span class="kw">return</span> <span class="prelude-val">None</span>;
+                <span class="string">&#39;\\&#39; </span>=&gt; <span class="kw">if let </span><span class="prelude-val">Some</span>(ch2) = <span class="self">self</span>.next_char() {
+                    <span class="kw">if </span>ch2 != <span class="string">&#39;\n&#39; </span><span class="kw">as </span>u8 { result.push(ch2); }
+                } <span class="kw">else </span>{
+                    <span class="self">self</span>.had_error = <span class="bool-val">true</span>;
+                    <span class="kw">return </span><span class="prelude-val">None</span>;
                 },
-                <span class="string">&#39; &#39;</span> | <span class="string">&#39;\t&#39;</span> | <span class="string">&#39;\n&#39;</span> =&gt; { <span class="kw">break</span>; },
-                <span class="kw">_</span> =&gt; { <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">ch</span> <span class="kw">as</span> <span class="ident">u8</span>); },
+                <span class="string">&#39; &#39; </span>| <span class="string">&#39;\t&#39; </span>| <span class="string">&#39;\n&#39; </span>=&gt; { <span class="kw">break</span>; },
+                <span class="kw">_ </span>=&gt; { result.push(ch <span class="kw">as </span>u8); },
             }
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ch2</span>) = <span class="self">self</span>.<span class="ident">next_char</span>() { <span class="ident">ch</span> = <span class="ident">ch2</span>; } <span class="kw">else</span> { <span class="kw">break</span>; }
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(ch2) = <span class="self">self</span>.next_char() { ch = ch2; } <span class="kw">else </span>{ <span class="kw">break</span>; }
         }
-        <span class="kw">unsafe</span> { <span class="prelude-val">Some</span>(<span class="ident">String::from_utf8_unchecked</span>(<span class="ident">result</span>)) }
+        <span class="kw">unsafe </span>{ <span class="prelude-val">Some</span>(String::from_utf8_unchecked(result)) }
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_double</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">result</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), ()&gt; {
-        <span class="kw">loop</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ch2</span>) = <span class="self">self</span>.<span class="ident">next_char</span>() {
-                <span class="kw">match</span> <span class="ident">ch2</span> <span class="kw">as</span> <span class="ident">char</span> {
-                    <span class="string">&#39;\\&#39;</span> =&gt; {
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ch3</span>) = <span class="self">self</span>.<span class="ident">next_char</span>() {
-                            <span class="kw">match</span> <span class="ident">ch3</span> <span class="kw">as</span> <span class="ident">char</span> {
-                                <span class="comment">// \$ =&gt; $</span>
-                                <span class="string">&#39;$&#39;</span> | <span class="string">&#39;`&#39;</span> | <span class="string">&#39;&quot;&#39;</span> | <span class="string">&#39;\\&#39;</span> =&gt; { <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">ch3</span>); },
-                                <span class="comment">// \&lt;newline&gt; =&gt; nothing</span>
-                                <span class="string">&#39;\n&#39;</span> =&gt; {},
-                                <span class="comment">// \x =&gt; =x</span>
-                                <span class="kw">_</span> =&gt; { <span class="ident">result</span>.<span class="ident">push</span>(<span class="string">&#39;\\&#39;</span> <span class="kw">as</span> <span class="ident">u8</span>); <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">ch3</span>); }
+    <span class="kw">fn </span>parse_double(<span class="kw-2">&amp;mut </span><span class="self">self</span>, result: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), ()&gt; {
+        <span class="kw">loop </span>{
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(ch2) = <span class="self">self</span>.next_char() {
+                <span class="kw">match </span>ch2 <span class="kw">as </span>char {
+                    <span class="string">&#39;\\&#39; </span>=&gt; {
+                        <span class="kw">if let </span><span class="prelude-val">Some</span>(ch3) = <span class="self">self</span>.next_char() {
+                            <span class="kw">match </span>ch3 <span class="kw">as </span>char {
+                                <span class="comment">// \$ =&gt; $
+                                </span><span class="string">&#39;$&#39; </span>| <span class="string">&#39;`&#39; </span>| <span class="string">&#39;&quot;&#39; </span>| <span class="string">&#39;\\&#39; </span>=&gt; { result.push(ch3); },
+                                <span class="comment">// \&lt;newline&gt; =&gt; nothing
+                                </span><span class="string">&#39;\n&#39; </span>=&gt; {},
+                                <span class="comment">// \x =&gt; =x
+                                </span><span class="kw">_ </span>=&gt; { result.push(<span class="string">&#39;\\&#39; </span><span class="kw">as </span>u8); result.push(ch3); }
                             }
-                        } <span class="kw">else</span> {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(());
+                        } <span class="kw">else </span>{
+                            <span class="kw">return </span><span class="prelude-val">Err</span>(());
                         }
                     },
-                    <span class="string">&#39;&quot;&#39;</span> =&gt; { <span class="kw">return</span> <span class="prelude-val">Ok</span>(()); },
-                    <span class="kw">_</span> =&gt; { <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">ch2</span>); },
+                    <span class="string">&#39;&quot;&#39; </span>=&gt; { <span class="kw">return </span><span class="prelude-val">Ok</span>(()); },
+                    <span class="kw">_ </span>=&gt; { result.push(ch2); },
                 }
-            } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(());
+            } <span class="kw">else </span>{
+                <span class="kw">return </span><span class="prelude-val">Err</span>(());
             }
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_single</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">result</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), ()&gt; {
-        <span class="kw">loop</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ch2</span>) = <span class="self">self</span>.<span class="ident">next_char</span>() {
-                <span class="kw">match</span> <span class="ident">ch2</span> <span class="kw">as</span> <span class="ident">char</span> {
-                    <span class="string">&#39;\&#39;&#39;</span> =&gt; { <span class="kw">return</span> <span class="prelude-val">Ok</span>(()); },
-                    <span class="kw">_</span> =&gt; { <span class="ident">result</span>.<span class="ident">push</span>(<span class="ident">ch2</span>); },
+    <span class="kw">fn </span>parse_single(<span class="kw-2">&amp;mut </span><span class="self">self</span>, result: <span class="kw-2">&amp;mut </span>Vec&lt;u8&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), ()&gt; {
+        <span class="kw">loop </span>{
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(ch2) = <span class="self">self</span>.next_char() {
+                <span class="kw">match </span>ch2 <span class="kw">as </span>char {
+                    <span class="string">&#39;\&#39;&#39; </span>=&gt; { <span class="kw">return </span><span class="prelude-val">Ok</span>(()); },
+                    <span class="kw">_ </span>=&gt; { result.push(ch2); },
                 }
-            } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(());
+            } <span class="kw">else </span>{
+                <span class="kw">return </span><span class="prelude-val">Err</span>(());
             }
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">next_char</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="kw">let</span> <span class="ident">res</span> = <span class="self">self</span>.<span class="ident">in_iter</span>.<span class="ident">next</span>();
-        <span class="kw">if</span> <span class="ident">res</span> == <span class="prelude-val">Some</span>(<span class="string">&#39;\n&#39;</span> <span class="kw">as</span> <span class="ident">u8</span>) { <span class="self">self</span>.<span class="ident">line_no</span> += <span class="number">1</span>; }
-        <span class="ident">res</span>
+    <span class="kw">fn </span>next_char(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;u8&gt; {
+        <span class="kw">let </span>res = <span class="self">self</span>.in_iter.next();
+        <span class="kw">if </span>res == <span class="prelude-val">Some</span>(<span class="string">&#39;\n&#39; </span><span class="kw">as </span>u8) { <span class="self">self</span>.line_no += <span class="number">1</span>; }
+        res
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Shlex</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">String</span>;
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">String</span>&gt; {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">ch</span>) = <span class="self">self</span>.<span class="ident">next_char</span>() {
-            <span class="comment">// skip initial whitespace</span>
-            <span class="kw">loop</span> {
-                <span class="kw">match</span> <span class="ident">ch</span> <span class="kw">as</span> <span class="ident">char</span> {
-                    <span class="string">&#39; &#39;</span> | <span class="string">&#39;\t&#39;</span> | <span class="string">&#39;\n&#39;</span> =&gt; {},
-                    <span class="string">&#39;#&#39;</span> =&gt; {
-                        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ch2</span>) = <span class="self">self</span>.<span class="ident">next_char</span>() {
-                            <span class="kw">if</span> <span class="ident">ch2</span> <span class="kw">as</span> <span class="ident">char</span> == <span class="string">&#39;\n&#39;</span> { <span class="kw">break</span>; }
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Iterator <span class="kw">for </span>Shlex&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">type </span>Item = String;
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>ch) = <span class="self">self</span>.next_char() {
+            <span class="comment">// skip initial whitespace
+            </span><span class="kw">loop </span>{
+                <span class="kw">match </span>ch <span class="kw">as </span>char {
+                    <span class="string">&#39; &#39; </span>| <span class="string">&#39;\t&#39; </span>| <span class="string">&#39;\n&#39; </span>=&gt; {},
+                    <span class="string">&#39;#&#39; </span>=&gt; {
+                        <span class="kw">while let </span><span class="prelude-val">Some</span>(ch2) = <span class="self">self</span>.next_char() {
+                            <span class="kw">if </span>ch2 <span class="kw">as </span>char == <span class="string">&#39;\n&#39; </span>{ <span class="kw">break</span>; }
                         }
                     },
-                    <span class="kw">_</span> =&gt; { <span class="kw">break</span>; }
+                    <span class="kw">_ </span>=&gt; { <span class="kw">break</span>; }
                 }
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ch2</span>) = <span class="self">self</span>.<span class="ident">next_char</span>() { <span class="ident">ch</span> = <span class="ident">ch2</span>; } <span class="kw">else</span> { <span class="kw">return</span> <span class="prelude-val">None</span>; }
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(ch2) = <span class="self">self</span>.next_char() { ch = ch2; } <span class="kw">else </span>{ <span class="kw">return </span><span class="prelude-val">None</span>; }
             }
-            <span class="self">self</span>.<span class="ident">parse_word</span>(<span class="ident">ch</span>)
-        } <span class="kw">else</span> { <span class="comment">// no initial character</span>
-            <span class="prelude-val">None</span>
-        }
+            <span class="self">self</span>.parse_word(ch)
+        } <span class="kw">else </span>{ <span class="comment">// no initial character
+            </span><span class="prelude-val">None
+        </span>}
     }
 
 }
 
-<span class="doccomment">/// Convenience function that consumes the whole string at once.  Returns None if the input was</span>
-<span class="doccomment">/// erroneous.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split</span>(<span class="ident">in_str</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">String</span>&gt;&gt; {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">shl</span> = <span class="ident">Shlex::new</span>(<span class="ident">in_str</span>);
-    <span class="kw">let</span> <span class="ident">res</span> = <span class="ident">shl</span>.<span class="ident">by_ref</span>().<span class="ident">collect</span>();
-    <span class="kw">if</span> <span class="ident">shl</span>.<span class="ident">had_error</span> { <span class="prelude-val">None</span> } <span class="kw">else</span> { <span class="prelude-val">Some</span>(<span class="ident">res</span>) }
+<span class="doccomment">/// Convenience function that consumes the whole string at once.  Returns None if the input was
+/// erroneous.
+</span><span class="kw">pub fn </span>split(in_str: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;String&gt;&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>shl = Shlex::new(in_str);
+    <span class="kw">let </span>res = shl.by_ref().collect();
+    <span class="kw">if </span>shl.had_error { <span class="prelude-val">None </span>} <span class="kw">else </span>{ <span class="prelude-val">Some</span>(res) }
 }
 
-<span class="doccomment">/// Given a single word, return a string suitable to encode it as a shell argument.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">quote</span>(<span class="ident">in_str</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">Cow</span>&lt;<span class="ident">str</span>&gt; {
-    <span class="kw">if</span> <span class="ident">in_str</span>.<span class="ident">len</span>() == <span class="number">0</span> {
-        <span class="string">&quot;\&quot;\&quot;&quot;</span>.<span class="ident">into</span>()
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">in_str</span>.<span class="ident">bytes</span>().<span class="ident">any</span>(|<span class="ident">c</span>| <span class="kw">match</span> <span class="ident">c</span> <span class="kw">as</span> <span class="ident">char</span> {
-        <span class="string">&#39;|&#39;</span> | <span class="string">&#39;&amp;&#39;</span> | <span class="string">&#39;;&#39;</span> | <span class="string">&#39;&lt;&#39;</span> | <span class="string">&#39;&gt;&#39;</span> | <span class="string">&#39;(&#39;</span> | <span class="string">&#39;)&#39;</span> | <span class="string">&#39;$&#39;</span> | <span class="string">&#39;`&#39;</span> | <span class="string">&#39;\\&#39;</span> | <span class="string">&#39;&quot;&#39;</span> | <span class="string">&#39;\&#39;&#39;</span> | <span class="string">&#39; &#39;</span> | <span class="string">&#39;\t&#39;</span> |
-        <span class="string">&#39;\r&#39;</span> | <span class="string">&#39;\n&#39;</span> | <span class="string">&#39;*&#39;</span> | <span class="string">&#39;?&#39;</span> | <span class="string">&#39;[&#39;</span> | <span class="string">&#39;#&#39;</span> | <span class="string">&#39;~&#39;</span> | <span class="string">&#39;=&#39;</span> | <span class="string">&#39;%&#39;</span> =&gt; <span class="bool-val">true</span>,
-        <span class="kw">_</span> =&gt; <span class="bool-val">false</span>
-    }) {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; = <span class="ident">Vec::new</span>();
-        <span class="ident">out</span>.<span class="ident">push</span>(<span class="string">&#39;&quot;&#39;</span> <span class="kw">as</span> <span class="ident">u8</span>);
-        <span class="kw">for</span> <span class="ident">c</span> <span class="kw">in</span> <span class="ident">in_str</span>.<span class="ident">bytes</span>() {
-            <span class="kw">match</span> <span class="ident">c</span> <span class="kw">as</span> <span class="ident">char</span> {
-                <span class="string">&#39;$&#39;</span> | <span class="string">&#39;`&#39;</span> | <span class="string">&#39;&quot;&#39;</span> | <span class="string">&#39;\\&#39;</span> =&gt; <span class="ident">out</span>.<span class="ident">push</span>(<span class="string">&#39;\\&#39;</span> <span class="kw">as</span> <span class="ident">u8</span>),
-                <span class="kw">_</span> =&gt; ()
+<span class="doccomment">/// Given a single word, return a string suitable to encode it as a shell argument.
+</span><span class="kw">pub fn </span>quote(in_str: <span class="kw-2">&amp;</span>str) -&gt; Cow&lt;str&gt; {
+    <span class="kw">if </span>in_str.len() == <span class="number">0 </span>{
+        <span class="string">&quot;\&quot;\&quot;&quot;</span>.into()
+    } <span class="kw">else if </span>in_str.bytes().any(|c| <span class="kw">match </span>c <span class="kw">as </span>char {
+        <span class="string">&#39;|&#39; </span>| <span class="string">&#39;&amp;&#39; </span>| <span class="string">&#39;;&#39; </span>| <span class="string">&#39;&lt;&#39; </span>| <span class="string">&#39;&gt;&#39; </span>| <span class="string">&#39;(&#39; </span>| <span class="string">&#39;)&#39; </span>| <span class="string">&#39;$&#39; </span>| <span class="string">&#39;`&#39; </span>| <span class="string">&#39;\\&#39; </span>| <span class="string">&#39;&quot;&#39; </span>| <span class="string">&#39;\&#39;&#39; </span>| <span class="string">&#39; &#39; </span>| <span class="string">&#39;\t&#39; </span>|
+        <span class="string">&#39;\r&#39; </span>| <span class="string">&#39;\n&#39; </span>| <span class="string">&#39;*&#39; </span>| <span class="string">&#39;?&#39; </span>| <span class="string">&#39;[&#39; </span>| <span class="string">&#39;#&#39; </span>| <span class="string">&#39;~&#39; </span>| <span class="string">&#39;=&#39; </span>| <span class="string">&#39;%&#39; </span>=&gt; <span class="bool-val">true</span>,
+        <span class="kw">_ </span>=&gt; <span class="bool-val">false
+    </span>}) {
+        <span class="kw">let </span><span class="kw-2">mut </span>out: Vec&lt;u8&gt; = Vec::new();
+        out.push(<span class="string">&#39;&quot;&#39; </span><span class="kw">as </span>u8);
+        <span class="kw">for </span>c <span class="kw">in </span>in_str.bytes() {
+            <span class="kw">match </span>c <span class="kw">as </span>char {
+                <span class="string">&#39;$&#39; </span>| <span class="string">&#39;`&#39; </span>| <span class="string">&#39;&quot;&#39; </span>| <span class="string">&#39;\\&#39; </span>=&gt; out.push(<span class="string">&#39;\\&#39; </span><span class="kw">as </span>u8),
+                <span class="kw">_ </span>=&gt; ()
             }
-            <span class="ident">out</span>.<span class="ident">push</span>(<span class="ident">c</span>);
+            out.push(c);
         }
-        <span class="ident">out</span>.<span class="ident">push</span>(<span class="string">&#39;&quot;&#39;</span> <span class="kw">as</span> <span class="ident">u8</span>);
-        <span class="kw">unsafe</span> { <span class="ident">String::from_utf8_unchecked</span>(<span class="ident">out</span>) }.<span class="ident">into</span>()
-    } <span class="kw">else</span> {
-        <span class="ident">in_str</span>.<span class="ident">into</span>()
+        out.push(<span class="string">&#39;&quot;&#39; </span><span class="kw">as </span>u8);
+        <span class="kw">unsafe </span>{ String::from_utf8_unchecked(out) }.into()
+    } <span class="kw">else </span>{
+        in_str.into()
     }
 }
 
-<span class="doccomment">/// Convenience function that consumes an iterable of words and turns it into a single string,</span>
-<span class="doccomment">/// quoting words when necessary. Consecutive words will be separated by a single space.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">join</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">I</span>: <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>&gt;&gt;(<span class="ident">words</span>: <span class="ident">I</span>) -&gt; <span class="ident">String</span> {
-    <span class="ident">words</span>.<span class="ident">into_iter</span>()
-        .<span class="ident">map</span>(<span class="ident">quote</span>)
-        .<span class="ident">collect</span>::&lt;<span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt;&gt;()
-        .<span class="ident">join</span>(<span class="string">&quot; &quot;</span>)
+<span class="doccomment">/// Convenience function that consumes an iterable of words and turns it into a single string,
+/// quoting words when necessary. Consecutive words will be separated by a single space.
+</span><span class="kw">pub fn </span>join&lt;<span class="lifetime">&#39;a</span>, I: IntoIterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;&gt;(words: I) -&gt; String {
+    words.into_iter()
+        .map(quote)
+        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
+        .join(<span class="string">&quot; &quot;</span>)
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">static</span> <span class="ident">SPLIT_TEST_ITEMS</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>]&gt;)] = <span class="kw-2">&amp;</span>[
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">static </span>SPLIT_TEST_ITEMS: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str]&gt;)] = <span class="kw-2">&amp;</span>[
     (<span class="string">&quot;foo$baz&quot;</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;foo$baz&quot;</span>])),
     (<span class="string">&quot;foo baz&quot;</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;foo&quot;</span>, <span class="string">&quot;baz&quot;</span>])),
     (<span class="string">&quot;foo\&quot;bar\&quot;baz&quot;</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;foobarbaz&quot;</span>])),
@@ -464,37 +464,37 @@
     (<span class="string">&quot;&#39;\\\\n&#39;&quot;</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>[<span class="string">&quot;\\\\n&quot;</span>])),
 ];
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_split</span>() {
-    <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">input</span>, <span class="ident">output</span>) <span class="kw">in</span> <span class="ident">SPLIT_TEST_ITEMS</span> {
-        <span class="macro">assert_eq!</span>(<span class="ident">split</span>(<span class="ident">input</span>), <span class="ident">output</span>.<span class="ident">map</span>(|<span class="ident">o</span>| <span class="ident">o</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="kw-2">&amp;</span><span class="ident">x</span>| <span class="ident">x</span>.<span class="ident">to_owned</span>()).<span class="ident">collect</span>()));
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>test_split() {
+    <span class="kw">for </span><span class="kw-2">&amp;</span>(input, output) <span class="kw">in </span>SPLIT_TEST_ITEMS {
+        <span class="macro">assert_eq!</span>(split(input), output.map(|o| o.iter().map(|<span class="kw-2">&amp;</span>x| x.to_owned()).collect()));
     }
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_lineno</span>() {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sh</span> = <span class="ident">Shlex::new</span>(<span class="string">&quot;\nfoo\nbar&quot;</span>);
-    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">word</span>) = <span class="ident">sh</span>.<span class="ident">next</span>() {
-        <span class="kw">if</span> <span class="ident">word</span> == <span class="string">&quot;bar&quot;</span> {
-            <span class="macro">assert_eq!</span>(<span class="ident">sh</span>.<span class="ident">line_no</span>, <span class="number">3</span>);
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>test_lineno() {
+    <span class="kw">let </span><span class="kw-2">mut </span>sh = Shlex::new(<span class="string">&quot;\nfoo\nbar&quot;</span>);
+    <span class="kw">while let </span><span class="prelude-val">Some</span>(word) = sh.next() {
+        <span class="kw">if </span>word == <span class="string">&quot;bar&quot; </span>{
+            <span class="macro">assert_eq!</span>(sh.line_no, <span class="number">3</span>);
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_quote</span>() {
-    <span class="macro">assert_eq!</span>(<span class="ident">quote</span>(<span class="string">&quot;foobar&quot;</span>), <span class="string">&quot;foobar&quot;</span>);
-    <span class="macro">assert_eq!</span>(<span class="ident">quote</span>(<span class="string">&quot;foo bar&quot;</span>), <span class="string">&quot;\&quot;foo bar\&quot;&quot;</span>);
-    <span class="macro">assert_eq!</span>(<span class="ident">quote</span>(<span class="string">&quot;\&quot;&quot;</span>), <span class="string">&quot;\&quot;\\\&quot;\&quot;&quot;</span>);
-    <span class="macro">assert_eq!</span>(<span class="ident">quote</span>(<span class="string">&quot;&quot;</span>), <span class="string">&quot;\&quot;\&quot;&quot;</span>);
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>test_quote() {
+    <span class="macro">assert_eq!</span>(quote(<span class="string">&quot;foobar&quot;</span>), <span class="string">&quot;foobar&quot;</span>);
+    <span class="macro">assert_eq!</span>(quote(<span class="string">&quot;foo bar&quot;</span>), <span class="string">&quot;\&quot;foo bar\&quot;&quot;</span>);
+    <span class="macro">assert_eq!</span>(quote(<span class="string">&quot;\&quot;&quot;</span>), <span class="string">&quot;\&quot;\\\&quot;\&quot;&quot;</span>);
+    <span class="macro">assert_eq!</span>(quote(<span class="string">&quot;&quot;</span>), <span class="string">&quot;\&quot;\&quot;&quot;</span>);
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_join</span>() {
-    <span class="macro">assert_eq!</span>(<span class="ident">join</span>(<span class="macro">vec!</span>[]), <span class="string">&quot;&quot;</span>);
-    <span class="macro">assert_eq!</span>(<span class="ident">join</span>(<span class="macro">vec!</span>[<span class="string">&quot;&quot;</span>]), <span class="string">&quot;\&quot;\&quot;&quot;</span>);
-    <span class="macro">assert_eq!</span>(<span class="ident">join</span>(<span class="macro">vec!</span>[<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>]), <span class="string">&quot;a b&quot;</span>);
-    <span class="macro">assert_eq!</span>(<span class="ident">join</span>(<span class="macro">vec!</span>[<span class="string">&quot;foo bar&quot;</span>, <span class="string">&quot;baz&quot;</span>]), <span class="string">&quot;\&quot;foo bar\&quot; baz&quot;</span>);
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>test_join() {
+    <span class="macro">assert_eq!</span>(join(<span class="macro">vec!</span>[]), <span class="string">&quot;&quot;</span>);
+    <span class="macro">assert_eq!</span>(join(<span class="macro">vec!</span>[<span class="string">&quot;&quot;</span>]), <span class="string">&quot;\&quot;\&quot;&quot;</span>);
+    <span class="macro">assert_eq!</span>(join(<span class="macro">vec!</span>[<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>]), <span class="string">&quot;a b&quot;</span>);
+    <span class="macro">assert_eq!</span>(join(<span class="macro">vec!</span>[<span class="string">&quot;foo bar&quot;</span>, <span class="string">&quot;baz&quot;</span>]), <span class="string">&quot;\&quot;foo bar\&quot; baz&quot;</span>);
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="shlex" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="shlex" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

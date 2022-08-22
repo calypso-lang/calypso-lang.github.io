@@ -332,339 +332,339 @@
 <span id="332">332</span>
 <span id="333">333</span>
 <span id="334">334</span>
-</pre><pre class="rust"><code><span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span>;
+</pre><pre class="rust"><code><span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test;
 
-<span class="kw">use</span> <span class="ident">smallvec</span>::{<span class="ident">Array</span>, <span class="ident">SmallVec</span>};
+<span class="kw">use </span>smallvec::{Array, SmallVec};
 
-<span class="kw">use</span> <span class="ident">std::convert</span>::{<span class="ident">From</span>, <span class="ident">Into</span>};
-<span class="kw">use</span> <span class="ident">std::fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Formatter</span>};
-<span class="kw">use</span> <span class="ident">std::iter::FromIterator</span>;
+<span class="kw">use </span>std::convert::{From, Into};
+<span class="kw">use </span>std::fmt::{<span class="self">self</span>, Debug, Formatter};
+<span class="kw">use </span>std::iter::FromIterator;
 
-<span class="doccomment">/// A `NibbleVec` backed by a `SmallVec` with 64 inline element slots.</span>
-<span class="doccomment">/// This will not allocate until more than 64 elements are added.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Nibblet</span> = <span class="ident">NibbleVec</span>&lt;[<span class="ident">u8</span>; <span class="number">64</span>]&gt;;
+<span class="doccomment">/// A `NibbleVec` backed by a `SmallVec` with 64 inline element slots.
+/// This will not allocate until more than 64 elements are added.
+</span><span class="kw">pub type </span>Nibblet = NibbleVec&lt;[u8; <span class="number">64</span>]&gt;;
 
-<span class="doccomment">/// A data-structure for storing a sequence of 4-bit values.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Values are stored in a `Vec&lt;u8&gt;`, with two values per byte.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Values at even indices are stored in the most-significant half of their byte,</span>
-<span class="doccomment">/// while values at odd indices are stored in the least-significant half.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Imagine a vector of [MSB][msb-wiki] first bytes, and you&#39;ll be right.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// n = [_ _ | _ _ | _ _]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [msb-wiki]: http://en.wikipedia.org/wiki/Most_significant_bit</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>: <span class="ident">Array</span>&lt;<span class="ident">Item</span> = <span class="ident">u8</span>&gt;&gt; {
-    <span class="ident">length</span>: <span class="ident">usize</span>,
-    <span class="ident">data</span>: <span class="ident">SmallVec</span>&lt;<span class="ident">A</span>&gt;,
+<span class="doccomment">/// A data-structure for storing a sequence of 4-bit values.
+///
+/// Values are stored in a `Vec&lt;u8&gt;`, with two values per byte.
+///
+/// Values at even indices are stored in the most-significant half of their byte,
+/// while values at odd indices are stored in the least-significant half.
+///
+/// Imagine a vector of [MSB][msb-wiki] first bytes, and you&#39;ll be right.
+///
+/// n = [_ _ | _ _ | _ _]
+///
+/// [msb-wiki]: http://en.wikipedia.org/wiki/Most_significant_bit
+</span><span class="attribute">#[derive(Clone, Default)]
+</span><span class="kw">pub struct </span>NibbleVec&lt;A: Array&lt;Item = u8&gt;&gt; {
+    length: usize,
+    data: SmallVec&lt;A&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">A</span>: <span class="ident">Array</span>&lt;<span class="ident">Item</span> = <span class="ident">u8</span>&gt;&gt; <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-    <span class="doccomment">/// Create an empty nibble vector.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-        <span class="ident">NibbleVec</span> {
-            <span class="ident">length</span>: <span class="number">0</span>,
-            <span class="ident">data</span>: <span class="ident">SmallVec::new</span>(),
+<span class="kw">impl</span>&lt;A: Array&lt;Item = u8&gt;&gt; NibbleVec&lt;A&gt; {
+    <span class="doccomment">/// Create an empty nibble vector.
+    </span><span class="kw">pub fn </span>new() -&gt; NibbleVec&lt;A&gt; {
+        NibbleVec {
+            length: <span class="number">0</span>,
+            data: SmallVec::new(),
         }
     }
 
-    <span class="doccomment">/// Create a nibble vector from a vector of bytes.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Each byte is split into two 4-bit entries (MSB, LSB).</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_byte_vec</span>(<span class="ident">vec</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;) -&gt; <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-        <span class="kw">let</span> <span class="ident">length</span> = <span class="number">2</span> * <span class="ident">vec</span>.<span class="ident">len</span>();
-        <span class="ident">NibbleVec</span> {
-            <span class="ident">length</span>,
-            <span class="ident">data</span>: <span class="ident">SmallVec::from_iter</span>(<span class="ident">vec</span>),
+    <span class="doccomment">/// Create a nibble vector from a vector of bytes.
+    ///
+    /// Each byte is split into two 4-bit entries (MSB, LSB).
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>from_byte_vec(vec: Vec&lt;u8&gt;) -&gt; NibbleVec&lt;A&gt; {
+        <span class="kw">let </span>length = <span class="number">2 </span>* vec.len();
+        NibbleVec {
+            length,
+            data: SmallVec::from_iter(vec),
         }
     }
 
-    <span class="doccomment">/// Returns a byte slice of the nibble vector&#39;s contents.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">data</span>[..]
+    <span class="doccomment">/// Returns a byte slice of the nibble vector&#39;s contents.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>as_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[u8] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.data[..]
     }
 
-    <span class="doccomment">/// Converts a nibble vector into a byte vector.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This consumes the nibble vector, so we do not need to copy its contents.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_bytes</span>(<span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">to_vec</span>()
+    <span class="doccomment">/// Converts a nibble vector into a byte vector.
+    ///
+    /// This consumes the nibble vector, so we do not need to copy its contents.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>into_bytes(<span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="self">self</span>.data.to_vec()
     }
 
-    <span class="doccomment">/// Get the number of elements stored in the vector.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">length</span>
+    <span class="doccomment">/// Get the number of elements stored in the vector.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.length
     }
 
-    <span class="doccomment">/// Returns `true` if the nibble vector has a length of 0.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">is_empty</span>()
+    <span class="doccomment">/// Returns `true` if the nibble vector has a length of 0.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.data.is_empty()
     }
 
-    <span class="doccomment">/// Fetch a single entry from the vector.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Guaranteed to be a value in the interval [0, 15].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if `idx &gt;= self.len()`.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">usize</span>) -&gt; <span class="ident">u8</span> {
-        <span class="kw">if</span> <span class="ident">idx</span> &gt;= <span class="self">self</span>.<span class="ident">length</span> {
+    <span class="doccomment">/// Fetch a single entry from the vector.
+    ///
+    /// Guaranteed to be a value in the interval [0, 15].
+    ///
+    /// **Panics** if `idx &gt;= self.len()`.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, idx: usize) -&gt; u8 {
+        <span class="kw">if </span>idx &gt;= <span class="self">self</span>.length {
             <span class="macro">panic!</span>(
                 <span class="string">&quot;NibbleVec index out of bounds: len is {}, index is {}&quot;</span>,
-                <span class="self">self</span>.<span class="ident">length</span>, <span class="ident">idx</span>
+                <span class="self">self</span>.length, idx
             );
         }
-        <span class="kw">let</span> <span class="ident">vec_idx</span> = <span class="ident">idx</span> / <span class="number">2</span>;
-        <span class="kw">match</span> <span class="ident">idx</span> % <span class="number">2</span> {
-            <span class="comment">// If the index is even, take the first (most significant) half of the stored byte.</span>
-            <span class="number">0</span> =&gt; <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">vec_idx</span>] &gt;&gt; <span class="number">4</span>,
-            <span class="comment">// If the index is odd, take the second (least significant) half.</span>
-            <span class="kw">_</span> =&gt; <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">vec_idx</span>] &amp; <span class="number">0x0F</span>,
+        <span class="kw">let </span>vec_idx = idx / <span class="number">2</span>;
+        <span class="kw">match </span>idx % <span class="number">2 </span>{
+            <span class="comment">// If the index is even, take the first (most significant) half of the stored byte.
+            </span><span class="number">0 </span>=&gt; <span class="self">self</span>.data[vec_idx] &gt;&gt; <span class="number">4</span>,
+            <span class="comment">// If the index is odd, take the second (least significant) half.
+            </span><span class="kw">_ </span>=&gt; <span class="self">self</span>.data[vec_idx] &amp; <span class="number">0x0F</span>,
         }
     }
 
-    <span class="doccomment">/// Add a single nibble to the vector.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Only the 4 least-significant bits of the value are used.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">push</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="ident">u8</span>) {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">length</span> % <span class="number">2</span> == <span class="number">0</span> {
-            <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">push</span>(<span class="ident">val</span> &lt;&lt; <span class="number">4</span>);
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">vec_len</span> = <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">len</span>();
+    <span class="doccomment">/// Add a single nibble to the vector.
+    ///
+    /// Only the 4 least-significant bits of the value are used.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>push(<span class="kw-2">&amp;mut </span><span class="self">self</span>, val: u8) {
+        <span class="kw">if </span><span class="self">self</span>.length % <span class="number">2 </span>== <span class="number">0 </span>{
+            <span class="self">self</span>.data.push(val &lt;&lt; <span class="number">4</span>);
+        } <span class="kw">else </span>{
+            <span class="kw">let </span>vec_len = <span class="self">self</span>.data.len();
 
-            <span class="comment">// Zero the second half of the last byte just to be safe.</span>
-            <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">vec_len</span> - <span class="number">1</span>] &amp;= <span class="number">0xF0</span>;
+            <span class="comment">// Zero the second half of the last byte just to be safe.
+            </span><span class="self">self</span>.data[vec_len - <span class="number">1</span>] &amp;= <span class="number">0xF0</span>;
 
-            <span class="comment">// Write the new value.</span>
-            <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">vec_len</span> - <span class="number">1</span>] |= <span class="ident">val</span> &amp; <span class="number">0x0F</span>;
+            <span class="comment">// Write the new value.
+            </span><span class="self">self</span>.data[vec_len - <span class="number">1</span>] |= val &amp; <span class="number">0x0F</span>;
         }
-        <span class="self">self</span>.<span class="ident">length</span> += <span class="number">1</span>;
+        <span class="self">self</span>.length += <span class="number">1</span>;
     }
 
-    <span class="doccomment">/// Split the vector into two parts.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// All elements at or following the given index are returned in a new `NibbleVec`,</span>
-    <span class="doccomment">/// with exactly `idx` elements remaining in this vector.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if `idx &gt; self.len()`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">usize</span>) -&gt; <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-        <span class="comment">// assert! is a few percent slower surprisingly</span>
-        <span class="kw">if</span> <span class="ident">idx</span> &gt; <span class="self">self</span>.<span class="ident">length</span> {
+    <span class="doccomment">/// Split the vector into two parts.
+    ///
+    /// All elements at or following the given index are returned in a new `NibbleVec`,
+    /// with exactly `idx` elements remaining in this vector.
+    ///
+    /// **Panics** if `idx &gt; self.len()`.
+    </span><span class="kw">pub fn </span>split(<span class="kw-2">&amp;mut </span><span class="self">self</span>, idx: usize) -&gt; NibbleVec&lt;A&gt; {
+        <span class="comment">// assert! is a few percent slower surprisingly
+        </span><span class="kw">if </span>idx &gt; <span class="self">self</span>.length {
             <span class="macro">panic!</span>(
                 <span class="string">&quot;attempted to split past vector end. len is {}, index is {}&quot;</span>,
-                <span class="self">self</span>.<span class="ident">length</span>, <span class="ident">idx</span>
+                <span class="self">self</span>.length, idx
             );
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">idx</span> == <span class="self">self</span>.<span class="ident">length</span> {
-            <span class="ident">NibbleVec::new</span>()
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">idx</span> % <span class="number">2</span> == <span class="number">0</span> {
-            <span class="self">self</span>.<span class="ident">split_even</span>(<span class="ident">idx</span>)
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">split_odd</span>(<span class="ident">idx</span>)
+        } <span class="kw">else if </span>idx == <span class="self">self</span>.length {
+            NibbleVec::new()
+        } <span class="kw">else if </span>idx % <span class="number">2 </span>== <span class="number">0 </span>{
+            <span class="self">self</span>.split_even(idx)
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.split_odd(idx)
         }
     }
 
-    <span class="doccomment">/// Split function for odd *indices*.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">split_odd</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">usize</span>) -&gt; <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tail</span> = <span class="ident">NibbleVec::new</span>();
+    <span class="doccomment">/// Split function for odd *indices*.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">fn </span>split_odd(<span class="kw-2">&amp;mut </span><span class="self">self</span>, idx: usize) -&gt; NibbleVec&lt;A&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>tail = NibbleVec::new();
 
-        <span class="comment">// Perform an overlap copy, copying the last nibble of the original vector only if</span>
-        <span class="comment">// the length of the new tail is *odd*.</span>
-        <span class="kw">let</span> <span class="ident">tail_length</span> = <span class="self">self</span>.<span class="ident">length</span> - <span class="ident">idx</span>;
-        <span class="kw">let</span> <span class="ident">take_last</span> = <span class="ident">tail_length</span> % <span class="number">2</span> == <span class="number">1</span>;
-        <span class="self">self</span>.<span class="ident">overlap_copy</span>(
-            <span class="ident">idx</span> / <span class="number">2</span>,
-            <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">len</span>(),
-            <span class="kw-2">&amp;mut</span> <span class="ident">tail</span>.<span class="ident">data</span>,
-            <span class="kw-2">&amp;mut</span> <span class="ident">tail</span>.<span class="ident">length</span>,
-            <span class="ident">take_last</span>,
+        <span class="comment">// Perform an overlap copy, copying the last nibble of the original vector only if
+        // the length of the new tail is *odd*.
+        </span><span class="kw">let </span>tail_length = <span class="self">self</span>.length - idx;
+        <span class="kw">let </span>take_last = tail_length % <span class="number">2 </span>== <span class="number">1</span>;
+        <span class="self">self</span>.overlap_copy(
+            idx / <span class="number">2</span>,
+            <span class="self">self</span>.data.len(),
+            <span class="kw-2">&amp;mut </span>tail.data,
+            <span class="kw-2">&amp;mut </span>tail.length,
+            take_last,
         );
 
-        <span class="comment">// Remove the copied bytes, being careful to skip the idx byte.</span>
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> (<span class="ident">idx</span> / <span class="number">2</span> + <span class="number">1</span>)..<span class="self">self</span>.<span class="ident">data</span>.<span class="ident">len</span>() {
-            <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">pop</span>();
+        <span class="comment">// Remove the copied bytes, being careful to skip the idx byte.
+        </span><span class="kw">for _ in </span>(idx / <span class="number">2 </span>+ <span class="number">1</span>)..<span class="self">self</span>.data.len() {
+            <span class="self">self</span>.data.pop();
         }
 
-        <span class="comment">// Zero the second half of the index byte so as to maintain the last-nibble invariant.</span>
-        <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">idx</span> / <span class="number">2</span>] &amp;= <span class="number">0xF0</span>;
+        <span class="comment">// Zero the second half of the index byte so as to maintain the last-nibble invariant.
+        </span><span class="self">self</span>.data[idx / <span class="number">2</span>] &amp;= <span class="number">0xF0</span>;
 
-        <span class="comment">// Update the length of the first NibbleVec.</span>
-        <span class="self">self</span>.<span class="ident">length</span> = <span class="ident">idx</span>;
+        <span class="comment">// Update the length of the first NibbleVec.
+        </span><span class="self">self</span>.length = idx;
 
-        <span class="ident">tail</span>
+        tail
     }
 
-    <span class="doccomment">/// Split function for even *indices*.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">split_even</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">usize</span>) -&gt; <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-        <span class="comment">// Avoid allocating a temporary vector by copying all the bytes in order, then popping them.</span>
+    <span class="doccomment">/// Split function for even *indices*.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">fn </span>split_even(<span class="kw-2">&amp;mut </span><span class="self">self</span>, idx: usize) -&gt; NibbleVec&lt;A&gt; {
+        <span class="comment">// Avoid allocating a temporary vector by copying all the bytes in order, then popping them.
 
-        <span class="comment">// Possible to prove: l_d - ⌊i / 2⌋ = ⌊(l_v - i + 1) / 2⌋</span>
-        <span class="comment">//  where l_d = self.data.len()</span>
-        <span class="comment">//        l_v = self.length</span>
+        // Possible to prove: l_d - ⌊i / 2⌋ = ⌊(l_v - i + 1) / 2⌋
+        //  where l_d = self.data.len()
+        //        l_v = self.length
 
-        <span class="kw">let</span> <span class="ident">half_idx</span> = <span class="ident">idx</span> / <span class="number">2</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tail</span> = <span class="ident">NibbleVec::new</span>();
+        </span><span class="kw">let </span>half_idx = idx / <span class="number">2</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>tail = NibbleVec::new();
 
-        <span class="comment">// Copy the bytes.</span>
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">half_idx</span>..<span class="self">self</span>.<span class="ident">data</span>.<span class="ident">len</span>() {
-            <span class="ident">tail</span>.<span class="ident">data</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">data</span>[<span class="ident">i</span>]);
+        <span class="comment">// Copy the bytes.
+        </span><span class="kw">for </span>i <span class="kw">in </span>half_idx..<span class="self">self</span>.data.len() {
+            tail.data.push(<span class="self">self</span>.data[i]);
         }
 
-        <span class="comment">// Pop the same bytes.</span>
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="ident">half_idx</span>..<span class="self">self</span>.<span class="ident">data</span>.<span class="ident">len</span>() {
-            <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">pop</span>();
+        <span class="comment">// Pop the same bytes.
+        </span><span class="kw">for _ in </span>half_idx..<span class="self">self</span>.data.len() {
+            <span class="self">self</span>.data.pop();
         }
 
-        <span class="comment">// Update lengths.</span>
-        <span class="ident">tail</span>.<span class="ident">length</span> = <span class="self">self</span>.<span class="ident">length</span> - <span class="ident">idx</span>;
-        <span class="self">self</span>.<span class="ident">length</span> = <span class="ident">idx</span>;
+        <span class="comment">// Update lengths.
+        </span>tail.length = <span class="self">self</span>.length - idx;
+        <span class="self">self</span>.length = idx;
 
-        <span class="ident">tail</span>
+        tail
     }
 
-    <span class="doccomment">/// Copy data between the second half of self.data[start] and</span>
-    <span class="doccomment">/// self.data[end - 1]. The second half of the last entry is included</span>
-    <span class="doccomment">/// if include_last is true.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">overlap_copy</span>(
+    <span class="doccomment">/// Copy data between the second half of self.data[start] and
+    /// self.data[end - 1]. The second half of the last entry is included
+    /// if include_last is true.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">fn </span>overlap_copy(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">start</span>: <span class="ident">usize</span>,
-        <span class="ident">end</span>: <span class="ident">usize</span>,
-        <span class="ident">vec</span>: <span class="kw-2">&amp;mut</span> <span class="ident">SmallVec</span>&lt;<span class="ident">A</span>&gt;,
-        <span class="ident">length</span>: <span class="kw-2">&amp;mut</span> <span class="ident">usize</span>,
-        <span class="ident">include_last</span>: <span class="ident">bool</span>,
+        start: usize,
+        end: usize,
+        vec: <span class="kw-2">&amp;mut </span>SmallVec&lt;A&gt;,
+        length: <span class="kw-2">&amp;mut </span>usize,
+        include_last: bool,
     ) {
-        <span class="comment">// Copy up to the first half of the last byte.</span>
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">start</span>..(<span class="ident">end</span> - <span class="number">1</span>) {
-            <span class="comment">// The first half is the second half of the old entry.</span>
-            <span class="kw">let</span> <span class="ident">first_half</span> = <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">i</span>] &amp; <span class="number">0x0f</span>;
+        <span class="comment">// Copy up to the first half of the last byte.
+        </span><span class="kw">for </span>i <span class="kw">in </span>start..(end - <span class="number">1</span>) {
+            <span class="comment">// The first half is the second half of the old entry.
+            </span><span class="kw">let </span>first_half = <span class="self">self</span>.data[i] &amp; <span class="number">0x0f</span>;
 
-            <span class="comment">// The second half is the first half of the next entry.</span>
-            <span class="kw">let</span> <span class="ident">second_half</span> = <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">i</span> + <span class="number">1</span>] &gt;&gt; <span class="number">4</span>;
+            <span class="comment">// The second half is the first half of the next entry.
+            </span><span class="kw">let </span>second_half = <span class="self">self</span>.data[i + <span class="number">1</span>] &gt;&gt; <span class="number">4</span>;
 
-            <span class="ident">vec</span>.<span class="ident">push</span>((<span class="ident">first_half</span> &lt;&lt; <span class="number">4</span>) | <span class="ident">second_half</span>);
-            <span class="kw-2">*</span><span class="ident">length</span> += <span class="number">2</span>;
+            vec.push((first_half &lt;&lt; <span class="number">4</span>) | second_half);
+            <span class="kw-2">*</span>length += <span class="number">2</span>;
         }
 
-        <span class="kw">if</span> <span class="ident">include_last</span> {
-            <span class="kw">let</span> <span class="ident">last</span> = <span class="self">self</span>.<span class="ident">data</span>[<span class="ident">end</span> - <span class="number">1</span>] &amp; <span class="number">0x0f</span>;
-            <span class="ident">vec</span>.<span class="ident">push</span>(<span class="ident">last</span> &lt;&lt; <span class="number">4</span>);
-            <span class="kw-2">*</span><span class="ident">length</span> += <span class="number">1</span>;
+        <span class="kw">if </span>include_last {
+            <span class="kw">let </span>last = <span class="self">self</span>.data[end - <span class="number">1</span>] &amp; <span class="number">0x0f</span>;
+            vec.push(last &lt;&lt; <span class="number">4</span>);
+            <span class="kw-2">*</span>length += <span class="number">1</span>;
         }
     }
 
-    <span class="doccomment">/// Append another nibble vector whilst consuming this vector.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">join</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt;) -&gt; <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-        <span class="comment">// If the length is even, we can append directly.</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">length</span> % <span class="number">2</span> == <span class="number">0</span> {
-            <span class="self">self</span>.<span class="ident">length</span> += <span class="ident">other</span>.<span class="ident">length</span>;
-            <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="ident">data</span>);
-            <span class="kw">return</span> <span class="self">self</span>;
+    <span class="doccomment">/// Append another nibble vector whilst consuming this vector.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>join(<span class="kw-2">mut </span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>NibbleVec&lt;A&gt;) -&gt; NibbleVec&lt;A&gt; {
+        <span class="comment">// If the length is even, we can append directly.
+        </span><span class="kw">if </span><span class="self">self</span>.length % <span class="number">2 </span>== <span class="number">0 </span>{
+            <span class="self">self</span>.length += other.length;
+            <span class="self">self</span>.data.extend_from_slice(<span class="kw-2">&amp;</span>other.data);
+            <span class="kw">return </span><span class="self">self</span>;
         }
 
-        <span class="comment">// If the other vector is empty, bail out.</span>
-        <span class="kw">if</span> <span class="ident">other</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="self">self</span>;
+        <span class="comment">// If the other vector is empty, bail out.
+        </span><span class="kw">if </span>other.is_empty() {
+            <span class="kw">return </span><span class="self">self</span>;
         }
 
-        <span class="comment">// If the length is odd, we have to perform an overlap copy.</span>
-        <span class="comment">// Copy the first half of the first element, to make the vector an even length.</span>
-        <span class="self">self</span>.<span class="ident">push</span>(<span class="ident">other</span>.<span class="ident">get</span>(<span class="number">0</span>));
+        <span class="comment">// If the length is odd, we have to perform an overlap copy.
+        // Copy the first half of the first element, to make the vector an even length.
+        </span><span class="self">self</span>.push(other.get(<span class="number">0</span>));
 
-        <span class="comment">// Copy the rest of the vector using an overlap copy.</span>
-        <span class="kw">let</span> <span class="ident">take_last</span> = <span class="ident">other</span>.<span class="ident">len</span>() % <span class="number">2</span> == <span class="number">0</span>;
-        <span class="ident">other</span>.<span class="ident">overlap_copy</span>(
+        <span class="comment">// Copy the rest of the vector using an overlap copy.
+        </span><span class="kw">let </span>take_last = other.len() % <span class="number">2 </span>== <span class="number">0</span>;
+        other.overlap_copy(
             <span class="number">0</span>,
-            <span class="ident">other</span>.<span class="ident">data</span>.<span class="ident">len</span>(),
-            <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">data</span>,
-            <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">length</span>,
-            <span class="ident">take_last</span>,
+            other.data.len(),
+            <span class="kw-2">&amp;mut </span><span class="self">self</span>.data,
+            <span class="kw-2">&amp;mut </span><span class="self">self</span>.length,
+            take_last,
         );
 
-        <span class="self">self</span>
+        <span class="self">self
+    </span>}
+}
+
+<span class="kw">impl</span>&lt;A: Array&lt;Item = u8&gt;&gt; PartialEq&lt;NibbleVec&lt;A&gt;&gt; <span class="kw">for </span>NibbleVec&lt;A&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>NibbleVec&lt;A&gt;) -&gt; bool {
+        <span class="self">self</span>.length == other.length &amp;&amp; <span class="self">self</span>.data == other.data
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">A</span>: <span class="ident">Array</span>&lt;<span class="ident">Item</span> = <span class="ident">u8</span>&gt;&gt; <span class="ident">PartialEq</span>&lt;<span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt;&gt; <span class="kw">for</span> <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt;) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">length</span> == <span class="ident">other</span>.<span class="ident">length</span> &amp;&amp; <span class="self">self</span>.<span class="ident">data</span> == <span class="ident">other</span>.<span class="ident">data</span>
-    }
-}
+<span class="kw">impl</span>&lt;A: Array&lt;Item = u8&gt;&gt; Eq <span class="kw">for </span>NibbleVec&lt;A&gt; {}
 
-<span class="kw">impl</span>&lt;<span class="ident">A</span>: <span class="ident">Array</span>&lt;<span class="ident">Item</span> = <span class="ident">u8</span>&gt;&gt; <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {}
-
-<span class="doccomment">/// Compare a `NibbleVec` and a slice of bytes *element-by-element*.</span>
-<span class="doccomment">/// Bytes are **not** interpreted as two `NibbleVec` entries.</span>
-<span class="kw">impl</span>&lt;<span class="ident">A</span>: <span class="ident">Array</span>&lt;<span class="ident">Item</span> = <span class="ident">u8</span>&gt;&gt; <span class="ident">PartialEq</span>&lt;[<span class="ident">u8</span>]&gt; <span class="kw">for</span> <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">bool</span> {
-        <span class="kw">if</span> <span class="ident">other</span>.<span class="ident">len</span>() != <span class="self">self</span>.<span class="ident">len</span>() {
-            <span class="kw">return</span> <span class="bool-val">false</span>;
+<span class="doccomment">/// Compare a `NibbleVec` and a slice of bytes *element-by-element*.
+/// Bytes are **not** interpreted as two `NibbleVec` entries.
+</span><span class="kw">impl</span>&lt;A: Array&lt;Item = u8&gt;&gt; PartialEq&lt;[u8]&gt; <span class="kw">for </span>NibbleVec&lt;A&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>[u8]) -&gt; bool {
+        <span class="kw">if </span>other.len() != <span class="self">self</span>.len() {
+            <span class="kw">return </span><span class="bool-val">false</span>;
         }
 
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">x</span>) <span class="kw">in</span> <span class="ident">other</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">i</span>) != <span class="kw-2">*</span><span class="ident">x</span> {
-                <span class="kw">return</span> <span class="bool-val">false</span>;
+        <span class="kw">for </span>(i, x) <span class="kw">in </span>other.iter().enumerate() {
+            <span class="kw">if </span><span class="self">self</span>.get(i) != <span class="kw-2">*</span>x {
+                <span class="kw">return </span><span class="bool-val">false</span>;
             }
         }
-        <span class="bool-val">true</span>
-    }
+        <span class="bool-val">true
+    </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">A</span>: <span class="ident">Array</span>&lt;<span class="ident">Item</span> = <span class="ident">u8</span>&gt;&gt; <span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">fmt</span>, <span class="string">&quot;NibbleVec [&quot;</span>)<span class="question-mark">?</span>;
+<span class="kw">impl</span>&lt;A: Array&lt;Item = u8&gt;&gt; Debug <span class="kw">for </span>NibbleVec&lt;A&gt; {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, fmt: <span class="kw-2">&amp;mut </span>Formatter) -&gt; fmt::Result {
+        <span class="macro">write!</span>(fmt, <span class="string">&quot;NibbleVec [&quot;</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">is_empty</span>() {
-            <span class="macro">write!</span>(<span class="ident">fmt</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">get</span>(<span class="number">0</span>))<span class="question-mark">?</span>;
+        <span class="kw">if </span>!<span class="self">self</span>.is_empty() {
+            <span class="macro">write!</span>(fmt, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.get(<span class="number">0</span>))<span class="question-mark">?</span>;
         }
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="self">self</span>.<span class="ident">len</span>() {
-            <span class="macro">write!</span>(<span class="ident">fmt</span>, <span class="string">&quot;, {}&quot;</span>, <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">i</span>))<span class="question-mark">?</span>;
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..<span class="self">self</span>.len() {
+            <span class="macro">write!</span>(fmt, <span class="string">&quot;, {}&quot;</span>, <span class="self">self</span>.get(i))<span class="question-mark">?</span>;
         }
-        <span class="macro">write!</span>(<span class="ident">fmt</span>, <span class="string">&quot;]&quot;</span>)
+        <span class="macro">write!</span>(fmt, <span class="string">&quot;]&quot;</span>)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">A</span>: <span class="ident">Array</span>&lt;<span class="ident">Item</span> = <span class="ident">u8</span>&gt;&gt; <span class="ident">From</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;&gt; <span class="kw">for</span> <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">v</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;) -&gt; <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-        <span class="ident">NibbleVec::from_byte_vec</span>(<span class="ident">v</span>)
+<span class="kw">impl</span>&lt;A: Array&lt;Item = u8&gt;&gt; From&lt;Vec&lt;u8&gt;&gt; <span class="kw">for </span>NibbleVec&lt;A&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>from(v: Vec&lt;u8&gt;) -&gt; NibbleVec&lt;A&gt; {
+        NibbleVec::from_byte_vec(v)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">A</span>: <span class="ident">Array</span>&lt;<span class="ident">Item</span> = <span class="ident">u8</span>&gt;&gt; <span class="ident">From</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>]&gt; <span class="kw">for</span> <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">v</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-        <span class="ident">NibbleVec::from_byte_vec</span>(<span class="ident">v</span>.<span class="ident">into</span>())
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, A: Array&lt;Item = u8&gt;&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[u8]&gt; <span class="kw">for </span>NibbleVec&lt;A&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>from(v: <span class="kw-2">&amp;</span>[u8]) -&gt; NibbleVec&lt;A&gt; {
+        NibbleVec::from_byte_vec(v.into())
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">A</span>: <span class="ident">Array</span>&lt;<span class="ident">Item</span> = <span class="ident">u8</span>&gt;&gt; <span class="ident">Into</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;&gt; <span class="kw">for</span> <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">into</span>(<span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">to_vec</span>()
+<span class="kw">impl</span>&lt;A: Array&lt;Item = u8&gt;&gt; Into&lt;Vec&lt;u8&gt;&gt; <span class="kw">for </span>NibbleVec&lt;A&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>into(<span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="self">self</span>.data.to_vec()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">A</span>: <span class="ident">Array</span>&lt;<span class="ident">Item</span> = <span class="ident">u8</span>&gt;&gt; <span class="ident">Into</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;&gt; <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">NibbleVec</span>&lt;<span class="ident">A</span>&gt; {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">into</span>(<span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">to_vec</span>()
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, A: Array&lt;Item = u8&gt;&gt; Into&lt;Vec&lt;u8&gt;&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>NibbleVec&lt;A&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>into(<span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="self">self</span>.data.to_vec()
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="nibble_vec" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="nibble_vec" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -251,258 +251,258 @@
 <span id="251">251</span>
 <span id="252">252</span>
 <span id="253">253</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">endian_type</span>::{<span class="ident">BigEndian</span>, <span class="ident">LittleEndian</span>};
-<span class="kw">use</span> <span class="ident">std::ffi::OsString</span>;
-<span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>endian_type::{BigEndian, LittleEndian};
+<span class="kw">use </span>std::ffi::OsString;
+<span class="kw">use </span>std::path::{Path, PathBuf};
 
-<span class="kw">use</span> <span class="ident">nibble_vec::Nibblet</span>;
+<span class="kw">use </span>nibble_vec::Nibblet;
 
-<span class="doccomment">/// Trait for types which can be used to key a Radix Trie.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Types that implement this trait should be convertible to a vector of half-bytes (nibbles)</span>
-<span class="doccomment">/// such that no two instances of the type convert to the same vector.</span>
-<span class="doccomment">/// To protect against faulty behaviour, the trie will **panic** if it finds two distinct keys</span>
-<span class="doccomment">/// of type `K` which encode to the same `Nibblet`, so be careful!</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If you would like to implement this trait for your own type, you need to implement</span>
-<span class="doccomment">/// *either* `encode_bytes` or `encode`. You only need to implement one of the two.</span>
-<span class="doccomment">/// If you don&#39;t implement one, your code will **panic** as soon you use the trie.</span>
-<span class="doccomment">/// There is no performance penalty for implementing `encode_bytes` instead of `encode`,</span>
-<span class="doccomment">/// so it is preferred except in the case where you require half-byte precision.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Many standard types implement this trait already. Integer types are encoded *big-endian*</span>
-<span class="doccomment">/// by default but can be encoded little-endian using the `LittleEndian&lt;T&gt;` wrapper type.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">TrieKey</span>: <span class="ident">PartialEq</span> + <span class="ident">Eq</span> {
-    <span class="doccomment">/// Encode a value as a vector of bytes.</span>
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
+<span class="doccomment">/// Trait for types which can be used to key a Radix Trie.
+///
+/// Types that implement this trait should be convertible to a vector of half-bytes (nibbles)
+/// such that no two instances of the type convert to the same vector.
+/// To protect against faulty behaviour, the trie will **panic** if it finds two distinct keys
+/// of type `K` which encode to the same `Nibblet`, so be careful!
+///
+/// If you would like to implement this trait for your own type, you need to implement
+/// *either* `encode_bytes` or `encode`. You only need to implement one of the two.
+/// If you don&#39;t implement one, your code will **panic** as soon you use the trie.
+/// There is no performance penalty for implementing `encode_bytes` instead of `encode`,
+/// so it is preferred except in the case where you require half-byte precision.
+///
+/// Many standard types implement this trait already. Integer types are encoded *big-endian*
+/// by default but can be encoded little-endian using the `LittleEndian&lt;T&gt;` wrapper type.
+</span><span class="kw">pub trait </span>TrieKey: PartialEq + Eq {
+    <span class="doccomment">/// Encode a value as a vector of bytes.
+    </span><span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
         <span class="macro">panic!</span>(<span class="string">&quot;implement this method or TrieKey::encode&quot;</span>);
     }
 
-    <span class="doccomment">/// Encode a value as a NibbleVec.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Nibblet</span> {
-        <span class="ident">Nibblet::from_byte_vec</span>(<span class="self">self</span>.<span class="ident">encode_bytes</span>())
+    <span class="doccomment">/// Encode a value as a NibbleVec.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">fn </span>encode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Nibblet {
+        Nibblet::from_byte_vec(<span class="self">self</span>.encode_bytes())
     }
 }
 
-<span class="doccomment">/// Key comparison result.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">KeyMatch</span> {
-    <span class="doccomment">/// The keys match up to the given index.</span>
-    <span class="ident">Partial</span>(<span class="ident">usize</span>),
-    <span class="doccomment">/// The first key is a prefix of the second.</span>
-    <span class="ident">FirstPrefix</span>,
-    <span class="doccomment">/// The second key is a prefix of the first.</span>
-    <span class="ident">SecondPrefix</span>,
-    <span class="doccomment">/// The keys match exactly.</span>
-    <span class="ident">Full</span>,
+<span class="doccomment">/// Key comparison result.
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub enum </span>KeyMatch {
+    <span class="doccomment">/// The keys match up to the given index.
+    </span>Partial(usize),
+    <span class="doccomment">/// The first key is a prefix of the second.
+    </span>FirstPrefix,
+    <span class="doccomment">/// The second key is a prefix of the first.
+    </span>SecondPrefix,
+    <span class="doccomment">/// The keys match exactly.
+    </span>Full,
 }
 
-<span class="doccomment">/// Compare two Trie keys.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Compares `first[start_idx .. ]` to `second`, i.e. only looks at a slice of the first key.</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">match_keys</span>(<span class="ident">start_idx</span>: <span class="ident">usize</span>, <span class="ident">first</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>, <span class="ident">second</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>) -&gt; <span class="ident">KeyMatch</span> {
-    <span class="kw">let</span> <span class="ident">first_len</span> = <span class="ident">first</span>.<span class="ident">len</span>() - <span class="ident">start_idx</span>;
-    <span class="kw">let</span> <span class="ident">min_length</span> = <span class="ident">::std::cmp::min</span>(<span class="ident">first_len</span>, <span class="ident">second</span>.<span class="ident">len</span>());
+<span class="doccomment">/// Compare two Trie keys.
+///
+/// Compares `first[start_idx .. ]` to `second`, i.e. only looks at a slice of the first key.
+</span><span class="attribute">#[inline]
+</span><span class="kw">pub fn </span>match_keys(start_idx: usize, first: <span class="kw-2">&amp;</span>Nibblet, second: <span class="kw-2">&amp;</span>Nibblet) -&gt; KeyMatch {
+    <span class="kw">let </span>first_len = first.len() - start_idx;
+    <span class="kw">let </span>min_length = ::std::cmp::min(first_len, second.len());
 
-    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">min_length</span> {
-        <span class="kw">if</span> <span class="ident">first</span>.<span class="ident">get</span>(<span class="ident">start_idx</span> + <span class="ident">i</span>) != <span class="ident">second</span>.<span class="ident">get</span>(<span class="ident">i</span>) {
-            <span class="kw">return</span> <span class="ident">KeyMatch::Partial</span>(<span class="ident">i</span>);
+    <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..min_length {
+        <span class="kw">if </span>first.get(start_idx + i) != second.get(i) {
+            <span class="kw">return </span>KeyMatch::Partial(i);
         }
     }
 
-    <span class="kw">match</span> (<span class="ident">first_len</span>, <span class="ident">second</span>.<span class="ident">len</span>()) {
-        (<span class="ident">x</span>, <span class="ident">y</span>) <span class="kw">if</span> <span class="ident">x</span> &lt; <span class="ident">y</span> =&gt; <span class="ident">KeyMatch::FirstPrefix</span>,
-        (<span class="ident">x</span>, <span class="ident">y</span>) <span class="kw">if</span> <span class="ident">x</span> == <span class="ident">y</span> =&gt; <span class="ident">KeyMatch::Full</span>,
-        <span class="kw">_</span> =&gt; <span class="ident">KeyMatch::SecondPrefix</span>,
+    <span class="kw">match </span>(first_len, second.len()) {
+        (x, y) <span class="kw">if </span>x &lt; y =&gt; KeyMatch::FirstPrefix,
+        (x, y) <span class="kw">if </span>x == y =&gt; KeyMatch::Full,
+        <span class="kw">_ </span>=&gt; KeyMatch::SecondPrefix,
     }
 }
 
-<span class="doccomment">/// Check two keys for equality and panic if they differ.</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_keys</span>&lt;<span class="ident">K</span>: <span class="question-mark">?</span><span class="ident">Sized</span>&gt;(<span class="ident">key1</span>: <span class="kw-2">&amp;</span><span class="ident">K</span>, <span class="ident">key2</span>: <span class="kw-2">&amp;</span><span class="ident">K</span>)
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
+<span class="doccomment">/// Check two keys for equality and panic if they differ.
+</span><span class="attribute">#[inline]
+</span><span class="kw">pub fn </span>check_keys&lt;K: <span class="question-mark">?</span>Sized&gt;(key1: <span class="kw-2">&amp;</span>K, key2: <span class="kw-2">&amp;</span>K)
+<span class="kw">where
+    </span>K: TrieKey,
 {
-    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">key1</span> != <span class="kw-2">*</span><span class="ident">key2</span> {
+    <span class="kw">if </span><span class="kw-2">*</span>key1 != <span class="kw-2">*</span>key2 {
         <span class="macro">panic!</span>(<span class="string">&quot;multiple-keys with the same bit representation.&quot;</span>);
     }
 }
 
-<span class="comment">// --- TrieKey Implementations for standard types --- ///</span>
+<span class="comment">// --- TrieKey Implementations for standard types --- ///
 
-<span class="comment">// This blanket implementation goes into play when specialization is stabilized</span>
-<span class="comment">// impl&lt;T&gt; TrieKey for T where T: Into&lt;Vec&lt;u8&gt;&gt; + Clone + Eq + PartialEq {</span>
-<span class="comment">// fn encode_bytes(&amp;self) -&gt; Vec&lt;u8&gt; {</span>
-<span class="comment">// self.clone().into()</span>
-<span class="comment">// }</span>
-<span class="comment">// }</span>
+// This blanket implementation goes into play when specialization is stabilized
+// impl&lt;T&gt; TrieKey for T where T: Into&lt;Vec&lt;u8&gt;&gt; + Clone + Eq + PartialEq {
+// fn encode_bytes(&amp;self) -&gt; Vec&lt;u8&gt; {
+// self.clone().into()
+// }
+// }
 
-<span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="self">self</span>.<span class="ident">clone</span>()
+</span><span class="kw">impl </span>TrieKey <span class="kw">for </span>Vec&lt;u8&gt; {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="self">self</span>.clone()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> [<span class="ident">u8</span>] {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="self">self</span>.<span class="ident">to_vec</span>()
+<span class="kw">impl </span>TrieKey <span class="kw">for </span>[u8] {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="self">self</span>.to_vec()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">String</span> {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="self">self</span>.<span class="ident">as_bytes</span>().<span class="ident">encode_bytes</span>()
+<span class="kw">impl </span>TrieKey <span class="kw">for </span>String {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="self">self</span>.as_bytes().encode_bytes()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">str</span> {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="self">self</span>.<span class="ident">as_bytes</span>().<span class="ident">encode_bytes</span>()
+<span class="kw">impl </span>TrieKey <span class="kw">for </span>str {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="self">self</span>.as_bytes().encode_bytes()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span> + <span class="ident">TrieKey</span>&gt; <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span> {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">encode_bytes</span>()
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: <span class="question-mark">?</span>Sized + TrieKey&gt; TrieKey <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>T {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        (<span class="kw-2">**</span><span class="self">self</span>).encode_bytes()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span> + <span class="ident">TrieKey</span>&gt; <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">T</span> {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">encode_bytes</span>()
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: <span class="question-mark">?</span>Sized + TrieKey&gt; TrieKey <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>T {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        (<span class="kw-2">**</span><span class="self">self</span>).encode_bytes()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">i8</span> {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; = <span class="ident">Vec::with_capacity</span>(<span class="number">1</span>);
-        <span class="ident">v</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="self">self</span> <span class="kw">as</span> <span class="ident">u8</span>);
-        <span class="ident">v</span>
+<span class="kw">impl </span>TrieKey <span class="kw">for </span>i8 {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>v: Vec&lt;u8&gt; = Vec::with_capacity(<span class="number">1</span>);
+        v.push(<span class="kw-2">*</span><span class="self">self </span><span class="kw">as </span>u8);
+        v
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">u8</span> {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; = <span class="ident">Vec::with_capacity</span>(<span class="number">1</span>);
-        <span class="ident">v</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="self">self</span>);
-        <span class="ident">v</span>
+<span class="kw">impl </span>TrieKey <span class="kw">for </span>u8 {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>v: Vec&lt;u8&gt; = Vec::with_capacity(<span class="number">1</span>);
+        v.push(<span class="kw-2">*</span><span class="self">self</span>);
+        v
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">PathBuf</span> {
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="kw">use</span> <span class="ident">std::os::unix::ffi::OsStringExt</span>;
-        <span class="kw">let</span> <span class="ident">str</span>: <span class="ident">OsString</span> = <span class="self">self</span>.<span class="ident">clone</span>().<span class="ident">into</span>();
-        <span class="ident">str</span>.<span class="ident">into_vec</span>()
+<span class="attribute">#[cfg(unix)]
+</span><span class="kw">impl </span>TrieKey <span class="kw">for </span>PathBuf {
+    <span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="kw">use </span>std::os::unix::ffi::OsStringExt;
+        <span class="kw">let </span>str: OsString = <span class="self">self</span>.clone().into();
+        str.into_vec()
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">Path</span> {
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="kw">use</span> <span class="ident">std::os::unix::ffi::OsStrExt</span>;
-        <span class="self">self</span>.<span class="ident">as_os_str</span>().<span class="ident">as_bytes</span>().<span class="ident">encode_bytes</span>()
+<span class="attribute">#[cfg(unix)]
+</span><span class="kw">impl </span>TrieKey <span class="kw">for </span>Path {
+    <span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="kw">use </span>std::os::unix::ffi::OsStrExt;
+        <span class="self">self</span>.as_os_str().as_bytes().encode_bytes()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">LittleEndian</span>&lt;<span class="ident">T</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Eq</span> + <span class="ident">Copy</span>,
+<span class="kw">impl</span>&lt;T&gt; TrieKey <span class="kw">for </span>LittleEndian&lt;T&gt;
+<span class="kw">where
+    </span>T: Eq + Copy,
 {
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="self">self</span>.<span class="ident">as_bytes</span>().<span class="ident">encode_bytes</span>()
+    <span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="self">self</span>.as_bytes().encode_bytes()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">BigEndian</span>&lt;<span class="ident">T</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Eq</span> + <span class="ident">Copy</span>,
+<span class="kw">impl</span>&lt;T&gt; TrieKey <span class="kw">for </span>BigEndian&lt;T&gt;
+<span class="kw">where
+    </span>T: Eq + Copy,
 {
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="self">self</span>.<span class="ident">as_bytes</span>().<span class="ident">to_vec</span>()
+    <span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="self">self</span>.as_bytes().to_vec()
     }
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">int_keys</span> {
-    ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">ty</span> ),* ) =&gt; {
+<span class="macro">macro_rules! </span>int_keys {
+    ( $( <span class="macro-nonterminal">$t</span>:ty ),* ) =&gt; {
         $(
-        <span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span> {
-            <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-                <span class="kw">let</span> <span class="ident">be</span>: <span class="ident">BigEndian</span>&lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>&gt; = <span class="ident">From::from</span>(<span class="kw-2">*</span><span class="self">self</span>);
-                <span class="ident">be</span>.<span class="ident">encode_bytes</span>()
+        <span class="kw">impl </span>TrieKey <span class="kw">for </span><span class="macro-nonterminal">$t </span>{
+            <span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+                <span class="kw">let </span>be: BigEndian&lt;<span class="macro-nonterminal">$t</span>&gt; = From::from(<span class="kw-2">*</span><span class="self">self</span>);
+                be.encode_bytes()
             }
         }
         )*
     };
 }
 
-<span class="macro">int_keys!</span>(<span class="ident">u16</span>, <span class="ident">u32</span>, <span class="ident">u64</span>, <span class="ident">i16</span>, <span class="ident">i32</span>, <span class="ident">i64</span>, <span class="ident">usize</span>, <span class="ident">isize</span>);
+<span class="macro">int_keys!</span>(u16, u32, u64, i16, i32, i64, usize, isize);
 
-<span class="macro">macro_rules!</span> <span class="ident">vec_int_keys</span> {
-  ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">ty</span> ),* ) =&gt; {
+<span class="macro">macro_rules! </span>vec_int_keys {
+  ( $( <span class="macro-nonterminal">$t</span>:ty ),* ) =&gt; {
       $(
-      <span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">Vec</span>&lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>&gt; {
-          <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-              <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span> = <span class="ident">Vec</span>::&lt;<span class="ident">u8</span>&gt;<span class="ident">::with_capacity</span>(<span class="self">self</span>.<span class="ident">len</span>() * <span class="ident">std::mem::size_of</span>::&lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>&gt;());
-              <span class="kw">for</span> <span class="ident">u</span> <span class="kw">in</span> <span class="self">self</span> {
-                  <span class="ident">v</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">u</span>.<span class="ident">to_be_bytes</span>());
+      <span class="kw">impl </span>TrieKey <span class="kw">for </span>Vec&lt;<span class="macro-nonterminal">$t</span>&gt; {
+          <span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+              <span class="kw">let </span><span class="kw-2">mut </span>v = Vec::&lt;u8&gt;::with_capacity(<span class="self">self</span>.len() * std::mem::size_of::&lt;<span class="macro-nonterminal">$t</span>&gt;());
+              <span class="kw">for </span>u <span class="kw">in </span><span class="self">self </span>{
+                  v.extend_from_slice(<span class="kw-2">&amp;</span>u.to_be_bytes());
               }
-              <span class="ident">v</span>
+              v
           }
       }
       )*
    };
 }
 
-<span class="macro">vec_int_keys!</span>(<span class="ident">u16</span>, <span class="ident">u32</span>, <span class="ident">u64</span>, <span class="ident">i16</span>, <span class="ident">i32</span>, <span class="ident">i64</span>, <span class="ident">usize</span>, <span class="ident">isize</span>);
+<span class="macro">vec_int_keys!</span>(u16, u32, u64, i16, i32, i64, usize, isize);
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">DefaultTrieKey</span> {
-        <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">pub trait </span>DefaultTrieKey {
+        <span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt;;
     }
 
-    <span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">Into</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;&gt; + <span class="ident">Clone</span> + <span class="ident">PartialEq</span> + <span class="ident">Eq</span>&gt; <span class="ident">DefaultTrieKey</span> <span class="kw">for</span> <span class="ident">T</span> {
-        <span class="attribute">#[<span class="ident">inline</span>]</span>
-        <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-            <span class="self">self</span>.<span class="ident">clone</span>().<span class="ident">into</span>()
+    <span class="kw">impl</span>&lt;T: Into&lt;Vec&lt;u8&gt;&gt; + Clone + PartialEq + Eq&gt; DefaultTrieKey <span class="kw">for </span>T {
+        <span class="attribute">#[inline]
+        </span><span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+            <span class="self">self</span>.clone().into()
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">AsTrieKey</span> {
-        <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt;;
+    <span class="kw">pub trait </span>AsTrieKey {
+        <span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt;;
     }
 
-    <span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">AsRef</span>&lt;[<span class="ident">u8</span>]&gt; + <span class="ident">Clone</span> + <span class="ident">PartialEq</span> + <span class="ident">Eq</span>&gt; <span class="ident">AsTrieKey</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">T</span> {
-        <span class="attribute">#[<span class="ident">inline</span>]</span>
-        <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-            <span class="self">self</span>.<span class="ident">as_ref</span>().<span class="ident">to_vec</span>()
+    <span class="kw">impl</span>&lt;T: AsRef&lt;[u8]&gt; + Clone + PartialEq + Eq&gt; AsTrieKey <span class="kw">for </span><span class="kw-2">&amp;</span>T {
+        <span class="attribute">#[inline]
+        </span><span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+            <span class="self">self</span>.as_ref().to_vec()
         }
     }
 
-    <span class="macro">macro_rules!</span> <span class="ident">encode_bytes</span> {
-        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>:<span class="ident">expr</span>) =&gt; {
-            (<span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>).<span class="ident">encode_bytes</span>()
+    <span class="macro">macro_rules! </span>encode_bytes {
+        (<span class="macro-nonterminal">$e</span>:expr) =&gt; {
+            (<span class="kw-2">&amp;</span><span class="macro-nonterminal">$e</span>).encode_bytes()
         };
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_autoref_specialization</span>() {
-        <span class="kw">let</span> <span class="kw">_</span> = <span class="macro">encode_bytes!</span>([<span class="number">0_u8</span>]);
-        <span class="kw">let</span> <span class="kw">_</span> = <span class="macro">encode_bytes!</span>(<span class="string">&quot;hello&quot;</span>);
-        <span class="kw">let</span> <span class="kw">_</span> = <span class="macro">encode_bytes!</span>(<span class="string">&quot;hello&quot;</span>.<span class="ident">to_string</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_autoref_specialization() {
+        <span class="kw">let _ </span>= <span class="macro">encode_bytes!</span>([<span class="number">0_u8</span>]);
+        <span class="kw">let _ </span>= <span class="macro">encode_bytes!</span>(<span class="string">&quot;hello&quot;</span>);
+        <span class="kw">let _ </span>= <span class="macro">encode_bytes!</span>(<span class="string">&quot;hello&quot;</span>.to_string());
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="radix_trie" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="radix_trie" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -235,242 +235,242 @@
 <span id="235">235</span>
 <span id="236">236</span>
 <span id="237">237</span>
-</pre><pre class="rust"><code><span class="doccomment">//! # Snapshot testing for a herd of CLI tests</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! &gt; Treat your tests like cattle, instead of [pets](https://docs.rs/snapbox)</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! `trycmd` is a test harness that will enumerate test case files and run them to verify the</span>
-<span class="doccomment">//! results, taking inspiration from</span>
-<span class="doccomment">//! [trybuild](https://crates.io/crates/trybuild) and [cram](https://bitheap.org/cram/).</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Which tool is right</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! - [cram](https://bitheap.org/cram/): End-to-end CLI snapshotting agnostic of any programming language</span>
-<span class="doccomment">//! - `trycmd`: For running a lot of blunt tests (limited test predicates)</span>
-<span class="doccomment">//!   - Particular attention is given to allow the test data to be pulled into documentation, like</span>
-<span class="doccomment">//!     with [mdbook](https://rust-lang.github.io/mdBook/)</span>
-<span class="doccomment">//! - [snapbox](https://crates.io/crates/snapbox): When you want something like `trycmd` in one off</span>
-<span class="doccomment">//!   cases or you need to customize `trycmd`s behavior.</span>
-<span class="doccomment">//! - [assert_cmd](https://crates.io/crates/assert_cmd) +</span>
-<span class="doccomment">//!   [assert_fs](https://crates.io/crates/assert_fs): Test cases follow a certain pattern but</span>
-<span class="doccomment">//!   special attention is needed in how to verify the results.</span>
-<span class="doccomment">//! - Hand-written test cases: for peculiar circumstances</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Getting Started</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! To create a minimal setup, create a `tests/cli_tests.rs` with</span>
-<span class="doccomment">//! ```rust,no_run</span>
-<span class="doccomment">//! #[test]</span>
-<span class="doccomment">//! fn cli_tests() {</span>
-<span class="doccomment">//!     trycmd::TestCases::new()</span>
-<span class="doccomment">//!         .case(&quot;tests/cmd/*.trycmd&quot;);</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The test can be run with `cargo test`.  This will enumerate all `.trycmd` files and run</span>
-<span class="doccomment">//! them as test cases, failing if they do not pass.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! To temporarily override the results, you can do:</span>
-<span class="doccomment">//! ```rust,no_run</span>
-<span class="doccomment">//! #[test]</span>
-<span class="doccomment">//! fn cli_tests() {</span>
-<span class="doccomment">//!     trycmd::TestCases::new()</span>
-<span class="doccomment">//!         .case(&quot;tests/cmd/*.trycmd&quot;)</span>
-<span class="doccomment">//!         // See Issue #314</span>
-<span class="doccomment">//!         .fail(&quot;tests/cmd/buggy-case.trycmd&quot;);</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Workflow</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! To generate snapshots, run</span>
-<span class="doccomment">//! ```console</span>
-<span class="doccomment">//! $ TRYCMD=dump cargo test --test cli_tests</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! This will write all of the `.stdout` and `.stderr` files in a `dump/` directory.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! You can then copy over to `tests/cmd` the cases you want to test</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! To update snapshots, run</span>
-<span class="doccomment">//! ```console</span>
-<span class="doccomment">//! $ TRYCMD=overwrite cargo test --test cli_tests</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! This will overwrite any existing `.stdout` and `.stderr` file in `tests/cmd`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! To filter the tests to those with `name1`, `name2`, etc in their file names, you can run:</span>
-<span class="doccomment">//! ```console</span>
-<span class="doccomment">//! cargo test --test cli_tests -- cli_tests trycmd=name1 trycmd=name2...</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! To debug what `trycmd` is doing, add the feature flag `debug`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## File Formats</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Say you have `tests/cmd/help.trycmd`, `trycmd` will look for:</span>
-<span class="doccomment">//! - `tests/cmd/help.in/`</span>
-<span class="doccomment">//! - `tests/cmd/help.out/`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! For `tests/cmd/help.toml`, `trycmd` will look for:</span>
-<span class="doccomment">//! - `tests/cmd/help.stdin`</span>
-<span class="doccomment">//! - `tests/cmd/help.stdout`</span>
-<span class="doccomment">//! - `tests/cmd/help.stderr`</span>
-<span class="doccomment">//! - `tests/cmd/help.in/`</span>
-<span class="doccomment">//! - `tests/cmd/help.out/`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### `*.trycmd`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! `*.trycmd` files are literate test cases good for:</span>
-<span class="doccomment">//! - Markdown-compatible syntax for directly rendering them</span>
-<span class="doccomment">//! - Terminal-like appearance for extracting subsections into documentation</span>
-<span class="doccomment">//! - Reducing the proliferation of files</span>
-<span class="doccomment">//! - Running multiple commands within the same temp dir (if a `*.out/` directory is present)</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The syntax is:</span>
-<span class="doccomment">//! - Test cases live inside of ` ``` ` fenced code blocks</span>
-<span class="doccomment">//!   - Everything out of them is ignored</span>
-<span class="doccomment">//!   - Blocks with info strings with an unsupported language (not `trycmd`, `console`) or the</span>
-<span class="doccomment">//!     `ignore` attribute are ignored</span>
-<span class="doccomment">//! - &quot;`$ `&quot; line prefix starts a new command</span>
-<span class="doccomment">//! - &quot;`&gt; `&quot; line prefix appends to the prior command</span>
-<span class="doccomment">//! - &quot;`? &lt;status&gt;`&quot; line indicates the exit code (like `echo &quot;? $?&quot;`) and `&lt;status&gt;` can be</span>
-<span class="doccomment">//!   - An exit code</span>
-<span class="doccomment">//!   - `success` *(default)*, `failed`, `interrupted`, `skipped`</span>
-<span class="doccomment">//!  - All following lines are treated as stdout + stderr</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The command is then split with [shlex](https://crates.io/crates/shlex), allowing quoted content</span>
-<span class="doccomment">//! to allow spaces.  The first argument is the program to run which maps to `bin.name` in the</span>
-<span class="doccomment">//! `.toml` file.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Example:</span>
-<span class="doccomment">//! ~~~md</span>
-<span class="doccomment">//! With the following code:</span>
-<span class="doccomment">//! ```rust</span>
-<span class="doccomment">//! println!(&quot;{}&quot;, message);</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! You get the following:</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! $ my-cmd --print &#39;Hello World&#39;</span>
-<span class="doccomment">//! Hello</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! ~~~</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### `*.toml`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! As an alternative to `.trycmd`, the `toml` are good for:</span>
-<span class="doccomment">//! - Precise control over current dir, stdin/stdout/stderr (including binary support)</span>
-<span class="doccomment">//! - 1-to-1 with dumped results</span>
-<span class="doccomment">//! - `TRYCMD=overwrite` support</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [See full schema](https://github.com/assert-rs/trycmd/blob/main/schema.json):</span>
-<span class="doccomment">//! Basic parameters:</span>
-<span class="doccomment">//! - `bin.name`: The name of the binary target from `Cargo.toml` to be used to find the file path</span>
-<span class="doccomment">//! - `args`: the arguments (including flags and option) passed to the binary</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #### `*.stdin`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Data to pass to `stdin`.</span>
-<span class="doccomment">//! - If not present, nothing will be written to `stdin`</span>
-<span class="doccomment">//! - If `binary = false` in `*.toml` (the default), newlines and path separators will be normalized.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #### `*.stdout` and `*.stderr`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Expected results for `stdout` or `stderr`.</span>
-<span class="doccomment">//! - If not present, we&#39;ll not verify the output</span>
-<span class="doccomment">//! - If `binary = false` in `*.toml` (the default), newlines and path separators will be normalized before comparing</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! **Eliding Content**</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Sometimes the output either includes:</span>
-<span class="doccomment">//! - Content that changes from run-to-run (like time)</span>
-<span class="doccomment">//! - Content out of scope of your tests and you want to exclude it to reduce brittleness</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! To elide a section of content:</span>
-<span class="doccomment">//! - `...` as its own line: match all lines until the next one.  This is equivalent of</span>
-<span class="doccomment">//!   `\n(([^\n]*\n)*?`.</span>
-<span class="doccomment">//! - `[..]` as part of a line: match any characters.  This is equivalent of `[^\n]*?`.</span>
-<span class="doccomment">//! - `[EXE]` as part of the line: On Windows, matches `.exe`, ignored otherwise</span>
-<span class="doccomment">//! - `[ROOT]` as part of the line: The root directory for where the test is running</span>
-<span class="doccomment">//! - `[CWD]` as part of the line: The current working directory within the root</span>
-<span class="doccomment">//! - `[YOUR_NAME_HERE]` as part of the line: See [`TestCases::insert_var`]</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! We will preserve these with `TRYCMD=dump` and will make a best-effort at preserving them with</span>
-<span class="doccomment">//! `TRYCMD=overwrite`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### `*.in/`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! When present, this will automatically be picked as the CWD for the command.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! `.keep` files will be ignored but their parent directories will be created.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Tests are assumed to not modify files in `*.in/` unless an `*.out/` is provided or</span>
-<span class="doccomment">//! `fs.sandbox = true` is set in the `.toml` file.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### `*.out/`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! When present, each file in this directory will be compared to generated or modified files.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! See also &quot;Eliding Content&quot; for `.stdout`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! `.keep` files will be ignored.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Note: This implies `fs.sandbox = true`.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Examples</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! - Simple cargo binary: [trycmd&#39;s integration tests](https://github.com/assert-rs/trycmd/blob/main/tests/cli_tests.rs)</span>
-<span class="doccomment">//! - Simple example: [trycmd&#39;s integration tests](https://github.com/assert-rs/trycmd/blob/main/tests/example_tests.rs)</span>
-<span class="doccomment">//! - [typos](https://github.com/crate-ci/typos) (source code spell checker)</span>
-<span class="doccomment">//! - [clap](https://github.com/clap-rs/clap/) (CLI parser) to test examples</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Related crates</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! For testing command line programs.</span>
-<span class="doccomment">//! - [escargot][escargot] for more control over configuring the crate&#39;s binary.</span>
-<span class="doccomment">//! - [duct][duct] for orchestrating multiple processes.</span>
-<span class="doccomment">//!   - or [commandspec] for easier writing of commands</span>
-<span class="doccomment">//! - [`assert_cmd`][assert_cmd] for test cases that are individual pets, rather than herd of cattle</span>
-<span class="doccomment">//! - [`assert_fs`][assert_fs] for filesystem fixtures and assertions.</span>
-<span class="doccomment">//!   - or [tempfile][tempfile] for scratchpad directories.</span>
-<span class="doccomment">//! - [rexpect][rexpect] for testing interactive programs.</span>
-<span class="doccomment">//! - [dir-diff][dir-diff] for testing file side-effects.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! For snapshot testing:</span>
-<span class="doccomment">//! - [insta](https://crates.io/crates/insta)</span>
-<span class="doccomment">//! - [fn-fixture](https://crates.io/crates/fn-fixture)</span>
-<span class="doccomment">//! - [runt](https://crates.io/crates/runt)</span>
-<span class="doccomment">//!   - [turnt](https://github.com/cucapra/turnt)</span>
-<span class="doccomment">//!   - [cram](https://bitheap.org/cram/)</span>
-<span class="doccomment">//! - [term-transcript](https://crates.io/crates/term-transcript): CLI snapshot testing, including colors</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [escargot]: http://docs.rs/escargot</span>
-<span class="doccomment">//! [rexpect]: https://crates.io/crates/rexpect</span>
-<span class="doccomment">//! [dir-diff]: https://crates.io/crates/dir-diff</span>
-<span class="doccomment">//! [tempfile]: https://crates.io/crates/tempfile</span>
-<span class="doccomment">//! [duct]: https://crates.io/crates/duct</span>
-<span class="doccomment">//! [assert_fs]: https://crates.io/crates/assert_fs</span>
-<span class="doccomment">//! [assert_cmd]: https://crates.io/crates/assert_cmd</span>
-<span class="doccomment">//! [commandspec]: https://crates.io/crates/commandspec</span>
+</pre><pre class="rust"><code><span class="doccomment">//! # Snapshot testing for a herd of CLI tests
+//!
+//! &gt; Treat your tests like cattle, instead of [pets](https://docs.rs/snapbox)
+//!
+//! `trycmd` is a test harness that will enumerate test case files and run them to verify the
+//! results, taking inspiration from
+//! [trybuild](https://crates.io/crates/trybuild) and [cram](https://bitheap.org/cram/).
+//!
+//! ## Which tool is right
+//!
+//! - [cram](https://bitheap.org/cram/): End-to-end CLI snapshotting agnostic of any programming language
+//! - `trycmd`: For running a lot of blunt tests (limited test predicates)
+//!   - Particular attention is given to allow the test data to be pulled into documentation, like
+//!     with [mdbook](https://rust-lang.github.io/mdBook/)
+//! - [snapbox](https://crates.io/crates/snapbox): When you want something like `trycmd` in one off
+//!   cases or you need to customize `trycmd`s behavior.
+//! - [assert_cmd](https://crates.io/crates/assert_cmd) +
+//!   [assert_fs](https://crates.io/crates/assert_fs): Test cases follow a certain pattern but
+//!   special attention is needed in how to verify the results.
+//! - Hand-written test cases: for peculiar circumstances
+//!
+//! ## Getting Started
+//!
+//! To create a minimal setup, create a `tests/cli_tests.rs` with
+//! ```rust,no_run
+//! #[test]
+//! fn cli_tests() {
+//!     trycmd::TestCases::new()
+//!         .case(&quot;tests/cmd/*.trycmd&quot;);
+//! }
+//! ```
+//!
+//! The test can be run with `cargo test`.  This will enumerate all `.trycmd` files and run
+//! them as test cases, failing if they do not pass.
+//!
+//! To temporarily override the results, you can do:
+//! ```rust,no_run
+//! #[test]
+//! fn cli_tests() {
+//!     trycmd::TestCases::new()
+//!         .case(&quot;tests/cmd/*.trycmd&quot;)
+//!         // See Issue #314
+//!         .fail(&quot;tests/cmd/buggy-case.trycmd&quot;);
+//! }
+//! ```
+//!
+//! ## Workflow
+//!
+//! To generate snapshots, run
+//! ```console
+//! $ TRYCMD=dump cargo test --test cli_tests
+//! ```
+//! This will write all of the `.stdout` and `.stderr` files in a `dump/` directory.
+//!
+//! You can then copy over to `tests/cmd` the cases you want to test
+//!
+//! To update snapshots, run
+//! ```console
+//! $ TRYCMD=overwrite cargo test --test cli_tests
+//! ```
+//! This will overwrite any existing `.stdout` and `.stderr` file in `tests/cmd`
+//!
+//! To filter the tests to those with `name1`, `name2`, etc in their file names, you can run:
+//! ```console
+//! cargo test --test cli_tests -- cli_tests trycmd=name1 trycmd=name2...
+//! ```
+//!
+//! To debug what `trycmd` is doing, add the feature flag `debug`.
+//!
+//! ## File Formats
+//!
+//! Say you have `tests/cmd/help.trycmd`, `trycmd` will look for:
+//! - `tests/cmd/help.in/`
+//! - `tests/cmd/help.out/`
+//!
+//! For `tests/cmd/help.toml`, `trycmd` will look for:
+//! - `tests/cmd/help.stdin`
+//! - `tests/cmd/help.stdout`
+//! - `tests/cmd/help.stderr`
+//! - `tests/cmd/help.in/`
+//! - `tests/cmd/help.out/`
+//!
+//! ### `*.trycmd`
+//!
+//! `*.trycmd` files are literate test cases good for:
+//! - Markdown-compatible syntax for directly rendering them
+//! - Terminal-like appearance for extracting subsections into documentation
+//! - Reducing the proliferation of files
+//! - Running multiple commands within the same temp dir (if a `*.out/` directory is present)
+//!
+//! The syntax is:
+//! - Test cases live inside of ` ``` ` fenced code blocks
+//!   - Everything out of them is ignored
+//!   - Blocks with info strings with an unsupported language (not `trycmd`, `console`) or the
+//!     `ignore` attribute are ignored
+//! - &quot;`$ `&quot; line prefix starts a new command
+//! - &quot;`&gt; `&quot; line prefix appends to the prior command
+//! - &quot;`? &lt;status&gt;`&quot; line indicates the exit code (like `echo &quot;? $?&quot;`) and `&lt;status&gt;` can be
+//!   - An exit code
+//!   - `success` *(default)*, `failed`, `interrupted`, `skipped`
+//!  - All following lines are treated as stdout + stderr
+//!
+//! The command is then split with [shlex](https://crates.io/crates/shlex), allowing quoted content
+//! to allow spaces.  The first argument is the program to run which maps to `bin.name` in the
+//! `.toml` file.
+//!
+//! Example:
+//! ~~~md
+//! With the following code:
+//! ```rust
+//! println!(&quot;{}&quot;, message);
+//! ```
+//!
+//! You get the following:
+//! ```
+//! $ my-cmd --print &#39;Hello World&#39;
+//! Hello
+//! ```
+//! ~~~
+//!
+//! ### `*.toml`
+//!
+//! As an alternative to `.trycmd`, the `toml` are good for:
+//! - Precise control over current dir, stdin/stdout/stderr (including binary support)
+//! - 1-to-1 with dumped results
+//! - `TRYCMD=overwrite` support
+//!
+//! [See full schema](https://github.com/assert-rs/trycmd/blob/main/schema.json):
+//! Basic parameters:
+//! - `bin.name`: The name of the binary target from `Cargo.toml` to be used to find the file path
+//! - `args`: the arguments (including flags and option) passed to the binary
+//!
+//! #### `*.stdin`
+//!
+//! Data to pass to `stdin`.
+//! - If not present, nothing will be written to `stdin`
+//! - If `binary = false` in `*.toml` (the default), newlines and path separators will be normalized.
+//!
+//! #### `*.stdout` and `*.stderr`
+//!
+//! Expected results for `stdout` or `stderr`.
+//! - If not present, we&#39;ll not verify the output
+//! - If `binary = false` in `*.toml` (the default), newlines and path separators will be normalized before comparing
+//!
+//! **Eliding Content**
+//!
+//! Sometimes the output either includes:
+//! - Content that changes from run-to-run (like time)
+//! - Content out of scope of your tests and you want to exclude it to reduce brittleness
+//!
+//! To elide a section of content:
+//! - `...` as its own line: match all lines until the next one.  This is equivalent of
+//!   `\n(([^\n]*\n)*?`.
+//! - `[..]` as part of a line: match any characters.  This is equivalent of `[^\n]*?`.
+//! - `[EXE]` as part of the line: On Windows, matches `.exe`, ignored otherwise
+//! - `[ROOT]` as part of the line: The root directory for where the test is running
+//! - `[CWD]` as part of the line: The current working directory within the root
+//! - `[YOUR_NAME_HERE]` as part of the line: See [`TestCases::insert_var`]
+//!
+//! We will preserve these with `TRYCMD=dump` and will make a best-effort at preserving them with
+//! `TRYCMD=overwrite`.
+//!
+//! ### `*.in/`
+//!
+//! When present, this will automatically be picked as the CWD for the command.
+//!
+//! `.keep` files will be ignored but their parent directories will be created.
+//!
+//! Tests are assumed to not modify files in `*.in/` unless an `*.out/` is provided or
+//! `fs.sandbox = true` is set in the `.toml` file.
+//!
+//! ### `*.out/`
+//!
+//! When present, each file in this directory will be compared to generated or modified files.
+//!
+//! See also &quot;Eliding Content&quot; for `.stdout`
+//!
+//! `.keep` files will be ignored.
+//!
+//! Note: This implies `fs.sandbox = true`.
+//!
+//! ## Examples
+//!
+//! - Simple cargo binary: [trycmd&#39;s integration tests](https://github.com/assert-rs/trycmd/blob/main/tests/cli_tests.rs)
+//! - Simple example: [trycmd&#39;s integration tests](https://github.com/assert-rs/trycmd/blob/main/tests/example_tests.rs)
+//! - [typos](https://github.com/crate-ci/typos) (source code spell checker)
+//! - [clap](https://github.com/clap-rs/clap/) (CLI parser) to test examples
+//!
+//! ## Related crates
+//!
+//! For testing command line programs.
+//! - [escargot][escargot] for more control over configuring the crate&#39;s binary.
+//! - [duct][duct] for orchestrating multiple processes.
+//!   - or [commandspec] for easier writing of commands
+//! - [`assert_cmd`][assert_cmd] for test cases that are individual pets, rather than herd of cattle
+//! - [`assert_fs`][assert_fs] for filesystem fixtures and assertions.
+//!   - or [tempfile][tempfile] for scratchpad directories.
+//! - [rexpect][rexpect] for testing interactive programs.
+//! - [dir-diff][dir-diff] for testing file side-effects.
+//!
+//! For snapshot testing:
+//! - [insta](https://crates.io/crates/insta)
+//! - [fn-fixture](https://crates.io/crates/fn-fixture)
+//! - [runt](https://crates.io/crates/runt)
+//!   - [turnt](https://github.com/cucapra/turnt)
+//!   - [cram](https://bitheap.org/cram/)
+//! - [term-transcript](https://crates.io/crates/term-transcript): CLI snapshot testing, including colors
+//!
+//! [escargot]: http://docs.rs/escargot
+//! [rexpect]: https://crates.io/crates/rexpect
+//! [dir-diff]: https://crates.io/crates/dir-diff
+//! [tempfile]: https://crates.io/crates/tempfile
+//! [duct]: https://crates.io/crates/duct
+//! [assert_fs]: https://crates.io/crates/assert_fs
+//! [assert_cmd]: https://crates.io/crates/assert_cmd
+//! [commandspec]: https://crates.io/crates/commandspec
 
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">feature</span>(<span class="ident">doc_auto_cfg</span>))]</span>
-<span class="comment">// Doesn&#39;t distinguish between incidental sharing vs essential sharing</span>
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::branches_sharing_code</span>)]</span>
+</span><span class="attribute">#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+</span><span class="comment">// Doesn&#39;t distinguish between incidental sharing vs essential sharing
+</span><span class="attribute">#![allow(clippy::branches_sharing_code)]
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">cargo</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">schema</span>;
+</span><span class="kw">pub mod </span>cargo;
+<span class="kw">pub mod </span>schema;
 
-<span class="kw">mod</span> <span class="ident">cases</span>;
-<span class="kw">mod</span> <span class="ident">registry</span>;
-<span class="kw">mod</span> <span class="ident">runner</span>;
-<span class="kw">mod</span> <span class="ident">spec</span>;
+<span class="kw">mod </span>cases;
+<span class="kw">mod </span>registry;
+<span class="kw">mod </span>runner;
+<span class="kw">mod </span>spec;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">cases::TestCases</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">snapbox::Error</span>;
+<span class="kw">pub use </span>cases::TestCases;
+<span class="kw">pub use </span>snapbox::Error;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="ident">registry::BinRegistry</span>;
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="ident">runner</span>::{<span class="ident">Case</span>, <span class="ident">Mode</span>, <span class="ident">Runner</span>};
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="ident">spec::RunnerSpec</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use </span>registry::BinRegistry;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use </span>runner::{Case, Mode, Runner};
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use </span>spec::RunnerSpec;
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use</span> <span class="ident">snapbox::Data</span>;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use </span>snapbox::Data;
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="trycmd" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="trycmd" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

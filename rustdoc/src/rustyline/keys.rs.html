@@ -220,227 +220,227 @@
 <span id="220">220</span>
 <span id="221">221</span>
 <span id="222">222</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Key constants</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Key constants
 
-<span class="doccomment">/// Input key pressed and modifiers</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">KeyEvent</span>(<span class="kw">pub</span> <span class="ident">KeyCode</span>, <span class="kw">pub</span> <span class="ident">Modifiers</span>);
+/// Input key pressed and modifiers
+</span><span class="attribute">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+</span><span class="kw">pub struct </span>KeyEvent(<span class="kw">pub </span>KeyCode, <span class="kw">pub </span>Modifiers);
 
-<span class="kw">impl</span> <span class="ident">KeyEvent</span> {
-    <span class="doccomment">/// Constant value representing an unmodified press of `KeyCode::Backspace`.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">BACKSPACE</span>: <span class="self">Self</span> = <span class="self">Self</span>(<span class="ident">KeyCode::Backspace</span>, <span class="ident">Modifiers::NONE</span>);
-    <span class="doccomment">/// Constant value representing an unmodified press of `KeyCode::Enter`.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">ENTER</span>: <span class="self">Self</span> = <span class="self">Self</span>(<span class="ident">KeyCode::Enter</span>, <span class="ident">Modifiers::NONE</span>);
-    <span class="doccomment">/// Constant value representing an unmodified press of `KeyCode::Esc`.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="ident">ESC</span>: <span class="self">Self</span> = <span class="self">Self</span>(<span class="ident">KeyCode::Esc</span>, <span class="ident">Modifiers::NONE</span>);
+<span class="kw">impl </span>KeyEvent {
+    <span class="doccomment">/// Constant value representing an unmodified press of `KeyCode::Backspace`.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>BACKSPACE: <span class="self">Self </span>= <span class="self">Self</span>(KeyCode::Backspace, Modifiers::NONE);
+    <span class="doccomment">/// Constant value representing an unmodified press of `KeyCode::Enter`.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>ENTER: <span class="self">Self </span>= <span class="self">Self</span>(KeyCode::Enter, Modifiers::NONE);
+    <span class="doccomment">/// Constant value representing an unmodified press of `KeyCode::Esc`.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>ESC: <span class="self">Self </span>= <span class="self">Self</span>(KeyCode::Esc, Modifiers::NONE);
 
-    <span class="doccomment">/// Constructor from `char` and modifiers</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">c</span>: <span class="ident">char</span>, <span class="kw-2">mut</span> <span class="ident">mods</span>: <span class="ident">Modifiers</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">use</span> {<span class="ident">KeyCode</span> <span class="kw">as</span> <span class="ident">K</span>, <span class="ident">KeyEvent</span> <span class="kw">as</span> <span class="ident">E</span>, <span class="ident">Modifiers</span> <span class="kw">as</span> <span class="ident">M</span>};
+    <span class="doccomment">/// Constructor from `char` and modifiers
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>new(c: char, <span class="kw-2">mut </span>mods: Modifiers) -&gt; <span class="self">Self </span>{
+        <span class="kw">use </span>{KeyCode <span class="kw">as </span>K, KeyEvent <span class="kw">as </span>E, Modifiers <span class="kw">as </span>M};
 
-        <span class="kw">if</span> !<span class="ident">c</span>.<span class="ident">is_control</span>() {
-            <span class="kw">if</span> !<span class="ident">mods</span>.<span class="ident">is_empty</span>() {
-                <span class="ident">mods</span>.<span class="ident">remove</span>(<span class="ident">M::SHIFT</span>); <span class="comment">// TODO Validate: no SHIFT even if</span>
-                                       <span class="comment">// `c` is uppercase</span>
-            }
-            <span class="kw">return</span> <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="ident">c</span>), <span class="ident">mods</span>);
+        <span class="kw">if </span>!c.is_control() {
+            <span class="kw">if </span>!mods.is_empty() {
+                mods.remove(M::SHIFT); <span class="comment">// TODO Validate: no SHIFT even if
+                                       // `c` is uppercase
+            </span>}
+            <span class="kw">return </span>E(K::Char(c), mods);
         }
-        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::match_same_arms</span>)]</span>
-        <span class="kw">match</span> <span class="ident">c</span> {
-            <span class="string">&#39;\x00&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;@&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>), <span class="comment">// &#39;\0&#39;</span>
-            <span class="string">&#39;\x01&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;A&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x02&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;B&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x03&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;C&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x04&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;D&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x05&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;E&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x06&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;F&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x07&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;G&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>), <span class="comment">// &#39;\a&#39;</span>
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            <span class="string">&#39;\x08&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Backspace</span>, <span class="ident">mods</span>), <span class="comment">// &#39;\b&#39;</span>
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-            <span class="string">&#39;\x08&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;H&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            <span class="string">&#39;\x09&#39;</span> =&gt; {
-                <span class="comment">// &#39;\t&#39;</span>
-                <span class="kw">if</span> <span class="ident">mods</span>.<span class="ident">contains</span>(<span class="ident">M::SHIFT</span>) {
-                    <span class="ident">mods</span>.<span class="ident">remove</span>(<span class="ident">M::SHIFT</span>);
-                    <span class="ident">E</span>(<span class="ident">K::BackTab</span>, <span class="ident">mods</span>)
-                } <span class="kw">else</span> {
-                    <span class="ident">E</span>(<span class="ident">K::Tab</span>, <span class="ident">mods</span>)
+        <span class="attribute">#[allow(clippy::match_same_arms)]
+        </span><span class="kw">match </span>c {
+            <span class="string">&#39;\x00&#39; </span>=&gt; E(K::Char(<span class="string">&#39;@&#39;</span>), mods | M::CTRL), <span class="comment">// &#39;\0&#39;
+            </span><span class="string">&#39;\x01&#39; </span>=&gt; E(K::Char(<span class="string">&#39;A&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x02&#39; </span>=&gt; E(K::Char(<span class="string">&#39;B&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x03&#39; </span>=&gt; E(K::Char(<span class="string">&#39;C&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x04&#39; </span>=&gt; E(K::Char(<span class="string">&#39;D&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x05&#39; </span>=&gt; E(K::Char(<span class="string">&#39;E&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x06&#39; </span>=&gt; E(K::Char(<span class="string">&#39;F&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x07&#39; </span>=&gt; E(K::Char(<span class="string">&#39;G&#39;</span>), mods | M::CTRL), <span class="comment">// &#39;\a&#39;
+            </span><span class="attribute">#[cfg(unix)]
+            </span><span class="string">&#39;\x08&#39; </span>=&gt; E(K::Backspace, mods), <span class="comment">// &#39;\b&#39;
+            </span><span class="attribute">#[cfg(windows)]
+            </span><span class="string">&#39;\x08&#39; </span>=&gt; E(K::Char(<span class="string">&#39;H&#39;</span>), mods | M::CTRL),
+            <span class="attribute">#[cfg(unix)]
+            </span><span class="string">&#39;\x09&#39; </span>=&gt; {
+                <span class="comment">// &#39;\t&#39;
+                </span><span class="kw">if </span>mods.contains(M::SHIFT) {
+                    mods.remove(M::SHIFT);
+                    E(K::BackTab, mods)
+                } <span class="kw">else </span>{
+                    E(K::Tab, mods)
                 }
             }
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-            <span class="string">&#39;\x09&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;I&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x0a&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;J&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>), <span class="comment">// &#39;\n&#39; (10)</span>
-            <span class="string">&#39;\x0b&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;K&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x0c&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;L&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            <span class="string">&#39;\x0d&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Enter</span>, <span class="ident">mods</span>), <span class="comment">// &#39;\r&#39; (13)</span>
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-            <span class="string">&#39;\x0d&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;M&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x0e&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;N&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x0f&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;O&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x10&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;P&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x11&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;Q&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x12&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;R&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x13&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;S&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x14&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;T&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x15&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;U&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x16&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;V&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x17&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;W&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x18&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;X&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x19&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;Y&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x1a&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;Z&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x1b&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Esc</span>, <span class="ident">mods</span>), <span class="comment">// Ctrl-[, &#39;\e&#39;</span>
-            <span class="string">&#39;\x1c&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;\\&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x1d&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;]&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x1e&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;^&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x1f&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;_&#39;</span>), <span class="ident">mods</span> | <span class="ident">M::CTRL</span>),
-            <span class="string">&#39;\x7f&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Backspace</span>, <span class="ident">mods</span>), <span class="comment">// Rubout, Ctrl-?</span>
-            <span class="string">&#39;\u{9b}&#39;</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Esc</span>, <span class="ident">mods</span> | <span class="ident">M::SHIFT</span>),
-            <span class="kw">_</span> =&gt; <span class="ident">E</span>(<span class="ident">K::Null</span>, <span class="ident">mods</span>),
+            <span class="attribute">#[cfg(windows)]
+            </span><span class="string">&#39;\x09&#39; </span>=&gt; E(K::Char(<span class="string">&#39;I&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x0a&#39; </span>=&gt; E(K::Char(<span class="string">&#39;J&#39;</span>), mods | M::CTRL), <span class="comment">// &#39;\n&#39; (10)
+            </span><span class="string">&#39;\x0b&#39; </span>=&gt; E(K::Char(<span class="string">&#39;K&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x0c&#39; </span>=&gt; E(K::Char(<span class="string">&#39;L&#39;</span>), mods | M::CTRL),
+            <span class="attribute">#[cfg(unix)]
+            </span><span class="string">&#39;\x0d&#39; </span>=&gt; E(K::Enter, mods), <span class="comment">// &#39;\r&#39; (13)
+            </span><span class="attribute">#[cfg(windows)]
+            </span><span class="string">&#39;\x0d&#39; </span>=&gt; E(K::Char(<span class="string">&#39;M&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x0e&#39; </span>=&gt; E(K::Char(<span class="string">&#39;N&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x0f&#39; </span>=&gt; E(K::Char(<span class="string">&#39;O&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x10&#39; </span>=&gt; E(K::Char(<span class="string">&#39;P&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x11&#39; </span>=&gt; E(K::Char(<span class="string">&#39;Q&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x12&#39; </span>=&gt; E(K::Char(<span class="string">&#39;R&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x13&#39; </span>=&gt; E(K::Char(<span class="string">&#39;S&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x14&#39; </span>=&gt; E(K::Char(<span class="string">&#39;T&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x15&#39; </span>=&gt; E(K::Char(<span class="string">&#39;U&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x16&#39; </span>=&gt; E(K::Char(<span class="string">&#39;V&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x17&#39; </span>=&gt; E(K::Char(<span class="string">&#39;W&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x18&#39; </span>=&gt; E(K::Char(<span class="string">&#39;X&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x19&#39; </span>=&gt; E(K::Char(<span class="string">&#39;Y&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x1a&#39; </span>=&gt; E(K::Char(<span class="string">&#39;Z&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x1b&#39; </span>=&gt; E(K::Esc, mods), <span class="comment">// Ctrl-[, &#39;\e&#39;
+            </span><span class="string">&#39;\x1c&#39; </span>=&gt; E(K::Char(<span class="string">&#39;\\&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x1d&#39; </span>=&gt; E(K::Char(<span class="string">&#39;]&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x1e&#39; </span>=&gt; E(K::Char(<span class="string">&#39;^&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x1f&#39; </span>=&gt; E(K::Char(<span class="string">&#39;_&#39;</span>), mods | M::CTRL),
+            <span class="string">&#39;\x7f&#39; </span>=&gt; E(K::Backspace, mods), <span class="comment">// Rubout, Ctrl-?
+            </span><span class="string">&#39;\u{9b}&#39; </span>=&gt; E(K::Esc, mods | M::SHIFT),
+            <span class="kw">_ </span>=&gt; E(K::Null, mods),
         }
     }
 
-    <span class="doccomment">/// Constructor from `char` with Ctrl modifier</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ctrl</span>(<span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">c</span>, <span class="ident">Modifiers::CTRL</span>)
+    <span class="doccomment">/// Constructor from `char` with Ctrl modifier
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>ctrl(c: char) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new(c, Modifiers::CTRL)
     }
 
-    <span class="doccomment">/// Constructor from `char` with Alt modifier</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">alt</span>(<span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">c</span>, <span class="ident">Modifiers::ALT</span>)
+    <span class="doccomment">/// Constructor from `char` with Alt modifier
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>alt(c: char) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new(c, Modifiers::ALT)
     }
 
-    <span class="doccomment">/// ctrl-a =&gt; ctrl-A (uppercase)</span>
-    <span class="doccomment">/// shift-A =&gt; A (no SHIFT modifier)</span>
-    <span class="doccomment">/// shift-Tab =&gt; `BackTab`</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">normalize</span>(<span class="ident">e</span>: <span class="self">Self</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">use</span> {<span class="ident">KeyCode</span> <span class="kw">as</span> <span class="ident">K</span>, <span class="ident">KeyEvent</span> <span class="kw">as</span> <span class="ident">E</span>, <span class="ident">Modifiers</span> <span class="kw">as</span> <span class="ident">M</span>};
+    <span class="doccomment">/// ctrl-a =&gt; ctrl-A (uppercase)
+    /// shift-A =&gt; A (no SHIFT modifier)
+    /// shift-Tab =&gt; `BackTab`
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>normalize(e: <span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        <span class="kw">use </span>{KeyCode <span class="kw">as </span>K, KeyEvent <span class="kw">as </span>E, Modifiers <span class="kw">as </span>M};
 
-        <span class="kw">match</span> <span class="ident">e</span> {
-            <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="ident">c</span>), <span class="ident">m</span>) <span class="kw">if</span> <span class="ident">c</span>.<span class="ident">is_ascii_control</span>() =&gt; <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">c</span>, <span class="ident">m</span>),
-            <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="ident">c</span>), <span class="ident">m</span>) <span class="kw">if</span> <span class="ident">c</span>.<span class="ident">is_ascii_lowercase</span>() &amp;&amp; <span class="ident">m</span>.<span class="ident">contains</span>(<span class="ident">M::CTRL</span>) =&gt; {
-                <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="ident">c</span>.<span class="ident">to_ascii_uppercase</span>()), <span class="ident">m</span>)
+        <span class="kw">match </span>e {
+            E(K::Char(c), m) <span class="kw">if </span>c.is_ascii_control() =&gt; <span class="self">Self</span>::new(c, m),
+            E(K::Char(c), m) <span class="kw">if </span>c.is_ascii_lowercase() &amp;&amp; m.contains(M::CTRL) =&gt; {
+                E(K::Char(c.to_ascii_uppercase()), m)
             }
-            <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="ident">c</span>), <span class="ident">m</span>) <span class="kw">if</span> <span class="ident">c</span>.<span class="ident">is_ascii_uppercase</span>() &amp;&amp; <span class="ident">m</span>.<span class="ident">contains</span>(<span class="ident">M::SHIFT</span>) =&gt; {
-                <span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="ident">c</span>), <span class="ident">m</span> ^ <span class="ident">M::SHIFT</span>)
+            E(K::Char(c), m) <span class="kw">if </span>c.is_ascii_uppercase() &amp;&amp; m.contains(M::SHIFT) =&gt; {
+                E(K::Char(c), m ^ M::SHIFT)
             }
-            <span class="ident">E</span>(<span class="ident">K::Tab</span>, <span class="ident">m</span>) <span class="kw">if</span> <span class="ident">m</span>.<span class="ident">contains</span>(<span class="ident">M::SHIFT</span>) =&gt; <span class="ident">E</span>(<span class="ident">K::BackTab</span>, <span class="ident">m</span> ^ <span class="ident">M::SHIFT</span>),
-            <span class="kw">_</span> =&gt; <span class="ident">e</span>,
+            E(K::Tab, m) <span class="kw">if </span>m.contains(M::SHIFT) =&gt; E(K::BackTab, m ^ M::SHIFT),
+            <span class="kw">_ </span>=&gt; e,
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">char</span>&gt; <span class="kw">for</span> <span class="ident">KeyEvent</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">c</span>: <span class="ident">char</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>(<span class="ident">c</span>, <span class="ident">Modifiers::NONE</span>)
+<span class="kw">impl </span>From&lt;char&gt; <span class="kw">for </span>KeyEvent {
+    <span class="kw">fn </span>from(c: char) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new(c, Modifiers::NONE)
     }
 }
 
-<span class="doccomment">/// Input key pressed</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
-<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">KeyCode</span> {
-    <span class="doccomment">/// Unsupported escape sequence (on unix platform)</span>
-    <span class="ident">UnknownEscSeq</span>,
-    <span class="doccomment">/// ⌫ or Ctrl-H</span>
-    <span class="ident">Backspace</span>,
-    <span class="doccomment">/// ⇤ (usually Shift-Tab)</span>
-    <span class="ident">BackTab</span>,
-    <span class="doccomment">/// Paste (on unix platform)</span>
-    <span class="ident">BracketedPasteStart</span>,
-    <span class="doccomment">/// Paste (on unix platform)</span>
-    <span class="ident">BracketedPasteEnd</span>,
-    <span class="doccomment">/// Single char</span>
-    <span class="ident">Char</span>(<span class="ident">char</span>),
-    <span class="doccomment">/// ⌦</span>
-    <span class="ident">Delete</span>,
-    <span class="doccomment">/// ↓ arrow key</span>
-    <span class="ident">Down</span>,
-    <span class="doccomment">/// ⇲</span>
-    <span class="ident">End</span>,
-    <span class="doccomment">/// ↵ or Ctrl-M</span>
-    <span class="ident">Enter</span>,
-    <span class="doccomment">/// Escape or Ctrl-[</span>
-    <span class="ident">Esc</span>,
-    <span class="doccomment">/// Function key</span>
-    <span class="ident">F</span>(<span class="ident">u8</span>),
-    <span class="doccomment">/// ⇱</span>
-    <span class="ident">Home</span>,
-    <span class="doccomment">/// Insert key</span>
-    <span class="ident">Insert</span>,
-    <span class="doccomment">/// ← arrow key</span>
-    <span class="ident">Left</span>,
-    <span class="doccomment">/// \0</span>
-    <span class="ident">Null</span>,
-    <span class="doccomment">/// ⇟</span>
-    <span class="ident">PageDown</span>,
-    <span class="doccomment">/// ⇞</span>
-    <span class="ident">PageUp</span>,
-    <span class="doccomment">/// → arrow key</span>
-    <span class="ident">Right</span>,
-    <span class="doccomment">/// ⇥ or Ctrl-I</span>
-    <span class="ident">Tab</span>,
-    <span class="doccomment">/// ↑ arrow key</span>
-    <span class="ident">Up</span>,
+<span class="doccomment">/// Input key pressed
+</span><span class="attribute">#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[non_exhaustive]
+</span><span class="kw">pub enum </span>KeyCode {
+    <span class="doccomment">/// Unsupported escape sequence (on unix platform)
+    </span>UnknownEscSeq,
+    <span class="doccomment">/// ⌫ or Ctrl-H
+    </span>Backspace,
+    <span class="doccomment">/// ⇤ (usually Shift-Tab)
+    </span>BackTab,
+    <span class="doccomment">/// Paste (on unix platform)
+    </span>BracketedPasteStart,
+    <span class="doccomment">/// Paste (on unix platform)
+    </span>BracketedPasteEnd,
+    <span class="doccomment">/// Single char
+    </span>Char(char),
+    <span class="doccomment">/// ⌦
+    </span>Delete,
+    <span class="doccomment">/// ↓ arrow key
+    </span>Down,
+    <span class="doccomment">/// ⇲
+    </span>End,
+    <span class="doccomment">/// ↵ or Ctrl-M
+    </span>Enter,
+    <span class="doccomment">/// Escape or Ctrl-[
+    </span>Esc,
+    <span class="doccomment">/// Function key
+    </span>F(u8),
+    <span class="doccomment">/// ⇱
+    </span>Home,
+    <span class="doccomment">/// Insert key
+    </span>Insert,
+    <span class="doccomment">/// ← arrow key
+    </span>Left,
+    <span class="doccomment">/// \0
+    </span>Null,
+    <span class="doccomment">/// ⇟
+    </span>PageDown,
+    <span class="doccomment">/// ⇞
+    </span>PageUp,
+    <span class="doccomment">/// → arrow key
+    </span>Right,
+    <span class="doccomment">/// ⇥ or Ctrl-I
+    </span>Tab,
+    <span class="doccomment">/// ↑ arrow key
+    </span>Up,
 }
 
-<span class="macro">bitflags::bitflags!</span> {
-    <span class="doccomment">/// The set of modifier keys that were triggered along with a key press.</span>
-    <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Modifiers</span>: <span class="ident">u8</span> {
-        <span class="doccomment">/// Control modifier</span>
-        <span class="kw">const</span> <span class="ident">CTRL</span>  = <span class="number">1</span>&lt;&lt;<span class="number">3</span>;
-        <span class="doccomment">/// Escape or Alt modifier</span>
-        <span class="kw">const</span> <span class="ident">ALT</span>  = <span class="number">1</span>&lt;&lt;<span class="number">2</span>;
-        <span class="doccomment">/// Shift modifier</span>
-        <span class="kw">const</span> <span class="ident">SHIFT</span> = <span class="number">1</span>&lt;&lt;<span class="number">1</span>;
+<span class="macro">bitflags::bitflags! </span>{
+    <span class="doccomment">/// The set of modifier keys that were triggered along with a key press.
+    </span><span class="kw">pub struct </span>Modifiers: u8 {
+        <span class="doccomment">/// Control modifier
+        </span><span class="kw">const </span>CTRL  = <span class="number">1</span>&lt;&lt;<span class="number">3</span>;
+        <span class="doccomment">/// Escape or Alt modifier
+        </span><span class="kw">const </span>ALT  = <span class="number">1</span>&lt;&lt;<span class="number">2</span>;
+        <span class="doccomment">/// Shift modifier
+        </span><span class="kw">const </span>SHIFT = <span class="number">1</span>&lt;&lt;<span class="number">1</span>;
 
-        <span class="doccomment">/// No modifier</span>
-        <span class="kw">const</span> <span class="ident">NONE</span> = <span class="number">0</span>;
-        <span class="doccomment">/// Ctrl + Shift</span>
-        <span class="kw">const</span> <span class="ident">CTRL_SHIFT</span> = <span class="ident"><span class="self">Self</span>::CTRL</span>.<span class="ident">bits</span> | <span class="ident"><span class="self">Self</span>::SHIFT</span>.<span class="ident">bits</span>;
-        <span class="doccomment">/// Alt + Shift</span>
-        <span class="kw">const</span> <span class="ident">ALT_SHIFT</span> = <span class="ident"><span class="self">Self</span>::ALT</span>.<span class="ident">bits</span> | <span class="ident"><span class="self">Self</span>::SHIFT</span>.<span class="ident">bits</span>;
-        <span class="doccomment">/// Ctrl + Alt</span>
-        <span class="kw">const</span> <span class="ident">CTRL_ALT</span> = <span class="ident"><span class="self">Self</span>::CTRL</span>.<span class="ident">bits</span> | <span class="ident"><span class="self">Self</span>::ALT</span>.<span class="ident">bits</span>;
-        <span class="doccomment">/// Ctrl + Alt + Shift</span>
-        <span class="kw">const</span> <span class="ident">CTRL_ALT_SHIFT</span> = <span class="ident"><span class="self">Self</span>::CTRL</span>.<span class="ident">bits</span> | <span class="ident"><span class="self">Self</span>::ALT</span>.<span class="ident">bits</span> | <span class="ident"><span class="self">Self</span>::SHIFT</span>.<span class="ident">bits</span>;
+        <span class="doccomment">/// No modifier
+        </span><span class="kw">const </span>NONE = <span class="number">0</span>;
+        <span class="doccomment">/// Ctrl + Shift
+        </span><span class="kw">const </span>CTRL_SHIFT = <span class="self">Self</span>::CTRL.bits | <span class="self">Self</span>::SHIFT.bits;
+        <span class="doccomment">/// Alt + Shift
+        </span><span class="kw">const </span>ALT_SHIFT = <span class="self">Self</span>::ALT.bits | <span class="self">Self</span>::SHIFT.bits;
+        <span class="doccomment">/// Ctrl + Alt
+        </span><span class="kw">const </span>CTRL_ALT = <span class="self">Self</span>::CTRL.bits | <span class="self">Self</span>::ALT.bits;
+        <span class="doccomment">/// Ctrl + Alt + Shift
+        </span><span class="kw">const </span>CTRL_ALT_SHIFT = <span class="self">Self</span>::CTRL.bits | <span class="self">Self</span>::ALT.bits | <span class="self">Self</span>::SHIFT.bits;
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">KeyCode</span> <span class="kw">as</span> <span class="ident">K</span>, <span class="ident">KeyEvent</span> <span class="kw">as</span> <span class="ident">E</span>, <span class="ident">Modifiers</span> <span class="kw">as</span> <span class="ident">M</span>};
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::{KeyCode <span class="kw">as </span>K, KeyEvent <span class="kw">as </span>E, Modifiers <span class="kw">as </span>M};
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">new</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">E::ESC</span>, <span class="ident">E::new</span>(<span class="string">&#39;\x1b&#39;</span>, <span class="ident">M::NONE</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>new() {
+        <span class="macro">assert_eq!</span>(E::ESC, E::new(<span class="string">&#39;\x1b&#39;</span>, M::NONE));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">E</span>(<span class="ident">K::Tab</span>, <span class="ident">M::NONE</span>), <span class="ident">E::from</span>(<span class="string">&#39;\t&#39;</span>));
+    <span class="attribute">#[test]
+    #[cfg(unix)]
+    </span><span class="kw">fn </span>from() {
+        <span class="macro">assert_eq!</span>(E(K::Tab, M::NONE), E::from(<span class="string">&#39;\t&#39;</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;I&#39;</span>), <span class="ident">M::CTRL</span>), <span class="ident">E::from</span>(<span class="string">&#39;\t&#39;</span>));
+    <span class="attribute">#[test]
+    #[cfg(windows)]
+    </span><span class="kw">fn </span>from() {
+        <span class="macro">assert_eq!</span>(E(K::Char(<span class="string">&#39;I&#39;</span>), M::CTRL), E::from(<span class="string">&#39;\t&#39;</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">normalize</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">E::ctrl</span>(<span class="string">&#39;A&#39;</span>), <span class="ident">E::normalize</span>(<span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;\x01&#39;</span>), <span class="ident">M::NONE</span>)));
-        <span class="macro">assert_eq!</span>(<span class="ident">E::ctrl</span>(<span class="string">&#39;A&#39;</span>), <span class="ident">E::normalize</span>(<span class="ident">E::ctrl</span>(<span class="string">&#39;a&#39;</span>)));
-        <span class="macro">assert_eq!</span>(<span class="ident">E::from</span>(<span class="string">&#39;A&#39;</span>), <span class="ident">E::normalize</span>(<span class="ident">E</span>(<span class="ident">K::Char</span>(<span class="string">&#39;A&#39;</span>), <span class="ident">M::SHIFT</span>)));
-        <span class="macro">assert_eq!</span>(<span class="ident">E</span>(<span class="ident">K::BackTab</span>, <span class="ident">M::NONE</span>), <span class="ident">E::normalize</span>(<span class="ident">E</span>(<span class="ident">K::Tab</span>, <span class="ident">M::SHIFT</span>)));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>normalize() {
+        <span class="macro">assert_eq!</span>(E::ctrl(<span class="string">&#39;A&#39;</span>), E::normalize(E(K::Char(<span class="string">&#39;\x01&#39;</span>), M::NONE)));
+        <span class="macro">assert_eq!</span>(E::ctrl(<span class="string">&#39;A&#39;</span>), E::normalize(E::ctrl(<span class="string">&#39;a&#39;</span>)));
+        <span class="macro">assert_eq!</span>(E::from(<span class="string">&#39;A&#39;</span>), E::normalize(E(K::Char(<span class="string">&#39;A&#39;</span>), M::SHIFT)));
+        <span class="macro">assert_eq!</span>(E(K::BackTab, M::NONE), E::normalize(E(K::Tab, M::SHIFT)));
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

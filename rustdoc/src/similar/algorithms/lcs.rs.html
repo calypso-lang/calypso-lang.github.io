@@ -218,225 +218,225 @@
 <span id="218">218</span>
 <span id="219">219</span>
 <span id="220">220</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Hunt–McIlroy / Hunt–Szymanski LCS diff algorithm.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! * time: `O((NM)D log (M)D)`</span>
-<span class="doccomment">//! * space `O(MN)`</span>
-<span class="kw">use</span> <span class="ident">std::collections::BTreeMap</span>;
-<span class="kw">use</span> <span class="ident">std::ops</span>::{<span class="ident">Index</span>, <span class="ident">Range</span>};
-<span class="kw">use</span> <span class="ident">std::time::Instant</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! Hunt–McIlroy / Hunt–Szymanski LCS diff algorithm.
+//!
+//! * time: `O((NM)D log (M)D)`
+//! * space `O(MN)`
+</span><span class="kw">use </span>std::collections::BTreeMap;
+<span class="kw">use </span>std::ops::{Index, Range};
+<span class="kw">use </span>std::time::Instant;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::algorithms::utils</span>::{<span class="ident">common_prefix_len</span>, <span class="ident">common_suffix_len</span>, <span class="ident">is_empty_range</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::algorithms::DiffHook</span>;
+<span class="kw">use </span><span class="kw">crate</span>::algorithms::utils::{common_prefix_len, common_suffix_len, is_empty_range};
+<span class="kw">use </span><span class="kw">crate</span>::algorithms::DiffHook;
 
-<span class="doccomment">/// Hunt–McIlroy / Hunt–Szymanski LCS diff algorithm.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Diff `old`, between indices `old_range` and `new` between indices `new_range`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This diff is done with an optional deadline that defines the maximal</span>
-<span class="doccomment">/// execution time permitted before it bails and falls back to an very bad</span>
-<span class="doccomment">/// approximation.  Deadlines with LCS do not make a lot of sense and should</span>
-<span class="doccomment">/// not be used.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">diff</span>&lt;<span class="ident">Old</span>, <span class="ident">New</span>, <span class="ident">D</span>&gt;(
-    <span class="ident">d</span>: <span class="kw-2">&amp;mut</span> <span class="ident">D</span>,
-    <span class="ident">old</span>: <span class="kw-2">&amp;</span><span class="ident">Old</span>,
-    <span class="ident">old_range</span>: <span class="ident">Range</span>&lt;<span class="ident">usize</span>&gt;,
-    <span class="ident">new</span>: <span class="kw-2">&amp;</span><span class="ident">New</span>,
-    <span class="ident">new_range</span>: <span class="ident">Range</span>&lt;<span class="ident">usize</span>&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">D::Error</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">Old</span>: <span class="ident">Index</span>&lt;<span class="ident">usize</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
-    <span class="ident">New</span>: <span class="ident">Index</span>&lt;<span class="ident">usize</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
-    <span class="ident">D</span>: <span class="ident">DiffHook</span>,
-    <span class="ident">New::Output</span>: <span class="ident">PartialEq</span>&lt;<span class="ident">Old::Output</span>&gt;,
+<span class="doccomment">/// Hunt–McIlroy / Hunt–Szymanski LCS diff algorithm.
+///
+/// Diff `old`, between indices `old_range` and `new` between indices `new_range`.
+///
+/// This diff is done with an optional deadline that defines the maximal
+/// execution time permitted before it bails and falls back to an very bad
+/// approximation.  Deadlines with LCS do not make a lot of sense and should
+/// not be used.
+</span><span class="kw">pub fn </span>diff&lt;Old, New, D&gt;(
+    d: <span class="kw-2">&amp;mut </span>D,
+    old: <span class="kw-2">&amp;</span>Old,
+    old_range: Range&lt;usize&gt;,
+    new: <span class="kw-2">&amp;</span>New,
+    new_range: Range&lt;usize&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), D::Error&gt;
+<span class="kw">where
+    </span>Old: Index&lt;usize&gt; + <span class="question-mark">?</span>Sized,
+    New: Index&lt;usize&gt; + <span class="question-mark">?</span>Sized,
+    D: DiffHook,
+    New::Output: PartialEq&lt;Old::Output&gt;,
 {
-    <span class="ident">diff_deadline</span>(<span class="ident">d</span>, <span class="ident">old</span>, <span class="ident">old_range</span>, <span class="ident">new</span>, <span class="ident">new_range</span>, <span class="prelude-val">None</span>)
+    diff_deadline(d, old, old_range, new, new_range, <span class="prelude-val">None</span>)
 }
 
-<span class="doccomment">/// Hunt–McIlroy / Hunt–Szymanski LCS diff algorithm.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Diff `old`, between indices `old_range` and `new` between indices `new_range`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This diff is done with an optional deadline that defines the maximal</span>
-<span class="doccomment">/// execution time permitted before it bails and falls back to an approximation.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">diff_deadline</span>&lt;<span class="ident">Old</span>, <span class="ident">New</span>, <span class="ident">D</span>&gt;(
-    <span class="ident">d</span>: <span class="kw-2">&amp;mut</span> <span class="ident">D</span>,
-    <span class="ident">old</span>: <span class="kw-2">&amp;</span><span class="ident">Old</span>,
-    <span class="ident">old_range</span>: <span class="ident">Range</span>&lt;<span class="ident">usize</span>&gt;,
-    <span class="ident">new</span>: <span class="kw-2">&amp;</span><span class="ident">New</span>,
-    <span class="ident">new_range</span>: <span class="ident">Range</span>&lt;<span class="ident">usize</span>&gt;,
-    <span class="ident">deadline</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">Instant</span>&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">D::Error</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">Old</span>: <span class="ident">Index</span>&lt;<span class="ident">usize</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
-    <span class="ident">New</span>: <span class="ident">Index</span>&lt;<span class="ident">usize</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
-    <span class="ident">D</span>: <span class="ident">DiffHook</span>,
-    <span class="ident">New::Output</span>: <span class="ident">PartialEq</span>&lt;<span class="ident">Old::Output</span>&gt;,
+<span class="doccomment">/// Hunt–McIlroy / Hunt–Szymanski LCS diff algorithm.
+///
+/// Diff `old`, between indices `old_range` and `new` between indices `new_range`.
+///
+/// This diff is done with an optional deadline that defines the maximal
+/// execution time permitted before it bails and falls back to an approximation.
+</span><span class="kw">pub fn </span>diff_deadline&lt;Old, New, D&gt;(
+    d: <span class="kw-2">&amp;mut </span>D,
+    old: <span class="kw-2">&amp;</span>Old,
+    old_range: Range&lt;usize&gt;,
+    new: <span class="kw-2">&amp;</span>New,
+    new_range: Range&lt;usize&gt;,
+    deadline: <span class="prelude-ty">Option</span>&lt;Instant&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), D::Error&gt;
+<span class="kw">where
+    </span>Old: Index&lt;usize&gt; + <span class="question-mark">?</span>Sized,
+    New: Index&lt;usize&gt; + <span class="question-mark">?</span>Sized,
+    D: DiffHook,
+    New::Output: PartialEq&lt;Old::Output&gt;,
 {
-    <span class="kw">if</span> <span class="ident">is_empty_range</span>(<span class="kw-2">&amp;</span><span class="ident">new_range</span>) {
-        <span class="ident">d</span>.<span class="ident">delete</span>(<span class="ident">old_range</span>.<span class="ident">start</span>, <span class="ident">old_range</span>.<span class="ident">len</span>(), <span class="ident">new_range</span>.<span class="ident">start</span>)<span class="question-mark">?</span>;
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">is_empty_range</span>(<span class="kw-2">&amp;</span><span class="ident">old_range</span>) {
-        <span class="ident">d</span>.<span class="ident">insert</span>(<span class="ident">old_range</span>.<span class="ident">start</span>, <span class="ident">new_range</span>.<span class="ident">start</span>, <span class="ident">new_range</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="kw">if </span>is_empty_range(<span class="kw-2">&amp;</span>new_range) {
+        d.delete(old_range.start, old_range.len(), new_range.start)<span class="question-mark">?</span>;
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(());
+    } <span class="kw">else if </span>is_empty_range(<span class="kw-2">&amp;</span>old_range) {
+        d.insert(old_range.start, new_range.start, new_range.len())<span class="question-mark">?</span>;
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(());
     }
 
-    <span class="kw">let</span> <span class="ident">common_prefix_len</span> = <span class="ident">common_prefix_len</span>(<span class="ident">old</span>, <span class="ident">old_range</span>.<span class="ident">clone</span>(), <span class="ident">new</span>, <span class="ident">new_range</span>.<span class="ident">clone</span>());
-    <span class="kw">let</span> <span class="ident">common_suffix_len</span> = <span class="ident">common_suffix_len</span>(<span class="ident">old</span>, <span class="ident">old_range</span>.<span class="ident">clone</span>(), <span class="ident">new</span>, <span class="ident">new_range</span>.<span class="ident">clone</span>());
+    <span class="kw">let </span>common_prefix_len = common_prefix_len(old, old_range.clone(), new, new_range.clone());
+    <span class="kw">let </span>common_suffix_len = common_suffix_len(old, old_range.clone(), new, new_range.clone());
 
-    <span class="kw">let</span> <span class="ident">maybe_table</span> = <span class="ident">make_table</span>(
-        <span class="ident">old</span>,
-        <span class="ident">common_prefix_len</span>..(<span class="ident">old_range</span>.<span class="ident">len</span>() - <span class="ident">common_suffix_len</span>),
-        <span class="ident">new</span>,
-        <span class="ident">common_prefix_len</span>..(<span class="ident">new_range</span>.<span class="ident">len</span>() - <span class="ident">common_suffix_len</span>),
-        <span class="ident">deadline</span>,
+    <span class="kw">let </span>maybe_table = make_table(
+        old,
+        common_prefix_len..(old_range.len() - common_suffix_len),
+        new,
+        common_prefix_len..(new_range.len() - common_suffix_len),
+        deadline,
     );
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">old_idx</span> = <span class="number">0</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_idx</span> = <span class="number">0</span>;
-    <span class="kw">let</span> <span class="ident">new_len</span> = <span class="ident">new_range</span>.<span class="ident">len</span>() - <span class="ident">common_prefix_len</span> - <span class="ident">common_suffix_len</span>;
-    <span class="kw">let</span> <span class="ident">old_len</span> = <span class="ident">old_range</span>.<span class="ident">len</span>() - <span class="ident">common_prefix_len</span> - <span class="ident">common_suffix_len</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>old_idx = <span class="number">0</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>new_idx = <span class="number">0</span>;
+    <span class="kw">let </span>new_len = new_range.len() - common_prefix_len - common_suffix_len;
+    <span class="kw">let </span>old_len = old_range.len() - common_prefix_len - common_suffix_len;
 
-    <span class="kw">if</span> <span class="ident">common_prefix_len</span> &gt; <span class="number">0</span> {
-        <span class="ident">d</span>.<span class="ident">equal</span>(<span class="ident">old_range</span>.<span class="ident">start</span>, <span class="ident">new_range</span>.<span class="ident">start</span>, <span class="ident">common_prefix_len</span>)<span class="question-mark">?</span>;
+    <span class="kw">if </span>common_prefix_len &gt; <span class="number">0 </span>{
+        d.equal(old_range.start, new_range.start, common_prefix_len)<span class="question-mark">?</span>;
     }
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">table</span>) = <span class="ident">maybe_table</span> {
-        <span class="kw">while</span> <span class="ident">new_idx</span> &lt; <span class="ident">new_len</span> &amp;&amp; <span class="ident">old_idx</span> &lt; <span class="ident">old_len</span> {
-            <span class="kw">let</span> <span class="ident">old_orig_idx</span> = <span class="ident">old_range</span>.<span class="ident">start</span> + <span class="ident">common_prefix_len</span> + <span class="ident">old_idx</span>;
-            <span class="kw">let</span> <span class="ident">new_orig_idx</span> = <span class="ident">new_range</span>.<span class="ident">start</span> + <span class="ident">common_prefix_len</span> + <span class="ident">new_idx</span>;
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(table) = maybe_table {
+        <span class="kw">while </span>new_idx &lt; new_len &amp;&amp; old_idx &lt; old_len {
+            <span class="kw">let </span>old_orig_idx = old_range.start + common_prefix_len + old_idx;
+            <span class="kw">let </span>new_orig_idx = new_range.start + common_prefix_len + new_idx;
 
-            <span class="kw">if</span> <span class="ident">new</span>[<span class="ident">new_orig_idx</span>] == <span class="ident">old</span>[<span class="ident">old_orig_idx</span>] {
-                <span class="ident">d</span>.<span class="ident">equal</span>(<span class="ident">old_orig_idx</span>, <span class="ident">new_orig_idx</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
-                <span class="ident">old_idx</span> += <span class="number">1</span>;
-                <span class="ident">new_idx</span> += <span class="number">1</span>;
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">table</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>(<span class="ident">new_idx</span>, <span class="ident">old_idx</span> + <span class="number">1</span>)).<span class="ident">map_or</span>(<span class="number">0</span>, |<span class="kw-2">&amp;</span><span class="ident">x</span>| <span class="ident">x</span>)
-                &gt;= <span class="ident">table</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>(<span class="ident">new_idx</span> + <span class="number">1</span>, <span class="ident">old_idx</span>)).<span class="ident">map_or</span>(<span class="number">0</span>, |<span class="kw-2">&amp;</span><span class="ident">x</span>| <span class="ident">x</span>)
+            <span class="kw">if </span>new[new_orig_idx] == old[old_orig_idx] {
+                d.equal(old_orig_idx, new_orig_idx, <span class="number">1</span>)<span class="question-mark">?</span>;
+                old_idx += <span class="number">1</span>;
+                new_idx += <span class="number">1</span>;
+            } <span class="kw">else if </span>table.get(<span class="kw-2">&amp;</span>(new_idx, old_idx + <span class="number">1</span>)).map_or(<span class="number">0</span>, |<span class="kw-2">&amp;</span>x| x)
+                &gt;= table.get(<span class="kw-2">&amp;</span>(new_idx + <span class="number">1</span>, old_idx)).map_or(<span class="number">0</span>, |<span class="kw-2">&amp;</span>x| x)
             {
-                <span class="ident">d</span>.<span class="ident">delete</span>(<span class="ident">old_orig_idx</span>, <span class="number">1</span>, <span class="ident">new_orig_idx</span>)<span class="question-mark">?</span>;
-                <span class="ident">old_idx</span> += <span class="number">1</span>;
-            } <span class="kw">else</span> {
-                <span class="ident">d</span>.<span class="ident">insert</span>(<span class="ident">old_orig_idx</span>, <span class="ident">new_orig_idx</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
-                <span class="ident">new_idx</span> += <span class="number">1</span>;
+                d.delete(old_orig_idx, <span class="number">1</span>, new_orig_idx)<span class="question-mark">?</span>;
+                old_idx += <span class="number">1</span>;
+            } <span class="kw">else </span>{
+                d.insert(old_orig_idx, new_orig_idx, <span class="number">1</span>)<span class="question-mark">?</span>;
+                new_idx += <span class="number">1</span>;
             }
         }
-    } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">old_orig_idx</span> = <span class="ident">old_range</span>.<span class="ident">start</span> + <span class="ident">common_prefix_len</span> + <span class="ident">old_idx</span>;
-        <span class="kw">let</span> <span class="ident">new_orig_idx</span> = <span class="ident">new_range</span>.<span class="ident">start</span> + <span class="ident">common_prefix_len</span> + <span class="ident">new_idx</span>;
-        <span class="ident">d</span>.<span class="ident">delete</span>(<span class="ident">old_orig_idx</span>, <span class="ident">old_len</span>, <span class="ident">new_orig_idx</span>)<span class="question-mark">?</span>;
-        <span class="ident">d</span>.<span class="ident">insert</span>(<span class="ident">old_orig_idx</span>, <span class="ident">new_orig_idx</span>, <span class="ident">new_len</span>)<span class="question-mark">?</span>;
+    } <span class="kw">else </span>{
+        <span class="kw">let </span>old_orig_idx = old_range.start + common_prefix_len + old_idx;
+        <span class="kw">let </span>new_orig_idx = new_range.start + common_prefix_len + new_idx;
+        d.delete(old_orig_idx, old_len, new_orig_idx)<span class="question-mark">?</span>;
+        d.insert(old_orig_idx, new_orig_idx, new_len)<span class="question-mark">?</span>;
     }
 
-    <span class="kw">if</span> <span class="ident">old_idx</span> &lt; <span class="ident">old_len</span> {
-        <span class="ident">d</span>.<span class="ident">delete</span>(
-            <span class="ident">old_range</span>.<span class="ident">start</span> + <span class="ident">common_prefix_len</span> + <span class="ident">old_idx</span>,
-            <span class="ident">old_len</span> - <span class="ident">old_idx</span>,
-            <span class="ident">new_range</span>.<span class="ident">start</span> + <span class="ident">common_prefix_len</span> + <span class="ident">new_idx</span>,
+    <span class="kw">if </span>old_idx &lt; old_len {
+        d.delete(
+            old_range.start + common_prefix_len + old_idx,
+            old_len - old_idx,
+            new_range.start + common_prefix_len + new_idx,
         )<span class="question-mark">?</span>;
-        <span class="ident">old_idx</span> += <span class="ident">old_len</span> - <span class="ident">old_idx</span>;
+        old_idx += old_len - old_idx;
     }
 
-    <span class="kw">if</span> <span class="ident">new_idx</span> &lt; <span class="ident">new_len</span> {
-        <span class="ident">d</span>.<span class="ident">insert</span>(
-            <span class="ident">old_range</span>.<span class="ident">start</span> + <span class="ident">common_prefix_len</span> + <span class="ident">old_idx</span>,
-            <span class="ident">new_range</span>.<span class="ident">start</span> + <span class="ident">common_prefix_len</span> + <span class="ident">new_idx</span>,
-            <span class="ident">new_len</span> - <span class="ident">new_idx</span>,
-        )<span class="question-mark">?</span>;
-    }
-
-    <span class="kw">if</span> <span class="ident">common_suffix_len</span> &gt; <span class="number">0</span> {
-        <span class="ident">d</span>.<span class="ident">equal</span>(
-            <span class="ident">old_range</span>.<span class="ident">start</span> + <span class="ident">old_len</span> + <span class="ident">common_prefix_len</span>,
-            <span class="ident">new_range</span>.<span class="ident">start</span> + <span class="ident">new_len</span> + <span class="ident">common_prefix_len</span>,
-            <span class="ident">common_suffix_len</span>,
+    <span class="kw">if </span>new_idx &lt; new_len {
+        d.insert(
+            old_range.start + common_prefix_len + old_idx,
+            new_range.start + common_prefix_len + new_idx,
+            new_len - new_idx,
         )<span class="question-mark">?</span>;
     }
 
-    <span class="ident">d</span>.<span class="ident">finish</span>()
+    <span class="kw">if </span>common_suffix_len &gt; <span class="number">0 </span>{
+        d.equal(
+            old_range.start + old_len + common_prefix_len,
+            new_range.start + new_len + common_prefix_len,
+            common_suffix_len,
+        )<span class="question-mark">?</span>;
+    }
+
+    d.finish()
 }
 
-<span class="kw">fn</span> <span class="ident">make_table</span>&lt;<span class="ident">Old</span>, <span class="ident">New</span>&gt;(
-    <span class="ident">old</span>: <span class="kw-2">&amp;</span><span class="ident">Old</span>,
-    <span class="ident">old_range</span>: <span class="ident">Range</span>&lt;<span class="ident">usize</span>&gt;,
-    <span class="ident">new</span>: <span class="kw-2">&amp;</span><span class="ident">New</span>,
-    <span class="ident">new_range</span>: <span class="ident">Range</span>&lt;<span class="ident">usize</span>&gt;,
-    <span class="ident">deadline</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">Instant</span>&gt;,
-) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">BTreeMap</span>&lt;(<span class="ident">usize</span>, <span class="ident">usize</span>), <span class="ident">u32</span>&gt;&gt;
-<span class="kw">where</span>
-    <span class="ident">Old</span>: <span class="ident">Index</span>&lt;<span class="ident">usize</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
-    <span class="ident">New</span>: <span class="ident">Index</span>&lt;<span class="ident">usize</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
-    <span class="ident">New::Output</span>: <span class="ident">PartialEq</span>&lt;<span class="ident">Old::Output</span>&gt;,
+<span class="kw">fn </span>make_table&lt;Old, New&gt;(
+    old: <span class="kw-2">&amp;</span>Old,
+    old_range: Range&lt;usize&gt;,
+    new: <span class="kw-2">&amp;</span>New,
+    new_range: Range&lt;usize&gt;,
+    deadline: <span class="prelude-ty">Option</span>&lt;Instant&gt;,
+) -&gt; <span class="prelude-ty">Option</span>&lt;BTreeMap&lt;(usize, usize), u32&gt;&gt;
+<span class="kw">where
+    </span>Old: Index&lt;usize&gt; + <span class="question-mark">?</span>Sized,
+    New: Index&lt;usize&gt; + <span class="question-mark">?</span>Sized,
+    New::Output: PartialEq&lt;Old::Output&gt;,
 {
-    <span class="kw">let</span> <span class="ident">old_len</span> = <span class="ident">old_range</span>.<span class="ident">len</span>();
-    <span class="kw">let</span> <span class="ident">new_len</span> = <span class="ident">new_range</span>.<span class="ident">len</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">table</span> = <span class="ident">BTreeMap::new</span>();
+    <span class="kw">let </span>old_len = old_range.len();
+    <span class="kw">let </span>new_len = new_range.len();
+    <span class="kw">let </span><span class="kw-2">mut </span>table = BTreeMap::new();
 
-    <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> (<span class="number">0</span>..<span class="ident">new_len</span>).<span class="ident">rev</span>() {
-        <span class="comment">// are we running for too long?  give up on the table</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">deadline</span>) = <span class="ident">deadline</span> {
-            <span class="kw">if</span> <span class="ident">Instant::now</span>() &gt; <span class="ident">deadline</span> {
-                <span class="kw">return</span> <span class="prelude-val">None</span>;
+    <span class="kw">for </span>i <span class="kw">in </span>(<span class="number">0</span>..new_len).rev() {
+        <span class="comment">// are we running for too long?  give up on the table
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(deadline) = deadline {
+            <span class="kw">if </span>Instant::now() &gt; deadline {
+                <span class="kw">return </span><span class="prelude-val">None</span>;
             }
         }
 
-        <span class="kw">for</span> <span class="ident">j</span> <span class="kw">in</span> (<span class="number">0</span>..<span class="ident">old_len</span>).<span class="ident">rev</span>() {
-            <span class="kw">let</span> <span class="ident">val</span> = <span class="kw">if</span> <span class="ident">new</span>[<span class="ident">i</span>] == <span class="ident">old</span>[<span class="ident">j</span>] {
-                <span class="ident">table</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>(<span class="ident">i</span> + <span class="number">1</span>, <span class="ident">j</span> + <span class="number">1</span>)).<span class="ident">map_or</span>(<span class="number">0</span>, |<span class="kw-2">&amp;</span><span class="ident">x</span>| <span class="ident">x</span>) + <span class="number">1</span>
-            } <span class="kw">else</span> {
-                <span class="ident">table</span>
-                    .<span class="ident">get</span>(<span class="kw-2">&amp;</span>(<span class="ident">i</span> + <span class="number">1</span>, <span class="ident">j</span>))
-                    .<span class="ident">map_or</span>(<span class="number">0</span>, |<span class="kw-2">&amp;</span><span class="ident">x</span>| <span class="ident">x</span>)
-                    .<span class="ident">max</span>(<span class="ident">table</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span>(<span class="ident">i</span>, <span class="ident">j</span> + <span class="number">1</span>)).<span class="ident">map_or</span>(<span class="number">0</span>, |<span class="kw-2">&amp;</span><span class="ident">x</span>| <span class="ident">x</span>))
+        <span class="kw">for </span>j <span class="kw">in </span>(<span class="number">0</span>..old_len).rev() {
+            <span class="kw">let </span>val = <span class="kw">if </span>new[i] == old[j] {
+                table.get(<span class="kw-2">&amp;</span>(i + <span class="number">1</span>, j + <span class="number">1</span>)).map_or(<span class="number">0</span>, |<span class="kw-2">&amp;</span>x| x) + <span class="number">1
+            </span>} <span class="kw">else </span>{
+                table
+                    .get(<span class="kw-2">&amp;</span>(i + <span class="number">1</span>, j))
+                    .map_or(<span class="number">0</span>, |<span class="kw-2">&amp;</span>x| x)
+                    .max(table.get(<span class="kw-2">&amp;</span>(i, j + <span class="number">1</span>)).map_or(<span class="number">0</span>, |<span class="kw-2">&amp;</span>x| x))
             };
-            <span class="kw">if</span> <span class="ident">val</span> &gt; <span class="number">0</span> {
-                <span class="ident">table</span>.<span class="ident">insert</span>((<span class="ident">i</span>, <span class="ident">j</span>), <span class="ident">val</span>);
+            <span class="kw">if </span>val &gt; <span class="number">0 </span>{
+                table.insert((i, j), val);
             }
         }
     }
 
-    <span class="prelude-val">Some</span>(<span class="ident">table</span>)
+    <span class="prelude-val">Some</span>(table)
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_table</span>() {
-    <span class="kw">let</span> <span class="ident">table</span> = <span class="ident">make_table</span>(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">3</span>], <span class="number">0</span>..<span class="number">2</span>, <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>], <span class="number">0</span>..<span class="number">3</span>, <span class="prelude-val">None</span>).<span class="ident">unwrap</span>();
-    <span class="kw">let</span> <span class="ident">expected</span> = {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">m</span> = <span class="ident">BTreeMap::new</span>();
-        <span class="ident">m</span>.<span class="ident">insert</span>((<span class="number">1</span>, <span class="number">0</span>), <span class="number">1</span>);
-        <span class="ident">m</span>.<span class="ident">insert</span>((<span class="number">0</span>, <span class="number">0</span>), <span class="number">1</span>);
-        <span class="ident">m</span>.<span class="ident">insert</span>((<span class="number">2</span>, <span class="number">0</span>), <span class="number">1</span>);
-        <span class="ident">m</span>
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>test_table() {
+    <span class="kw">let </span>table = make_table(<span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">2</span>, <span class="number">3</span>], <span class="number">0</span>..<span class="number">2</span>, <span class="kw-2">&amp;</span><span class="macro">vec!</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>], <span class="number">0</span>..<span class="number">3</span>, <span class="prelude-val">None</span>).unwrap();
+    <span class="kw">let </span>expected = {
+        <span class="kw">let </span><span class="kw-2">mut </span>m = BTreeMap::new();
+        m.insert((<span class="number">1</span>, <span class="number">0</span>), <span class="number">1</span>);
+        m.insert((<span class="number">0</span>, <span class="number">0</span>), <span class="number">1</span>);
+        m.insert((<span class="number">2</span>, <span class="number">0</span>), <span class="number">1</span>);
+        m
     };
-    <span class="macro">assert_eq!</span>(<span class="ident">table</span>, <span class="ident">expected</span>);
+    <span class="macro">assert_eq!</span>(table, expected);
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_diff</span>() {
-    <span class="kw">let</span> <span class="ident">a</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];
-    <span class="kw">let</span> <span class="ident">b</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">9</span>, <span class="number">4</span>];
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>test_diff() {
+    <span class="kw">let </span>a: <span class="kw-2">&amp;</span>[usize] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>];
+    <span class="kw">let </span>b: <span class="kw-2">&amp;</span>[usize] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">9</span>, <span class="number">4</span>];
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">d</span> = <span class="ident"><span class="kw">crate</span>::algorithms::Replace::new</span>(<span class="ident"><span class="kw">crate</span>::algorithms::Capture::new</span>());
-    <span class="ident">diff</span>(<span class="kw-2">&amp;mut</span> <span class="ident">d</span>, <span class="ident">a</span>, <span class="number">0</span>..<span class="ident">a</span>.<span class="ident">len</span>(), <span class="ident">b</span>, <span class="number">0</span>..<span class="ident">b</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
-    <span class="macro">insta::assert_debug_snapshot!</span>(<span class="ident">d</span>.<span class="ident">into_inner</span>().<span class="ident">ops</span>());
+    <span class="kw">let </span><span class="kw-2">mut </span>d = <span class="kw">crate</span>::algorithms::Replace::new(<span class="kw">crate</span>::algorithms::Capture::new());
+    diff(<span class="kw-2">&amp;mut </span>d, a, <span class="number">0</span>..a.len(), b, <span class="number">0</span>..b.len()).unwrap();
+    <span class="macro">insta::assert_debug_snapshot!</span>(d.into_inner().ops());
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_contiguous</span>() {
-    <span class="kw">let</span> <span class="ident">a</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">4</span>, <span class="number">4</span>, <span class="number">5</span>];
-    <span class="kw">let</span> <span class="ident">b</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">4</span>, <span class="number">4</span>, <span class="number">7</span>];
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>test_contiguous() {
+    <span class="kw">let </span>a: <span class="kw-2">&amp;</span>[usize] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">4</span>, <span class="number">4</span>, <span class="number">5</span>];
+    <span class="kw">let </span>b: <span class="kw-2">&amp;</span>[usize] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">2</span>, <span class="number">8</span>, <span class="number">9</span>, <span class="number">4</span>, <span class="number">4</span>, <span class="number">7</span>];
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">d</span> = <span class="ident"><span class="kw">crate</span>::algorithms::Replace::new</span>(<span class="ident"><span class="kw">crate</span>::algorithms::Capture::new</span>());
-    <span class="ident">diff</span>(<span class="kw-2">&amp;mut</span> <span class="ident">d</span>, <span class="ident">a</span>, <span class="number">0</span>..<span class="ident">a</span>.<span class="ident">len</span>(), <span class="ident">b</span>, <span class="number">0</span>..<span class="ident">b</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
-    <span class="macro">insta::assert_debug_snapshot!</span>(<span class="ident">d</span>.<span class="ident">into_inner</span>().<span class="ident">ops</span>());
+    <span class="kw">let </span><span class="kw-2">mut </span>d = <span class="kw">crate</span>::algorithms::Replace::new(<span class="kw">crate</span>::algorithms::Capture::new());
+    diff(<span class="kw-2">&amp;mut </span>d, a, <span class="number">0</span>..a.len(), b, <span class="number">0</span>..b.len()).unwrap();
+    <span class="macro">insta::assert_debug_snapshot!</span>(d.into_inner().ops());
 }
 
-<span class="attribute">#[<span class="ident">test</span>]</span>
-<span class="kw">fn</span> <span class="ident">test_pat</span>() {
-    <span class="kw">let</span> <span class="ident">a</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];
-    <span class="kw">let</span> <span class="ident">b</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">8</span>, <span class="number">9</span>];
+<span class="attribute">#[test]
+</span><span class="kw">fn </span>test_pat() {
+    <span class="kw">let </span>a: <span class="kw-2">&amp;</span>[usize] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">3</span>, <span class="number">4</span>, <span class="number">5</span>];
+    <span class="kw">let </span>b: <span class="kw-2">&amp;</span>[usize] = <span class="kw-2">&amp;</span>[<span class="number">0</span>, <span class="number">1</span>, <span class="number">4</span>, <span class="number">5</span>, <span class="number">8</span>, <span class="number">9</span>];
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">d</span> = <span class="ident"><span class="kw">crate</span>::algorithms::Capture::new</span>();
-    <span class="ident">diff</span>(<span class="kw-2">&amp;mut</span> <span class="ident">d</span>, <span class="ident">a</span>, <span class="number">0</span>..<span class="ident">a</span>.<span class="ident">len</span>(), <span class="ident">b</span>, <span class="number">0</span>..<span class="ident">b</span>.<span class="ident">len</span>()).<span class="ident">unwrap</span>();
-    <span class="macro">insta::assert_debug_snapshot!</span>(<span class="ident">d</span>.<span class="ident">ops</span>());
+    <span class="kw">let </span><span class="kw-2">mut </span>d = <span class="kw">crate</span>::algorithms::Capture::new();
+    diff(<span class="kw-2">&amp;mut </span>d, a, <span class="number">0</span>..a.len(), b, <span class="number">0</span>..b.len()).unwrap();
+    <span class="macro">insta::assert_debug_snapshot!</span>(d.ops());
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="similar" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="similar" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

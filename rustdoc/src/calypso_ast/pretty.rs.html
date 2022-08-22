@@ -98,99 +98,99 @@
 <span id="98">98</span>
 <span id="99">99</span>
 <span id="100">100</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::fmt</span>::{<span class="self">self</span>, <span class="ident">Display</span>, <span class="ident">Write</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>std::fmt::{<span class="self">self</span>, Display, Write};
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">expr</span>::{<span class="ident">Expr</span>, <span class="ident">Mutability</span>, <span class="ident">Primary</span>},
-    <span class="ident">traverse::Visitor</span>,
-    <span class="ident">ty::Ty</span>,
+<span class="kw">use crate</span>::{
+    expr::{Expr, Mutability, Primary},
+    traverse::Visitor,
+    ty::Ty,
 };
-<span class="kw">use</span> <span class="ident">calypso_base::span::Spanned</span>;
-<span class="kw">use</span> <span class="ident">calypso_error::CalResult</span>;
+<span class="kw">use </span>calypso_base::span::Spanned;
+<span class="kw">use </span>calypso_error::CalResult;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::module_name_repetitions</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrettyPrinter</span>(<span class="ident">String</span>);
+<span class="attribute">#[derive(Clone, Debug, Default, PartialEq, Eq)]
+#[allow(clippy::module_name_repetitions)]
+</span><span class="kw">pub struct </span>PrettyPrinter(String);
 
-<span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">PrettyPrinter</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="number">0</span>)
+<span class="kw">impl </span>Display <span class="kw">for </span>PrettyPrinter {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="number">0</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Visitor</span> <span class="kw">for</span> <span class="ident">PrettyPrinter</span> {
-    <span class="kw">fn</span> <span class="ident">visit_primary</span>&lt;<span class="lifetime">&#39;src</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">src</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;src</span> <span class="ident">str</span>, <span class="ident">x</span>: <span class="ident">Spanned</span>&lt;<span class="kw-2">&amp;</span><span class="ident">Primary</span>&gt;) -&gt; <span class="ident">CalResult</span>&lt;()&gt; {
-        <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">x</span>.<span class="ident">value</span>() {
-            <span class="ident">Primary::Number</span>(<span class="kw">_</span>) =&gt; <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">src</span>[<span class="ident">x</span>.<span class="ident">span</span>().<span class="ident">into_range</span>()])<span class="question-mark">?</span>,
-            <span class="ident">Primary::Bool</span>(<span class="ident">b</span>) =&gt; <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">b</span>)<span class="question-mark">?</span>,
-            <span class="ident">Primary::Symbol</span>(<span class="ident">sym</span>) =&gt; <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">sym</span>)<span class="question-mark">?</span>,
+<span class="kw">impl </span>Visitor <span class="kw">for </span>PrettyPrinter {
+    <span class="kw">fn </span>visit_primary&lt;<span class="lifetime">&#39;src</span>&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, src: <span class="kw-2">&amp;</span><span class="lifetime">&#39;src </span>str, x: Spanned&lt;<span class="kw-2">&amp;</span>Primary&gt;) -&gt; CalResult&lt;()&gt; {
+        <span class="kw">match </span><span class="kw-2">*</span>x.value() {
+            Primary::Number(<span class="kw">_</span>) =&gt; <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;{}&quot;</span>, <span class="kw-2">&amp;</span>src[x.span().into_range()])<span class="question-mark">?</span>,
+            Primary::Bool(b) =&gt; <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;{}&quot;</span>, b)<span class="question-mark">?</span>,
+            Primary::Symbol(sym) =&gt; <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;{}&quot;</span>, sym)<span class="question-mark">?</span>,
         }
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_expr</span>&lt;<span class="lifetime">&#39;src</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">src</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;src</span> <span class="ident">str</span>, <span class="ident">x</span>: <span class="ident">Spanned</span>&lt;<span class="kw-2">&amp;</span><span class="ident">Expr</span>&gt;) -&gt; <span class="ident">CalResult</span>&lt;()&gt; {
-        <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">value</span>() {
-            <span class="ident">Expr::BinOp</span>(<span class="ident">left</span>, <span class="ident">op</span>, <span class="ident">right</span>) =&gt; {
-                <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;({} &quot;</span>, <span class="ident">op</span>.<span class="ident">value</span>())<span class="question-mark">?</span>;
-                <span class="self">self</span>.<span class="ident">visit_expr</span>(<span class="ident">src</span>, <span class="ident">left</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">AsRef::as_ref</span>))<span class="question-mark">?</span>;
+    <span class="kw">fn </span>visit_expr&lt;<span class="lifetime">&#39;src</span>&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, src: <span class="kw-2">&amp;</span><span class="lifetime">&#39;src </span>str, x: Spanned&lt;<span class="kw-2">&amp;</span>Expr&gt;) -&gt; CalResult&lt;()&gt; {
+        <span class="kw">match </span>x.value() {
+            Expr::BinOp(left, op, right) =&gt; {
+                <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;({} &quot;</span>, op.value())<span class="question-mark">?</span>;
+                <span class="self">self</span>.visit_expr(src, left.as_ref().map(AsRef::as_ref))<span class="question-mark">?</span>;
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
-                <span class="self">self</span>.<span class="ident">visit_expr</span>(<span class="ident">src</span>, <span class="ident">right</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">AsRef::as_ref</span>))<span class="question-mark">?</span>;
+                <span class="self">self</span>.visit_expr(src, right.as_ref().map(AsRef::as_ref))<span class="question-mark">?</span>;
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;)&quot;</span>)<span class="question-mark">?</span>;
             }
-            <span class="ident">Expr::Primary</span>(<span class="ident">primary</span>) =&gt; <span class="self">self</span>.<span class="ident">visit_primary</span>(<span class="ident">src</span>, <span class="ident">primary</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>,
-            <span class="ident">Expr::UnOp</span>(<span class="ident">op</span>, <span class="ident">expr</span>) =&gt; {
-                <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;({} &quot;</span>, <span class="ident">op</span>.<span class="ident">value</span>())<span class="question-mark">?</span>;
-                <span class="self">self</span>.<span class="ident">visit_expr</span>(<span class="ident">src</span>, <span class="ident">expr</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">AsRef::as_ref</span>))<span class="question-mark">?</span>;
+            Expr::Primary(primary) =&gt; <span class="self">self</span>.visit_primary(src, primary.as_ref())<span class="question-mark">?</span>,
+            Expr::UnOp(op, expr) =&gt; {
+                <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;({} &quot;</span>, op.value())<span class="question-mark">?</span>;
+                <span class="self">self</span>.visit_expr(src, expr.as_ref().map(AsRef::as_ref))<span class="question-mark">?</span>;
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;)&quot;</span>)<span class="question-mark">?</span>;
             }
-            <span class="ident">Expr::Block</span>(<span class="ident">exprs</span>) =&gt; {
+            Expr::Block(exprs) =&gt; {
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;(block&quot;</span>)<span class="question-mark">?</span>;
-                <span class="kw">for</span> <span class="ident">expr</span> <span class="kw">in</span> <span class="ident">exprs</span> {
+                <span class="kw">for </span>expr <span class="kw">in </span>exprs {
                     <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
-                    <span class="self">self</span>.<span class="ident">visit_expr</span>(<span class="ident">src</span>, <span class="ident">expr</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
+                    <span class="self">self</span>.visit_expr(src, expr.as_ref())<span class="question-mark">?</span>;
                 }
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;)&quot;</span>)<span class="question-mark">?</span>;
             }
-            <span class="ident">Expr::Let</span>(<span class="ident">is_mut</span>, <span class="ident">sym</span>, <span class="ident">ty</span>, <span class="ident">val</span>, <span class="ident">expr_in</span>) =&gt; {
+            Expr::Let(is_mut, sym, ty, val, expr_in) =&gt; {
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;(let &quot;</span>)<span class="question-mark">?</span>;
-                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Mutability::Mut</span> = <span class="ident">is_mut</span> {
+                <span class="kw">if let </span>Mutability::Mut = is_mut {
                     <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;mut &quot;</span>)<span class="question-mark">?</span>;
                 }
-                <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;{} &quot;</span>, <span class="ident">sym</span>.<span class="ident">value_owned</span>())<span class="question-mark">?</span>;
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ty</span>) = <span class="ident">ty</span> {
+                <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;{} &quot;</span>, sym.value_owned())<span class="question-mark">?</span>;
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(ty) = ty {
                     <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;(ty &quot;</span>)<span class="question-mark">?</span>;
-                    <span class="self">self</span>.<span class="ident">visit_ty</span>(<span class="ident">src</span>, <span class="ident">ty</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
+                    <span class="self">self</span>.visit_ty(src, ty.as_ref())<span class="question-mark">?</span>;
                     <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;) &quot;</span>)<span class="question-mark">?</span>;
                 }
-                <span class="self">self</span>.<span class="ident">visit_expr</span>(<span class="ident">src</span>, <span class="ident">val</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">AsRef::as_ref</span>))<span class="question-mark">?</span>;
+                <span class="self">self</span>.visit_expr(src, val.as_ref().map(AsRef::as_ref))<span class="question-mark">?</span>;
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot; in &quot;</span>)<span class="question-mark">?</span>;
-                <span class="self">self</span>.<span class="ident">visit_expr</span>(<span class="ident">src</span>, <span class="ident">expr_in</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">AsRef::as_ref</span>))<span class="question-mark">?</span>;
+                <span class="self">self</span>.visit_expr(src, expr_in.as_ref().map(AsRef::as_ref))<span class="question-mark">?</span>;
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;)&quot;</span>)<span class="question-mark">?</span>;
             }
         }
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_ty</span>&lt;<span class="lifetime">&#39;src</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">src</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;src</span> <span class="ident">str</span>, <span class="ident">x</span>: <span class="ident">Spanned</span>&lt;<span class="kw-2">&amp;</span><span class="ident">Ty</span>&gt;) -&gt; <span class="ident">CalResult</span>&lt;()&gt; {
-        <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">value</span>() {
-            <span class="ident">Ty::Symbol</span>(<span class="ident">sym</span>) =&gt; {
-                <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">sym</span>.<span class="ident">value</span>())<span class="question-mark">?</span>;
+    <span class="kw">fn </span>visit_ty&lt;<span class="lifetime">&#39;src</span>&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, src: <span class="kw-2">&amp;</span><span class="lifetime">&#39;src </span>str, x: Spanned&lt;<span class="kw-2">&amp;</span>Ty&gt;) -&gt; CalResult&lt;()&gt; {
+        <span class="kw">match </span>x.value() {
+            Ty::Symbol(sym) =&gt; {
+                <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;{}&quot;</span>, sym.value())<span class="question-mark">?</span>;
             }
-            <span class="ident">Ty::IndefArray</span>(<span class="ident">ty</span>) =&gt; {
+            Ty::IndefArray(ty) =&gt; {
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;(indef-arr &quot;</span>)<span class="question-mark">?</span>;
-                <span class="self">self</span>.<span class="ident">visit_ty</span>(<span class="ident">src</span>, <span class="ident">ty</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">AsRef::as_ref</span>))<span class="question-mark">?</span>;
+                <span class="self">self</span>.visit_ty(src, ty.as_ref().map(AsRef::as_ref))<span class="question-mark">?</span>;
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;)&quot;</span>)<span class="question-mark">?</span>;
             }
-            <span class="ident">Ty::DefArray</span>(<span class="ident">ty</span>, <span class="ident">num</span>) =&gt; {
+            Ty::DefArray(ty, num) =&gt; {
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;(def-arr &quot;</span>)<span class="question-mark">?</span>;
-                <span class="self">self</span>.<span class="ident">visit_ty</span>(<span class="ident">src</span>, <span class="ident">ty</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">AsRef::as_ref</span>))<span class="question-mark">?</span>;
-                <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot; {})&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">src</span>[<span class="ident">num</span>.<span class="ident">span</span>().<span class="ident">into_range</span>()])<span class="question-mark">?</span>;
+                <span class="self">self</span>.visit_ty(src, ty.as_ref().map(AsRef::as_ref))<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot; {})&quot;</span>, <span class="kw-2">&amp;</span>src[num.span().into_range()])<span class="question-mark">?</span>;
             }
-            <span class="ident">Ty::Tuple</span>(<span class="ident">tys</span>) =&gt; {
+            Ty::Tuple(tys) =&gt; {
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;(tuple&quot;</span>)<span class="question-mark">?</span>;
-                <span class="kw">for</span> <span class="ident">ty</span> <span class="kw">in</span> <span class="ident">tys</span> {
+                <span class="kw">for </span>ty <span class="kw">in </span>tys {
                     <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
-                    <span class="self">self</span>.<span class="ident">visit_ty</span>(<span class="ident">src</span>, <span class="ident">ty</span>.<span class="ident">as_ref</span>())<span class="question-mark">?</span>;
+                    <span class="self">self</span>.visit_ty(src, ty.as_ref())<span class="question-mark">?</span>;
                 }
                 <span class="macro">write!</span>(<span class="self">self</span>.<span class="number">0</span>, <span class="string">&quot;)&quot;</span>)<span class="question-mark">?</span>;
             }
@@ -199,4 +199,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_ast" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_ast" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

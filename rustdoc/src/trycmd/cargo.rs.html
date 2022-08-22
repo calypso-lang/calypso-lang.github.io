@@ -151,158 +151,158 @@
 <span id="151">151</span>
 <span id="152">152</span>
 <span id="153">153</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Interact with `cargo`</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Interact with `cargo`
 
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">inline</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">snapbox::cmd::cargo_bin</span>;
+</span><span class="attribute">#[doc(inline)]
+</span><span class="kw">pub use </span>snapbox::cmd::cargo_bin;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;examples&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">examples</span>::{<span class="ident">compile_example</span>, <span class="ident">compile_examples</span>};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;examples&quot;</span>)]
+</span><span class="kw">pub use </span>examples::{compile_example, compile_examples};
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;examples&quot;</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">examples</span> {
-    <span class="doccomment">/// Prepare an example for testing</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Unlike `cargo_bin!`, this does not inherit all of the current compiler settings.  It</span>
-    <span class="doccomment">/// will match the current target and profile but will not get feature flags.  Pass those arguments</span>
-    <span class="doccomment">/// to the compiler via `args`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ## Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust,no_run</span>
-    <span class="doccomment">/// #[test]</span>
-    <span class="doccomment">/// fn cli_tests() {</span>
-    <span class="doccomment">///     trycmd::TestCases::new()</span>
-    <span class="doccomment">///         .register_bin(&quot;example-fixture&quot;, trycmd::cargo::compile_example(&quot;example-fixture&quot;, []))</span>
-    <span class="doccomment">///         .case(&quot;examples/cmd/*.trycmd&quot;);</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">compile_example</span>&lt;<span class="lifetime">&#39;a</span>&gt;(
-        <span class="ident">target_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>&gt;,
-    ) -&gt; <span class="ident"><span class="kw">crate</span>::schema::Bin</span> {
-        <span class="ident">compile_example_path</span>(<span class="ident">target_name</span>, <span class="ident">args</span>).<span class="ident">into</span>()
+<span class="attribute">#[cfg(feature = <span class="string">&quot;examples&quot;</span>)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>examples {
+    <span class="doccomment">/// Prepare an example for testing
+    ///
+    /// Unlike `cargo_bin!`, this does not inherit all of the current compiler settings.  It
+    /// will match the current target and profile but will not get feature flags.  Pass those arguments
+    /// to the compiler via `args`.
+    ///
+    /// ## Example
+    ///
+    /// ```rust,no_run
+    /// #[test]
+    /// fn cli_tests() {
+    ///     trycmd::TestCases::new()
+    ///         .register_bin(&quot;example-fixture&quot;, trycmd::cargo::compile_example(&quot;example-fixture&quot;, []))
+    ///         .case(&quot;examples/cmd/*.trycmd&quot;);
+    /// }
+    /// ```
+    </span><span class="kw">pub fn </span>compile_example&lt;<span class="lifetime">&#39;a</span>&gt;(
+        target_name: <span class="kw-2">&amp;</span>str,
+        args: <span class="kw">impl </span>IntoIterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
+    ) -&gt; <span class="kw">crate</span>::schema::Bin {
+        compile_example_path(target_name, args).into()
     }
 
-    <span class="kw">fn</span> <span class="ident">compile_example_path</span>&lt;<span class="lifetime">&#39;a</span>&gt;(
-        <span class="ident">target_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident"><span class="kw">crate</span>::schema::Bin</span>, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="macro">snapbox::debug!</span>(<span class="string">&quot;Compiling example {}&quot;</span>, <span class="ident">target_name</span>);
-        <span class="kw">let</span> <span class="ident">messages</span> = <span class="ident">escargot::CargoBuild::new</span>()
-            .<span class="ident">current_target</span>()
-            .<span class="ident">current_release</span>()
-            .<span class="ident">example</span>(<span class="ident">target_name</span>)
-            .<span class="ident">args</span>(<span class="ident">args</span>)
-            .<span class="ident">exec</span>()
-            .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
-        <span class="kw">for</span> <span class="ident">message</span> <span class="kw">in</span> <span class="ident">messages</span> {
-            <span class="kw">let</span> <span class="ident">message</span> = <span class="ident">message</span>.<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">message</span> = <span class="ident">message</span>
-                .<span class="ident">decode</span>()
-                .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
-            <span class="macro">snapbox::debug!</span>(<span class="string">&quot;Message: {:?}&quot;</span>, <span class="ident">message</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">bin</span>) = <span class="ident">decode_example_message</span>(<span class="kw-2">&amp;</span><span class="ident">message</span>) {
-                <span class="kw">let</span> (<span class="ident">name</span>, <span class="ident">bin</span>) = <span class="ident">bin</span><span class="question-mark">?</span>;
-                <span class="macro">assert_eq!</span>(<span class="ident">target_name</span>, <span class="ident">name</span>);
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">bin</span>);
+    <span class="kw">fn </span>compile_example_path&lt;<span class="lifetime">&#39;a</span>&gt;(
+        target_name: <span class="kw-2">&amp;</span>str,
+        args: <span class="kw">impl </span>IntoIterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">crate</span>::schema::Bin, <span class="kw">crate</span>::Error&gt; {
+        <span class="macro">snapbox::debug!</span>(<span class="string">&quot;Compiling example {}&quot;</span>, target_name);
+        <span class="kw">let </span>messages = escargot::CargoBuild::new()
+            .current_target()
+            .current_release()
+            .example(target_name)
+            .args(args)
+            .exec()
+            .map_err(|e| <span class="kw">crate</span>::Error::new(e.to_string()))<span class="question-mark">?</span>;
+        <span class="kw">for </span>message <span class="kw">in </span>messages {
+            <span class="kw">let </span>message = message.map_err(|e| <span class="kw">crate</span>::Error::new(e.to_string()))<span class="question-mark">?</span>;
+            <span class="kw">let </span>message = message
+                .decode()
+                .map_err(|e| <span class="kw">crate</span>::Error::new(e.to_string()))<span class="question-mark">?</span>;
+            <span class="macro">snapbox::debug!</span>(<span class="string">&quot;Message: {:?}&quot;</span>, message);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(bin) = decode_example_message(<span class="kw-2">&amp;</span>message) {
+                <span class="kw">let </span>(name, bin) = bin<span class="question-mark">?</span>;
+                <span class="macro">assert_eq!</span>(target_name, name);
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(bin);
             }
         }
 
-        <span class="prelude-val">Err</span>(<span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="macro">format!</span>(
+        <span class="prelude-val">Err</span>(<span class="kw">crate</span>::Error::new(<span class="macro">format!</span>(
             <span class="string">&quot;Unknown error building example {}&quot;</span>,
-            <span class="ident">target_name</span>
+            target_name
         )))
     }
 
-    <span class="doccomment">/// Prepare all examples for testing</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Unlike `cargo_bin!`, this does not inherit all of the current compiler settings.  It</span>
-    <span class="doccomment">/// will match the current target and profile but will not get feature flags.  Pass those arguments</span>
-    <span class="doccomment">/// to the compiler via `args`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ## Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust,no_run</span>
-    <span class="doccomment">/// #[test]</span>
-    <span class="doccomment">/// fn cli_tests() {</span>
-    <span class="doccomment">///     trycmd::TestCases::new()</span>
-    <span class="doccomment">///         .register_bins(trycmd::cargo::compile_examples([]).unwrap())</span>
-    <span class="doccomment">///         .case(&quot;examples/cmd/*.trycmd&quot;);</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">compile_examples</span>&lt;<span class="lifetime">&#39;a</span>&gt;(
-        <span class="ident">args</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl</span> <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = (<span class="ident">String</span>, <span class="ident"><span class="kw">crate</span>::schema::Bin</span>)&gt;, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
+    <span class="doccomment">/// Prepare all examples for testing
+    ///
+    /// Unlike `cargo_bin!`, this does not inherit all of the current compiler settings.  It
+    /// will match the current target and profile but will not get feature flags.  Pass those arguments
+    /// to the compiler via `args`.
+    ///
+    /// ## Example
+    ///
+    /// ```rust,no_run
+    /// #[test]
+    /// fn cli_tests() {
+    ///     trycmd::TestCases::new()
+    ///         .register_bins(trycmd::cargo::compile_examples([]).unwrap())
+    ///         .case(&quot;examples/cmd/*.trycmd&quot;);
+    /// }
+    /// ```
+    </span><span class="kw">pub fn </span>compile_examples&lt;<span class="lifetime">&#39;a</span>&gt;(
+        args: <span class="kw">impl </span>IntoIterator&lt;Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw">impl </span>Iterator&lt;Item = (String, <span class="kw">crate</span>::schema::Bin)&gt;, <span class="kw">crate</span>::Error&gt; {
         <span class="macro">snapbox::debug!</span>(<span class="string">&quot;Compiling examples&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">examples</span> = <span class="ident">std::collections::BTreeMap::new</span>();
+        <span class="kw">let </span><span class="kw-2">mut </span>examples = std::collections::BTreeMap::new();
 
-        <span class="kw">let</span> <span class="ident">messages</span> = <span class="ident">escargot::CargoBuild::new</span>()
-            .<span class="ident">current_target</span>()
-            .<span class="ident">current_release</span>()
-            .<span class="ident">examples</span>()
-            .<span class="ident">args</span>(<span class="ident">args</span>)
-            .<span class="ident">exec</span>()
-            .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
-        <span class="kw">for</span> <span class="ident">message</span> <span class="kw">in</span> <span class="ident">messages</span> {
-            <span class="kw">let</span> <span class="ident">message</span> = <span class="ident">message</span>.<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">message</span> = <span class="ident">message</span>
-                .<span class="ident">decode</span>()
-                .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="ident">e</span>.<span class="ident">to_string</span>()))<span class="question-mark">?</span>;
-            <span class="macro">snapbox::debug!</span>(<span class="string">&quot;Message: {:?}&quot;</span>, <span class="ident">message</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">bin</span>) = <span class="ident">decode_example_message</span>(<span class="kw-2">&amp;</span><span class="ident">message</span>) {
-                <span class="kw">let</span> (<span class="ident">name</span>, <span class="ident">bin</span>) = <span class="ident">bin</span><span class="question-mark">?</span>;
-                <span class="ident">examples</span>.<span class="ident">insert</span>(<span class="ident">name</span>.<span class="ident">to_owned</span>(), <span class="ident">bin</span>);
+        <span class="kw">let </span>messages = escargot::CargoBuild::new()
+            .current_target()
+            .current_release()
+            .examples()
+            .args(args)
+            .exec()
+            .map_err(|e| <span class="kw">crate</span>::Error::new(e.to_string()))<span class="question-mark">?</span>;
+        <span class="kw">for </span>message <span class="kw">in </span>messages {
+            <span class="kw">let </span>message = message.map_err(|e| <span class="kw">crate</span>::Error::new(e.to_string()))<span class="question-mark">?</span>;
+            <span class="kw">let </span>message = message
+                .decode()
+                .map_err(|e| <span class="kw">crate</span>::Error::new(e.to_string()))<span class="question-mark">?</span>;
+            <span class="macro">snapbox::debug!</span>(<span class="string">&quot;Message: {:?}&quot;</span>, message);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(bin) = decode_example_message(<span class="kw-2">&amp;</span>message) {
+                <span class="kw">let </span>(name, bin) = bin<span class="question-mark">?</span>;
+                examples.insert(name.to_owned(), bin);
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">examples</span>.<span class="ident">into_iter</span>())
+        <span class="prelude-val">Ok</span>(examples.into_iter())
     }
 
-    <span class="kw">fn</span> <span class="ident">decode_example_message</span>&lt;<span class="lifetime">&#39;m</span>&gt;(
-        <span class="ident">message</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;m</span> <span class="ident">escargot::format::Message</span>,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;m</span> <span class="ident">str</span>, <span class="ident"><span class="kw">crate</span>::schema::Bin</span>), <span class="ident"><span class="kw">crate</span>::Error</span>&gt;&gt; {
-        <span class="kw">match</span> <span class="ident">message</span> {
-            <span class="ident">escargot::format::Message::CompilerMessage</span>(<span class="ident">msg</span>) =&gt; {
-                <span class="kw">let</span> <span class="ident">level</span> = <span class="ident">msg</span>.<span class="ident">message</span>.<span class="ident">level</span>;
-                <span class="kw">if</span> <span class="ident">level</span> == <span class="ident">escargot::format::diagnostic::DiagnosticLevel::Ice</span>
-                    || <span class="ident">level</span> == <span class="ident">escargot::format::diagnostic::DiagnosticLevel::Error</span>
+    <span class="kw">fn </span>decode_example_message&lt;<span class="lifetime">&#39;m</span>&gt;(
+        message: <span class="kw-2">&amp;</span><span class="lifetime">&#39;m </span>escargot::format::Message,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;m </span>str, <span class="kw">crate</span>::schema::Bin), <span class="kw">crate</span>::Error&gt;&gt; {
+        <span class="kw">match </span>message {
+            escargot::format::Message::CompilerMessage(msg) =&gt; {
+                <span class="kw">let </span>level = msg.message.level;
+                <span class="kw">if </span>level == escargot::format::diagnostic::DiagnosticLevel::Ice
+                    || level == escargot::format::diagnostic::DiagnosticLevel::Error
                 {
-                    <span class="kw">let</span> <span class="ident">output</span> = <span class="ident">msg</span>
-                        .<span class="ident">message</span>
-                        .<span class="ident">rendered</span>
-                        .<span class="ident">as_deref</span>()
-                        .<span class="ident">unwrap_or_else</span>(|| <span class="ident">msg</span>.<span class="ident">message</span>.<span class="ident">message</span>.<span class="ident">as_ref</span>())
-                        .<span class="ident">to_owned</span>();
-                    <span class="kw">if</span> <span class="ident">is_example_target</span>(<span class="kw-2">&amp;</span><span class="ident">msg</span>.<span class="ident">target</span>) {
-                        <span class="kw">let</span> <span class="ident">bin</span> = <span class="ident"><span class="kw">crate</span>::schema::Bin::Error</span>(<span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="ident">output</span>));
-                        <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">msg</span>.<span class="ident">target</span>.<span class="ident">name</span>.<span class="ident">as_ref</span>(), <span class="ident">bin</span>)))
-                    } <span class="kw">else</span> {
-                        <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="ident">output</span>)))
+                    <span class="kw">let </span>output = msg
+                        .message
+                        .rendered
+                        .as_deref()
+                        .unwrap_or_else(|| msg.message.message.as_ref())
+                        .to_owned();
+                    <span class="kw">if </span>is_example_target(<span class="kw-2">&amp;</span>msg.target) {
+                        <span class="kw">let </span>bin = <span class="kw">crate</span>::schema::Bin::Error(<span class="kw">crate</span>::Error::new(output));
+                        <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((msg.target.name.as_ref(), bin)))
+                    } <span class="kw">else </span>{
+                        <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="kw">crate</span>::Error::new(output)))
                     }
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                }
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">None
+                </span>}
             }
-            <span class="ident">escargot::format::Message::CompilerArtifact</span>(<span class="ident">artifact</span>) =&gt; {
-                <span class="kw">if</span> !<span class="ident">artifact</span>.<span class="ident">profile</span>.<span class="ident">test</span> &amp;&amp; <span class="ident">is_example_target</span>(<span class="kw-2">&amp;</span><span class="ident">artifact</span>.<span class="ident">target</span>) {
-                    <span class="kw">let</span> <span class="ident">path</span> = <span class="ident">artifact</span>
-                        .<span class="ident">executable</span>
-                        .<span class="ident">clone</span>()
-                        .<span class="ident">expect</span>(<span class="string">&quot;cargo is new enough for this to be present&quot;</span>);
-                    <span class="kw">let</span> <span class="ident">bin</span> = <span class="ident"><span class="kw">crate</span>::schema::Bin::Path</span>(<span class="ident">path</span>.<span class="ident">into_owned</span>());
-                    <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">artifact</span>.<span class="ident">target</span>.<span class="ident">name</span>.<span class="ident">as_ref</span>(), <span class="ident">bin</span>)))
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                }
+            escargot::format::Message::CompilerArtifact(artifact) =&gt; {
+                <span class="kw">if </span>!artifact.profile.test &amp;&amp; is_example_target(<span class="kw-2">&amp;</span>artifact.target) {
+                    <span class="kw">let </span>path = artifact
+                        .executable
+                        .clone()
+                        .expect(<span class="string">&quot;cargo is new enough for this to be present&quot;</span>);
+                    <span class="kw">let </span>bin = <span class="kw">crate</span>::schema::Bin::Path(path.into_owned());
+                    <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((artifact.target.name.as_ref(), bin)))
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">None
+                </span>}
             }
-            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">is_example_target</span>(<span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="ident">escargot::format::Target</span>) -&gt; <span class="ident">bool</span> {
-        <span class="ident">target</span>.<span class="ident">crate_types</span> == [<span class="string">&quot;bin&quot;</span>] &amp;&amp; <span class="ident">target</span>.<span class="ident">kind</span> == [<span class="string">&quot;example&quot;</span>]
+    <span class="kw">fn </span>is_example_target(target: <span class="kw-2">&amp;</span>escargot::format::Target) -&gt; bool {
+        target.crate_types == [<span class="string">&quot;bin&quot;</span>] &amp;&amp; target.kind == [<span class="string">&quot;example&quot;</span>]
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="trycmd" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="trycmd" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

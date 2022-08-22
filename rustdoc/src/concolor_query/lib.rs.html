@@ -107,114 +107,114 @@
 <span id="107">107</span>
 <span id="108">108</span>
 <span id="109">109</span>
-</pre><pre class="rust"><code><span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;windows&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">windows</span>;
+</pre><pre class="rust"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;windows&quot;</span>)]
+</span><span class="kw">pub mod </span>windows;
 
-<span class="doccomment">/// Check [CLICOLOR] status</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ANSI colors are supported and should be used when the program isn&#39;t piped.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See also:</span>
-<span class="doccomment">/// - [terminfo](https://crates.io/crates/terminfo) or [term](https://crates.io/crates/term) for</span>
-<span class="doccomment">///   checking termcaps</span>
-<span class="doccomment">/// - [termbg](https://crates.io/crates/termbg) for detecting background color</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [CLICOLOR]: https://bixense.com/clicolors/</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clicolor</span>() -&gt; <span class="ident">bool</span> {
-    <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">std::env::var_os</span>(<span class="string">&quot;CLICOLOR&quot;</span>);
-    <span class="ident">value</span>
-        .<span class="ident">as_deref</span>()
-        .<span class="ident">unwrap_or_else</span>(|| <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;1&quot;</span>))
-        != <span class="string">&quot;0&quot;</span>
+<span class="doccomment">/// Check [CLICOLOR] status
+///
+/// ANSI colors are supported and should be used when the program isn&#39;t piped.
+///
+/// See also:
+/// - [terminfo](https://crates.io/crates/terminfo) or [term](https://crates.io/crates/term) for
+///   checking termcaps
+/// - [termbg](https://crates.io/crates/termbg) for detecting background color
+///
+/// [CLICOLOR]: https://bixense.com/clicolors/
+</span><span class="kw">pub fn </span>clicolor() -&gt; bool {
+    <span class="kw">let </span>value = std::env::var_os(<span class="string">&quot;CLICOLOR&quot;</span>);
+    value
+        .as_deref()
+        .unwrap_or_else(|| std::ffi::OsStr::new(<span class="string">&quot;1&quot;</span>))
+        != <span class="string">&quot;0&quot;
+</span>}
+
+<span class="doccomment">/// Check [CLICOLOR_FORCE] status
+///
+/// ANSI colors should be enabled no matter what.
+///
+/// [CLICOLOR_FORCE]: https://bixense.com/clicolors/
+</span><span class="kw">pub fn </span>clicolor_force() -&gt; bool {
+    <span class="kw">let </span>value = std::env::var_os(<span class="string">&quot;CLICOLOR_FORCE&quot;</span>);
+    value
+        .as_deref()
+        .unwrap_or_else(|| std::ffi::OsStr::new(<span class="string">&quot;0&quot;</span>))
+        != <span class="string">&quot;0&quot;
+</span>}
+
+<span class="doccomment">/// Check [NO_COLOR] status
+///
+/// User-level configuration files and per-instance command-line arguments should override
+/// [NO_COLOR]. A user should be able to export `$NO_COLOR` in their shell configuration file as a
+/// default, but configure a specific program in its configuration file to specifically enable
+/// color.
+///
+/// [NO_COLOR]: https://no-color.org/
+</span><span class="kw">pub fn </span>no_color() -&gt; bool {
+    std::env::var_os(<span class="string">&quot;NO_COLOR&quot;</span>).is_some()
 }
 
-<span class="doccomment">/// Check [CLICOLOR_FORCE] status</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ANSI colors should be enabled no matter what.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [CLICOLOR_FORCE]: https://bixense.com/clicolors/</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clicolor_force</span>() -&gt; <span class="ident">bool</span> {
-    <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">std::env::var_os</span>(<span class="string">&quot;CLICOLOR_FORCE&quot;</span>);
-    <span class="ident">value</span>
-        .<span class="ident">as_deref</span>()
-        .<span class="ident">unwrap_or_else</span>(|| <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;0&quot;</span>))
-        != <span class="string">&quot;0&quot;</span>
-}
-
-<span class="doccomment">/// Check [NO_COLOR] status</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// User-level configuration files and per-instance command-line arguments should override</span>
-<span class="doccomment">/// [NO_COLOR]. A user should be able to export `$NO_COLOR` in their shell configuration file as a</span>
-<span class="doccomment">/// default, but configure a specific program in its configuration file to specifically enable</span>
-<span class="doccomment">/// color.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [NO_COLOR]: https://no-color.org/</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">no_color</span>() -&gt; <span class="ident">bool</span> {
-    <span class="ident">std::env::var_os</span>(<span class="string">&quot;NO_COLOR&quot;</span>).<span class="ident">is_some</span>()
-}
-
-<span class="doccomment">/// Check `TERM` for color support</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">term_supports_color</span>() -&gt; <span class="ident">bool</span> {
-    <span class="kw">match</span> <span class="ident">std::env::var_os</span>(<span class="string">&quot;TERM&quot;</span>) {
-        <span class="comment">// If TERM isn&#39;t set, then we are in a weird environment that</span>
-        <span class="comment">// probably doesn&#39;t support colors.</span>
-        <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="bool-val">false</span>,
-        <span class="prelude-val">Some</span>(<span class="ident">k</span>) =&gt; {
-            <span class="kw">if</span> <span class="ident">k</span> == <span class="string">&quot;dumb&quot;</span> {
-                <span class="kw">return</span> <span class="bool-val">false</span>;
+<span class="doccomment">/// Check `TERM` for color support
+</span><span class="attribute">#[cfg(not(windows))]
+</span><span class="kw">pub fn </span>term_supports_color() -&gt; bool {
+    <span class="kw">match </span>std::env::var_os(<span class="string">&quot;TERM&quot;</span>) {
+        <span class="comment">// If TERM isn&#39;t set, then we are in a weird environment that
+        // probably doesn&#39;t support colors.
+        </span><span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="bool-val">false</span>,
+        <span class="prelude-val">Some</span>(k) =&gt; {
+            <span class="kw">if </span>k == <span class="string">&quot;dumb&quot; </span>{
+                <span class="kw">return </span><span class="bool-val">false</span>;
             }
         }
     }
-    <span class="bool-val">true</span>
-}
+    <span class="bool-val">true
+</span>}
 
-<span class="doccomment">/// Check `TERM` for color support</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">term_supports_color</span>() -&gt; <span class="ident">bool</span> {
-    <span class="comment">// On Windows, if TERM isn&#39;t set, then we shouldn&#39;t automatically</span>
-    <span class="comment">// assume that colors aren&#39;t allowed. This is unlike Unix environments</span>
-    <span class="comment">// where TERM is more rigorously set.</span>
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">k</span>) = <span class="ident">std::env::var_os</span>(<span class="string">&quot;TERM&quot;</span>) {
-        <span class="kw">if</span> <span class="ident">k</span> == <span class="string">&quot;dumb&quot;</span> {
-            <span class="kw">return</span> <span class="bool-val">false</span>;
+<span class="doccomment">/// Check `TERM` for color support
+</span><span class="attribute">#[cfg(windows)]
+</span><span class="kw">pub fn </span>term_supports_color() -&gt; bool {
+    <span class="comment">// On Windows, if TERM isn&#39;t set, then we shouldn&#39;t automatically
+    // assume that colors aren&#39;t allowed. This is unlike Unix environments
+    // where TERM is more rigorously set.
+    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(k) = std::env::var_os(<span class="string">&quot;TERM&quot;</span>) {
+        <span class="kw">if </span>k == <span class="string">&quot;dumb&quot; </span>{
+            <span class="kw">return </span><span class="bool-val">false</span>;
         }
     }
-    <span class="bool-val">true</span>
+    <span class="bool-val">true
+</span>}
+
+<span class="doccomment">/// Check `TERM` for ANSI color support
+</span><span class="attribute">#[cfg(not(windows))]
+</span><span class="kw">pub fn </span>term_supports_ansi_color() -&gt; bool {
+    term_supports_color()
 }
 
-<span class="doccomment">/// Check `TERM` for ANSI color support</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">term_supports_ansi_color</span>() -&gt; <span class="ident">bool</span> {
-    <span class="ident">term_supports_color</span>()
-}
-
-<span class="doccomment">/// Check `TERM` for ANSI color support</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">term_supports_ansi_color</span>() -&gt; <span class="ident">bool</span> {
-    <span class="kw">match</span> <span class="ident">std::env::var_os</span>(<span class="string">&quot;TERM&quot;</span>) {
-        <span class="comment">// If TERM isn&#39;t set, then we are in a weird environment that</span>
-        <span class="comment">// probably doesn&#39;t support ansi.</span>
-        <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="bool-val">false</span>,
-        <span class="prelude-val">Some</span>(<span class="ident">k</span>) =&gt; {
-            <span class="comment">// cygwin doesn&#39;t seem to support ANSI escape sequences</span>
-            <span class="comment">// and instead has its own variety. However, the Windows</span>
-            <span class="comment">// console API may be available.</span>
-            <span class="kw">if</span> <span class="ident">k</span> == <span class="string">&quot;dumb&quot;</span> || <span class="ident">k</span> == <span class="string">&quot;cygwin&quot;</span> {
-                <span class="kw">return</span> <span class="bool-val">false</span>;
+<span class="doccomment">/// Check `TERM` for ANSI color support
+</span><span class="attribute">#[cfg(windows)]
+</span><span class="kw">pub fn </span>term_supports_ansi_color() -&gt; bool {
+    <span class="kw">match </span>std::env::var_os(<span class="string">&quot;TERM&quot;</span>) {
+        <span class="comment">// If TERM isn&#39;t set, then we are in a weird environment that
+        // probably doesn&#39;t support ansi.
+        </span><span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="bool-val">false</span>,
+        <span class="prelude-val">Some</span>(k) =&gt; {
+            <span class="comment">// cygwin doesn&#39;t seem to support ANSI escape sequences
+            // and instead has its own variety. However, the Windows
+            // console API may be available.
+            </span><span class="kw">if </span>k == <span class="string">&quot;dumb&quot; </span>|| k == <span class="string">&quot;cygwin&quot; </span>{
+                <span class="kw">return </span><span class="bool-val">false</span>;
             }
         }
     }
-    <span class="bool-val">true</span>
-}
+    <span class="bool-val">true
+</span>}
 
-<span class="doccomment">/// Check [COLORTERM] for truecolor support</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [COLORTERM]: https://github.com/termstandard/colors</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">truecolor</span>() -&gt; <span class="ident">bool</span> {
-    <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">std::env::var_os</span>(<span class="string">&quot;COLORTERM &quot;</span>);
-    <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">value</span>.<span class="ident">as_deref</span>().<span class="ident">unwrap_or_default</span>();
-    <span class="ident">value</span> == <span class="string">&quot;truecolor&quot;</span> || <span class="ident">value</span> == <span class="string">&quot;24bit&quot;</span>
-}
+<span class="doccomment">/// Check [COLORTERM] for truecolor support
+///
+/// [COLORTERM]: https://github.com/termstandard/colors
+</span><span class="kw">pub fn </span>truecolor() -&gt; bool {
+    <span class="kw">let </span>value = std::env::var_os(<span class="string">&quot;COLORTERM &quot;</span>);
+    <span class="kw">let </span>value = value.as_deref().unwrap_or_default();
+    value == <span class="string">&quot;truecolor&quot; </span>|| value == <span class="string">&quot;24bit&quot;
+</span>}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="concolor_query" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="concolor_query" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

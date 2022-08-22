@@ -388,395 +388,395 @@
 <span id="388">388</span>
 <span id="389">389</span>
 <span id="390">390</span>
-</pre><pre class="rust"><code><span class="doccomment">//! This module contains the core algorithms.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! This module contains the core algorithms.
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keys</span>::{<span class="ident">match_keys</span>, <span class="ident">KeyMatch</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::TrieKey</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::TrieNode</span>;
-<span class="kw">use</span> <span class="ident">std::borrow::Borrow</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::keys::{match_keys, KeyMatch};
+<span class="kw">use </span><span class="kw">crate</span>::TrieKey;
+<span class="kw">use </span><span class="kw">crate</span>::TrieNode;
+<span class="kw">use </span>std::borrow::Borrow;
 
-<span class="kw">use</span> <span class="ident">nibble_vec::Nibblet</span>;
+<span class="kw">use </span>nibble_vec::Nibblet;
 
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::DescendantResult</span>::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="self">self</span>::DescendantResult::<span class="kw-2">*</span>;
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
+<span class="kw">impl</span>&lt;K, V&gt; TrieNode&lt;K, V&gt;
+<span class="kw">where
+    </span>K: TrieKey,
 {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nv</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;&gt; {
-        <span class="ident">iterative_get</span>(<span class="self">self</span>, <span class="ident">nv</span>)
+    <span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, nv: <span class="kw-2">&amp;</span>Nibblet) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>TrieNode&lt;K, V&gt;&gt; {
+        iterative_get(<span class="self">self</span>, nv)
     }
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">nv</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;&gt; {
-        <span class="ident">iterative_get_mut</span>(<span class="self">self</span>, <span class="ident">nv</span>)
+    <span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>get_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>, nv: <span class="kw-2">&amp;</span>Nibblet) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>TrieNode&lt;K, V&gt;&gt; {
+        iterative_get_mut(<span class="self">self</span>, nv)
     }
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>, <span class="ident">value</span>: <span class="ident">V</span>, <span class="ident">nv</span>: <span class="ident">Nibblet</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">V</span>&gt; {
-        <span class="ident">iterative_insert</span>(<span class="self">self</span>, <span class="ident">key</span>, <span class="ident">value</span>, <span class="ident">nv</span>)
+    <span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>insert(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: K, value: V, nv: Nibblet) -&gt; <span class="prelude-ty">Option</span>&lt;V&gt; {
+        iterative_insert(<span class="self">self</span>, key, value, nv)
     }
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remove</span>&lt;<span class="ident">Q</span>: <span class="question-mark">?</span><span class="ident">Sized</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">V</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">TrieKey</span>,
+    <span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>remove&lt;Q: <span class="question-mark">?</span>Sized&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="prelude-ty">Option</span>&lt;V&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: TrieKey,
     {
-        <span class="ident">recursive_remove</span>(<span class="self">self</span>, <span class="ident">key</span>)
+        recursive_remove(<span class="self">self</span>, key)
     }
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_ancestor</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nv</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span><span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">usize</span>)&gt; {
-        <span class="ident">get_ancestor</span>(<span class="self">self</span>, <span class="ident">nv</span>)
+    <span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>get_ancestor(<span class="kw-2">&amp;</span><span class="self">self</span>, nv: <span class="kw-2">&amp;</span>Nibblet) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>TrieNode&lt;K, V&gt;, usize)&gt; {
+        get_ancestor(<span class="self">self</span>, nv)
     }
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_raw_ancestor</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">nv</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>) -&gt; (<span class="kw-2">&amp;</span><span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">usize</span>) {
-        <span class="ident">get_raw_ancestor</span>(<span class="self">self</span>, <span class="ident">nv</span>)
+    <span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>get_raw_ancestor(<span class="kw-2">&amp;</span><span class="self">self</span>, nv: <span class="kw-2">&amp;</span>Nibblet) -&gt; (<span class="kw-2">&amp;</span>TrieNode&lt;K, V&gt;, usize) {
+        get_raw_ancestor(<span class="self">self</span>, nv)
     }
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_raw_descendant</span>&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">nv</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">DescendantResult</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;&gt; {
-        <span class="ident">get_raw_descendant</span>(<span class="self">self</span>, <span class="ident">nv</span>)
+    <span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>get_raw_descendant&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, nv: <span class="kw-2">&amp;</span>Nibblet) -&gt; <span class="prelude-ty">Option</span>&lt;DescendantResult&lt;<span class="lifetime">&#39;a</span>, K, V&gt;&gt; {
+        get_raw_descendant(<span class="self">self</span>, nv)
     }
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">get_func</span> {
+<span class="macro">macro_rules! </span>get_func {
     (
-        <span class="ident">name</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>,
-        <span class="ident">trie_type</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trie_type</span>:<span class="ident">ty</span>,
-        <span class="ident">mutability</span>: $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">mut_</span>:<span class="ident">tt</span>)*
+        name: <span class="macro-nonterminal">$name</span>:ident,
+        trie_type: <span class="macro-nonterminal">$trie_type</span>:ty,
+        mutability: $(<span class="macro-nonterminal">$mut_</span>:tt)*
     ) =&gt; {<span class="macro">id!</span>{
-        <span class="attribute">#[<span class="ident">inline</span>]</span>
-        <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;(<span class="ident">trie</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trie_type</span>, <span class="ident">nv</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">trie_type</span>&gt; {
-            <span class="kw">if</span> <span class="ident">nv</span>.<span class="ident">len</span>() == <span class="number">0</span> {
-                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">trie</span>);
+        <span class="attribute">#[inline]
+        </span><span class="kw">fn </span><span class="macro-nonterminal">$name</span>&lt;<span class="lifetime">&#39;a</span>, K, V&gt;(trie: <span class="macro-nonterminal">$trie_type</span>, nv: <span class="kw-2">&amp;</span>Nibblet) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="macro-nonterminal">$trie_type</span>&gt; {
+            <span class="kw">if </span>nv.len() == <span class="number">0 </span>{
+                <span class="kw">return </span><span class="prelude-val">Some</span>(trie);
             }
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev</span> = <span class="ident">trie</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">depth</span> = <span class="number">0</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>prev = trie;
+            <span class="kw">let </span><span class="kw-2">mut </span>depth = <span class="number">0</span>;
 
-            <span class="kw">loop</span> {
-                <span class="kw">let</span> <span class="ident">bucket</span> = <span class="ident">nv</span>.<span class="ident">get</span>(<span class="ident">depth</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-                <span class="kw">let</span> <span class="ident">current</span> = <span class="ident">prev</span>;
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">mut_</span>)* <span class="ident">child</span>) = <span class="ident">current</span>.<span class="ident">children</span>[<span class="ident">bucket</span>] {
-                    <span class="kw">match</span> <span class="ident">match_keys</span>(<span class="ident">depth</span>, <span class="ident">nv</span>, <span class="kw-2">&amp;</span><span class="ident">child</span>.<span class="ident">key</span>) {
-                        <span class="ident">KeyMatch::Full</span> =&gt; {
-                            <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">child</span>);
+            <span class="kw">loop </span>{
+                <span class="kw">let </span>bucket = nv.get(depth) <span class="kw">as </span>usize;
+                <span class="kw">let </span>current = prev;
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>$(<span class="macro-nonterminal">$mut_</span>)* child) = current.children[bucket] {
+                    <span class="kw">match </span>match_keys(depth, nv, <span class="kw-2">&amp;</span>child.key) {
+                        KeyMatch::Full =&gt; {
+                            <span class="kw">return </span><span class="prelude-val">Some</span>(child);
                         }
-                        <span class="ident">KeyMatch::SecondPrefix</span> =&gt; {
-                            <span class="ident">depth</span> += <span class="ident">child</span>.<span class="ident">key</span>.<span class="ident">len</span>();
-                            <span class="ident">prev</span> = <span class="ident">child</span>;
+                        KeyMatch::SecondPrefix =&gt; {
+                            depth += child.key.len();
+                            prev = child;
                         }
-                        <span class="kw">_</span> =&gt; {
-                            <span class="kw">return</span> <span class="prelude-val">None</span>;
+                        <span class="kw">_ </span>=&gt; {
+                            <span class="kw">return </span><span class="prelude-val">None</span>;
                         }
                     }
-                } <span class="kw">else</span> {
-                    <span class="kw">return</span> <span class="prelude-val">None</span>;
+                } <span class="kw">else </span>{
+                    <span class="kw">return </span><span class="prelude-val">None</span>;
                 }
             }
         }
     }}
 }
 
-<span class="macro">get_func!</span>(<span class="ident">name</span>: <span class="ident">iterative_get</span>, <span class="ident">trie_type</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">mutability</span>: );
-<span class="macro">get_func!</span>(<span class="ident">name</span>: <span class="ident">iterative_get_mut</span>, <span class="ident">trie_type</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">mutability</span>: <span class="kw-2">mut</span>);
+<span class="macro">get_func!</span>(name: iterative_get, trie_type: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;, mutability: );
+<span class="macro">get_func!</span>(name: iterative_get_mut, trie_type: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>TrieNode&lt;K, V&gt;, mutability: <span class="kw-2">mut</span>);
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">fn</span> <span class="ident">iterative_insert</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;(<span class="ident">trie</span>: <span class="kw-2">&amp;mut</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">key</span>: <span class="ident">K</span>, <span class="ident">value</span>: <span class="ident">V</span>, <span class="kw-2">mut</span> <span class="ident">nv</span>: <span class="ident">Nibblet</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">V</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
+<span class="attribute">#[inline]
+</span><span class="kw">fn </span>iterative_insert&lt;K, V&gt;(trie: <span class="kw-2">&amp;mut </span>TrieNode&lt;K, V&gt;, key: K, value: V, <span class="kw-2">mut </span>nv: Nibblet) -&gt; <span class="prelude-ty">Option</span>&lt;V&gt;
+<span class="kw">where
+    </span>K: TrieKey,
 {
-    <span class="kw">if</span> <span class="ident">nv</span>.<span class="ident">len</span>() == <span class="number">0</span> {
-        <span class="kw">return</span> <span class="ident">trie</span>.<span class="ident">replace_value</span>(<span class="ident">key</span>, <span class="ident">value</span>);
+    <span class="kw">if </span>nv.len() == <span class="number">0 </span>{
+        <span class="kw">return </span>trie.replace_value(key, value);
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev</span> = <span class="ident">trie</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">depth</span> = <span class="number">0</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>prev = trie;
+    <span class="kw">let </span><span class="kw-2">mut </span>depth = <span class="number">0</span>;
 
-    <span class="kw">loop</span> {
-        <span class="kw">let</span> <span class="ident">bucket</span> = <span class="ident">nv</span>.<span class="ident">get</span>(<span class="ident">depth</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-        <span class="kw">let</span> <span class="ident">current</span> = <span class="ident">prev</span>;
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">child</span>) = <span class="ident">current</span>.<span class="ident">children</span>[<span class="ident">bucket</span>] {
-            <span class="kw">match</span> <span class="ident">match_keys</span>(<span class="ident">depth</span>, <span class="kw-2">&amp;</span><span class="ident">nv</span>, <span class="kw-2">&amp;</span><span class="ident">child</span>.<span class="ident">key</span>) {
-                <span class="ident">KeyMatch::Full</span> =&gt; {
-                    <span class="kw">return</span> <span class="ident">child</span>.<span class="ident">replace_value</span>(<span class="ident">key</span>, <span class="ident">value</span>);
+    <span class="kw">loop </span>{
+        <span class="kw">let </span>bucket = nv.get(depth) <span class="kw">as </span>usize;
+        <span class="kw">let </span>current = prev;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref mut </span>child) = current.children[bucket] {
+            <span class="kw">match </span>match_keys(depth, <span class="kw-2">&amp;</span>nv, <span class="kw-2">&amp;</span>child.key) {
+                KeyMatch::Full =&gt; {
+                    <span class="kw">return </span>child.replace_value(key, value);
                 }
-                <span class="ident">KeyMatch::Partial</span>(<span class="ident">idx</span>) =&gt; {
-                    <span class="comment">// Split the existing child.</span>
-                    <span class="ident">child</span>.<span class="ident">split</span>(<span class="ident">idx</span>);
+                KeyMatch::Partial(idx) =&gt; {
+                    <span class="comment">// Split the existing child.
+                    </span>child.split(idx);
 
-                    <span class="comment">// Insert the new key below the prefix node.</span>
-                    <span class="kw">let</span> <span class="ident">new_key</span> = <span class="ident">nv</span>.<span class="ident">split</span>(<span class="ident">depth</span> + <span class="ident">idx</span>);
-                    <span class="kw">let</span> <span class="ident">new_key_bucket</span> = <span class="ident">new_key</span>.<span class="ident">get</span>(<span class="number">0</span>) <span class="kw">as</span> <span class="ident">usize</span>;
+                    <span class="comment">// Insert the new key below the prefix node.
+                    </span><span class="kw">let </span>new_key = nv.split(depth + idx);
+                    <span class="kw">let </span>new_key_bucket = new_key.get(<span class="number">0</span>) <span class="kw">as </span>usize;
 
-                    <span class="ident">child</span>.<span class="ident">add_child</span>(
-                        <span class="ident">new_key_bucket</span>,
-                        <span class="ident">Box::new</span>(<span class="ident">TrieNode::with_key_value</span>(<span class="ident">new_key</span>, <span class="ident">key</span>, <span class="ident">value</span>)),
+                    child.add_child(
+                        new_key_bucket,
+                        Box::new(TrieNode::with_key_value(new_key, key, value)),
                     );
 
-                    <span class="kw">return</span> <span class="prelude-val">None</span>;
+                    <span class="kw">return </span><span class="prelude-val">None</span>;
                 }
-                <span class="ident">KeyMatch::FirstPrefix</span> =&gt; {
-                    <span class="ident">child</span>.<span class="ident">split</span>(<span class="ident">nv</span>.<span class="ident">len</span>() - <span class="ident">depth</span>);
-                    <span class="ident">child</span>.<span class="ident">add_key_value</span>(<span class="ident">key</span>, <span class="ident">value</span>);
-                    <span class="kw">return</span> <span class="prelude-val">None</span>;
+                KeyMatch::FirstPrefix =&gt; {
+                    child.split(nv.len() - depth);
+                    child.add_key_value(key, value);
+                    <span class="kw">return </span><span class="prelude-val">None</span>;
                 }
-                <span class="ident">KeyMatch::SecondPrefix</span> =&gt; {
-                    <span class="ident">depth</span> += <span class="ident">child</span>.<span class="ident">key</span>.<span class="ident">len</span>();
-                    <span class="ident">prev</span> = <span class="ident">child</span>;
+                KeyMatch::SecondPrefix =&gt; {
+                    depth += child.key.len();
+                    prev = child;
                 }
             }
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">node_key</span> = <span class="ident">nv</span>.<span class="ident">split</span>(<span class="ident">depth</span>);
-            <span class="ident">current</span>.<span class="ident">add_child</span>(
-                <span class="ident">bucket</span>,
-                <span class="ident">Box::new</span>(<span class="ident">TrieNode::with_key_value</span>(<span class="ident">node_key</span>, <span class="ident">key</span>, <span class="ident">value</span>)),
+        } <span class="kw">else </span>{
+            <span class="kw">let </span>node_key = nv.split(depth);
+            current.add_child(
+                bucket,
+                Box::new(TrieNode::with_key_value(node_key, key, value)),
             );
-            <span class="kw">return</span> <span class="prelude-val">None</span>;
+            <span class="kw">return </span><span class="prelude-val">None</span>;
         }
     }
 }
 
-<span class="comment">// TODO: clean this up and make it iterative.</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">fn</span> <span class="ident">recursive_remove</span>&lt;<span class="ident">K</span>, <span class="ident">Q</span>: <span class="question-mark">?</span><span class="ident">Sized</span>, <span class="ident">V</span>&gt;(<span class="ident">trie</span>: <span class="kw-2">&amp;mut</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">V</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
-    <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-    <span class="ident">Q</span>: <span class="ident">TrieKey</span>,
+<span class="comment">// TODO: clean this up and make it iterative.
+</span><span class="attribute">#[inline]
+</span><span class="kw">fn </span>recursive_remove&lt;K, Q: <span class="question-mark">?</span>Sized, V&gt;(trie: <span class="kw-2">&amp;mut </span>TrieNode&lt;K, V&gt;, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="prelude-ty">Option</span>&lt;V&gt;
+<span class="kw">where
+    </span>K: TrieKey,
+    K: Borrow&lt;Q&gt;,
+    Q: TrieKey,
 {
-    <span class="kw">let</span> <span class="ident">nv</span> = <span class="ident">key</span>.<span class="ident">encode</span>();
+    <span class="kw">let </span>nv = key.encode();
 
-    <span class="kw">if</span> <span class="ident">nv</span>.<span class="ident">len</span>() == <span class="number">0</span> {
-        <span class="kw">return</span> <span class="ident">trie</span>.<span class="ident">take_value</span>(<span class="ident">key</span>);
+    <span class="kw">if </span>nv.len() == <span class="number">0 </span>{
+        <span class="kw">return </span>trie.take_value(key);
     }
 
-    <span class="kw">let</span> <span class="ident">bucket</span> = <span class="ident">nv</span>.<span class="ident">get</span>(<span class="number">0</span>) <span class="kw">as</span> <span class="ident">usize</span>;
+    <span class="kw">let </span>bucket = nv.get(<span class="number">0</span>) <span class="kw">as </span>usize;
 
-    <span class="kw">let</span> <span class="ident">child</span> = <span class="ident">trie</span>.<span class="ident">take_child</span>(<span class="ident">bucket</span>);
+    <span class="kw">let </span>child = trie.take_child(bucket);
 
-    <span class="kw">match</span> <span class="ident">child</span> {
-        <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">child</span>) =&gt; {
-            <span class="kw">match</span> <span class="ident">match_keys</span>(<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="ident">nv</span>, <span class="kw-2">&amp;</span><span class="ident">child</span>.<span class="ident">key</span>) {
-                <span class="ident">KeyMatch::Full</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">result</span> = <span class="ident">child</span>.<span class="ident">take_value</span>(<span class="ident">key</span>);
-                    <span class="kw">if</span> <span class="ident">child</span>.<span class="ident">child_count</span> != <span class="number">0</span> {
-                        <span class="comment">// If removing this node&#39;s value has made it a value-less node with a</span>
-                        <span class="comment">// single child, then merge its child.</span>
-                        <span class="kw">let</span> <span class="ident">repl</span> = <span class="kw">if</span> <span class="ident">child</span>.<span class="ident">child_count</span> == <span class="number">1</span> {
-                            <span class="ident">get_merge_child</span>(<span class="kw-2">&amp;mut</span> <span class="ident">child</span>)
-                        } <span class="kw">else</span> {
-                            <span class="ident">child</span>
+    <span class="kw">match </span>child {
+        <span class="prelude-val">Some</span>(<span class="kw-2">mut </span>child) =&gt; {
+            <span class="kw">match </span>match_keys(<span class="number">0</span>, <span class="kw-2">&amp;</span>nv, <span class="kw-2">&amp;</span>child.key) {
+                KeyMatch::Full =&gt; {
+                    <span class="kw">let </span>result = child.take_value(key);
+                    <span class="kw">if </span>child.child_count != <span class="number">0 </span>{
+                        <span class="comment">// If removing this node&#39;s value has made it a value-less node with a
+                        // single child, then merge its child.
+                        </span><span class="kw">let </span>repl = <span class="kw">if </span>child.child_count == <span class="number">1 </span>{
+                            get_merge_child(<span class="kw-2">&amp;mut </span>child)
+                        } <span class="kw">else </span>{
+                            child
                         };
-                        <span class="ident">trie</span>.<span class="ident">add_child</span>(<span class="ident">bucket</span>, <span class="ident">repl</span>);
+                        trie.add_child(bucket, repl);
                     }
-                    <span class="ident">result</span>
+                    result
                 }
-                <span class="ident">KeyMatch::SecondPrefix</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">depth</span> = <span class="ident">child</span>.<span class="ident">key</span>.<span class="ident">len</span>();
-                    <span class="ident">rec_remove</span>(<span class="ident">trie</span>, <span class="ident">child</span>, <span class="ident">bucket</span>, <span class="ident">key</span>, <span class="ident">depth</span>, <span class="kw-2">&amp;</span><span class="ident">nv</span>)
+                KeyMatch::SecondPrefix =&gt; {
+                    <span class="kw">let </span>depth = child.key.len();
+                    rec_remove(trie, child, bucket, key, depth, <span class="kw-2">&amp;</span>nv)
                 }
-                <span class="ident">KeyMatch::FirstPrefix</span> | <span class="ident">KeyMatch::Partial</span>(<span class="kw">_</span>) =&gt; {
-                    <span class="ident">trie</span>.<span class="ident">add_child</span>(<span class="ident">bucket</span>, <span class="ident">child</span>);
-                    <span class="prelude-val">None</span>
-                }
+                KeyMatch::FirstPrefix | KeyMatch::Partial(<span class="kw">_</span>) =&gt; {
+                    trie.add_child(bucket, child);
+                    <span class="prelude-val">None
+                </span>}
             }
         }
-        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
+        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
     }
 }
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">fn</span> <span class="ident">get_merge_child</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;(<span class="ident">trie</span>: <span class="kw-2">&amp;mut</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;) -&gt; <span class="ident">Box</span>&lt;<span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
+<span class="attribute">#[inline]
+</span><span class="kw">fn </span>get_merge_child&lt;K, V&gt;(trie: <span class="kw-2">&amp;mut </span>TrieNode&lt;K, V&gt;) -&gt; Box&lt;TrieNode&lt;K, V&gt;&gt;
+<span class="kw">where
+    </span>K: TrieKey,
 {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">child</span> = <span class="ident">trie</span>.<span class="ident">take_only_child</span>();
+    <span class="kw">let </span><span class="kw-2">mut </span>child = trie.take_only_child();
 
-    <span class="comment">// Join the child&#39;s key onto the existing one.</span>
-    <span class="ident">child</span>.<span class="ident">key</span> = <span class="ident">trie</span>.<span class="ident">key</span>.<span class="ident">clone</span>().<span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="ident">child</span>.<span class="ident">key</span>);
+    <span class="comment">// Join the child&#39;s key onto the existing one.
+    </span>child.key = trie.key.clone().join(<span class="kw-2">&amp;</span>child.key);
 
-    <span class="ident">child</span>
+    child
 }
 
-<span class="comment">// Tail-recursive remove function used by `recursive_remove`.</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">fn</span> <span class="ident">rec_remove</span>&lt;<span class="ident">K</span>, <span class="ident">Q</span>: <span class="question-mark">?</span><span class="ident">Sized</span>, <span class="ident">V</span>&gt;(
-    <span class="ident">parent</span>: <span class="kw-2">&amp;mut</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;,
-    <span class="kw-2">mut</span> <span class="ident">middle</span>: <span class="ident">Box</span>&lt;<span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;&gt;,
-    <span class="ident">prev_bucket</span>: <span class="ident">usize</span>,
-    <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>,
-    <span class="ident">depth</span>: <span class="ident">usize</span>,
-    <span class="ident">nv</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>,
-) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">V</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
-    <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-    <span class="ident">Q</span>: <span class="ident">TrieKey</span>,
+<span class="comment">// Tail-recursive remove function used by `recursive_remove`.
+</span><span class="attribute">#[inline]
+</span><span class="kw">fn </span>rec_remove&lt;K, Q: <span class="question-mark">?</span>Sized, V&gt;(
+    parent: <span class="kw-2">&amp;mut </span>TrieNode&lt;K, V&gt;,
+    <span class="kw-2">mut </span>middle: Box&lt;TrieNode&lt;K, V&gt;&gt;,
+    prev_bucket: usize,
+    key: <span class="kw-2">&amp;</span>Q,
+    depth: usize,
+    nv: <span class="kw-2">&amp;</span>Nibblet,
+) -&gt; <span class="prelude-ty">Option</span>&lt;V&gt;
+<span class="kw">where
+    </span>K: TrieKey,
+    K: Borrow&lt;Q&gt;,
+    Q: TrieKey,
 {
-    <span class="kw">let</span> <span class="ident">bucket</span> = <span class="ident">nv</span>.<span class="ident">get</span>(<span class="ident">depth</span>) <span class="kw">as</span> <span class="ident">usize</span>;
+    <span class="kw">let </span>bucket = nv.get(depth) <span class="kw">as </span>usize;
 
-    <span class="kw">let</span> <span class="ident">child</span> = <span class="ident">middle</span>.<span class="ident">take_child</span>(<span class="ident">bucket</span>);
-    <span class="ident">parent</span>.<span class="ident">add_child</span>(<span class="ident">prev_bucket</span>, <span class="ident">middle</span>);
+    <span class="kw">let </span>child = middle.take_child(bucket);
+    parent.add_child(prev_bucket, middle);
 
-    <span class="kw">match</span> <span class="ident">child</span> {
-        <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">child</span>) =&gt; {
-            <span class="kw">let</span> <span class="ident">middle</span> = <span class="ident">parent</span>.<span class="ident">children</span>[<span class="ident">prev_bucket</span>].<span class="ident">as_mut</span>().<span class="ident">unwrap</span>();
-            <span class="kw">match</span> <span class="ident">match_keys</span>(<span class="ident">depth</span>, <span class="ident">nv</span>, <span class="kw-2">&amp;</span><span class="ident">child</span>.<span class="ident">key</span>) {
-                <span class="ident">KeyMatch::Full</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">result</span> = <span class="ident">child</span>.<span class="ident">take_value</span>(<span class="ident">key</span>);
+    <span class="kw">match </span>child {
+        <span class="prelude-val">Some</span>(<span class="kw-2">mut </span>child) =&gt; {
+            <span class="kw">let </span>middle = parent.children[prev_bucket].as_mut().unwrap();
+            <span class="kw">match </span>match_keys(depth, nv, <span class="kw-2">&amp;</span>child.key) {
+                KeyMatch::Full =&gt; {
+                    <span class="kw">let </span>result = child.take_value(key);
 
-                    <span class="comment">// If this node has children, keep it.</span>
-                    <span class="kw">if</span> <span class="ident">child</span>.<span class="ident">child_count</span> != <span class="number">0</span> {
-                        <span class="comment">// If removing this node&#39;s value has made it a value-less node with a</span>
-                        <span class="comment">// single child, then merge its child.</span>
-                        <span class="kw">let</span> <span class="ident">repl</span> = <span class="kw">if</span> <span class="ident">child</span>.<span class="ident">child_count</span> == <span class="number">1</span> {
-                            <span class="ident">get_merge_child</span>(<span class="kw-2">&amp;mut</span> <span class="kw-2">*</span><span class="ident">child</span>)
-                        } <span class="kw">else</span> {
-                            <span class="ident">child</span>
+                    <span class="comment">// If this node has children, keep it.
+                    </span><span class="kw">if </span>child.child_count != <span class="number">0 </span>{
+                        <span class="comment">// If removing this node&#39;s value has made it a value-less node with a
+                        // single child, then merge its child.
+                        </span><span class="kw">let </span>repl = <span class="kw">if </span>child.child_count == <span class="number">1 </span>{
+                            get_merge_child(<span class="kw-2">&amp;mut *</span>child)
+                        } <span class="kw">else </span>{
+                            child
                         };
-                        <span class="ident">middle</span>.<span class="ident">add_child</span>(<span class="ident">bucket</span>, <span class="ident">repl</span>);
+                        middle.add_child(bucket, repl);
                     }
-                    <span class="comment">// Otherwise, if the parent node now only has a single child, merge it.</span>
-                    <span class="kw">else</span> <span class="kw">if</span> <span class="ident">middle</span>.<span class="ident">child_count</span> == <span class="number">1</span> &amp;&amp; <span class="ident">middle</span>.<span class="ident">key_value</span>.<span class="ident">is_none</span>() {
-                        <span class="kw">let</span> <span class="ident">repl</span> = <span class="ident">get_merge_child</span>(<span class="ident">middle</span>);
-                        <span class="kw-2">*</span><span class="ident">middle</span> = <span class="ident">repl</span>;
+                    <span class="comment">// Otherwise, if the parent node now only has a single child, merge it.
+                    </span><span class="kw">else if </span>middle.child_count == <span class="number">1 </span>&amp;&amp; middle.key_value.is_none() {
+                        <span class="kw">let </span>repl = get_merge_child(middle);
+                        <span class="kw-2">*</span>middle = repl;
                     }
 
-                    <span class="ident">result</span>
+                    result
                 }
-                <span class="ident">KeyMatch::SecondPrefix</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">new_depth</span> = <span class="ident">depth</span> + <span class="ident">child</span>.<span class="ident">key</span>.<span class="ident">len</span>();
-                    <span class="ident">rec_remove</span>(<span class="ident">middle</span>, <span class="ident">child</span>, <span class="ident">bucket</span>, <span class="ident">key</span>, <span class="ident">new_depth</span>, <span class="ident">nv</span>)
+                KeyMatch::SecondPrefix =&gt; {
+                    <span class="kw">let </span>new_depth = depth + child.key.len();
+                    rec_remove(middle, child, bucket, key, new_depth, nv)
                 }
-                <span class="ident">KeyMatch::FirstPrefix</span> | <span class="ident">KeyMatch::Partial</span>(<span class="kw">_</span>) =&gt; {
-                    <span class="ident">middle</span>.<span class="ident">add_child</span>(<span class="ident">bucket</span>, <span class="ident">child</span>);
-                    <span class="prelude-val">None</span>
-                }
+                KeyMatch::FirstPrefix | KeyMatch::Partial(<span class="kw">_</span>) =&gt; {
+                    middle.add_child(bucket, child);
+                    <span class="prelude-val">None
+                </span>}
             }
         }
-        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
+        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
     }
 }
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">fn</span> <span class="ident">get_ancestor</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;(
-    <span class="ident">trie</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;,
-    <span class="ident">nv</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>,
-) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">usize</span>)&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
+<span class="attribute">#[inline]
+</span><span class="kw">fn </span>get_ancestor&lt;<span class="lifetime">&#39;a</span>, K, V&gt;(
+    trie: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;,
+    nv: <span class="kw-2">&amp;</span>Nibblet,
+) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;, usize)&gt;
+<span class="kw">where
+    </span>K: TrieKey,
 {
-    <span class="kw">if</span> <span class="ident">nv</span>.<span class="ident">len</span>() == <span class="number">0</span> {
-        <span class="kw">return</span> <span class="ident">trie</span>.<span class="ident">as_value_node</span>().<span class="ident">map</span>(|<span class="ident">node</span>| (<span class="ident">node</span>, <span class="number">0</span>));
+    <span class="kw">if </span>nv.len() == <span class="number">0 </span>{
+        <span class="kw">return </span>trie.as_value_node().map(|node| (node, <span class="number">0</span>));
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev</span> = <span class="ident">trie</span>;
-    <span class="comment">// The ancestor is such that all nodes upto and including `prev` have</span>
-    <span class="comment">// already been considered.</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ancestor</span> = <span class="ident">prev</span>.<span class="ident">as_value_node</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">depth</span> = <span class="number">0</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>prev = trie;
+    <span class="comment">// The ancestor is such that all nodes upto and including `prev` have
+    // already been considered.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>ancestor = prev.as_value_node();
+    <span class="kw">let </span><span class="kw-2">mut </span>depth = <span class="number">0</span>;
 
-    <span class="kw">loop</span> {
-        <span class="kw">let</span> <span class="ident">bucket</span> = <span class="ident">nv</span>.<span class="ident">get</span>(<span class="ident">depth</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-        <span class="kw">let</span> <span class="ident">current</span> = <span class="ident">prev</span>;
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">child</span>) = <span class="ident">current</span>.<span class="ident">children</span>[<span class="ident">bucket</span>] {
-            <span class="kw">match</span> <span class="ident">match_keys</span>(<span class="ident">depth</span>, <span class="ident">nv</span>, <span class="kw-2">&amp;</span><span class="ident">child</span>.<span class="ident">key</span>) {
-                <span class="ident">KeyMatch::Full</span> =&gt; {
-                    <span class="kw">return</span> <span class="ident">child</span>
-                        .<span class="ident">as_value_node</span>()
-                        .<span class="ident">map</span>(|<span class="ident">node</span>| (<span class="ident">node</span>, <span class="ident">depth</span> + <span class="ident">node</span>.<span class="ident">key</span>.<span class="ident">len</span>()))
-                        .<span class="ident">or_else</span>(|| <span class="ident">ancestor</span>.<span class="ident">map</span>(|<span class="ident">anc</span>| (<span class="ident">anc</span>, <span class="ident">depth</span>)));
+    <span class="kw">loop </span>{
+        <span class="kw">let </span>bucket = nv.get(depth) <span class="kw">as </span>usize;
+        <span class="kw">let </span>current = prev;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>child) = current.children[bucket] {
+            <span class="kw">match </span>match_keys(depth, nv, <span class="kw-2">&amp;</span>child.key) {
+                KeyMatch::Full =&gt; {
+                    <span class="kw">return </span>child
+                        .as_value_node()
+                        .map(|node| (node, depth + node.key.len()))
+                        .or_else(|| ancestor.map(|anc| (anc, depth)));
                 }
-                <span class="ident">KeyMatch::FirstPrefix</span> | <span class="ident">KeyMatch::Partial</span>(<span class="kw">_</span>) =&gt; {
-                    <span class="kw">return</span> <span class="ident">ancestor</span>.<span class="ident">map</span>(|<span class="ident">anc</span>| (<span class="ident">anc</span>, <span class="ident">depth</span>));
+                KeyMatch::FirstPrefix | KeyMatch::Partial(<span class="kw">_</span>) =&gt; {
+                    <span class="kw">return </span>ancestor.map(|anc| (anc, depth));
                 }
-                <span class="ident">KeyMatch::SecondPrefix</span> =&gt; {
-                    <span class="ident">depth</span> += <span class="ident">child</span>.<span class="ident">key</span>.<span class="ident">len</span>();
-                    <span class="ident">ancestor</span> = <span class="ident">child</span>.<span class="ident">as_value_node</span>().<span class="ident">or</span>(<span class="ident">ancestor</span>);
-                    <span class="ident">prev</span> = <span class="ident">child</span>;
+                KeyMatch::SecondPrefix =&gt; {
+                    depth += child.key.len();
+                    ancestor = child.as_value_node().or(ancestor);
+                    prev = child;
                 }
             }
-        } <span class="kw">else</span> {
-            <span class="kw">return</span> <span class="ident">ancestor</span>.<span class="ident">map</span>(|<span class="ident">anc</span>| (<span class="ident">anc</span>, <span class="ident">depth</span>));
+        } <span class="kw">else </span>{
+            <span class="kw">return </span>ancestor.map(|anc| (anc, depth));
         }
     }
 }
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">fn</span> <span class="ident">get_raw_ancestor</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;(<span class="ident">trie</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">nv</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>) -&gt; (<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">usize</span>)
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
+<span class="attribute">#[inline]
+</span><span class="kw">fn </span>get_raw_ancestor&lt;<span class="lifetime">&#39;a</span>, K, V&gt;(trie: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;, nv: <span class="kw-2">&amp;</span>Nibblet) -&gt; (<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;, usize)
+<span class="kw">where
+    </span>K: TrieKey,
 {
-    <span class="kw">if</span> <span class="ident">nv</span>.<span class="ident">len</span>() == <span class="number">0</span> {
-        <span class="kw">return</span> (<span class="ident">trie</span>, <span class="number">0</span>);
+    <span class="kw">if </span>nv.len() == <span class="number">0 </span>{
+        <span class="kw">return </span>(trie, <span class="number">0</span>);
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev</span> = <span class="ident">trie</span>;
-    <span class="comment">// The ancestor is such that all nodes upto and including `prev` have</span>
-    <span class="comment">// already been considered.</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ancestor</span> = <span class="ident">prev</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">depth</span> = <span class="number">0</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>prev = trie;
+    <span class="comment">// The ancestor is such that all nodes upto and including `prev` have
+    // already been considered.
+    </span><span class="kw">let </span><span class="kw-2">mut </span>ancestor = prev;
+    <span class="kw">let </span><span class="kw-2">mut </span>depth = <span class="number">0</span>;
 
-    <span class="kw">loop</span> {
-        <span class="kw">let</span> <span class="ident">bucket</span> = <span class="ident">nv</span>.<span class="ident">get</span>(<span class="ident">depth</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-        <span class="kw">let</span> <span class="ident">current</span> = <span class="ident">prev</span>;
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">child</span>) = <span class="ident">current</span>.<span class="ident">children</span>[<span class="ident">bucket</span>] {
-            <span class="kw">match</span> <span class="ident">match_keys</span>(<span class="ident">depth</span>, <span class="ident">nv</span>, <span class="kw-2">&amp;</span><span class="ident">child</span>.<span class="ident">key</span>) {
-                <span class="ident">KeyMatch::Full</span> =&gt; {
-                    <span class="kw">return</span> (<span class="ident">child</span>, <span class="ident">depth</span> + <span class="ident">child</span>.<span class="ident">key</span>.<span class="ident">len</span>());
+    <span class="kw">loop </span>{
+        <span class="kw">let </span>bucket = nv.get(depth) <span class="kw">as </span>usize;
+        <span class="kw">let </span>current = prev;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>child) = current.children[bucket] {
+            <span class="kw">match </span>match_keys(depth, nv, <span class="kw-2">&amp;</span>child.key) {
+                KeyMatch::Full =&gt; {
+                    <span class="kw">return </span>(child, depth + child.key.len());
                 }
-                <span class="ident">KeyMatch::FirstPrefix</span> | <span class="ident">KeyMatch::Partial</span>(<span class="kw">_</span>) =&gt; {
-                    <span class="kw">return</span> (<span class="ident">ancestor</span>, <span class="ident">depth</span>);
+                KeyMatch::FirstPrefix | KeyMatch::Partial(<span class="kw">_</span>) =&gt; {
+                    <span class="kw">return </span>(ancestor, depth);
                 }
-                <span class="ident">KeyMatch::SecondPrefix</span> =&gt; {
-                    <span class="ident">depth</span> += <span class="ident">child</span>.<span class="ident">key</span>.<span class="ident">len</span>();
-                    <span class="ident">ancestor</span> = <span class="ident">child</span>;
-                    <span class="ident">prev</span> = <span class="ident">child</span>;
+                KeyMatch::SecondPrefix =&gt; {
+                    depth += child.key.len();
+                    ancestor = child;
+                    prev = child;
                 }
             }
-        } <span class="kw">else</span> {
-            <span class="kw">return</span> (<span class="ident">ancestor</span>, <span class="ident">depth</span>);
+        } <span class="kw">else </span>{
+            <span class="kw">return </span>(ancestor, depth);
         }
     }
 }
 
-<span class="comment">// Type used to propogate subtrie construction instructions to the top-level `get_raw_descendant`</span>
-<span class="comment">// method.</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">DescendantResult</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>&gt; {
-    <span class="ident">NoModification</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;),
-    <span class="ident">ExtendKey</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Nibblet</span>),
+<span class="comment">// Type used to propogate subtrie construction instructions to the top-level `get_raw_descendant`
+// method.
+</span><span class="kw">pub enum </span>DescendantResult&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a</span>, V: <span class="lifetime">&#39;a</span>&gt; {
+    NoModification(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;),
+    ExtendKey(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;, usize, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Nibblet),
 }
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">fn</span> <span class="ident">get_raw_descendant</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;(
-    <span class="ident">trie</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;,
-    <span class="ident">nv</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>,
-) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">DescendantResult</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;&gt; {
-    <span class="kw">if</span> <span class="ident">nv</span>.<span class="ident">len</span>() == <span class="number">0</span> {
-        <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">NoModification</span>(<span class="ident">trie</span>));
+<span class="attribute">#[inline]
+</span><span class="kw">fn </span>get_raw_descendant&lt;<span class="lifetime">&#39;a</span>, K, V&gt;(
+    trie: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;,
+    nv: <span class="kw-2">&amp;</span>Nibblet,
+) -&gt; <span class="prelude-ty">Option</span>&lt;DescendantResult&lt;<span class="lifetime">&#39;a</span>, K, V&gt;&gt; {
+    <span class="kw">if </span>nv.len() == <span class="number">0 </span>{
+        <span class="kw">return </span><span class="prelude-val">Some</span>(NoModification(trie));
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev</span> = <span class="ident">trie</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">depth</span> = <span class="number">0</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>prev = trie;
+    <span class="kw">let </span><span class="kw-2">mut </span>depth = <span class="number">0</span>;
 
-    <span class="kw">loop</span> {
-        <span class="kw">let</span> <span class="ident">bucket</span> = <span class="ident">nv</span>.<span class="ident">get</span>(<span class="ident">depth</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-        <span class="kw">let</span> <span class="ident">current</span> = <span class="ident">prev</span>;
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">child</span>) = <span class="ident">current</span>.<span class="ident">children</span>[<span class="ident">bucket</span>] {
-            <span class="kw">match</span> <span class="ident">match_keys</span>(<span class="ident">depth</span>, <span class="ident">nv</span>, <span class="kw-2">&amp;</span><span class="ident">child</span>.<span class="ident">key</span>) {
-                <span class="ident">KeyMatch::Full</span> =&gt; {
-                    <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">NoModification</span>(<span class="ident">child</span>));
+    <span class="kw">loop </span>{
+        <span class="kw">let </span>bucket = nv.get(depth) <span class="kw">as </span>usize;
+        <span class="kw">let </span>current = prev;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">ref </span>child) = current.children[bucket] {
+            <span class="kw">match </span>match_keys(depth, nv, <span class="kw-2">&amp;</span>child.key) {
+                KeyMatch::Full =&gt; {
+                    <span class="kw">return </span><span class="prelude-val">Some</span>(NoModification(child));
                 }
-                <span class="ident">KeyMatch::FirstPrefix</span> =&gt; {
-                    <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">ExtendKey</span>(<span class="ident">child</span>, <span class="ident">depth</span>, <span class="kw-2">&amp;</span><span class="ident">child</span>.<span class="ident">key</span>));
+                KeyMatch::FirstPrefix =&gt; {
+                    <span class="kw">return </span><span class="prelude-val">Some</span>(ExtendKey(child, depth, <span class="kw-2">&amp;</span>child.key));
                 }
-                <span class="ident">KeyMatch::SecondPrefix</span> =&gt; {
-                    <span class="ident">depth</span> += <span class="ident">child</span>.<span class="ident">key</span>.<span class="ident">len</span>();
-                    <span class="ident">prev</span> = <span class="ident">child</span>;
+                KeyMatch::SecondPrefix =&gt; {
+                    depth += child.key.len();
+                    prev = child;
                 }
-                <span class="kw">_</span> =&gt; {
-                    <span class="kw">return</span> <span class="prelude-val">None</span>;
+                <span class="kw">_ </span>=&gt; {
+                    <span class="kw">return </span><span class="prelude-val">None</span>;
                 }
             }
-        } <span class="kw">else</span> {
-            <span class="kw">return</span> <span class="prelude-val">None</span>;
+        } <span class="kw">else </span>{
+            <span class="kw">return </span><span class="prelude-val">None</span>;
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="radix_trie" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="radix_trie" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

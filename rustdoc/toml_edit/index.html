@@ -5,39 +5,39 @@ relative order* or items.</p>
 <p>It is primarily tailored to the needs of <a href="https://github.com/killercup/cargo-edit/">cargo-edit</a>.</p>
 <p>If you also need the ease of a more traditional API, see the [<code>easy</code>] module.</p>
 <h2 id="example"><a href="#example">Example</a></h2>
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">toml_edit</span>::{<span class="ident">Document</span>, <span class="ident">value</span>};
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>toml_edit::{Document, value};
 
-<span class="kw">let</span> <span class="ident">toml</span> = <span class="string">r#&quot;
+<span class="kw">let </span>toml = <span class="string">r#&quot;
 &quot;hello&quot; = &#39;toml!&#39; # comment
 [&#39;a&#39;.b]
 &quot;#</span>;
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">doc</span> = <span class="ident">toml</span>.<span class="ident">parse</span>::&lt;<span class="ident">Document</span>&gt;().<span class="ident">expect</span>(<span class="string">&quot;invalid doc&quot;</span>);
-<span class="macro">assert_eq!</span>(<span class="ident">doc</span>.<span class="ident">to_string</span>(), <span class="ident">toml</span>);
-<span class="comment">// let&#39;s add a new key/value pair inside a.b: c = {d = &quot;hello&quot;}</span>
-<span class="ident">doc</span>[<span class="string">&quot;a&quot;</span>][<span class="string">&quot;b&quot;</span>][<span class="string">&quot;c&quot;</span>][<span class="string">&quot;d&quot;</span>] = <span class="ident">value</span>(<span class="string">&quot;hello&quot;</span>);
-<span class="comment">// autoformat inline table a.b.c: { d = &quot;hello&quot; }</span>
-<span class="ident">doc</span>[<span class="string">&quot;a&quot;</span>][<span class="string">&quot;b&quot;</span>][<span class="string">&quot;c&quot;</span>].<span class="ident">as_inline_table_mut</span>().<span class="ident">map</span>(|<span class="ident">t</span>| <span class="ident">t</span>.<span class="ident">fmt</span>());
-<span class="kw">let</span> <span class="ident">expected</span> = <span class="string">r#&quot;
+<span class="kw">let </span><span class="kw-2">mut </span>doc = toml.parse::&lt;Document&gt;().expect(<span class="string">&quot;invalid doc&quot;</span>);
+<span class="macro">assert_eq!</span>(doc.to_string(), toml);
+<span class="comment">// let&#39;s add a new key/value pair inside a.b: c = {d = &quot;hello&quot;}
+</span>doc[<span class="string">&quot;a&quot;</span>][<span class="string">&quot;b&quot;</span>][<span class="string">&quot;c&quot;</span>][<span class="string">&quot;d&quot;</span>] = value(<span class="string">&quot;hello&quot;</span>);
+<span class="comment">// autoformat inline table a.b.c: { d = &quot;hello&quot; }
+</span>doc[<span class="string">&quot;a&quot;</span>][<span class="string">&quot;b&quot;</span>][<span class="string">&quot;c&quot;</span>].as_inline_table_mut().map(|t| t.fmt());
+<span class="kw">let </span>expected = <span class="string">r#&quot;
 &quot;hello&quot; = &#39;toml!&#39; # comment
 [&#39;a&#39;.b]
 c = { d = &quot;hello&quot; }
 &quot;#</span>;
-<span class="macro">assert_eq!</span>(<span class="ident">doc</span>.<span class="ident">to_string</span>(), <span class="ident">expected</span>);</code></pre></div>
+<span class="macro">assert_eq!</span>(doc.to_string(), expected);</code></pre></div>
 <h3 id="controlling-formatting"><a href="#controlling-formatting">Controlling formatting</a></h3>
 <p>By default, values are created with default formatting</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">doc</span> = <span class="ident">toml_edit::Document::new</span>();
-<span class="ident">doc</span>[<span class="string">&quot;foo&quot;</span>] = <span class="ident">toml_edit::value</span>(<span class="string">&quot;bar&quot;</span>);
-<span class="kw">let</span> <span class="ident">expected</span> = <span class="string">r#&quot;foo = &quot;bar&quot;
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span><span class="kw-2">mut </span>doc = toml_edit::Document::new();
+doc[<span class="string">&quot;foo&quot;</span>] = toml_edit::value(<span class="string">&quot;bar&quot;</span>);
+<span class="kw">let </span>expected = <span class="string">r#&quot;foo = &quot;bar&quot;
 &quot;#</span>;
-<span class="macro">assert_eq!</span>(<span class="ident">doc</span>.<span class="ident">to_string</span>(), <span class="ident">expected</span>);</code></pre></div>
+<span class="macro">assert_eq!</span>(doc.to_string(), expected);</code></pre></div>
 <p>You can choose a custom TOML representation by parsing the value.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">doc</span> = <span class="ident">toml_edit::Document::new</span>();
-<span class="ident">doc</span>[<span class="string">&quot;foo&quot;</span>] = <span class="string">&quot;&#39;bar&#39;&quot;</span>.<span class="ident">parse</span>::&lt;<span class="ident">toml_edit::Item</span>&gt;().<span class="ident">unwrap</span>();
-<span class="kw">let</span> <span class="ident">expected</span> = <span class="string">r#&quot;foo = &#39;bar&#39;
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">let </span><span class="kw-2">mut </span>doc = toml_edit::Document::new();
+doc[<span class="string">&quot;foo&quot;</span>] = <span class="string">&quot;&#39;bar&#39;&quot;</span>.parse::&lt;toml_edit::Item&gt;().unwrap();
+<span class="kw">let </span>expected = <span class="string">r#&quot;foo = &#39;bar&#39;
 &quot;#</span>;
-<span class="macro">assert_eq!</span>(<span class="ident">doc</span>.<span class="ident">to_string</span>(), <span class="ident">expected</span>);</code></pre></div>
+<span class="macro">assert_eq!</span>(doc.to_string(), expected);</code></pre></div>
 <h3 id="limitations"><a href="#limitations">Limitations</a></h3>
 <p>Things it does not preserve:</p>
 <ul>
@@ -91,4 +91,4 @@ payload of the <code>Value::InlineTable</code> variant</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.IntoIter.html" title="toml_edit::IntoIter type">IntoIter</a></div><div class="item-right docblock-short"><p>An owned iterator type over <code>Table</code>’s key/value pairs.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.Iter.html" title="toml_edit::Iter type">Iter</a></div><div class="item-right docblock-short"><p>An iterator type over <code>Table</code>’s key/value pairs.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="type" href="type.IterMut.html" title="toml_edit::IterMut type">IterMut</a></div><div class="item-right docblock-short"><p>A mutable iterator type over <code>Table</code>’s key/value pairs.</p>
-</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="toml_edit" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="toml_edit" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

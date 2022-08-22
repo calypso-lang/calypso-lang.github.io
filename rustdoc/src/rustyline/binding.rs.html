@@ -256,263 +256,263 @@
 <span id="256">256</span>
 <span id="257">257</span>
 <span id="258">258</span>
-</pre><pre class="rust"><code><span class="doccomment">/// Custom event handlers</span>
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">Cmd</span>, <span class="ident">EditMode</span>, <span class="ident">InputMode</span>, <span class="ident">InputState</span>, <span class="ident">KeyCode</span>, <span class="ident">KeyEvent</span>, <span class="ident">Modifiers</span>, <span class="ident">Refresher</span>, <span class="ident">RepeatCount</span>,
+</pre><pre class="rust"><code><span class="doccomment">/// Custom event handlers
+</span><span class="kw">use crate</span>::{
+    Cmd, EditMode, InputMode, InputState, KeyCode, KeyEvent, Modifiers, Refresher, RepeatCount,
 };
 
-<span class="kw">use</span> <span class="ident">radix_trie::TrieKey</span>;
+<span class="kw">use </span>radix_trie::TrieKey;
 
-<span class="doccomment">/// Input event</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Event</span> {
-    <span class="doccomment">/// Wildcard.</span>
-    <span class="doccomment">/// Useful if you want to filter out some keys.</span>
-    <span class="ident">Any</span>,
-    <span class="doccomment">/// Key sequence</span>
-    <span class="ident">KeySeq</span>(<span class="ident">Vec</span>&lt;<span class="ident">KeyEvent</span>&gt;),
-    <span class="doccomment">/// TODO Mouse event</span>
-    <span class="ident">Mouse</span>(),
+<span class="doccomment">/// Input event
+</span><span class="attribute">#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;custom-bindings&quot;</span>)))]
+</span><span class="kw">pub enum </span>Event {
+    <span class="doccomment">/// Wildcard.
+    /// Useful if you want to filter out some keys.
+    </span>Any,
+    <span class="doccomment">/// Key sequence
+    </span>KeySeq(Vec&lt;KeyEvent&gt;),
+    <span class="doccomment">/// TODO Mouse event
+    </span>Mouse(),
 }
 
-<span class="kw">impl</span> <span class="ident">Event</span> {
-    <span class="doccomment">/// See [`KeyEvent::normalize`]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">normalize</span>(<span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Event::KeySeq</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">keys</span>) = <span class="self">self</span> {
-            <span class="kw">for</span> <span class="ident">key</span> <span class="kw">in</span> <span class="ident">keys</span>.<span class="ident">iter_mut</span>() {
-                <span class="kw-2">*</span><span class="ident">key</span> = <span class="ident">KeyEvent::normalize</span>(<span class="kw-2">*</span><span class="ident">key</span>);
+<span class="kw">impl </span>Event {
+    <span class="doccomment">/// See [`KeyEvent::normalize`]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>normalize(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
+        <span class="kw">if let </span>Event::KeySeq(<span class="kw-2">ref mut </span>keys) = <span class="self">self </span>{
+            <span class="kw">for </span>key <span class="kw">in </span>keys.iter_mut() {
+                <span class="kw-2">*</span>key = KeyEvent::normalize(<span class="kw-2">*</span>key);
             }
         }
-        <span class="self">self</span>
-    }
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Return `i`th key event</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">KeyEvent</span>&gt; {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Event::KeySeq</span>(<span class="kw-2">ref</span> <span class="ident">ks</span>) = <span class="self">self</span> {
-            <span class="ident">ks</span>.<span class="ident">get</span>(<span class="ident">i</span>)
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">KeyEvent</span>&gt; <span class="kw">for</span> <span class="ident">Event</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">k</span>: <span class="ident">KeyEvent</span>) -&gt; <span class="ident">Event</span> {
-        <span class="ident">Event::KeySeq</span>(<span class="macro">vec!</span>[<span class="ident">k</span>])
+    <span class="doccomment">/// Return `i`th key event
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, i: usize) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>KeyEvent&gt; {
+        <span class="kw">if let </span>Event::KeySeq(<span class="kw-2">ref </span>ks) = <span class="self">self </span>{
+            ks.get(i)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 }
 
-<span class="kw">const</span> <span class="ident">BASE</span>: <span class="ident">u32</span> = <span class="number">0x0010_ffff</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">BASE_CONTROL</span>: <span class="ident">u32</span> = <span class="number">0x0200_0000</span>;
-<span class="kw">const</span> <span class="ident">BASE_META</span>: <span class="ident">u32</span> = <span class="number">0x0400_0000</span>;
-<span class="kw">const</span> <span class="ident">BASE_SHIFT</span>: <span class="ident">u32</span> = <span class="number">0x0100_0000</span>;
-<span class="kw">const</span> <span class="ident">ESCAPE</span>: <span class="ident">u32</span> = <span class="number">27</span>;
-<span class="kw">const</span> <span class="ident">PAGE_UP</span>: <span class="ident">u32</span> = <span class="ident">BASE</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">PAGE_DOWN</span>: <span class="ident">u32</span> = <span class="ident">PAGE_UP</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">DOWN</span>: <span class="ident">u32</span> = <span class="ident">PAGE_DOWN</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">UP</span>: <span class="ident">u32</span> = <span class="ident">DOWN</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">LEFT</span>: <span class="ident">u32</span> = <span class="ident">UP</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">RIGHT</span>: <span class="ident">u32</span> = <span class="ident">LEFT</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">HOME</span>: <span class="ident">u32</span> = <span class="ident">RIGHT</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">END</span>: <span class="ident">u32</span> = <span class="ident">HOME</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">DELETE</span>: <span class="ident">u32</span> = <span class="ident">END</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">INSERT</span>: <span class="ident">u32</span> = <span class="ident">DELETE</span> + <span class="number">1</span>;
-<span class="comment">//const F1: u32 = INSERT + 1;</span>
-<span class="kw">const</span> <span class="ident">MOUSE</span>: <span class="ident">u32</span> = <span class="comment">/* F24 + 1 */</span> <span class="ident">INSERT</span> + <span class="number">25</span>;
-<span class="kw">const</span> <span class="ident">PASTE_START</span>: <span class="ident">u32</span> = <span class="ident">MOUSE</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">PASTE_FINISH</span>: <span class="ident">u32</span> = <span class="ident">PASTE_START</span> + <span class="number">1</span>;
-<span class="kw">const</span> <span class="ident">ANY</span>: <span class="ident">u32</span> = <span class="ident">PASTE_FINISH</span> + <span class="number">1</span>;
+<span class="kw">impl </span>From&lt;KeyEvent&gt; <span class="kw">for </span>Event {
+    <span class="kw">fn </span>from(k: KeyEvent) -&gt; Event {
+        Event::KeySeq(<span class="macro">vec!</span>[k])
+    }
+}
 
-<span class="kw">impl</span> <span class="ident">KeyEvent</span> {
-    <span class="kw">fn</span> <span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">u32</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">u</span> = <span class="kw">match</span> <span class="self">self</span>.<span class="number">0</span> {
-            <span class="ident">KeyCode::UnknownEscSeq</span> | <span class="ident">KeyCode::Null</span> =&gt; <span class="number">0</span>,
-            <span class="ident">KeyCode::Backspace</span> =&gt; <span class="ident">u32::from</span>(<span class="string">&#39;\x7f&#39;</span>),
-            <span class="ident">KeyCode::BackTab</span> =&gt; <span class="ident">u32::from</span>(<span class="string">&#39;\t&#39;</span>) | <span class="ident">BASE_SHIFT</span>,
-            <span class="ident">KeyCode::BracketedPasteStart</span> =&gt; <span class="ident">PASTE_START</span>,
-            <span class="ident">KeyCode::BracketedPasteEnd</span> =&gt; <span class="ident">PASTE_FINISH</span>,
-            <span class="ident">KeyCode::Char</span>(<span class="ident">c</span>) =&gt; <span class="ident">u32::from</span>(<span class="ident">c</span>),
-            <span class="ident">KeyCode::Delete</span> =&gt; <span class="ident">DELETE</span>,
-            <span class="ident">KeyCode::Down</span> =&gt; <span class="ident">DOWN</span>,
-            <span class="ident">KeyCode::End</span> =&gt; <span class="ident">END</span>,
-            <span class="ident">KeyCode::Enter</span> =&gt; <span class="ident">u32::from</span>(<span class="string">&#39;\r&#39;</span>),
-            <span class="ident">KeyCode::F</span>(<span class="ident">i</span>) =&gt; <span class="ident">INSERT</span> + <span class="ident">u32::from</span>(<span class="ident">i</span>),
-            <span class="ident">KeyCode::Esc</span> =&gt; <span class="ident">ESCAPE</span>,
-            <span class="ident">KeyCode::Home</span> =&gt; <span class="ident">HOME</span>,
-            <span class="ident">KeyCode::Insert</span> =&gt; <span class="ident">INSERT</span>,
-            <span class="ident">KeyCode::Left</span> =&gt; <span class="ident">LEFT</span>,
-            <span class="ident">KeyCode::PageDown</span> =&gt; <span class="ident">PAGE_DOWN</span>,
-            <span class="ident">KeyCode::PageUp</span> =&gt; <span class="ident">PAGE_UP</span>,
-            <span class="ident">KeyCode::Right</span> =&gt; <span class="ident">RIGHT</span>,
-            <span class="ident">KeyCode::Tab</span> =&gt; <span class="ident">u32::from</span>(<span class="string">&#39;\t&#39;</span>),
-            <span class="ident">KeyCode::Up</span> =&gt; <span class="ident">UP</span>,
+<span class="kw">const </span>BASE: u32 = <span class="number">0x0010_ffff </span>+ <span class="number">1</span>;
+<span class="kw">const </span>BASE_CONTROL: u32 = <span class="number">0x0200_0000</span>;
+<span class="kw">const </span>BASE_META: u32 = <span class="number">0x0400_0000</span>;
+<span class="kw">const </span>BASE_SHIFT: u32 = <span class="number">0x0100_0000</span>;
+<span class="kw">const </span>ESCAPE: u32 = <span class="number">27</span>;
+<span class="kw">const </span>PAGE_UP: u32 = BASE + <span class="number">1</span>;
+<span class="kw">const </span>PAGE_DOWN: u32 = PAGE_UP + <span class="number">1</span>;
+<span class="kw">const </span>DOWN: u32 = PAGE_DOWN + <span class="number">1</span>;
+<span class="kw">const </span>UP: u32 = DOWN + <span class="number">1</span>;
+<span class="kw">const </span>LEFT: u32 = UP + <span class="number">1</span>;
+<span class="kw">const </span>RIGHT: u32 = LEFT + <span class="number">1</span>;
+<span class="kw">const </span>HOME: u32 = RIGHT + <span class="number">1</span>;
+<span class="kw">const </span>END: u32 = HOME + <span class="number">1</span>;
+<span class="kw">const </span>DELETE: u32 = END + <span class="number">1</span>;
+<span class="kw">const </span>INSERT: u32 = DELETE + <span class="number">1</span>;
+<span class="comment">//const F1: u32 = INSERT + 1;
+</span><span class="kw">const </span>MOUSE: u32 = <span class="comment">/* F24 + 1 */ </span>INSERT + <span class="number">25</span>;
+<span class="kw">const </span>PASTE_START: u32 = MOUSE + <span class="number">1</span>;
+<span class="kw">const </span>PASTE_FINISH: u32 = PASTE_START + <span class="number">1</span>;
+<span class="kw">const </span>ANY: u32 = PASTE_FINISH + <span class="number">1</span>;
+
+<span class="kw">impl </span>KeyEvent {
+    <span class="kw">fn </span>encode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; u32 {
+        <span class="kw">let </span><span class="kw-2">mut </span>u = <span class="kw">match </span><span class="self">self</span>.<span class="number">0 </span>{
+            KeyCode::UnknownEscSeq | KeyCode::Null =&gt; <span class="number">0</span>,
+            KeyCode::Backspace =&gt; u32::from(<span class="string">&#39;\x7f&#39;</span>),
+            KeyCode::BackTab =&gt; u32::from(<span class="string">&#39;\t&#39;</span>) | BASE_SHIFT,
+            KeyCode::BracketedPasteStart =&gt; PASTE_START,
+            KeyCode::BracketedPasteEnd =&gt; PASTE_FINISH,
+            KeyCode::Char(c) =&gt; u32::from(c),
+            KeyCode::Delete =&gt; DELETE,
+            KeyCode::Down =&gt; DOWN,
+            KeyCode::End =&gt; END,
+            KeyCode::Enter =&gt; u32::from(<span class="string">&#39;\r&#39;</span>),
+            KeyCode::F(i) =&gt; INSERT + u32::from(i),
+            KeyCode::Esc =&gt; ESCAPE,
+            KeyCode::Home =&gt; HOME,
+            KeyCode::Insert =&gt; INSERT,
+            KeyCode::Left =&gt; LEFT,
+            KeyCode::PageDown =&gt; PAGE_DOWN,
+            KeyCode::PageUp =&gt; PAGE_UP,
+            KeyCode::Right =&gt; RIGHT,
+            KeyCode::Tab =&gt; u32::from(<span class="string">&#39;\t&#39;</span>),
+            KeyCode::Up =&gt; UP,
         };
-        <span class="kw">if</span> <span class="self">self</span>.<span class="number">1</span>.<span class="ident">contains</span>(<span class="ident">Modifiers::CTRL</span>) {
-            <span class="ident">u</span> |= <span class="ident">BASE_CONTROL</span>;
+        <span class="kw">if </span><span class="self">self</span>.<span class="number">1</span>.contains(Modifiers::CTRL) {
+            u |= BASE_CONTROL;
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="number">1</span>.<span class="ident">contains</span>(<span class="ident">Modifiers::ALT</span>) {
-            <span class="ident">u</span> |= <span class="ident">BASE_META</span>;
+        <span class="kw">if </span><span class="self">self</span>.<span class="number">1</span>.contains(Modifiers::ALT) {
+            u |= BASE_META;
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="number">1</span>.<span class="ident">contains</span>(<span class="ident">Modifiers::SHIFT</span>) {
-            <span class="ident">u</span> |= <span class="ident">BASE_SHIFT</span>;
+        <span class="kw">if </span><span class="self">self</span>.<span class="number">1</span>.contains(Modifiers::SHIFT) {
+            u |= BASE_SHIFT;
         }
-        <span class="ident">u</span>
+        u
     }
 }
 
-<span class="kw">impl</span> <span class="ident">TrieKey</span> <span class="kw">for</span> <span class="ident">Event</span> {
-    <span class="kw">fn</span> <span class="ident">encode_bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Event::Any</span> =&gt; <span class="ident">ANY</span>.<span class="ident">to_be_bytes</span>().<span class="ident">to_vec</span>(),
-            <span class="ident">Event::KeySeq</span>(<span class="ident">keys</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dst</span> = <span class="ident">Vec::with_capacity</span>(<span class="ident">keys</span>.<span class="ident">len</span>() * <span class="number">4</span>);
-                <span class="kw">for</span> <span class="ident">key</span> <span class="kw">in</span> <span class="ident">keys</span> {
-                    <span class="ident">dst</span>.<span class="ident">extend_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>.<span class="ident">encode</span>().<span class="ident">to_be_bytes</span>());
+<span class="kw">impl </span>TrieKey <span class="kw">for </span>Event {
+    <span class="kw">fn </span>encode_bytes(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Vec&lt;u8&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            Event::Any =&gt; ANY.to_be_bytes().to_vec(),
+            Event::KeySeq(keys) =&gt; {
+                <span class="kw">let </span><span class="kw-2">mut </span>dst = Vec::with_capacity(keys.len() * <span class="number">4</span>);
+                <span class="kw">for </span>key <span class="kw">in </span>keys {
+                    dst.extend_from_slice(<span class="kw-2">&amp;</span>key.encode().to_be_bytes());
                 }
-                <span class="ident">dst</span>
+                dst
             }
-            <span class="ident">Event::Mouse</span>() =&gt; <span class="ident">MOUSE</span>.<span class="ident">to_be_bytes</span>().<span class="ident">to_vec</span>(),
+            Event::Mouse() =&gt; MOUSE.to_be_bytes().to_vec(),
         }
     }
 }
 
-<span class="doccomment">/// Event handler</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EventHandler</span> {
-    <span class="doccomment">/// unconditional command</span>
-    <span class="ident">Simple</span>(<span class="ident">Cmd</span>),
-    <span class="doccomment">/// handler behaviour depends on input state</span>
-    <span class="ident">Conditional</span>(<span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">ConditionalEventHandler</span>&gt;),
+<span class="doccomment">/// Event handler
+</span><span class="attribute">#[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;custom-bindings&quot;</span>)))]
+</span><span class="kw">pub enum </span>EventHandler {
+    <span class="doccomment">/// unconditional command
+    </span>Simple(Cmd),
+    <span class="doccomment">/// handler behaviour depends on input state
+    </span>Conditional(Box&lt;<span class="kw">dyn </span>ConditionalEventHandler&gt;),
     <span class="comment">/* invoke multiple actions
-     * TODO Macro(), */</span>
-}
+     * TODO Macro(), */
+</span>}
 
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">Cmd</span>&gt; <span class="kw">for</span> <span class="ident">EventHandler</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">c</span>: <span class="ident">Cmd</span>) -&gt; <span class="ident">EventHandler</span> {
-        <span class="ident">EventHandler::Simple</span>(<span class="ident">c</span>)
+<span class="kw">impl </span>From&lt;Cmd&gt; <span class="kw">for </span>EventHandler {
+    <span class="kw">fn </span>from(c: Cmd) -&gt; EventHandler {
+        EventHandler::Simple(c)
     }
 }
 
-<span class="doccomment">/// Give access to user input.</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EventContext</span>&lt;<span class="lifetime">&#39;r</span>&gt; {
-    <span class="ident">mode</span>: <span class="ident">EditMode</span>,
-    <span class="ident">input_mode</span>: <span class="ident">InputMode</span>,
-    <span class="ident">wrt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;r</span> <span class="kw">dyn</span> <span class="ident">Refresher</span>,
+<span class="doccomment">/// Give access to user input.
+</span><span class="attribute">#[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;custom-bindings&quot;</span>)))]
+</span><span class="kw">pub struct </span>EventContext&lt;<span class="lifetime">&#39;r</span>&gt; {
+    mode: EditMode,
+    input_mode: InputMode,
+    wrt: <span class="kw-2">&amp;</span><span class="lifetime">&#39;r </span><span class="kw">dyn </span>Refresher,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;r</span>&gt; <span class="ident">EventContext</span>&lt;<span class="lifetime">&#39;r</span>&gt; {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">is</span>: <span class="kw-2">&amp;</span><span class="ident">InputState</span>, <span class="ident">wrt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;r</span> <span class="kw">dyn</span> <span class="ident">Refresher</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">EventContext</span> {
-            <span class="ident">mode</span>: <span class="ident">is</span>.<span class="ident">mode</span>,
-            <span class="ident">input_mode</span>: <span class="ident">is</span>.<span class="ident">input_mode</span>,
-            <span class="ident">wrt</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;r</span>&gt; EventContext&lt;<span class="lifetime">&#39;r</span>&gt; {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new(is: <span class="kw-2">&amp;</span>InputState, wrt: <span class="kw-2">&amp;</span><span class="lifetime">&#39;r </span><span class="kw">dyn </span>Refresher) -&gt; <span class="self">Self </span>{
+        EventContext {
+            mode: is.mode,
+            input_mode: is.input_mode,
+            wrt,
         }
     }
 
-    <span class="doccomment">/// emacs or vi mode</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">EditMode</span> {
-        <span class="self">self</span>.<span class="ident">mode</span>
+    <span class="doccomment">/// emacs or vi mode
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>mode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; EditMode {
+        <span class="self">self</span>.mode
     }
 
-    <span class="doccomment">/// vi input mode</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">input_mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">InputMode</span> {
-        <span class="self">self</span>.<span class="ident">input_mode</span>
+    <span class="doccomment">/// vi input mode
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>input_mode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; InputMode {
+        <span class="self">self</span>.input_mode
     }
 
-    <span class="doccomment">/// Returns `true` if there is a hint displayed.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">wrt</span>.<span class="ident">has_hint</span>()
+    <span class="doccomment">/// Returns `true` if there is a hint displayed.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>has_hint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.wrt.has_hint()
     }
 
-    <span class="doccomment">/// Returns the hint text that is shown after the current cursor position.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">hint_text</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>&gt; {
-        <span class="self">self</span>.<span class="ident">wrt</span>.<span class="ident">hint_text</span>()
+    <span class="doccomment">/// Returns the hint text that is shown after the current cursor position.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>hint_text(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+        <span class="self">self</span>.wrt.hint_text()
     }
 
-    <span class="doccomment">/// currently edited line</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">line</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="self">self</span>.<span class="ident">wrt</span>.<span class="ident">line</span>()
+    <span class="doccomment">/// currently edited line
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>line(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="self">self</span>.wrt.line()
     }
 
-    <span class="doccomment">/// Current cursor position (byte position)</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">pos</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">wrt</span>.<span class="ident">pos</span>()
+    <span class="doccomment">/// Current cursor position (byte position)
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>pos(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.wrt.pos()
     }
 }
 
-<span class="doccomment">/// May behave differently depending on:</span>
-<span class="doccomment">///  * edit mode (emacs vs vi)</span>
-<span class="doccomment">///  * vi input mode (insert vs replace vs command modes)</span>
-<span class="doccomment">///  * empty line</span>
-<span class="doccomment">///  * cursor position</span>
-<span class="doccomment">///  * repeat count</span>
-<span class="doccomment">///  * original key pressed (when same command is bound to different key)</span>
-<span class="doccomment">///  * hint</span>
-<span class="doccomment">///  * ...</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ConditionalEventHandler</span>: <span class="ident">Send</span> + <span class="ident">Sync</span> {
-    <span class="doccomment">/// Takes the current input state and</span>
-    <span class="doccomment">/// returns the command to be performed or `None` to perform the default</span>
-    <span class="doccomment">/// one.</span>
-    <span class="kw">fn</span> <span class="ident">handle</span>(
+<span class="doccomment">/// May behave differently depending on:
+///  * edit mode (emacs vs vi)
+///  * vi input mode (insert vs replace vs command modes)
+///  * empty line
+///  * cursor position
+///  * repeat count
+///  * original key pressed (when same command is bound to different key)
+///  * hint
+///  * ...
+</span><span class="attribute">#[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;custom-bindings&quot;</span>)))]
+</span><span class="kw">pub trait </span>ConditionalEventHandler: Send + Sync {
+    <span class="doccomment">/// Takes the current input state and
+    /// returns the command to be performed or `None` to perform the default
+    /// one.
+    </span><span class="kw">fn </span>handle(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">evt</span>: <span class="kw-2">&amp;</span><span class="ident">Event</span>,
-        <span class="ident">n</span>: <span class="ident">RepeatCount</span>,
-        <span class="ident">positive</span>: <span class="ident">bool</span>,
-        <span class="ident">ctx</span>: <span class="kw-2">&amp;</span><span class="ident">EventContext</span>,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Cmd</span>&gt;;
+        evt: <span class="kw-2">&amp;</span>Event,
+        n: RepeatCount,
+        positive: bool,
+        ctx: <span class="kw-2">&amp;</span>EventContext,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;Cmd&gt;;
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="ident">core::mem::size_of</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use </span>core::mem::size_of;
 
-    <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Event</span>, <span class="ident">EventHandler</span>};
-    <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Cmd</span>, <span class="ident">KeyCode</span>, <span class="ident">KeyEvent</span>, <span class="ident">Modifiers</span>};
-    <span class="kw">use</span> <span class="ident">radix_trie::Trie</span>;
+    <span class="kw">use super</span>::{Event, EventHandler};
+    <span class="kw">use crate</span>::{Cmd, KeyCode, KeyEvent, Modifiers};
+    <span class="kw">use </span>radix_trie::Trie;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">encode</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trie</span> = <span class="ident">Trie::new</span>();
-        <span class="kw">let</span> <span class="ident">evt</span> = <span class="ident">Event::KeySeq</span>(<span class="macro">vec!</span>[<span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;X&#39;</span>), <span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;E&#39;</span>)]);
-        <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">evt</span>.<span class="ident">clone</span>(), <span class="ident">EventHandler::from</span>(<span class="ident">Cmd::Noop</span>));
-        <span class="kw">let</span> <span class="ident">prefix</span> = <span class="ident">Event::from</span>(<span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;X&#39;</span>));
-        <span class="kw">let</span> <span class="ident">subtrie</span> = <span class="ident">trie</span>.<span class="ident">get_raw_descendant</span>(<span class="kw-2">&amp;</span><span class="ident">prefix</span>);
-        <span class="macro">assert!</span>(<span class="ident">subtrie</span>.<span class="ident">is_some</span>());
-        <span class="kw">let</span> <span class="ident">subtrie</span> = <span class="ident">subtrie</span>.<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">sub_result</span> = <span class="ident">subtrie</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">evt</span>);
-        <span class="macro">assert!</span>(<span class="ident">sub_result</span>.<span class="ident">is_ok</span>());
-        <span class="macro">assert!</span>(<span class="ident">sub_result</span>.<span class="ident">unwrap</span>().<span class="ident">is_some</span>());
-        <span class="kw">let</span> <span class="ident">prefix</span> = <span class="ident">Event::from</span>(<span class="ident">KeyEvent::ctrl</span>(<span class="string">&#39;O&#39;</span>));
-        <span class="kw">let</span> <span class="ident">subtrie</span> = <span class="ident">trie</span>.<span class="ident">get_raw_descendant</span>(<span class="kw-2">&amp;</span><span class="ident">prefix</span>);
-        <span class="macro">assert!</span>(<span class="ident">subtrie</span>.<span class="ident">is_none</span>())
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>encode() {
+        <span class="kw">let </span><span class="kw-2">mut </span>trie = Trie::new();
+        <span class="kw">let </span>evt = Event::KeySeq(<span class="macro">vec!</span>[KeyEvent::ctrl(<span class="string">&#39;X&#39;</span>), KeyEvent::ctrl(<span class="string">&#39;E&#39;</span>)]);
+        trie.insert(evt.clone(), EventHandler::from(Cmd::Noop));
+        <span class="kw">let </span>prefix = Event::from(KeyEvent::ctrl(<span class="string">&#39;X&#39;</span>));
+        <span class="kw">let </span>subtrie = trie.get_raw_descendant(<span class="kw-2">&amp;</span>prefix);
+        <span class="macro">assert!</span>(subtrie.is_some());
+        <span class="kw">let </span>subtrie = subtrie.unwrap();
+        <span class="kw">let </span>sub_result = subtrie.get(<span class="kw-2">&amp;</span>evt);
+        <span class="macro">assert!</span>(sub_result.is_ok());
+        <span class="macro">assert!</span>(sub_result.unwrap().is_some());
+        <span class="kw">let </span>prefix = Event::from(KeyEvent::ctrl(<span class="string">&#39;O&#39;</span>));
+        <span class="kw">let </span>subtrie = trie.get_raw_descendant(<span class="kw-2">&amp;</span>prefix);
+        <span class="macro">assert!</span>(subtrie.is_none())
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">no_collision</span>() {
-        <span class="kw">use</span> {<span class="ident">Event</span> <span class="kw">as</span> <span class="ident">E</span>, <span class="ident">EventHandler</span> <span class="kw">as</span> <span class="ident">H</span>, <span class="ident">KeyCode</span> <span class="kw">as</span> <span class="ident">C</span>, <span class="ident">KeyEvent</span> <span class="kw">as</span> <span class="ident">K</span>, <span class="ident">Modifiers</span> <span class="kw">as</span> <span class="ident">M</span>};
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trie</span> = <span class="ident">Trie::new</span>();
-        <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">E::from</span>(<span class="ident">K</span>(<span class="ident">C::Backspace</span>, <span class="ident">M::NONE</span>)), <span class="ident">H::from</span>(<span class="ident">Cmd::Noop</span>));
-        <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">E::from</span>(<span class="ident">K</span>(<span class="ident">C::Enter</span>, <span class="ident">M::NONE</span>)), <span class="ident">H::from</span>(<span class="ident">Cmd::Noop</span>));
-        <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">E::from</span>(<span class="ident">K</span>(<span class="ident">C::Tab</span>, <span class="ident">M::NONE</span>)), <span class="ident">H::from</span>(<span class="ident">Cmd::Noop</span>));
-        <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">E::from</span>(<span class="ident">K</span>(<span class="ident">C::Backspace</span>, <span class="ident">M::CTRL</span>)), <span class="ident">H::from</span>(<span class="ident">Cmd::Noop</span>));
-        <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">E::from</span>(<span class="ident">K</span>(<span class="ident">C::Enter</span>, <span class="ident">M::CTRL</span>)), <span class="ident">H::from</span>(<span class="ident">Cmd::Noop</span>));
-        <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">E::from</span>(<span class="ident">K</span>(<span class="ident">C::Tab</span>, <span class="ident">M::CTRL</span>)), <span class="ident">H::from</span>(<span class="ident">Cmd::Noop</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>no_collision() {
+        <span class="kw">use </span>{Event <span class="kw">as </span>E, EventHandler <span class="kw">as </span>H, KeyCode <span class="kw">as </span>C, KeyEvent <span class="kw">as </span>K, Modifiers <span class="kw">as </span>M};
+        <span class="kw">let </span><span class="kw-2">mut </span>trie = Trie::new();
+        trie.insert(E::from(K(C::Backspace, M::NONE)), H::from(Cmd::Noop));
+        trie.insert(E::from(K(C::Enter, M::NONE)), H::from(Cmd::Noop));
+        trie.insert(E::from(K(C::Tab, M::NONE)), H::from(Cmd::Noop));
+        trie.insert(E::from(K(C::Backspace, M::CTRL)), H::from(Cmd::Noop));
+        trie.insert(E::from(K(C::Enter, M::CTRL)), H::from(Cmd::Noop));
+        trie.insert(E::from(K(C::Tab, M::CTRL)), H::from(Cmd::Noop));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">size_of_event</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">size_of</span>::&lt;<span class="ident">Event</span>&gt;(), <span class="number">32</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>size_of_event() {
+        <span class="macro">assert_eq!</span>(size_of::&lt;Event&gt;(), <span class="number">32</span>);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

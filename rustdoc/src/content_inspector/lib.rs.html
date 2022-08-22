@@ -216,223 +216,223 @@
 <span id="216">216</span>
 <span id="217">217</span>
 <span id="218">218</span>
-</pre><pre class="rust"><code><span class="doccomment">//! A simple library for *fast* inspection of binary buffers to guess the type of content.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This is mainly intended to quickly determine whether a given buffer contains &quot;binary&quot;</span>
-<span class="doccomment">//! or &quot;text&quot; data. Programs like `grep` or `git diff` use similar mechanisms to decide whether</span>
-<span class="doccomment">//! to treat some files as &quot;binary data&quot; or not.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The analysis is based on a very simple heuristic: Searching for NULL bytes</span>
-<span class="doccomment">//! (indicating &quot;binary&quot; content) and the detection of special [byte order</span>
-<span class="doccomment">//! marks](https://en.wikipedia.org/wiki/Byte_order_mark) (indicating a particular kind of textual</span>
-<span class="doccomment">//! encoding). Note that **this analysis can fail**. For example, even if unlikely, UTF-8-encoded</span>
-<span class="doccomment">//! text can legally contain NULL bytes. Conversely, some particular binary formats (like binary</span>
-<span class="doccomment">//! [PGM](https://en.wikipedia.org/wiki/Netpbm_format)) may not contain NULL bytes. Also, for</span>
-<span class="doccomment">//! performance reasons, only the first 1024 bytes are checked for the NULL-byte (if no BOM was</span>
-<span class="doccomment">//! detected).</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! If this library reports a certain type of encoding (say `UTF_16LE`), there is **no guarantee**</span>
-<span class="doccomment">//! that the binary buffer can *actually* be decoded as UTF-16LE.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Example</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! use content_inspector::{ContentType, inspect};</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! assert_eq!(ContentType::UTF_8, inspect(b&quot;Hello&quot;));</span>
-<span class="doccomment">//! assert_eq!(ContentType::BINARY, inspect(b&quot;\xFF\xE0\x00\x10\x4A\x46\x49\x46\x00&quot;));</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! assert!(inspect(b&quot;Hello&quot;).is_text());</span>
-<span class="doccomment">//! ```</span>
+</pre><pre class="rust"><code><span class="doccomment">//! A simple library for *fast* inspection of binary buffers to guess the type of content.
+//!
+//! This is mainly intended to quickly determine whether a given buffer contains &quot;binary&quot;
+//! or &quot;text&quot; data. Programs like `grep` or `git diff` use similar mechanisms to decide whether
+//! to treat some files as &quot;binary data&quot; or not.
+//!
+//! The analysis is based on a very simple heuristic: Searching for NULL bytes
+//! (indicating &quot;binary&quot; content) and the detection of special [byte order
+//! marks](https://en.wikipedia.org/wiki/Byte_order_mark) (indicating a particular kind of textual
+//! encoding). Note that **this analysis can fail**. For example, even if unlikely, UTF-8-encoded
+//! text can legally contain NULL bytes. Conversely, some particular binary formats (like binary
+//! [PGM](https://en.wikipedia.org/wiki/Netpbm_format)) may not contain NULL bytes. Also, for
+//! performance reasons, only the first 1024 bytes are checked for the NULL-byte (if no BOM was
+//! detected).
+//!
+//! If this library reports a certain type of encoding (say `UTF_16LE`), there is **no guarantee**
+//! that the binary buffer can *actually* be decoded as UTF-16LE.
+//!
+//! # Example
+//! ```
+//! use content_inspector::{ContentType, inspect};
+//!
+//! assert_eq!(ContentType::UTF_8, inspect(b&quot;Hello&quot;));
+//! assert_eq!(ContentType::BINARY, inspect(b&quot;\xFF\xE0\x00\x10\x4A\x46\x49\x46\x00&quot;));
+//!
+//! assert!(inspect(b&quot;Hello&quot;).is_text());
+//! ```
 
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">memchr</span>;
+</span><span class="kw">extern crate </span>memchr;
 
-<span class="kw">use</span> <span class="ident">memchr::memchr</span>;
-<span class="kw">use</span> <span class="ident">std::cmp::min</span>;
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
+<span class="kw">use </span>memchr::memchr;
+<span class="kw">use </span>std::cmp::min;
+<span class="kw">use </span>std::fmt;
 
-<span class="kw">const</span> <span class="ident">MAX_SCAN_SIZE</span>: <span class="ident">usize</span> = <span class="number">1024</span>;
+<span class="kw">const </span>MAX_SCAN_SIZE: usize = <span class="number">1024</span>;
 
-<span class="doccomment">/// The type of encoding that was detected (for &quot;text&quot; data) or `BINARY` for &quot;binary&quot; data.</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ContentType</span> {
-    <span class="doccomment">/// &quot;binary&quot; data</span>
-    <span class="ident">BINARY</span>,
+<span class="doccomment">/// The type of encoding that was detected (for &quot;text&quot; data) or `BINARY` for &quot;binary&quot; data.
+</span><span class="attribute">#[allow(non_camel_case_types)]
+#[derive(Copy, Clone, Debug, PartialEq)]
+</span><span class="kw">pub enum </span>ContentType {
+    <span class="doccomment">/// &quot;binary&quot; data
+    </span>BINARY,
 
-    <span class="doccomment">/// UTF-8 encoded &quot;text&quot; data</span>
-    <span class="ident">UTF_8</span>,
+    <span class="doccomment">/// UTF-8 encoded &quot;text&quot; data
+    </span>UTF_8,
 
-    <span class="doccomment">/// UTF-8 encoded &quot;text&quot; data with a byte order mark.</span>
-    <span class="ident">UTF_8_BOM</span>,
+    <span class="doccomment">/// UTF-8 encoded &quot;text&quot; data with a byte order mark.
+    </span>UTF_8_BOM,
 
-    <span class="doccomment">/// UTF-16 encoded &quot;text&quot; data (little endian)</span>
-    <span class="ident">UTF_16LE</span>,
+    <span class="doccomment">/// UTF-16 encoded &quot;text&quot; data (little endian)
+    </span>UTF_16LE,
 
-    <span class="doccomment">/// UTF-16 encoded &quot;text&quot; data (big endian)</span>
-    <span class="ident">UTF_16BE</span>,
+    <span class="doccomment">/// UTF-16 encoded &quot;text&quot; data (big endian)
+    </span>UTF_16BE,
 
-    <span class="doccomment">/// UTF-32 encoded &quot;text&quot; data (little endian)</span>
-    <span class="ident">UTF_32LE</span>,
+    <span class="doccomment">/// UTF-32 encoded &quot;text&quot; data (little endian)
+    </span>UTF_32LE,
 
-    <span class="doccomment">/// UTF-32 encoded &quot;text&quot; data (big endian)</span>
-    <span class="ident">UTF_32BE</span>,
+    <span class="doccomment">/// UTF-32 encoded &quot;text&quot; data (big endian)
+    </span>UTF_32BE,
 }
 
-<span class="kw">impl</span> <span class="ident">ContentType</span> {
-    <span class="doccomment">/// Returns `true`, if the `ContentType` is `BINARY`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_binary</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span> == <span class="ident">ContentType::BINARY</span>
+<span class="kw">impl </span>ContentType {
+    <span class="doccomment">/// Returns `true`, if the `ContentType` is `BINARY`.
+    </span><span class="kw">pub fn </span>is_binary(<span class="self">self</span>) -&gt; bool {
+        <span class="self">self </span>== ContentType::BINARY
     }
 
-    <span class="doccomment">/// Returns `true`, if the `ContentType` is __not__ `BINARY`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_text</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        !<span class="self">self</span>.<span class="ident">is_binary</span>()
+    <span class="doccomment">/// Returns `true`, if the `ContentType` is __not__ `BINARY`.
+    </span><span class="kw">pub fn </span>is_text(<span class="self">self</span>) -&gt; bool {
+        !<span class="self">self</span>.is_binary()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">ContentType</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">use</span> <span class="ident">ContentType</span>::<span class="kw-2">*</span>;
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>ContentType {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
+        <span class="kw">use </span>ContentType::<span class="kw-2">*</span>;
 
-        <span class="kw">let</span> <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> = <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">BINARY</span> =&gt; <span class="string">&quot;binary&quot;</span>,
-            <span class="ident">UTF_8</span> =&gt; <span class="string">&quot;UTF-8&quot;</span>,
-            <span class="ident">UTF_8_BOM</span> =&gt; <span class="string">&quot;UTF-8-BOM&quot;</span>,
-            <span class="ident">UTF_16LE</span> =&gt; <span class="string">&quot;UTF-16LE&quot;</span>,
-            <span class="ident">UTF_16BE</span> =&gt; <span class="string">&quot;UTF-16BE&quot;</span>,
-            <span class="ident">UTF_32LE</span> =&gt; <span class="string">&quot;UTF-32LE&quot;</span>,
-            <span class="ident">UTF_32BE</span> =&gt; <span class="string">&quot;UTF-32BE&quot;</span>,
+        <span class="kw">let </span>name: <span class="kw-2">&amp;</span>str = <span class="kw">match </span><span class="kw-2">*</span><span class="self">self </span>{
+            BINARY =&gt; <span class="string">&quot;binary&quot;</span>,
+            UTF_8 =&gt; <span class="string">&quot;UTF-8&quot;</span>,
+            UTF_8_BOM =&gt; <span class="string">&quot;UTF-8-BOM&quot;</span>,
+            UTF_16LE =&gt; <span class="string">&quot;UTF-16LE&quot;</span>,
+            UTF_16BE =&gt; <span class="string">&quot;UTF-16BE&quot;</span>,
+            UTF_32LE =&gt; <span class="string">&quot;UTF-32LE&quot;</span>,
+            UTF_32BE =&gt; <span class="string">&quot;UTF-32BE&quot;</span>,
         };
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">name</span>)
+        <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, name)
     }
 }
 
-<span class="doccomment">/// Common byte order marks</span>
-<span class="doccomment">/// (see https://en.wikipedia.org/wiki/Byte_order_mark)</span>
-<span class="kw">static</span> <span class="ident">BYTE_ORDER_MARKS</span>: <span class="kw-2">&amp;</span>[(<span class="kw-2">&amp;</span>[<span class="ident">u8</span>], <span class="ident">ContentType</span>)] = <span class="kw-2">&amp;</span>[
-    (<span class="kw-2">&amp;</span>[<span class="number">0xEF</span>, <span class="number">0xBB</span>, <span class="number">0xBF</span>], <span class="ident">ContentType::UTF_8_BOM</span>),
-    <span class="comment">// UTF-32 needs to be checked before UTF-16 (overlapping BOMs)</span>
-    (<span class="kw-2">&amp;</span>[<span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0xFE</span>, <span class="number">0xFF</span>], <span class="ident">ContentType::UTF_32BE</span>),
-    (<span class="kw-2">&amp;</span>[<span class="number">0xFF</span>, <span class="number">0xFE</span>, <span class="number">0x00</span>, <span class="number">0x00</span>], <span class="ident">ContentType::UTF_32LE</span>),
-    (<span class="kw-2">&amp;</span>[<span class="number">0xFE</span>, <span class="number">0xFF</span>], <span class="ident">ContentType::UTF_16BE</span>),
-    (<span class="kw-2">&amp;</span>[<span class="number">0xFF</span>, <span class="number">0xFE</span>], <span class="ident">ContentType::UTF_16LE</span>),
+<span class="doccomment">/// Common byte order marks
+/// (see https://en.wikipedia.org/wiki/Byte_order_mark)
+</span><span class="kw">static </span>BYTE_ORDER_MARKS: <span class="kw-2">&amp;</span>[(<span class="kw-2">&amp;</span>[u8], ContentType)] = <span class="kw-2">&amp;</span>[
+    (<span class="kw-2">&amp;</span>[<span class="number">0xEF</span>, <span class="number">0xBB</span>, <span class="number">0xBF</span>], ContentType::UTF_8_BOM),
+    <span class="comment">// UTF-32 needs to be checked before UTF-16 (overlapping BOMs)
+    </span>(<span class="kw-2">&amp;</span>[<span class="number">0x00</span>, <span class="number">0x00</span>, <span class="number">0xFE</span>, <span class="number">0xFF</span>], ContentType::UTF_32BE),
+    (<span class="kw-2">&amp;</span>[<span class="number">0xFF</span>, <span class="number">0xFE</span>, <span class="number">0x00</span>, <span class="number">0x00</span>], ContentType::UTF_32LE),
+    (<span class="kw-2">&amp;</span>[<span class="number">0xFE</span>, <span class="number">0xFF</span>], ContentType::UTF_16BE),
+    (<span class="kw-2">&amp;</span>[<span class="number">0xFF</span>, <span class="number">0xFE</span>], ContentType::UTF_16LE),
 ];
 
-<span class="doccomment">/// Magic numbers for some filetypes that could otherwise be characterized as text.</span>
-<span class="kw">static</span> <span class="ident">MAGIC_NUMBERS</span>: [<span class="kw-2">&amp;</span>[<span class="ident">u8</span>]; <span class="number">2</span>] = [<span class="string">b&quot;%PDF&quot;</span>, <span class="string">b&quot;\x89PNG&quot;</span>];
+<span class="doccomment">/// Magic numbers for some filetypes that could otherwise be characterized as text.
+</span><span class="kw">static </span>MAGIC_NUMBERS: [<span class="kw-2">&amp;</span>[u8]; <span class="number">2</span>] = [<span class="string">b&quot;%PDF&quot;</span>, <span class="string">b&quot;\x89PNG&quot;</span>];
 
-<span class="doccomment">/// Try to determine the type of content in the given buffer. See the crate documentation for a</span>
-<span class="doccomment">/// usage example and for more details on how this analysis is performed.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If the buffer is empty, the content type will be reported as `UTF_8`.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inspect</span>(<span class="ident">buffer</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>]) -&gt; <span class="ident">ContentType</span> {
-    <span class="kw">use</span> <span class="ident">ContentType</span>::<span class="kw-2">*</span>;
+<span class="doccomment">/// Try to determine the type of content in the given buffer. See the crate documentation for a
+/// usage example and for more details on how this analysis is performed.
+///
+/// If the buffer is empty, the content type will be reported as `UTF_8`.
+</span><span class="kw">pub fn </span>inspect(buffer: <span class="kw-2">&amp;</span>[u8]) -&gt; ContentType {
+    <span class="kw">use </span>ContentType::<span class="kw-2">*</span>;
 
-    <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">bom</span>, <span class="ident">content_type</span>) <span class="kw">in</span> <span class="ident">BYTE_ORDER_MARKS</span> {
-        <span class="kw">if</span> <span class="ident">buffer</span>.<span class="ident">starts_with</span>(<span class="ident">bom</span>) {
-            <span class="kw">return</span> <span class="ident">content_type</span>;
+    <span class="kw">for </span><span class="kw-2">&amp;</span>(bom, content_type) <span class="kw">in </span>BYTE_ORDER_MARKS {
+        <span class="kw">if </span>buffer.starts_with(bom) {
+            <span class="kw">return </span>content_type;
         }
     }
 
-    <span class="comment">// Scan the first few bytes for zero-bytes</span>
-    <span class="kw">let</span> <span class="ident">scan_size</span> = <span class="ident">min</span>(<span class="ident">buffer</span>.<span class="ident">len</span>(), <span class="ident">MAX_SCAN_SIZE</span>);
-    <span class="kw">let</span> <span class="ident">has_zero_bytes</span> = <span class="ident">memchr</span>(<span class="number">0x00</span>, <span class="kw-2">&amp;</span><span class="ident">buffer</span>[..<span class="ident">scan_size</span>]).<span class="ident">is_some</span>();
+    <span class="comment">// Scan the first few bytes for zero-bytes
+    </span><span class="kw">let </span>scan_size = min(buffer.len(), MAX_SCAN_SIZE);
+    <span class="kw">let </span>has_zero_bytes = memchr(<span class="number">0x00</span>, <span class="kw-2">&amp;</span>buffer[..scan_size]).is_some();
 
-    <span class="kw">if</span> <span class="ident">has_zero_bytes</span> {
-        <span class="kw">return</span> <span class="ident">BINARY</span>;
+    <span class="kw">if </span>has_zero_bytes {
+        <span class="kw">return </span>BINARY;
     }
 
-    <span class="kw">if</span> <span class="ident">MAGIC_NUMBERS</span>.<span class="ident">iter</span>().<span class="ident">any</span>(|<span class="ident">magic</span>| <span class="ident">buffer</span>.<span class="ident">starts_with</span>(<span class="ident">magic</span>)) {
-        <span class="kw">return</span> <span class="ident">BINARY</span>;
+    <span class="kw">if </span>MAGIC_NUMBERS.iter().any(|magic| buffer.starts_with(magic)) {
+        <span class="kw">return </span>BINARY;
     }
 
-    <span class="ident">UTF_8</span>
+    UTF_8
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> {<span class="ident">inspect</span>, <span class="ident">ContentType</span>::<span class="kw-2">*</span>};
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span>{inspect, ContentType::<span class="kw-2">*</span>};
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_empty_buffer_utf_8</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">UTF_8</span>, <span class="ident">inspect</span>(<span class="string">b&quot;&quot;</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_empty_buffer_utf_8() {
+        <span class="macro">assert_eq!</span>(UTF_8, inspect(<span class="string">b&quot;&quot;</span>));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_text_simple</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">UTF_8</span>, <span class="ident">inspect</span>(<span class="string">&quot;Simple UTF-8 string ☔&quot;</span>.<span class="ident">as_bytes</span>()));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_text_simple() {
+        <span class="macro">assert_eq!</span>(UTF_8, inspect(<span class="string">&quot;Simple UTF-8 string ☔&quot;</span>.as_bytes()));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_text_utf8</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">UTF_8</span>, <span class="ident">inspect</span>(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-8.txt&quot;</span>)));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_text_utf8() {
+        <span class="macro">assert_eq!</span>(UTF_8, inspect(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-8.txt&quot;</span>)));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_text_utf8_bom</span>() {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_text_utf8_bom() {
         <span class="macro">assert_eq!</span>(
-            <span class="ident">UTF_8_BOM</span>,
-            <span class="ident">inspect</span>(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-8-BOM.txt&quot;</span>))
+            UTF_8_BOM,
+            inspect(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-8-BOM.txt&quot;</span>))
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_text_utf16le</span>() {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_text_utf16le() {
         <span class="macro">assert_eq!</span>(
-            <span class="ident">UTF_16LE</span>,
-            <span class="ident">inspect</span>(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-16LE-BOM.txt&quot;</span>))
+            UTF_16LE,
+            inspect(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-16LE-BOM.txt&quot;</span>))
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_text_utf16be</span>() {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_text_utf16be() {
         <span class="macro">assert_eq!</span>(
-            <span class="ident">UTF_16BE</span>,
-            <span class="ident">inspect</span>(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-16BE-BOM.txt&quot;</span>))
+            UTF_16BE,
+            inspect(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-16BE-BOM.txt&quot;</span>))
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_text_utf32le</span>() {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_text_utf32le() {
         <span class="macro">assert_eq!</span>(
-            <span class="ident">UTF_32LE</span>,
-            <span class="ident">inspect</span>(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-32LE-BOM.txt&quot;</span>))
+            UTF_32LE,
+            inspect(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-32LE-BOM.txt&quot;</span>))
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_text_utf32be</span>() {
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_text_utf32be() {
         <span class="macro">assert_eq!</span>(
-            <span class="ident">UTF_32BE</span>,
-            <span class="ident">inspect</span>(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-32BE-BOM.txt&quot;</span>))
+            UTF_32BE,
+            inspect(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/text_UTF-32BE-BOM.txt&quot;</span>))
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_png</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">BINARY</span>, <span class="ident">inspect</span>(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/test.png&quot;</span>)));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_png() {
+        <span class="macro">assert_eq!</span>(BINARY, inspect(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/test.png&quot;</span>)));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_jpg</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">BINARY</span>, <span class="ident">inspect</span>(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/test.jpg&quot;</span>)));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_jpg() {
+        <span class="macro">assert_eq!</span>(BINARY, inspect(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/test.jpg&quot;</span>)));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_pdf</span>() {
-        <span class="macro">assert_eq!</span>(<span class="ident">BINARY</span>, <span class="ident">inspect</span>(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/test.pdf&quot;</span>)));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_pdf() {
+        <span class="macro">assert_eq!</span>(BINARY, inspect(<span class="macro">include_bytes!</span>(<span class="string">&quot;../testdata/test.pdf&quot;</span>)));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_is_text</span>() {
-        <span class="macro">assert!</span>(<span class="ident">UTF_8</span>.<span class="ident">is_text</span>());
-        <span class="macro">assert!</span>(<span class="ident">UTF_32LE</span>.<span class="ident">is_text</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_is_text() {
+        <span class="macro">assert!</span>(UTF_8.is_text());
+        <span class="macro">assert!</span>(UTF_32LE.is_text());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_is_binary</span>() {
-        <span class="macro">assert!</span>(<span class="ident">BINARY</span>.<span class="ident">is_binary</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_is_binary() {
+        <span class="macro">assert!</span>(BINARY.is_binary());
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="content_inspector" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="content_inspector" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

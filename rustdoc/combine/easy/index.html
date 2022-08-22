@@ -4,73 +4,73 @@ a <code>no_std</code> environment) you probably want to use this stream type. It
 through the <a href="../trait.EasyParser.html#method.easy_parse"><code>EasyParser::easy_parse</code></a> method.</p>
 <p>The provided <code>Errors</code> type is roughly the same as <code>ParseError</code> in combine 1.x and 2.x.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[<span class="ident">macro_use</span>]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">combine</span>;
-<span class="kw">use</span> <span class="ident">combine</span>::{<span class="ident">easy</span>, <span class="ident">Parser</span>, <span class="ident">EasyParser</span>, <span class="ident">Stream</span>, <span class="ident">many1</span>};
-<span class="kw">use</span> <span class="ident">combine::parser::char::letter</span>;
-<span class="kw">use</span> <span class="ident">combine::stream::StreamErrorFor</span>;
-<span class="kw">use</span> <span class="ident">combine::error</span>::{<span class="ident">ParseError</span>, <span class="ident">StreamError</span>};
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[macro_use]
+</span><span class="kw">extern crate </span>combine;
+<span class="kw">use </span>combine::{easy, Parser, EasyParser, Stream, many1};
+<span class="kw">use </span>combine::parser::char::letter;
+<span class="kw">use </span>combine::stream::StreamErrorFor;
+<span class="kw">use </span>combine::error::{ParseError, StreamError};
 
-<span class="kw">fn</span> <span class="ident">main</span>() {
+<span class="kw">fn </span>main() {
     <span class="macro">parser!</span>{
-       <span class="kw">fn</span> <span class="ident">parser</span>[<span class="ident">Input</span>]()(<span class="ident">Input</span>) -&gt; <span class="ident">String</span>
-        <span class="kw">where</span> [
-            <span class="ident">Input</span>: <span class="ident">Stream</span>&lt;<span class="ident">Token</span> = <span class="ident">char</span>, <span class="ident">Error</span> = <span class="ident">easy::ParseError</span>&lt;<span class="ident">Input</span>&gt;&gt;,
-            <span class="ident">Input::Range</span>: <span class="ident">PartialEq</span>,
-            <span class="comment">// If we want to use the error type explicitly we need to help rustc infer</span>
-            <span class="comment">// `StreamError` to `easy::Error` (rust-lang/rust#24159)</span>
-            <span class="ident">Input::Error</span>: <span class="ident">ParseError</span>&lt;
-                <span class="ident">Input::Token</span>,
-                <span class="ident">Input::Range</span>,
-                <span class="ident">Input::Position</span>,
-                <span class="ident">StreamError</span> = <span class="ident">easy::Error</span>&lt;<span class="ident">Input::Token</span>, <span class="ident">Input::Range</span>&gt;
+       <span class="kw">fn </span>parser[Input]()(Input) -&gt; String
+        <span class="kw">where </span>[
+            Input: Stream&lt;Token = char, Error = easy::ParseError&lt;Input&gt;&gt;,
+            Input::Range: PartialEq,
+            <span class="comment">// If we want to use the error type explicitly we need to help rustc infer
+            // `StreamError` to `easy::Error` (rust-lang/rust#24159)
+            </span>Input::Error: ParseError&lt;
+                Input::Token,
+                Input::Range,
+                Input::Position,
+                StreamError = easy::Error&lt;Input::Token, Input::Range&gt;
             &gt;
         ]
         {
-            <span class="ident">many1</span>(<span class="ident">letter</span>()).<span class="ident">and_then</span>(|<span class="ident">word</span>: <span class="ident">String</span>| {
-                <span class="kw">if</span> <span class="ident">word</span> == <span class="string">&quot;combine&quot;</span> {
-                    <span class="prelude-val">Ok</span>(<span class="ident">word</span>)
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">Err</span>(<span class="ident">easy::Error::Expected</span>(<span class="ident">easy::Info::Static</span>(<span class="string">&quot;combine&quot;</span>)))
+            many1(letter()).and_then(|word: String| {
+                <span class="kw">if </span>word == <span class="string">&quot;combine&quot; </span>{
+                    <span class="prelude-val">Ok</span>(word)
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">Err</span>(easy::Error::Expected(easy::Info::Static(<span class="string">&quot;combine&quot;</span>)))
                 }
             })
         }
     }
 
     <span class="macro">parser!</span>{
-       <span class="kw">fn</span> <span class="ident">parser2</span>[<span class="ident">Input</span>]()(<span class="ident">Input</span>) -&gt; <span class="ident">String</span>
-        <span class="kw">where</span> [
-            <span class="ident">Input</span>: <span class="ident">Stream</span>&lt;<span class="ident">Token</span> = <span class="ident">char</span>&gt;,
+       <span class="kw">fn </span>parser2[Input]()(Input) -&gt; String
+        <span class="kw">where </span>[
+            Input: Stream&lt;Token = char&gt;,
         ]
         {
-            <span class="ident">many1</span>(<span class="ident">letter</span>()).<span class="ident">and_then</span>(|<span class="ident">word</span>: <span class="ident">String</span>| {
-                <span class="kw">if</span> <span class="ident">word</span> == <span class="string">&quot;combine&quot;</span> {
-                    <span class="prelude-val">Ok</span>(<span class="ident">word</span>)
-                } <span class="kw">else</span> {
-                    <span class="comment">// Alternatively it is possible to only use the methods provided by the</span>
-                    <span class="comment">// `StreamError` trait.</span>
-                    <span class="comment">// In that case the extra bound is not necessary (and this method will work</span>
-                    <span class="comment">// for other errors than `easy::Errors`)</span>
-                    <span class="prelude-val">Err</span>(<span class="ident">StreamErrorFor</span>::&lt;<span class="ident">Input</span>&gt;<span class="ident">::expected_static_message</span>(<span class="string">&quot;combine&quot;</span>))
+            many1(letter()).and_then(|word: String| {
+                <span class="kw">if </span>word == <span class="string">&quot;combine&quot; </span>{
+                    <span class="prelude-val">Ok</span>(word)
+                } <span class="kw">else </span>{
+                    <span class="comment">// Alternatively it is possible to only use the methods provided by the
+                    // `StreamError` trait.
+                    // In that case the extra bound is not necessary (and this method will work
+                    // for other errors than `easy::Errors`)
+                    </span><span class="prelude-val">Err</span>(StreamErrorFor::&lt;Input&gt;::expected_static_message(<span class="string">&quot;combine&quot;</span>))
                 }
             })
         }
     }
 
-    <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;combin&quot;</span>;
-    <span class="kw">let</span> <span class="ident">expected_error</span> = <span class="prelude-val">Err</span>(<span class="ident">easy::Errors</span> {
-        <span class="ident">errors</span>: <span class="macro">vec!</span>[
-            <span class="ident">easy::Error::Expected</span>(<span class="string">&quot;combine&quot;</span>.<span class="ident">into</span>())
+    <span class="kw">let </span>input = <span class="string">&quot;combin&quot;</span>;
+    <span class="kw">let </span>expected_error = <span class="prelude-val">Err</span>(easy::Errors {
+        errors: <span class="macro">vec!</span>[
+            easy::Error::Expected(<span class="string">&quot;combine&quot;</span>.into())
         ],
-        <span class="ident">position</span>: <span class="number">0</span>,
+        position: <span class="number">0</span>,
     });
     <span class="macro">assert_eq!</span>(
-        <span class="ident">parser</span>().<span class="ident">easy_parse</span>(<span class="ident">input</span>).<span class="ident">map_err</span>(|<span class="ident">err</span>| <span class="ident">err</span>.<span class="ident">map_position</span>(|<span class="ident">p</span>| <span class="ident">p</span>.<span class="ident">translate_position</span>(<span class="ident">input</span>))),
-        <span class="ident">expected_error</span>
+        parser().easy_parse(input).map_err(|err| err.map_position(|p| p.translate_position(input))),
+        expected_error
     );
     <span class="macro">assert_eq!</span>(
-        <span class="ident">parser2</span>().<span class="ident">easy_parse</span>(<span class="ident">input</span>).<span class="ident">map_err</span>(|<span class="ident">err</span>| <span class="ident">err</span>.<span class="ident">map_position</span>(|<span class="ident">p</span>| <span class="ident">p</span>.<span class="ident">translate_position</span>(<span class="ident">input</span>))),
-        <span class="ident">expected_error</span>
+        parser2().easy_parse(input).map_err(|err| err.map_position(|p| p.translate_position(input))),
+        expected_error
     );
 }
 </code></pre></div>
@@ -81,4 +81,4 @@ Can hold multiple instances of <code>Error</code> if more that one error occurre
 well as string variants holding easy descriptions.</p>
 </div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.ParseError.html" title="combine::easy::ParseError type">ParseError</a></div><div class="item-right docblock-short"><p>Convenience alias over <code>Errors</code> for <code>StreamOnce</code> types which makes it possible to specify the
 <code>Errors</code> type from a <code>StreamOnce</code> by writing <code>ParseError&lt;Input&gt;</code> instead of <code>Errors&lt;Input::Token, Input::Range, Input::Position&gt;</code></p>
-</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="combine" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="combine" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -185,192 +185,192 @@
 <span id="185">185</span>
 <span id="186">186</span>
 <span id="187">187</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Iterators over key-value pairs, keys, values and child subtries.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Iterators over key-value pairs, keys, values and child subtries.
 
-<span class="kw">use</span> <span class="ident">std::iter</span>::{<span class="ident">FilterMap</span>, <span class="ident">FromIterator</span>, <span class="ident">Map</span>};
-<span class="kw">use</span> <span class="ident">std::slice</span>;
+</span><span class="kw">use </span>std::iter::{FilterMap, FromIterator, Map};
+<span class="kw">use </span>std::slice;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::TrieNode</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">SubTrie</span>, <span class="ident">Trie</span>, <span class="ident">TrieKey</span>};
+<span class="kw">use </span><span class="kw">crate</span>::TrieNode;
+<span class="kw">use crate</span>::{SubTrie, Trie, TrieKey};
 
-<span class="kw">use</span> <span class="ident">nibble_vec::Nibblet</span>;
+<span class="kw">use </span>nibble_vec::Nibblet;
 
-<span class="comment">// MY EYES.</span>
-<span class="kw">type</span> <span class="ident">Child</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt; = <span class="ident">Box</span>&lt;<span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;&gt;;
-<span class="kw">type</span> <span class="ident">RawChildIter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; = <span class="ident">slice::Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">Child</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;&gt;&gt;;
-<span class="kw">type</span> <span class="ident">ChildMapFn</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; = <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="prelude-ty">Option</span>&lt;<span class="ident">Child</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Child</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;&gt;;
-<span class="kw">type</span> <span class="ident">ChildIter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; = <span class="ident">FilterMap</span>&lt;<span class="ident">RawChildIter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">ChildMapFn</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;&gt;;
+<span class="comment">// MY EYES.
+</span><span class="kw">type </span>Child&lt;K, V&gt; = Box&lt;TrieNode&lt;K, V&gt;&gt;;
+<span class="kw">type </span>RawChildIter&lt;<span class="lifetime">&#39;a</span>, K, V&gt; = slice::Iter&lt;<span class="lifetime">&#39;a</span>, <span class="prelude-ty">Option</span>&lt;Child&lt;K, V&gt;&gt;&gt;;
+<span class="kw">type </span>ChildMapFn&lt;<span class="lifetime">&#39;a</span>, K, V&gt; = <span class="kw">fn</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="prelude-ty">Option</span>&lt;Child&lt;K, V&gt;&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>Child&lt;K, V&gt;&gt;;
+<span class="kw">type </span>ChildIter&lt;<span class="lifetime">&#39;a</span>, K, V&gt; = FilterMap&lt;RawChildIter&lt;<span class="lifetime">&#39;a</span>, K, V&gt;, ChildMapFn&lt;<span class="lifetime">&#39;a</span>, K, V&gt;&gt;;
 
-<span class="doccomment">/// Iterator over the keys and values of a Trie.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>&gt; {
-    <span class="ident">root</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;,
-    <span class="ident">root_visited</span>: <span class="ident">bool</span>,
-    <span class="ident">stack</span>: <span class="ident">Vec</span>&lt;<span class="ident">ChildIter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;&gt;,
+<span class="doccomment">/// Iterator over the keys and values of a Trie.
+</span><span class="kw">pub struct </span>Iter&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a</span>, V: <span class="lifetime">&#39;a</span>&gt; {
+    root: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;,
+    root_visited: bool,
+    stack: Vec&lt;ChildIter&lt;<span class="lifetime">&#39;a</span>, K, V&gt;&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; {
-    <span class="comment">// TODO: make this private somehow (and same for the other iterators).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">root</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;) -&gt; <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; {
-        <span class="ident">Iter</span> {
-            <span class="ident">root</span>: <span class="ident">root</span>,
-            <span class="ident">root_visited</span>: <span class="bool-val">false</span>,
-            <span class="ident">stack</span>: <span class="macro">vec!</span>[],
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K, V&gt; Iter&lt;<span class="lifetime">&#39;a</span>, K, V&gt; {
+    <span class="comment">// TODO: make this private somehow (and same for the other iterators).
+    </span><span class="kw">pub fn </span>new(root: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;) -&gt; Iter&lt;<span class="lifetime">&#39;a</span>, K, V&gt; {
+        Iter {
+            root: root,
+            root_visited: <span class="bool-val">false</span>,
+            stack: <span class="macro">vec!</span>[],
         }
     }
 }
 
-<span class="doccomment">/// Iterator over the keys of a Trie.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Keys</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>&gt; {
-    <span class="ident">inner</span>: <span class="ident">Map</span>&lt;<span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">KeyMapFn</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;&gt;,
+<span class="doccomment">/// Iterator over the keys of a Trie.
+</span><span class="kw">pub struct </span>Keys&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a</span>, V: <span class="lifetime">&#39;a</span>&gt; {
+    inner: Map&lt;Iter&lt;<span class="lifetime">&#39;a</span>, K, V&gt;, KeyMapFn&lt;<span class="lifetime">&#39;a</span>, K, V&gt;&gt;,
 }
 
-<span class="kw">type</span> <span class="ident">KeyMapFn</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; = <span class="kw">fn</span>((<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">V</span>)) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">K</span>;
+<span class="kw">type </span>KeyMapFn&lt;<span class="lifetime">&#39;a</span>, K, V&gt; = <span class="kw">fn</span>((<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>V)) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>K;
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">Keys</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">iter</span>: <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;) -&gt; <span class="ident">Keys</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; {
-        <span class="kw">fn</span> <span class="ident">first</span>&lt;<span class="lifetime">&#39;b</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;((<span class="ident">k</span>, <span class="kw">_</span>): (<span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">V</span>)) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">K</span> {
-            <span class="ident">k</span>
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K, V&gt; Keys&lt;<span class="lifetime">&#39;a</span>, K, V&gt; {
+    <span class="kw">pub fn </span>new(iter: Iter&lt;<span class="lifetime">&#39;a</span>, K, V&gt;) -&gt; Keys&lt;<span class="lifetime">&#39;a</span>, K, V&gt; {
+        <span class="kw">fn </span>first&lt;<span class="lifetime">&#39;b</span>, K, V&gt;((k, <span class="kw">_</span>): (<span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span>K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span>V)) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span>K {
+            k
         }
-        <span class="ident">Keys</span> {
-            <span class="ident">inner</span>: <span class="ident">iter</span>.<span class="ident">map</span>(<span class="ident">first</span>),
-        }
-    }
-}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Keys</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">K</span>;
-
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">K</span>&gt; {
-        <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">next</span>()
-    }
-}
-
-<span class="doccomment">/// Iterator over the values of a Trie.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Values</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>&gt; {
-    <span class="ident">inner</span>: <span class="ident">Map</span>&lt;<span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;, <span class="ident">ValueMapFn</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;&gt;,
-}
-
-<span class="kw">type</span> <span class="ident">ValueMapFn</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; = <span class="kw">fn</span>((<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">V</span>)) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">V</span>;
-
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">Values</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">iter</span>: <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;) -&gt; <span class="ident">Values</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; {
-        <span class="kw">fn</span> <span class="ident">second</span>&lt;<span class="lifetime">&#39;b</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;((<span class="kw">_</span>, <span class="ident">v</span>): (<span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">V</span>)) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">V</span> {
-            <span class="ident">v</span>
-        }
-        <span class="ident">Values</span> {
-            <span class="ident">inner</span>: <span class="ident">iter</span>.<span class="ident">map</span>(<span class="ident">second</span>),
+        Keys {
+            inner: iter.map(first),
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Values</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">V</span>;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K, V&gt; Iterator <span class="kw">for </span>Keys&lt;<span class="lifetime">&#39;a</span>, K, V&gt; {
+    <span class="kw">type </span>Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>K;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">V</span>&gt; {
-        <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">next</span>()
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>K&gt; {
+        <span class="self">self</span>.inner.next()
     }
 }
 
-<span class="doccomment">/// Iterator over the child subtries of a trie.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Children</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>&gt; {
-    <span class="ident">prefix</span>: <span class="ident">Nibblet</span>,
-    <span class="ident">inner</span>: <span class="ident">ChildIter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;,
+<span class="doccomment">/// Iterator over the values of a Trie.
+</span><span class="kw">pub struct </span>Values&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a</span>, V: <span class="lifetime">&#39;a</span>&gt; {
+    inner: Map&lt;Iter&lt;<span class="lifetime">&#39;a</span>, K, V&gt;, ValueMapFn&lt;<span class="lifetime">&#39;a</span>, K, V&gt;&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">Children</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">key</span>: <span class="ident">Nibblet</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;) -&gt; <span class="self">Self</span> {
-        <span class="ident">Children</span> {
-            <span class="ident">prefix</span>: <span class="ident">key</span>,
-            <span class="ident">inner</span>: <span class="ident">node</span>.<span class="ident">child_iter</span>(),
+<span class="kw">type </span>ValueMapFn&lt;<span class="lifetime">&#39;a</span>, K, V&gt; = <span class="kw">fn</span>((<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>V)) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>V;
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K, V&gt; Values&lt;<span class="lifetime">&#39;a</span>, K, V&gt; {
+    <span class="kw">pub fn </span>new(iter: Iter&lt;<span class="lifetime">&#39;a</span>, K, V&gt;) -&gt; Values&lt;<span class="lifetime">&#39;a</span>, K, V&gt; {
+        <span class="kw">fn </span>second&lt;<span class="lifetime">&#39;b</span>, K, V&gt;((<span class="kw">_</span>, v): (<span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span>K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span>V)) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span>V {
+            v
+        }
+        Values {
+            inner: iter.map(second),
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Children</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">SubTrie</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K, V&gt; Iterator <span class="kw">for </span>Values&lt;<span class="lifetime">&#39;a</span>, K, V&gt; {
+    <span class="kw">type </span>Item = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>V;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">SubTrie</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;&gt; {
-        <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">next</span>().<span class="ident">map</span>(|<span class="ident">node</span>| <span class="ident">SubTrie</span> {
-            <span class="ident">prefix</span>: <span class="self">self</span>.<span class="ident">prefix</span>.<span class="ident">clone</span>().<span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="ident">node</span>.<span class="ident">key</span>),
-            <span class="ident">node</span>: <span class="ident">node</span>,
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>V&gt; {
+        <span class="self">self</span>.inner.next()
+    }
+}
+
+<span class="doccomment">/// Iterator over the child subtries of a trie.
+</span><span class="kw">pub struct </span>Children&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a</span>, V: <span class="lifetime">&#39;a</span>&gt; {
+    prefix: Nibblet,
+    inner: ChildIter&lt;<span class="lifetime">&#39;a</span>, K, V&gt;,
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K, V&gt; Children&lt;<span class="lifetime">&#39;a</span>, K, V&gt; {
+    <span class="kw">pub fn </span>new(key: Nibblet, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;) -&gt; <span class="self">Self </span>{
+        Children {
+            prefix: key,
+            inner: node.child_iter(),
+        }
+    }
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K, V&gt; Iterator <span class="kw">for </span>Children&lt;<span class="lifetime">&#39;a</span>, K, V&gt; {
+    <span class="kw">type </span>Item = SubTrie&lt;<span class="lifetime">&#39;a</span>, K, V&gt;;
+
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;SubTrie&lt;<span class="lifetime">&#39;a</span>, K, V&gt;&gt; {
+        <span class="self">self</span>.inner.next().map(|node| SubTrie {
+            prefix: <span class="self">self</span>.prefix.clone().join(<span class="kw-2">&amp;</span>node.key),
+            node: node,
         })
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt; {
-    <span class="doccomment">/// Helper function to get all the non-empty children of a node.</span>
-    <span class="kw">fn</span> <span class="ident">child_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">ChildIter</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt; {
-        <span class="kw">fn</span> <span class="ident">id</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;(<span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;<span class="ident">Child</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">Child</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;&gt; {
-            <span class="ident">x</span>.<span class="ident">as_ref</span>()
+<span class="kw">impl</span>&lt;K, V&gt; TrieNode&lt;K, V&gt; {
+    <span class="doccomment">/// Helper function to get all the non-empty children of a node.
+    </span><span class="kw">fn </span>child_iter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ChildIter&lt;K, V&gt; {
+        <span class="kw">fn </span>id&lt;K, V&gt;(x: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Child&lt;K, V&gt;&gt;) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Child&lt;K, V&gt;&gt; {
+            x.as_ref()
         }
 
-        <span class="self">self</span>.<span class="ident">children</span>.<span class="ident">iter</span>().<span class="ident">filter_map</span>(<span class="ident">id</span>)
+        <span class="self">self</span>.children.iter().filter_map(id)
     }
 
-    <span class="doccomment">/// Get the key and value of a node as a pair.</span>
-    <span class="kw">fn</span> <span class="ident">kv_as_pair</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span><span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="ident">V</span>)&gt; {
-        <span class="self">self</span>.<span class="ident">key_value</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(|<span class="ident">kv</span>| (<span class="kw-2">&amp;</span><span class="ident">kv</span>.<span class="ident">key</span>, <span class="kw-2">&amp;</span><span class="ident">kv</span>.<span class="ident">value</span>))
+    <span class="doccomment">/// Get the key and value of a node as a pair.
+    </span><span class="kw">fn </span>kv_as_pair(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>K, <span class="kw-2">&amp;</span>V)&gt; {
+        <span class="self">self</span>.key_value.as_ref().map(|kv| (<span class="kw-2">&amp;</span>kv.key, <span class="kw-2">&amp;</span>kv.value))
     }
 }
 
-<span class="kw">enum</span> <span class="ident">IterAction</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>&gt; {
-    <span class="ident">Push</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;),
-    <span class="ident">Pop</span>,
+<span class="kw">enum </span>IterAction&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a</span>, V: <span class="lifetime">&#39;a</span>&gt; {
+    Push(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;),
+    Pop,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Item</span> = (<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">V</span>);
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K, V&gt; Iterator <span class="kw">for </span>Iter&lt;<span class="lifetime">&#39;a</span>, K, V&gt; {
+    <span class="kw">type </span>Item = (<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>V);
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
-        <span class="kw">use</span> <span class="ident"><span class="self">self</span>::IterAction</span>::<span class="kw-2">*</span>;
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">use </span><span class="self">self</span>::IterAction::<span class="kw-2">*</span>;
 
-        <span class="comment">// Visit each node as it is reached from its parent (with special root handling).</span>
-        <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">root_visited</span> {
-            <span class="self">self</span>.<span class="ident">root_visited</span> = <span class="bool-val">true</span>;
-            <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="self">self</span>.<span class="ident">root</span>.<span class="ident">child_iter</span>());
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">kv</span>) = <span class="self">self</span>.<span class="ident">root</span>.<span class="ident">kv_as_pair</span>() {
-                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">kv</span>);
+        <span class="comment">// Visit each node as it is reached from its parent (with special root handling).
+        </span><span class="kw">if </span>!<span class="self">self</span>.root_visited {
+            <span class="self">self</span>.root_visited = <span class="bool-val">true</span>;
+            <span class="self">self</span>.stack.push(<span class="self">self</span>.root.child_iter());
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(kv) = <span class="self">self</span>.root.kv_as_pair() {
+                <span class="kw">return </span><span class="prelude-val">Some</span>(kv);
             }
         }
 
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">action</span> = <span class="kw">match</span> <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">last_mut</span>() {
-                <span class="prelude-val">Some</span>(<span class="ident">stack_top</span>) =&gt; <span class="kw">match</span> <span class="ident">stack_top</span>.<span class="ident">next</span>() {
-                    <span class="prelude-val">Some</span>(<span class="ident">child</span>) =&gt; <span class="ident">Push</span>(<span class="ident">child</span>),
-                    <span class="prelude-val">None</span> =&gt; <span class="ident">Pop</span>,
+        <span class="kw">loop </span>{
+            <span class="kw">let </span>action = <span class="kw">match </span><span class="self">self</span>.stack.last_mut() {
+                <span class="prelude-val">Some</span>(stack_top) =&gt; <span class="kw">match </span>stack_top.next() {
+                    <span class="prelude-val">Some</span>(child) =&gt; Push(child),
+                    <span class="prelude-val">None </span>=&gt; Pop,
                 },
-                <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">None</span>,
+                <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
             };
 
-            <span class="kw">match</span> <span class="ident">action</span> {
-                <span class="ident">Push</span>(<span class="ident">trie</span>) =&gt; {
-                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">push</span>(<span class="ident">trie</span>.<span class="ident">child_iter</span>());
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">kv</span>) = <span class="ident">trie</span>.<span class="ident">kv_as_pair</span>() {
-                        <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">kv</span>);
+            <span class="kw">match </span>action {
+                Push(trie) =&gt; {
+                    <span class="self">self</span>.stack.push(trie.child_iter());
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(kv) = trie.kv_as_pair() {
+                        <span class="kw">return </span><span class="prelude-val">Some</span>(kv);
                     }
                 }
-                <span class="ident">Pop</span> =&gt; {
-                    <span class="self">self</span>.<span class="ident">stack</span>.<span class="ident">pop</span>();
+                Pop =&gt; {
+                    <span class="self">self</span>.stack.pop();
                 }
             }
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">FromIterator</span>&lt;(<span class="ident">K</span>, <span class="ident">V</span>)&gt; <span class="kw">for</span> <span class="ident">Trie</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
+<span class="kw">impl</span>&lt;K, V&gt; FromIterator&lt;(K, V)&gt; <span class="kw">for </span>Trie&lt;K, V&gt;
+<span class="kw">where
+    </span>K: TrieKey,
 {
-    <span class="kw">fn</span> <span class="ident">from_iter</span>&lt;<span class="ident">T</span>&gt;(<span class="ident">iter</span>: <span class="ident">T</span>) -&gt; <span class="ident">Trie</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">T</span>: <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = (<span class="ident">K</span>, <span class="ident">V</span>)&gt;,
+    <span class="kw">fn </span>from_iter&lt;T&gt;(iter: T) -&gt; Trie&lt;K, V&gt;
+    <span class="kw">where
+        </span>T: IntoIterator&lt;Item = (K, V)&gt;,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trie</span> = <span class="ident">Trie::new</span>();
-        <span class="kw">for</span> (<span class="ident">k</span>, <span class="ident">v</span>) <span class="kw">in</span> <span class="ident">iter</span> {
-            <span class="ident">trie</span>.<span class="ident">insert</span>(<span class="ident">k</span>, <span class="ident">v</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>trie = Trie::new();
+        <span class="kw">for </span>(k, v) <span class="kw">in </span>iter {
+            trie.insert(k, v);
         }
-        <span class="ident">trie</span>
+        trie
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="radix_trie" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="radix_trie" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -97,104 +97,104 @@
 <span id="97">97</span>
 <span id="98">98</span>
 <span id="99">99</span>
-</pre><pre class="rust"><code><span class="doccomment">//! The Unix `ioctl` function is effectively lots of different functions</span>
-<span class="doccomment">//! hidden behind a single dynamic dispatch interface. In order to provide</span>
-<span class="doccomment">//! a type-safe API, rustix makes them all separate functions so that they</span>
-<span class="doccomment">//! can have dedicated static type signatures.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! The Unix `ioctl` function is effectively lots of different functions
+//! hidden behind a single dynamic dispatch interface. In order to provide
+//! a type-safe API, rustix makes them all separate functions so that they
+//! can have dedicated static type signatures.
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">backend</span>, <span class="ident">io</span>};
-<span class="kw">use</span> <span class="ident">backend::fd::AsFd</span>;
+</span><span class="kw">use crate</span>::{backend, io};
+<span class="kw">use </span>backend::fd::AsFd;
 
-<span class="doccomment">/// `ioctl(fd, TIOCEXCL)`—Enables exclusive mode on a terminal.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # References</span>
-<span class="doccomment">///  - [Linux]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man4/tty_ioctl.4.html</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">windows</span>, <span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>)))]</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">alias</span> = <span class="string">&quot;TIOCEXCL&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ioctl_tiocexcl</span>&lt;<span class="ident">Fd</span>: <span class="ident">AsFd</span>&gt;(<span class="ident">fd</span>: <span class="ident">Fd</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-    <span class="ident">backend::io::syscalls::ioctl_tiocexcl</span>(<span class="ident">fd</span>.<span class="ident">as_fd</span>())
+<span class="doccomment">/// `ioctl(fd, TIOCEXCL)`—Enables exclusive mode on a terminal.
+///
+/// # References
+///  - [Linux]
+///
+/// [Linux]: https://man7.org/linux/man-pages/man4/tty_ioctl.4.html
+</span><span class="attribute">#[cfg(not(any(windows, target_os = <span class="string">&quot;redox&quot;</span>, target_os = <span class="string">&quot;wasi&quot;</span>)))]
+#[inline]
+#[doc(alias = <span class="string">&quot;TIOCEXCL&quot;</span>)]
+</span><span class="kw">pub fn </span>ioctl_tiocexcl&lt;Fd: AsFd&gt;(fd: Fd) -&gt; io::Result&lt;()&gt; {
+    backend::io::syscalls::ioctl_tiocexcl(fd.as_fd())
 }
 
-<span class="doccomment">/// `ioctl(fd, TIOCNXCL)`—Disables exclusive mode on a terminal.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # References</span>
-<span class="doccomment">///  - [Linux]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man4/tty_ioctl.4.html</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">windows</span>, <span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>)))]</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">alias</span> = <span class="string">&quot;TIOCNXCL&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ioctl_tiocnxcl</span>&lt;<span class="ident">Fd</span>: <span class="ident">AsFd</span>&gt;(<span class="ident">fd</span>: <span class="ident">Fd</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-    <span class="ident">backend::io::syscalls::ioctl_tiocnxcl</span>(<span class="ident">fd</span>.<span class="ident">as_fd</span>())
+<span class="doccomment">/// `ioctl(fd, TIOCNXCL)`—Disables exclusive mode on a terminal.
+///
+/// # References
+///  - [Linux]
+///
+/// [Linux]: https://man7.org/linux/man-pages/man4/tty_ioctl.4.html
+</span><span class="attribute">#[cfg(not(any(windows, target_os = <span class="string">&quot;redox&quot;</span>, target_os = <span class="string">&quot;wasi&quot;</span>)))]
+#[inline]
+#[doc(alias = <span class="string">&quot;TIOCNXCL&quot;</span>)]
+</span><span class="kw">pub fn </span>ioctl_tiocnxcl&lt;Fd: AsFd&gt;(fd: Fd) -&gt; io::Result&lt;()&gt; {
+    backend::io::syscalls::ioctl_tiocnxcl(fd.as_fd())
 }
 
-<span class="doccomment">/// `ioctl(fd, FIOCLEX)`—Set the close-on-exec flag.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Also known as `fcntl(fd, F_SETFD, FD_CLOEXEC)`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # References</span>
-<span class="doccomment">///  - [Linux]</span>
-<span class="doccomment">///  - [Winsock2]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man2/ioctl.2.html</span>
-<span class="doccomment">/// [Winsock2]: https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-ioctlsocket</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;ios&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>))]</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">alias</span> = <span class="string">&quot;FIOCLEX&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">alias</span> = <span class="string">&quot;FD_CLOEXEC&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ioctl_fioclex</span>&lt;<span class="ident">Fd</span>: <span class="ident">AsFd</span>&gt;(<span class="ident">fd</span>: <span class="ident">Fd</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-    <span class="ident">backend::io::syscalls::ioctl_fioclex</span>(<span class="ident">fd</span>.<span class="ident">as_fd</span>())
+<span class="doccomment">/// `ioctl(fd, FIOCLEX)`—Set the close-on-exec flag.
+///
+/// Also known as `fcntl(fd, F_SETFD, FD_CLOEXEC)`.
+///
+/// # References
+///  - [Linux]
+///  - [Winsock2]
+///
+/// [Linux]: https://man7.org/linux/man-pages/man2/ioctl.2.html
+/// [Winsock2]: https://docs.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-ioctlsocket
+</span><span class="attribute">#[cfg(any(target_os = <span class="string">&quot;ios&quot;</span>, target_os = <span class="string">&quot;macos&quot;</span>))]
+#[inline]
+#[doc(alias = <span class="string">&quot;FIOCLEX&quot;</span>)]
+#[doc(alias = <span class="string">&quot;FD_CLOEXEC&quot;</span>)]
+</span><span class="kw">pub fn </span>ioctl_fioclex&lt;Fd: AsFd&gt;(fd: Fd) -&gt; io::Result&lt;()&gt; {
+    backend::io::syscalls::ioctl_fioclex(fd.as_fd())
 }
 
-<span class="doccomment">/// `ioctl(fd, FIONBIO, &amp;value)`—Enables or disables non-blocking mode.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # References</span>
-<span class="doccomment">///  - [Linux]</span>
-<span class="doccomment">///  - [Winsock2]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man2/ioctl.2.html</span>
-<span class="doccomment">/// [Winsock2]: https://docs.microsoft.com/en-us/windows/win32/winsock/winsock-ioctls#unix-ioctl-codes</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">alias</span> = <span class="string">&quot;FIONBIO&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ioctl_fionbio</span>&lt;<span class="ident">Fd</span>: <span class="ident">AsFd</span>&gt;(<span class="ident">fd</span>: <span class="ident">Fd</span>, <span class="ident">value</span>: <span class="ident">bool</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-    <span class="ident">backend::io::syscalls::ioctl_fionbio</span>(<span class="ident">fd</span>.<span class="ident">as_fd</span>(), <span class="ident">value</span>)
+<span class="doccomment">/// `ioctl(fd, FIONBIO, &amp;value)`—Enables or disables non-blocking mode.
+///
+/// # References
+///  - [Linux]
+///  - [Winsock2]
+///
+/// [Linux]: https://man7.org/linux/man-pages/man2/ioctl.2.html
+/// [Winsock2]: https://docs.microsoft.com/en-us/windows/win32/winsock/winsock-ioctls#unix-ioctl-codes
+</span><span class="attribute">#[inline]
+#[doc(alias = <span class="string">&quot;FIONBIO&quot;</span>)]
+</span><span class="kw">pub fn </span>ioctl_fionbio&lt;Fd: AsFd&gt;(fd: Fd, value: bool) -&gt; io::Result&lt;()&gt; {
+    backend::io::syscalls::ioctl_fionbio(fd.as_fd(), value)
 }
 
-<span class="doccomment">/// `ioctl(fd, FIONREAD)`—Returns the number of bytes ready to be read.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The result of this function gets silently coerced into a C `int`</span>
-<span class="doccomment">/// by the OS, so it may contain a wrapped value.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # References</span>
-<span class="doccomment">///  - [Linux]</span>
-<span class="doccomment">///  - [Winsock2]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man2/ioctl_tty.2.html</span>
-<span class="doccomment">/// [Winsock2]: https://docs.microsoft.com/en-us/windows/win32/winsock/winsock-ioctls#unix-ioctl-codes</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>))]</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">alias</span> = <span class="string">&quot;FIONREAD&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ioctl_fionread</span>&lt;<span class="ident">Fd</span>: <span class="ident">AsFd</span>&gt;(<span class="ident">fd</span>: <span class="ident">Fd</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">u64</span>&gt; {
-    <span class="ident">backend::io::syscalls::ioctl_fionread</span>(<span class="ident">fd</span>.<span class="ident">as_fd</span>())
+<span class="doccomment">/// `ioctl(fd, FIONREAD)`—Returns the number of bytes ready to be read.
+///
+/// The result of this function gets silently coerced into a C `int`
+/// by the OS, so it may contain a wrapped value.
+///
+/// # References
+///  - [Linux]
+///  - [Winsock2]
+///
+/// [Linux]: https://man7.org/linux/man-pages/man2/ioctl_tty.2.html
+/// [Winsock2]: https://docs.microsoft.com/en-us/windows/win32/winsock/winsock-ioctls#unix-ioctl-codes
+</span><span class="attribute">#[cfg(not(target_os = <span class="string">&quot;redox&quot;</span>))]
+#[inline]
+#[doc(alias = <span class="string">&quot;FIONREAD&quot;</span>)]
+</span><span class="kw">pub fn </span>ioctl_fionread&lt;Fd: AsFd&gt;(fd: Fd) -&gt; io::Result&lt;u64&gt; {
+    backend::io::syscalls::ioctl_fionread(fd.as_fd())
 }
 
-<span class="doccomment">/// `ioctl(fd, BLKSSZGET)`—Returns the logical block size of a block device.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;android&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>))]</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">alias</span> = <span class="string">&quot;BLKSSZGET&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ioctl_blksszget</span>&lt;<span class="ident">Fd</span>: <span class="ident">AsFd</span>&gt;(<span class="ident">fd</span>: <span class="ident">Fd</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">u32</span>&gt; {
-    <span class="ident">backend::io::syscalls::ioctl_blksszget</span>(<span class="ident">fd</span>.<span class="ident">as_fd</span>())
+<span class="doccomment">/// `ioctl(fd, BLKSSZGET)`—Returns the logical block size of a block device.
+</span><span class="attribute">#[cfg(any(target_os = <span class="string">&quot;android&quot;</span>, target_os = <span class="string">&quot;linux&quot;</span>))]
+#[inline]
+#[doc(alias = <span class="string">&quot;BLKSSZGET&quot;</span>)]
+</span><span class="kw">pub fn </span>ioctl_blksszget&lt;Fd: AsFd&gt;(fd: Fd) -&gt; io::Result&lt;u32&gt; {
+    backend::io::syscalls::ioctl_blksszget(fd.as_fd())
 }
 
-<span class="doccomment">/// `ioctl(fd, BLKPBSZGET)`—Returns the physical block size of a block device.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;android&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>))]</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">alias</span> = <span class="string">&quot;BLKPBSZGET&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ioctl_blkpbszget</span>&lt;<span class="ident">Fd</span>: <span class="ident">AsFd</span>&gt;(<span class="ident">fd</span>: <span class="ident">Fd</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">u32</span>&gt; {
-    <span class="ident">backend::io::syscalls::ioctl_blkpbszget</span>(<span class="ident">fd</span>.<span class="ident">as_fd</span>())
+<span class="doccomment">/// `ioctl(fd, BLKPBSZGET)`—Returns the physical block size of a block device.
+</span><span class="attribute">#[cfg(any(target_os = <span class="string">&quot;android&quot;</span>, target_os = <span class="string">&quot;linux&quot;</span>))]
+#[inline]
+#[doc(alias = <span class="string">&quot;BLKPBSZGET&quot;</span>)]
+</span><span class="kw">pub fn </span>ioctl_blkpbszget&lt;Fd: AsFd&gt;(fd: Fd) -&gt; io::Result&lt;u32&gt; {
+    backend::io::syscalls::ioctl_blkpbszget(fd.as_fd())
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

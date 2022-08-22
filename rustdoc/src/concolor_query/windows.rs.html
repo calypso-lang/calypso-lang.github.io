@@ -74,81 +74,81 @@
 <span id="74">74</span>
 <span id="75">75</span>
 <span id="76">76</span>
-</pre><pre class="rust"><code><span class="comment">// Avoiding `winapi` because of the hassle to workaround wanting a feature to conditionally enable</span>
-<span class="comment">// a dependency, depending on the target.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">mod</span> <span class="ident">windows_console</span> {
-    <span class="kw">use</span> <span class="ident">std::os::raw::c_void</span>;
+</pre><pre class="rust"><code><span class="comment">// Avoiding `winapi` because of the hassle to workaround wanting a feature to conditionally enable
+// a dependency, depending on the target.
+</span><span class="attribute">#[cfg(windows)]
+</span><span class="kw">mod </span>windows_console {
+    <span class="kw">use </span>std::os::raw::c_void;
 
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
-    <span class="kw">type</span> <span class="ident">c_ulong</span> = <span class="ident">u32</span>;
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
-    <span class="kw">type</span> <span class="ident">c_int</span> = <span class="ident">i32</span>;
-    <span class="kw">type</span> <span class="ident">DWORD</span> = <span class="ident">c_ulong</span>;
-    <span class="kw">type</span> <span class="ident">LPDWORD</span> = <span class="kw-2">*mut</span> <span class="ident">DWORD</span>;
-    <span class="kw">type</span> <span class="ident">HANDLE</span> = <span class="kw-2">*mut</span> <span class="ident">c_void</span>;
-    <span class="kw">type</span> <span class="ident">BOOL</span> = <span class="ident">c_int</span>;
+    <span class="attribute">#[allow(non_camel_case_types)]
+    </span><span class="kw">type </span>c_ulong = u32;
+    <span class="attribute">#[allow(non_camel_case_types)]
+    </span><span class="kw">type </span>c_int = i32;
+    <span class="kw">type </span>DWORD = c_ulong;
+    <span class="kw">type </span>LPDWORD = <span class="kw-2">*mut </span>DWORD;
+    <span class="kw">type </span>HANDLE = <span class="kw-2">*mut </span>c_void;
+    <span class="kw">type </span>BOOL = c_int;
 
-    <span class="kw">const</span> <span class="ident">ENABLE_VIRTUAL_TERMINAL_PROCESSING</span>: <span class="ident">DWORD</span> = <span class="number">0x0004</span>;
-    <span class="kw">const</span> <span class="ident">STD_OUTPUT_HANDLE</span>: <span class="ident">DWORD</span> = <span class="number">0xFFFFFFF5</span>;
-    <span class="kw">const</span> <span class="ident">STD_ERROR_HANDLE</span>: <span class="ident">DWORD</span> = <span class="number">0xFFFFFFF4</span>;
-    <span class="kw">const</span> <span class="ident">INVALID_HANDLE_VALUE</span>: <span class="ident">HANDLE</span> = -<span class="number">1isize</span> <span class="kw">as</span> <span class="ident">HANDLE</span>;
-    <span class="kw">const</span> <span class="ident">FALSE</span>: <span class="ident">BOOL</span> = <span class="number">0</span>;
-    <span class="kw">const</span> <span class="ident">TRUE</span>: <span class="ident">BOOL</span> = <span class="number">1</span>;
+    <span class="kw">const </span>ENABLE_VIRTUAL_TERMINAL_PROCESSING: DWORD = <span class="number">0x0004</span>;
+    <span class="kw">const </span>STD_OUTPUT_HANDLE: DWORD = <span class="number">0xFFFFFFF5</span>;
+    <span class="kw">const </span>STD_ERROR_HANDLE: DWORD = <span class="number">0xFFFFFFF4</span>;
+    <span class="kw">const </span>INVALID_HANDLE_VALUE: HANDLE = -<span class="number">1isize </span><span class="kw">as </span>HANDLE;
+    <span class="kw">const </span>FALSE: BOOL = <span class="number">0</span>;
+    <span class="kw">const </span>TRUE: BOOL = <span class="number">1</span>;
 
-    <span class="comment">// This is the win32 console API, taken from the &#39;winapi&#39; crate.</span>
-    <span class="kw">extern</span> <span class="string">&quot;system&quot;</span> {
-        <span class="kw">fn</span> <span class="ident">GetStdHandle</span>(<span class="ident">nStdHandle</span>: <span class="ident">DWORD</span>) -&gt; <span class="ident">HANDLE</span>;
-        <span class="kw">fn</span> <span class="ident">GetConsoleMode</span>(<span class="ident">hConsoleHandle</span>: <span class="ident">HANDLE</span>, <span class="ident">lpMode</span>: <span class="ident">LPDWORD</span>) -&gt; <span class="ident">BOOL</span>;
-        <span class="kw">fn</span> <span class="ident">SetConsoleMode</span>(<span class="ident">hConsoleHandle</span>: <span class="ident">HANDLE</span>, <span class="ident">dwMode</span>: <span class="ident">DWORD</span>) -&gt; <span class="ident">BOOL</span>;
+    <span class="comment">// This is the win32 console API, taken from the &#39;winapi&#39; crate.
+    </span><span class="kw">extern </span><span class="string">&quot;system&quot; </span>{
+        <span class="kw">fn </span>GetStdHandle(nStdHandle: DWORD) -&gt; HANDLE;
+        <span class="kw">fn </span>GetConsoleMode(hConsoleHandle: HANDLE, lpMode: LPDWORD) -&gt; BOOL;
+        <span class="kw">fn </span>SetConsoleMode(hConsoleHandle: HANDLE, dwMode: DWORD) -&gt; BOOL;
     }
 
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">get_handle</span>(<span class="ident">handle_num</span>: <span class="ident">DWORD</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">HANDLE</span>, ()&gt; {
-        <span class="kw">match</span> <span class="ident">GetStdHandle</span>(<span class="ident">handle_num</span>) {
-            <span class="ident">handle</span> <span class="kw">if</span> <span class="ident">handle</span> == <span class="ident">INVALID_HANDLE_VALUE</span> =&gt; <span class="prelude-val">Err</span>(()),
-            <span class="ident">handle</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">handle</span>),
+    <span class="kw">unsafe fn </span>get_handle(handle_num: DWORD) -&gt; <span class="prelude-ty">Result</span>&lt;HANDLE, ()&gt; {
+        <span class="kw">match </span>GetStdHandle(handle_num) {
+            handle <span class="kw">if </span>handle == INVALID_HANDLE_VALUE =&gt; <span class="prelude-val">Err</span>(()),
+            handle =&gt; <span class="prelude-val">Ok</span>(handle),
         }
     }
 
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">enable_vt</span>(<span class="ident">handle</span>: <span class="ident">HANDLE</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), ()&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dw_mode</span>: <span class="ident">DWORD</span> = <span class="number">0</span>;
-        <span class="kw">if</span> <span class="ident">GetConsoleMode</span>(<span class="ident">handle</span>, <span class="kw-2">&amp;mut</span> <span class="ident">dw_mode</span>) == <span class="ident">FALSE</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(());
+    <span class="kw">unsafe fn </span>enable_vt(handle: HANDLE) -&gt; <span class="prelude-ty">Result</span>&lt;(), ()&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>dw_mode: DWORD = <span class="number">0</span>;
+        <span class="kw">if </span>GetConsoleMode(handle, <span class="kw-2">&amp;mut </span>dw_mode) == FALSE {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(());
         }
 
-        <span class="ident">dw_mode</span> |= <span class="ident">ENABLE_VIRTUAL_TERMINAL_PROCESSING</span>;
-        <span class="kw">match</span> <span class="ident">SetConsoleMode</span>(<span class="ident">handle</span>, <span class="ident">dw_mode</span>) {
-            <span class="ident">result</span> <span class="kw">if</span> <span class="ident">result</span> == <span class="ident">TRUE</span> =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(()),
+        dw_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+        <span class="kw">match </span>SetConsoleMode(handle, dw_mode) {
+            result <span class="kw">if </span>result == TRUE =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(()),
         }
     }
 
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">enable_ansi_colors_raw</span>() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">bool</span>, ()&gt; {
-        <span class="kw">let</span> <span class="ident">stdout_handle</span> = <span class="ident">get_handle</span>(<span class="ident">STD_OUTPUT_HANDLE</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">stderr_handle</span> = <span class="ident">get_handle</span>(<span class="ident">STD_ERROR_HANDLE</span>)<span class="question-mark">?</span>;
+    <span class="kw">unsafe fn </span>enable_ansi_colors_raw() -&gt; <span class="prelude-ty">Result</span>&lt;bool, ()&gt; {
+        <span class="kw">let </span>stdout_handle = get_handle(STD_OUTPUT_HANDLE)<span class="question-mark">?</span>;
+        <span class="kw">let </span>stderr_handle = get_handle(STD_ERROR_HANDLE)<span class="question-mark">?</span>;
 
-        <span class="ident">enable_vt</span>(<span class="ident">stdout_handle</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="ident">stdout_handle</span> != <span class="ident">stderr_handle</span> {
-            <span class="ident">enable_vt</span>(<span class="ident">stderr_handle</span>)<span class="question-mark">?</span>;
+        enable_vt(stdout_handle)<span class="question-mark">?</span>;
+        <span class="kw">if </span>stdout_handle != stderr_handle {
+            enable_vt(stderr_handle)<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
     }
 
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_ansi_colors</span>() -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">bool</span>&gt; {
-        <span class="kw">let</span> <span class="ident">enabled</span> = <span class="kw">unsafe</span> { <span class="ident">enable_ansi_colors_raw</span>().<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>) };
-        <span class="prelude-val">Some</span>(<span class="ident">enabled</span>)
+    <span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>enable_ansi_colors() -&gt; <span class="prelude-ty">Option</span>&lt;bool&gt; {
+        <span class="kw">let </span>enabled = <span class="kw">unsafe </span>{ enable_ansi_colors_raw().unwrap_or(<span class="bool-val">false</span>) };
+        <span class="prelude-val">Some</span>(enabled)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-<span class="kw">mod</span> <span class="ident">windows_console</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_ansi_colors</span>() -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">bool</span>&gt; {
-        <span class="prelude-val">None</span>
-    }
+<span class="attribute">#[cfg(not(windows))]
+</span><span class="kw">mod </span>windows_console {
+    <span class="kw">pub fn </span>enable_ansi_colors() -&gt; <span class="prelude-ty">Option</span>&lt;bool&gt; {
+        <span class="prelude-val">None
+    </span>}
 }
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::windows_console::enable_ansi_colors</span>;
+<span class="kw">pub use </span><span class="self">self</span>::windows_console::enable_ansi_colors;
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="concolor_query" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="concolor_query" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

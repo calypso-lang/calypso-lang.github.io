@@ -86,93 +86,93 @@
 <span id="86">86</span>
 <span id="87">87</span>
 <span id="88">88</span>
-</pre><pre class="rust"><code><span class="doccomment">//! The global reporting context for diagnostics.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! The global reporting context for diagnostics.
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::diagnostic::EnsembleDiagnostic</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::diagnostic::EnsembleDiagnostic;
 
-<span class="doccomment">/// The global reporting context for diagnostics.</span>
-<span class="comment">// TODO(@ThePuzzlemaker: frame|diag):</span>
-<span class="comment">//   rewrite nonfatals as a better &quot;lint&quot; system</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">GlobalReportingCtxt</span> {
-    <span class="ident">errors</span>: <span class="ident">Vec</span>&lt;<span class="ident">EnsembleDiagnostic</span>&gt;,
-    <span class="ident">nonfatals</span>: <span class="ident">Vec</span>&lt;<span class="ident">EnsembleDiagnostic</span>&gt;,
-    <span class="ident">fatal</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">EnsembleDiagnostic</span>&gt;,
+<span class="doccomment">/// The global reporting context for diagnostics.
+</span><span class="comment">// TODO(@ThePuzzlemaker: frame|diag):
+//   rewrite nonfatals as a better &quot;lint&quot; system
+</span><span class="kw">pub struct </span>GlobalReportingCtxt {
+    errors: Vec&lt;EnsembleDiagnostic&gt;,
+    nonfatals: Vec&lt;EnsembleDiagnostic&gt;,
+    fatal: <span class="prelude-ty">Option</span>&lt;EnsembleDiagnostic&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">GlobalReportingCtxt</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>()
+<span class="kw">impl </span>Default <span class="kw">for </span>GlobalReportingCtxt {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">GlobalReportingCtxt</span> {
-    <span class="doccomment">/// Create a new `GlobalReportingCtxt`.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">errors</span>: <span class="ident">Vec::new</span>(),
-            <span class="ident">nonfatals</span>: <span class="ident">Vec::new</span>(),
-            <span class="ident">fatal</span>: <span class="prelude-val">None</span>,
+<span class="kw">impl </span>GlobalReportingCtxt {
+    <span class="doccomment">/// Create a new `GlobalReportingCtxt`.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            errors: Vec::new(),
+            nonfatals: Vec::new(),
+            fatal: <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="doccomment">/// Clear the list of synchronized errors.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear_syncd</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">errors</span>.<span class="ident">clear</span>();
+    <span class="doccomment">/// Clear the list of synchronized errors.
+    </span><span class="kw">pub fn </span>clear_syncd(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.errors.clear();
     }
 
-    <span class="doccomment">/// Clear the list of nonfatals.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear_nonfatals</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">nonfatals</span>.<span class="ident">clear</span>();
+    <span class="doccomment">/// Clear the list of nonfatals.
+    </span><span class="kw">pub fn </span>clear_nonfatals(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.nonfatals.clear();
     }
 
-    <span class="doccomment">/// Clear the current fatal error.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear_fatal</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">fatal</span> = <span class="prelude-val">None</span>;
+    <span class="doccomment">/// Clear the current fatal error.
+    </span><span class="kw">pub fn </span>clear_fatal(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.fatal = <span class="prelude-val">None</span>;
     }
 
-    <span class="doccomment">/// Clear the entire reporting context</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">clear_fatal</span>();
-        <span class="self">self</span>.<span class="ident">clear_nonfatals</span>();
-        <span class="self">self</span>.<span class="ident">clear_syncd</span>();
+    <span class="doccomment">/// Clear the entire reporting context
+    </span><span class="kw">pub fn </span>clear(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.clear_fatal();
+        <span class="self">self</span>.clear_nonfatals();
+        <span class="self">self</span>.clear_syncd();
     }
 
-    <span class="doccomment">/// Report an error that was synchronizable.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">report_syncd</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">EnsembleDiagnostic</span>) {
-        <span class="self">self</span>.<span class="ident">errors</span>.<span class="ident">push</span>(<span class="ident">value</span>);
+    <span class="doccomment">/// Report an error that was synchronizable.
+    </span><span class="kw">pub fn </span>report_syncd(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: EnsembleDiagnostic) {
+        <span class="self">self</span>.errors.push(value);
     }
 
-    <span class="doccomment">/// Report a non-fatal error.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">report_non_fatal</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">EnsembleDiagnostic</span>) {
-        <span class="self">self</span>.<span class="ident">nonfatals</span>.<span class="ident">push</span>(<span class="ident">value</span>);
+    <span class="doccomment">/// Report a non-fatal error.
+    </span><span class="kw">pub fn </span>report_non_fatal(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: EnsembleDiagnostic) {
+        <span class="self">self</span>.nonfatals.push(value);
     }
 
-    <span class="doccomment">/// Report a fatal error. If there is already a fatal error reported, it</span>
-    <span class="doccomment">/// will not be replaced.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">report_fatal</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">EnsembleDiagnostic</span>) {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">fatal</span>.<span class="ident">is_none</span>() {
-            <span class="self">self</span>.<span class="ident">fatal</span> = <span class="prelude-val">Some</span>(<span class="ident">value</span>);
+    <span class="doccomment">/// Report a fatal error. If there is already a fatal error reported, it
+    /// will not be replaced.
+    </span><span class="kw">pub fn </span>report_fatal(<span class="kw-2">&amp;mut </span><span class="self">self</span>, value: EnsembleDiagnostic) {
+        <span class="kw">if </span><span class="self">self</span>.fatal.is_none() {
+            <span class="self">self</span>.fatal = <span class="prelude-val">Some</span>(value);
         }
     }
 
-    <span class="doccomment">/// Get the list of nonfatal errors.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">nonfatals</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">EnsembleDiagnostic</span>] {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">nonfatals</span>
+    <span class="doccomment">/// Get the list of nonfatal errors.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>nonfatals(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[EnsembleDiagnostic] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.nonfatals
     }
 
-    <span class="doccomment">/// Get the current fatal error, if any.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fatal</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">EnsembleDiagnostic</span>&gt; {
-        <span class="self">self</span>.<span class="ident">fatal</span>.<span class="ident">as_ref</span>()
+    <span class="doccomment">/// Get the current fatal error, if any.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>fatal(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>EnsembleDiagnostic&gt; {
+        <span class="self">self</span>.fatal.as_ref()
     }
 
-    <span class="doccomment">/// Get the list of synchronizable errors.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">errors</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">EnsembleDiagnostic</span>] {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">errors</span>
+    <span class="doccomment">/// Get the list of synchronizable errors.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>errors(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[EnsembleDiagnostic] {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.errors
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_diagnostic" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_diagnostic" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

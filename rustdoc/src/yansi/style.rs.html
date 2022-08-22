@@ -478,485 +478,485 @@
 <span id="478">478</span>
 <span id="479">479</span>
 <span id="480">480</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::hash</span>::{<span class="ident">Hash</span>, <span class="ident">Hasher</span>};
-<span class="kw">use</span> <span class="ident">std::fmt</span>::{<span class="self">self</span>, <span class="ident">Display</span>};
-<span class="kw">use</span> <span class="ident">std::ops::BitOr</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>std::hash::{Hash, Hasher};
+<span class="kw">use </span>std::fmt::{<span class="self">self</span>, Display};
+<span class="kw">use </span>std::ops::BitOr;
 
-<span class="kw">use</span> {<span class="ident">Paint</span>, <span class="ident">Color</span>};
+<span class="kw">use </span>{Paint, Color};
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Ord</span>, <span class="ident">PartialOrd</span>, <span class="ident">Hash</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Property</span>(<span class="ident">u8</span>);
+<span class="attribute">#[derive(Default, Debug, Eq, PartialEq, Ord, PartialOrd, Hash, Copy, Clone)]
+</span><span class="kw">pub struct </span>Property(u8);
 
-<span class="kw">impl</span> <span class="ident">Property</span> {
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BOLD</span>: <span class="self">Self</span> = <span class="ident">Property</span>(<span class="number">1</span> &lt;&lt; <span class="number">0</span>);
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">DIMMED</span>: <span class="self">Self</span> = <span class="ident">Property</span>(<span class="number">1</span> &lt;&lt; <span class="number">1</span>);
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ITALIC</span>: <span class="self">Self</span> = <span class="ident">Property</span>(<span class="number">1</span> &lt;&lt; <span class="number">2</span>);
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">UNDERLINE</span>: <span class="self">Self</span> = <span class="ident">Property</span>(<span class="number">1</span> &lt;&lt; <span class="number">3</span>);
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">BLINK</span>: <span class="self">Self</span> = <span class="ident">Property</span>(<span class="number">1</span> &lt;&lt; <span class="number">4</span>);
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">INVERT</span>: <span class="self">Self</span> = <span class="ident">Property</span>(<span class="number">1</span> &lt;&lt; <span class="number">5</span>);
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">HIDDEN</span>: <span class="self">Self</span> = <span class="ident">Property</span>(<span class="number">1</span> &lt;&lt; <span class="number">6</span>);
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STRIKETHROUGH</span>: <span class="self">Self</span> = <span class="ident">Property</span>(<span class="number">1</span> &lt;&lt; <span class="number">7</span>);
+<span class="kw">impl </span>Property {
+    <span class="kw">pub const </span>BOLD: <span class="self">Self </span>= Property(<span class="number">1 </span>&lt;&lt; <span class="number">0</span>);
+    <span class="kw">pub const </span>DIMMED: <span class="self">Self </span>= Property(<span class="number">1 </span>&lt;&lt; <span class="number">1</span>);
+    <span class="kw">pub const </span>ITALIC: <span class="self">Self </span>= Property(<span class="number">1 </span>&lt;&lt; <span class="number">2</span>);
+    <span class="kw">pub const </span>UNDERLINE: <span class="self">Self </span>= Property(<span class="number">1 </span>&lt;&lt; <span class="number">3</span>);
+    <span class="kw">pub const </span>BLINK: <span class="self">Self </span>= Property(<span class="number">1 </span>&lt;&lt; <span class="number">4</span>);
+    <span class="kw">pub const </span>INVERT: <span class="self">Self </span>= Property(<span class="number">1 </span>&lt;&lt; <span class="number">5</span>);
+    <span class="kw">pub const </span>HIDDEN: <span class="self">Self </span>= Property(<span class="number">1 </span>&lt;&lt; <span class="number">6</span>);
+    <span class="kw">pub const </span>STRIKETHROUGH: <span class="self">Self </span>= Property(<span class="number">1 </span>&lt;&lt; <span class="number">7</span>);
 
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="ident">Property</span>) -&gt; <span class="ident">bool</span> {
-        (<span class="ident">other</span>.<span class="number">0</span> &amp; <span class="self">self</span>.<span class="number">0</span>) == <span class="ident">other</span>.<span class="number">0</span>
+    <span class="attribute">#[inline(always)]
+    </span><span class="kw">pub fn </span>contains(<span class="self">self</span>, other: Property) -&gt; bool {
+        (other.<span class="number">0 </span>&amp; <span class="self">self</span>.<span class="number">0</span>) == other.<span class="number">0
+    </span>}
+
+    <span class="attribute">#[inline(always)]
+    </span><span class="kw">pub fn </span>set(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: Property) {
+        <span class="self">self</span>.<span class="number">0 </span>|= other.<span class="number">0</span>;
     }
 
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">other</span>: <span class="ident">Property</span>) {
-        <span class="self">self</span>.<span class="number">0</span> |= <span class="ident">other</span>.<span class="number">0</span>;
-    }
-
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="self">self</span>) -&gt; <span class="ident">Iter</span> {
-        <span class="ident">Iter</span> { <span class="ident">index</span>: <span class="number">0</span>, <span class="ident">properties</span>: <span class="self">self</span> }
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">BitOr</span> <span class="kw">for</span> <span class="ident">Property</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> = <span class="self">Self</span>;
-
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">bitor</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="self">Self</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Property</span>(<span class="self">self</span>.<span class="number">0</span> | <span class="ident">rhs</span>.<span class="number">0</span>)
+    <span class="attribute">#[inline(always)]
+    </span><span class="kw">pub fn </span>iter(<span class="self">self</span>) -&gt; Iter {
+        Iter { index: <span class="number">0</span>, properties: <span class="self">self </span>}
     }
 }
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Iter</span> {
-    <span class="ident">index</span>: <span class="ident">u8</span>,
-    <span class="ident">properties</span>: <span class="ident">Property</span>,
+<span class="kw">impl </span>BitOr <span class="kw">for </span>Property {
+    <span class="kw">type </span>Output = <span class="self">Self</span>;
+
+    <span class="attribute">#[inline(always)]
+    </span><span class="kw">fn </span>bitor(<span class="self">self</span>, rhs: <span class="self">Self</span>) -&gt; <span class="self">Self </span>{
+        Property(<span class="self">self</span>.<span class="number">0 </span>| rhs.<span class="number">0</span>)
+    }
 }
 
-<span class="kw">impl</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Iter</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">usize</span>;
+<span class="kw">pub struct </span>Iter {
+    index: u8,
+    properties: Property,
+}
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
-        <span class="kw">while</span> <span class="self">self</span>.<span class="ident">index</span> &lt; <span class="number">8</span> {
-            <span class="kw">let</span> <span class="ident">index</span> = <span class="self">self</span>.<span class="ident">index</span>;
-            <span class="self">self</span>.<span class="ident">index</span> += <span class="number">1</span>;
+<span class="kw">impl </span>Iterator <span class="kw">for </span>Iter {
+    <span class="kw">type </span>Item = usize;
 
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">properties</span>.<span class="ident">contains</span>(<span class="ident">Property</span>(<span class="number">1</span> &lt;&lt; <span class="ident">index</span>)) {
-                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">index</span> <span class="kw">as</span> <span class="ident">usize</span>);
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">while </span><span class="self">self</span>.index &lt; <span class="number">8 </span>{
+            <span class="kw">let </span>index = <span class="self">self</span>.index;
+            <span class="self">self</span>.index += <span class="number">1</span>;
+
+            <span class="kw">if </span><span class="self">self</span>.properties.contains(Property(<span class="number">1 </span>&lt;&lt; index)) {
+                <span class="kw">return </span><span class="prelude-val">Some</span>(index <span class="kw">as </span>usize);
             }
         }
 
-        <span class="prelude-val">None</span>
+        <span class="prelude-val">None
+    </span>}
+}
+
+<span class="doccomment">/// Represents a set of styling options.
+///
+/// See the [crate level documentation](./) for usage information.
+///
+/// # Method Glossary
+///
+/// The `Style` structure exposes many methods for convenience. The majority of
+/// these methods are shared with [`Paint`](Paint).
+///
+/// ### Foreground Color Constructors
+///
+/// Return a new `Style` structure with a foreground `color` applied.
+///
+///   * [`Style::new(color: Color)`](Style::new())
+///
+/// ### Setters
+///
+/// Set a style property on a given `Style` structure.
+///
+///   * [`style.fg(color: Color)`](Style::fg())
+///   * [`style.bg(color: Color)`](Style::bg())
+///   * [`style.mask()`](Style::mask())
+///   * [`style.wrap()`](Style::wrap())
+///   * [`style.bold()`](Style::bold())
+///   * [`style.dimmed()`](Style::dimmed())
+///   * [`style.italic()`](Style::italic())
+///   * [`style.underline()`](Style::underline())
+///   * [`style.blink()`](Style::blink())
+///   * [`style.invert()`](Style::invert())
+///   * [`style.hidden()`](Style::hidden())
+///   * [`style.strikethrough()`](Style::strikethrough())
+///
+/// These methods can be chained:
+///
+/// ```rust
+/// use yansi::{Style, Color::{Red, Magenta}};
+///
+/// Style::new(Red).bg(Magenta).underline().invert().italic().dimmed().bold();
+/// ```
+///
+/// ### Converters
+///
+/// Convert a `Style` into another structure.
+///
+///   * [`style.paint&lt;T&gt;(item: T) -&gt; Paint&lt;T&gt;`](Style::paint())
+///
+/// ### Getters
+///
+/// Return information about a `Style` structure.
+///
+///   * [`style.fg_color()`](Style::fg_color())
+///   * [`style.bg_color()`](Style::bg_color())
+///   * [`style.is_masked()`](Style::is_masked())
+///   * [`style.is_wrapping()`](Style::is_wrapping())
+///   * [`style.is_bold()`](Style::is_bold())
+///   * [`style.is_dimmed()`](Style::is_dimmed())
+///   * [`style.is_italic()`](Style::is_italic())
+///   * [`style.is_underline()`](Style::is_underline())
+///   * [`style.is_blink()`](Style::is_blink())
+///   * [`style.is_invert()`](Style::is_invert())
+///   * [`style.is_hidden()`](Style::is_hidden())
+///   * [`style.is_strikethrough()`](Style::is_strikethrough())
+///
+/// ### Raw Formatters
+///
+/// Write the raw ANSI codes for a given `Style` to any `fmt::Write`.
+///
+///   * [`style.fmt_prefix(f: &amp;mut fmt::Write)`](Style::fmt_prefix())
+///   * [`style.fmt_suffix(f: &amp;mut fmt::Write)`](Style::fmt_suffix())
+</span><span class="attribute">#[repr(packed)]
+#[derive(Default, Debug, Eq, Ord, PartialOrd, Copy, Clone)]
+</span><span class="kw">pub struct </span>Style {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) foreground: Color,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) background: Color,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) properties: Property,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) masked: bool,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) wrap: bool,
+}
+
+<span class="kw">impl </span>PartialEq <span class="kw">for </span>Style {
+    <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Style) -&gt; bool {
+        <span class="self">self</span>.foreground == other.foreground
+            &amp;&amp; <span class="self">self</span>.background == other.background
+            &amp;&amp; <span class="self">self</span>.properties == other.properties
     }
 }
 
-<span class="doccomment">/// Represents a set of styling options.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See the [crate level documentation](./) for usage information.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Method Glossary</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The `Style` structure exposes many methods for convenience. The majority of</span>
-<span class="doccomment">/// these methods are shared with [`Paint`](Paint).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ### Foreground Color Constructors</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Return a new `Style` structure with a foreground `color` applied.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///   * [`Style::new(color: Color)`](Style::new())</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ### Setters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Set a style property on a given `Style` structure.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///   * [`style.fg(color: Color)`](Style::fg())</span>
-<span class="doccomment">///   * [`style.bg(color: Color)`](Style::bg())</span>
-<span class="doccomment">///   * [`style.mask()`](Style::mask())</span>
-<span class="doccomment">///   * [`style.wrap()`](Style::wrap())</span>
-<span class="doccomment">///   * [`style.bold()`](Style::bold())</span>
-<span class="doccomment">///   * [`style.dimmed()`](Style::dimmed())</span>
-<span class="doccomment">///   * [`style.italic()`](Style::italic())</span>
-<span class="doccomment">///   * [`style.underline()`](Style::underline())</span>
-<span class="doccomment">///   * [`style.blink()`](Style::blink())</span>
-<span class="doccomment">///   * [`style.invert()`](Style::invert())</span>
-<span class="doccomment">///   * [`style.hidden()`](Style::hidden())</span>
-<span class="doccomment">///   * [`style.strikethrough()`](Style::strikethrough())</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// These methods can be chained:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust</span>
-<span class="doccomment">/// use yansi::{Style, Color::{Red, Magenta}};</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Style::new(Red).bg(Magenta).underline().invert().italic().dimmed().bold();</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ### Converters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Convert a `Style` into another structure.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///   * [`style.paint&lt;T&gt;(item: T) -&gt; Paint&lt;T&gt;`](Style::paint())</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ### Getters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Return information about a `Style` structure.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///   * [`style.fg_color()`](Style::fg_color())</span>
-<span class="doccomment">///   * [`style.bg_color()`](Style::bg_color())</span>
-<span class="doccomment">///   * [`style.is_masked()`](Style::is_masked())</span>
-<span class="doccomment">///   * [`style.is_wrapping()`](Style::is_wrapping())</span>
-<span class="doccomment">///   * [`style.is_bold()`](Style::is_bold())</span>
-<span class="doccomment">///   * [`style.is_dimmed()`](Style::is_dimmed())</span>
-<span class="doccomment">///   * [`style.is_italic()`](Style::is_italic())</span>
-<span class="doccomment">///   * [`style.is_underline()`](Style::is_underline())</span>
-<span class="doccomment">///   * [`style.is_blink()`](Style::is_blink())</span>
-<span class="doccomment">///   * [`style.is_invert()`](Style::is_invert())</span>
-<span class="doccomment">///   * [`style.is_hidden()`](Style::is_hidden())</span>
-<span class="doccomment">///   * [`style.is_strikethrough()`](Style::is_strikethrough())</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ### Raw Formatters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Write the raw ANSI codes for a given `Style` to any `fmt::Write`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///   * [`style.fmt_prefix(f: &amp;mut fmt::Write)`](Style::fmt_prefix())</span>
-<span class="doccomment">///   * [`style.fmt_suffix(f: &amp;mut fmt::Write)`](Style::fmt_suffix())</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">packed</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">Ord</span>, <span class="ident">PartialOrd</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Style</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">foreground</span>: <span class="ident">Color</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">background</span>: <span class="ident">Color</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">properties</span>: <span class="ident">Property</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">masked</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">wrap</span>: <span class="ident">bool</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">Style</span> {
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Style</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">foreground</span> == <span class="ident">other</span>.<span class="ident">foreground</span>
-            &amp;&amp; <span class="self">self</span>.<span class="ident">background</span> == <span class="ident">other</span>.<span class="ident">background</span>
-            &amp;&amp; <span class="self">self</span>.<span class="ident">properties</span> == <span class="ident">other</span>.<span class="ident">properties</span>
+<span class="kw">impl </span>Hash <span class="kw">for </span>Style {
+    <span class="kw">fn </span>hash&lt;H: Hasher&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>H) {
+        <span class="self">self</span>.foreground.hash(state);
+        <span class="self">self</span>.background.hash(state);
+        <span class="self">self</span>.properties.hash(state);
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">Style</span> {
-    <span class="kw">fn</span> <span class="ident">hash</span>&lt;<span class="ident">H</span>: <span class="ident">Hasher</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">H</span>) {
-        <span class="self">self</span>.<span class="ident">foreground</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
-        <span class="self">self</span>.<span class="ident">background</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
-        <span class="self">self</span>.<span class="ident">properties</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
-    }
-}
-
-<span class="macro">macro_rules!</span> <span class="ident">checker_for</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">fn_name</span>:<span class="ident">ident</span>): <span class="macro-nonterminal">$</span><span class="macro-nonterminal">property</span>:<span class="ident">ident</span>),<span class="kw-2">*</span>) =&gt; ($(
-        <span class="attribute">#[<span class="ident">doc</span> = <span class="macro">concat!</span>(
-            <span class="string">&quot;Returns `true` if the _&quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>), <span class="string">&quot;_ property is set on `self`.\n&quot;</span>,
+<span class="macro">macro_rules! </span>checker_for {
+    ($(<span class="macro-nonterminal">$name</span>:ident (<span class="macro-nonterminal">$fn_name</span>:ident): <span class="macro-nonterminal">$property</span>:ident),<span class="kw-2">*</span>) =&gt; ($(
+        <span class="attribute">#[doc = <span class="macro">concat!</span>(
+            <span class="string">&quot;Returns `true` if the _&quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$name</span>), <span class="string">&quot;_ property is set on `self`.\n&quot;</span>,
             <span class="string">&quot;```rust\n&quot;</span>,
             <span class="string">&quot;use yansi::Style;\n&quot;</span>,
             <span class="string">&quot;\n&quot;</span>,
             <span class="string">&quot;let plain = Style::default();\n&quot;</span>,
-            <span class="string">&quot;assert!(!plain.&quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">fn_name</span>), <span class="string">&quot;());\n&quot;</span>,
+            <span class="string">&quot;assert!(!plain.&quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$fn_name</span>), <span class="string">&quot;());\n&quot;</span>,
             <span class="string">&quot;\n&quot;</span>,
-            <span class="string">&quot;let styled = plain.&quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>), <span class="string">&quot;();\n&quot;</span>,
-            <span class="string">&quot;assert!(styled.&quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">fn_name</span>), <span class="string">&quot;());\n&quot;</span>,
-            <span class="string">&quot;```\n&quot;</span>
-        )]</span>
-        <span class="attribute">#[<span class="ident">inline</span>]</span>
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fn_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-            <span class="self">self</span>.<span class="ident">properties</span>.<span class="ident">contains</span>(<span class="ident">Property</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">property</span>)
+            <span class="string">&quot;let styled = plain.&quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$name</span>), <span class="string">&quot;();\n&quot;</span>,
+            <span class="string">&quot;assert!(styled.&quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$fn_name</span>), <span class="string">&quot;());\n&quot;</span>,
+            <span class="string">&quot;```\n&quot;
+        </span>)]
+        #[inline]
+        </span><span class="kw">pub fn </span><span class="macro-nonterminal">$fn_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+            <span class="self">self</span>.properties.contains(Property::<span class="macro-nonterminal">$property</span>)
         }
     )<span class="kw-2">*</span>)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">fn</span> <span class="ident">write_spliced</span>&lt;<span class="ident">T</span>: <span class="ident">Display</span>&gt;(<span class="ident">c</span>: <span class="kw-2">&amp;mut</span> <span class="ident">bool</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Write</span>, <span class="ident">t</span>: <span class="ident">T</span>) -&gt; <span class="ident">fmt::Result</span> {
-    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">c</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;;{}&quot;</span>, <span class="ident">t</span>)
-    } <span class="kw">else</span> {
-        <span class="kw-2">*</span><span class="ident">c</span> = <span class="bool-val">true</span>;
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">t</span>)
+<span class="attribute">#[inline]
+</span><span class="kw">fn </span>write_spliced&lt;T: Display&gt;(c: <span class="kw-2">&amp;mut </span>bool, f: <span class="kw-2">&amp;mut </span>fmt::Write, t: T) -&gt; fmt::Result {
+    <span class="kw">if </span><span class="kw-2">*</span>c {
+        <span class="macro">write!</span>(f, <span class="string">&quot;;{}&quot;</span>, t)
+    } <span class="kw">else </span>{
+        <span class="kw-2">*</span>c = <span class="bool-val">true</span>;
+        <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, t)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Style</span> {
-    <span class="doccomment">/// Default style with the foreground set to `color` and no other set</span>
-    <span class="doccomment">/// properties.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Style;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let plain = Style::default();</span>
-    <span class="doccomment">/// assert_eq!(plain, Style::default());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">color</span>: <span class="ident">Color</span>) -&gt; <span class="ident">Style</span> {
-        <span class="ident"><span class="self">Self</span>::default</span>().<span class="ident">fg</span>(<span class="ident">color</span>)
+<span class="kw">impl </span>Style {
+    <span class="doccomment">/// Default style with the foreground set to `color` and no other set
+    /// properties.
+    ///
+    /// ```rust
+    /// use yansi::Style;
+    ///
+    /// let plain = Style::default();
+    /// assert_eq!(plain, Style::default());
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>new(color: Color) -&gt; Style {
+        <span class="self">Self</span>::default().fg(color)
     }
 
-    <span class="doccomment">/// Sets the foreground to `color`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::{Color, Style};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let red_fg = Style::default().fg(Color::Red);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fg</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">color</span>: <span class="ident">Color</span>) -&gt; <span class="ident">Style</span> {
-        <span class="self">self</span>.<span class="ident">foreground</span> = <span class="ident">color</span>;
-        <span class="self">self</span>
+    <span class="doccomment">/// Sets the foreground to `color`.
+    ///
+    /// ```rust
+    /// use yansi::{Color, Style};
+    ///
+    /// let red_fg = Style::default().fg(Color::Red);
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>fg(<span class="kw-2">mut </span><span class="self">self</span>, color: Color) -&gt; Style {
+        <span class="self">self</span>.foreground = color;
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// Sets the background to `color`.
+    ///
+    /// ```rust
+    /// use yansi::{Color, Style};
+    ///
+    /// let red_bg = Style::default().bg(Color::Red);
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>bg(<span class="kw-2">mut </span><span class="self">self</span>, color: Color) -&gt; Style {
+        <span class="self">self</span>.background = color;
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// Sets `self` to be masked.
+    ///
+    /// An item with _masked_ styling is not written out when painting is
+    /// disabled during `Display` or `Debug` invocations. When painting is
+    /// enabled, masking has no effect.
+    ///
+    /// ```rust
+    /// use yansi::Style;
+    ///
+    /// let masked = Style::default().mask();
+    ///
+    /// // &quot;Whoops! &quot; will only print when coloring is enabled.
+    /// println!(&quot;{}Something happened.&quot;, masked.paint(&quot;Whoops! &quot;));
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>mask(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; Style {
+        <span class="self">self</span>.masked = <span class="bool-val">true</span>;
+        <span class="self">self
+    </span>}
+
+    <span class="doccomment">/// Sets `self` to be wrapping.
+    ///
+    /// A wrapping `Style` converts all color resets written out by the internal
+    /// value to the styling of itself. This allows for seamless color wrapping
+    /// of other colored text.
+    ///
+    /// # Performance
+    ///
+    /// In order to wrap an internal value, the internal value must first be
+    /// written out to a local buffer and examined. As a result, displaying a
+    /// wrapped value is likely to result in a heap allocation and copy.
+    ///
+    /// ```rust
+    /// use yansi::{Paint, Style, Color};
+    ///
+    /// let inner = format!(&quot;{} and {}&quot;, Paint::red(&quot;Stop&quot;), Paint::green(&quot;Go&quot;));
+    /// let wrapping = Style::new(Color::Blue).wrap();
+    ///
+    /// // &#39;Hey!&#39; will be unstyled, &quot;Stop&quot; will be red, &quot;and&quot; will be blue, and
+    /// // &quot;Go&quot; will be green. Without a wrapping `Paint`, &quot;and&quot; would be
+    /// // unstyled.
+    /// println!(&quot;Hey! {}&quot;, wrapping.paint(inner));
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>wrap(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; Style {
+        <span class="self">self</span>.wrap = <span class="bool-val">true</span>;
+        <span class="self">self
+    </span>}
+
+    <span class="macro">style_builder_for!</span>(Style, |style| style.properties,
+                       bold: BOLD, dimmed: DIMMED, italic: ITALIC,
+                       underline: UNDERLINE, blink: BLINK, invert: INVERT,
+                       hidden: HIDDEN, strikethrough: STRIKETHROUGH);
+
+    <span class="doccomment">/// Constructs a new `Paint` structure that encapsulates `item` with the
+    /// style set to `self`.
+    ///
+    /// ```rust
+    /// use yansi::{Style, Color};
+    ///
+    /// let alert = Style::new(Color::Red).bold().underline();
+    /// println!(&quot;Alert: {}&quot;, alert.paint(&quot;This thing happened!&quot;));
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>paint&lt;T&gt;(<span class="self">self</span>, item: T) -&gt; Paint&lt;T&gt; {
+        Paint::new(item).with_style(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Sets the background to `color`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::{Color, Style};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let red_bg = Style::default().bg(Color::Red);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bg</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">color</span>: <span class="ident">Color</span>) -&gt; <span class="ident">Style</span> {
-        <span class="self">self</span>.<span class="ident">background</span> = <span class="ident">color</span>;
-        <span class="self">self</span>
+    <span class="doccomment">/// Returns the foreground color of `self`.
+    ///
+    /// ```rust
+    /// use yansi::{Style, Color};
+    ///
+    /// let plain = Style::default();
+    /// assert_eq!(plain.fg_color(), Color::Unset);
+    ///
+    /// let red = plain.fg(Color::Red);
+    /// assert_eq!(red.fg_color(), Color::Red);
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>fg_color(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Color {
+        <span class="self">self</span>.foreground
     }
 
-    <span class="doccomment">/// Sets `self` to be masked.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// An item with _masked_ styling is not written out when painting is</span>
-    <span class="doccomment">/// disabled during `Display` or `Debug` invocations. When painting is</span>
-    <span class="doccomment">/// enabled, masking has no effect.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Style;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let masked = Style::default().mask();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // &quot;Whoops! &quot; will only print when coloring is enabled.</span>
-    <span class="doccomment">/// println!(&quot;{}Something happened.&quot;, masked.paint(&quot;Whoops! &quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mask</span>(<span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="ident">Style</span> {
-        <span class="self">self</span>.<span class="ident">masked</span> = <span class="bool-val">true</span>;
-        <span class="self">self</span>
+    <span class="doccomment">/// Returns the foreground color of `self`.
+    ///
+    /// ```rust
+    /// use yansi::{Style, Color};
+    ///
+    /// let plain = Style::default();
+    /// assert_eq!(plain.bg_color(), Color::Unset);
+    ///
+    /// let white = plain.bg(Color::White);
+    /// assert_eq!(white.bg_color(), Color::White);
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>bg_color(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Color {
+        <span class="self">self</span>.background
     }
 
-    <span class="doccomment">/// Sets `self` to be wrapping.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// A wrapping `Style` converts all color resets written out by the internal</span>
-    <span class="doccomment">/// value to the styling of itself. This allows for seamless color wrapping</span>
-    <span class="doccomment">/// of other colored text.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Performance</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// In order to wrap an internal value, the internal value must first be</span>
-    <span class="doccomment">/// written out to a local buffer and examined. As a result, displaying a</span>
-    <span class="doccomment">/// wrapped value is likely to result in a heap allocation and copy.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::{Paint, Style, Color};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let inner = format!(&quot;{} and {}&quot;, Paint::red(&quot;Stop&quot;), Paint::green(&quot;Go&quot;));</span>
-    <span class="doccomment">/// let wrapping = Style::new(Color::Blue).wrap();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // &#39;Hey!&#39; will be unstyled, &quot;Stop&quot; will be red, &quot;and&quot; will be blue, and</span>
-    <span class="doccomment">/// // &quot;Go&quot; will be green. Without a wrapping `Paint`, &quot;and&quot; would be</span>
-    <span class="doccomment">/// // unstyled.</span>
-    <span class="doccomment">/// println!(&quot;Hey! {}&quot;, wrapping.paint(inner));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap</span>(<span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="ident">Style</span> {
-        <span class="self">self</span>.<span class="ident">wrap</span> = <span class="bool-val">true</span>;
-        <span class="self">self</span>
+    <span class="doccomment">/// Returns `true` if `self` is masked.
+    ///
+    /// ```rust
+    /// use yansi::Style;
+    ///
+    /// let plain = Style::default();
+    /// assert!(!plain.is_masked());
+    ///
+    /// let masked = plain.mask();
+    /// assert!(masked.is_masked());
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>is_masked(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.masked
     }
 
-    <span class="macro">style_builder_for!</span>(<span class="ident">Style</span>, |<span class="ident">style</span>| <span class="ident">style</span>.<span class="ident">properties</span>,
-                       <span class="ident">bold</span>: <span class="ident">BOLD</span>, <span class="ident">dimmed</span>: <span class="ident">DIMMED</span>, <span class="ident">italic</span>: <span class="ident">ITALIC</span>,
-                       <span class="ident">underline</span>: <span class="ident">UNDERLINE</span>, <span class="ident">blink</span>: <span class="ident">BLINK</span>, <span class="ident">invert</span>: <span class="ident">INVERT</span>,
-                       <span class="ident">hidden</span>: <span class="ident">HIDDEN</span>, <span class="ident">strikethrough</span>: <span class="ident">STRIKETHROUGH</span>);
-
-    <span class="doccomment">/// Constructs a new `Paint` structure that encapsulates `item` with the</span>
-    <span class="doccomment">/// style set to `self`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::{Style, Color};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let alert = Style::new(Color::Red).bold().underline();</span>
-    <span class="doccomment">/// println!(&quot;Alert: {}&quot;, alert.paint(&quot;This thing happened!&quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">paint</span>&lt;<span class="ident">T</span>&gt;(<span class="self">self</span>, <span class="ident">item</span>: <span class="ident">T</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="ident">Paint::new</span>(<span class="ident">item</span>).<span class="ident">with_style</span>(<span class="self">self</span>)
+    <span class="doccomment">/// Returns `true` if `self` is wrapping.
+    ///
+    /// ```rust
+    /// use yansi::Style;
+    ///
+    /// let plain = Style::default();
+    /// assert!(!plain.is_wrapping());
+    ///
+    /// let wrapping = plain.wrap();
+    /// assert!(wrapping.is_wrapping());
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>is_wrapping(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.wrap
     }
 
-    <span class="doccomment">/// Returns the foreground color of `self`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::{Style, Color};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let plain = Style::default();</span>
-    <span class="doccomment">/// assert_eq!(plain.fg_color(), Color::Unset);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let red = plain.fg(Color::Red);</span>
-    <span class="doccomment">/// assert_eq!(red.fg_color(), Color::Red);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fg_color</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Color</span> {
-        <span class="self">self</span>.<span class="ident">foreground</span>
+    <span class="macro">checker_for!</span>(bold (is_bold): BOLD, dimmed (is_dimmed): DIMMED,
+        italic (is_italic): ITALIC, underline (is_underline): UNDERLINE,
+        blink (is_blink): BLINK, invert (is_invert): INVERT,
+        hidden (is_hidden): HIDDEN,
+        strikethrough (is_strikethrough): STRIKETHROUGH);
+
+    <span class="attribute">#[inline(always)]
+    </span><span class="kw">fn </span>is_plain(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self </span>== <span class="kw-2">&amp;</span>Style::default()
     }
 
-    <span class="doccomment">/// Returns the foreground color of `self`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::{Style, Color};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let plain = Style::default();</span>
-    <span class="doccomment">/// assert_eq!(plain.bg_color(), Color::Unset);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let white = plain.bg(Color::White);</span>
-    <span class="doccomment">/// assert_eq!(white.bg_color(), Color::White);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bg_color</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Color</span> {
-        <span class="self">self</span>.<span class="ident">background</span>
-    }
-
-    <span class="doccomment">/// Returns `true` if `self` is masked.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Style;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let plain = Style::default();</span>
-    <span class="doccomment">/// assert!(!plain.is_masked());</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let masked = plain.mask();</span>
-    <span class="doccomment">/// assert!(masked.is_masked());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_masked</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">masked</span>
-    }
-
-    <span class="doccomment">/// Returns `true` if `self` is wrapping.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Style;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let plain = Style::default();</span>
-    <span class="doccomment">/// assert!(!plain.is_wrapping());</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let wrapping = plain.wrap();</span>
-    <span class="doccomment">/// assert!(wrapping.is_wrapping());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_wrapping</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">wrap</span>
-    }
-
-    <span class="macro">checker_for!</span>(<span class="ident">bold</span> (<span class="ident">is_bold</span>): <span class="ident">BOLD</span>, <span class="ident">dimmed</span> (<span class="ident">is_dimmed</span>): <span class="ident">DIMMED</span>,
-        <span class="ident">italic</span> (<span class="ident">is_italic</span>): <span class="ident">ITALIC</span>, <span class="ident">underline</span> (<span class="ident">is_underline</span>): <span class="ident">UNDERLINE</span>,
-        <span class="ident">blink</span> (<span class="ident">is_blink</span>): <span class="ident">BLINK</span>, <span class="ident">invert</span> (<span class="ident">is_invert</span>): <span class="ident">INVERT</span>,
-        <span class="ident">hidden</span> (<span class="ident">is_hidden</span>): <span class="ident">HIDDEN</span>,
-        <span class="ident">strikethrough</span> (<span class="ident">is_strikethrough</span>): <span class="ident">STRIKETHROUGH</span>);
-
-    <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">is_plain</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span> == <span class="kw-2">&amp;</span><span class="ident">Style::default</span>()
-    }
-
-    <span class="doccomment">/// Writes the ANSI code prefix for the currently set styles.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method is intended to be used inside of [`fmt::Display`] and</span>
-    <span class="doccomment">/// [`fmt::Debug`] implementations for custom or specialized use-cases. Most</span>
-    <span class="doccomment">/// users should use [`Paint`] for all painting needs.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method writes the ANSI code prefix irrespective of whether painting</span>
-    <span class="doccomment">/// is currently enabled or disabled. To write the prefix only if painting</span>
-    <span class="doccomment">/// is enabled, condition a call to this method on [`Paint::is_enabled()`].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`fmt::Display`]: fmt::Display</span>
-    <span class="doccomment">/// [`fmt::Debug`]: fmt::Debug</span>
-    <span class="doccomment">/// [`Paint`]: Paint</span>
-    <span class="doccomment">/// [`Paint::is_enabled()`]: Paint::is_enabled()</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use std::fmt;</span>
-    <span class="doccomment">/// use yansi::Style;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// struct CustomItem {</span>
-    <span class="doccomment">///     item: u32,</span>
-    <span class="doccomment">///     style: Style</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// impl fmt::Display for CustomItem {</span>
-    <span class="doccomment">///     fn fmt(&amp;self, f: &amp;mut fmt::Formatter) -&gt; fmt::Result {</span>
-    <span class="doccomment">///         self.style.fmt_prefix(f)?;</span>
-    <span class="doccomment">///         write!(f, &quot;number: {}&quot;, self.item)?;</span>
-    <span class="doccomment">///         self.style.fmt_suffix(f)</span>
-    <span class="doccomment">///     }</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fmt_prefix</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Write</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="comment">// A user may just want a code-free string when no styles are applied.</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_plain</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="doccomment">/// Writes the ANSI code prefix for the currently set styles.
+    ///
+    /// This method is intended to be used inside of [`fmt::Display`] and
+    /// [`fmt::Debug`] implementations for custom or specialized use-cases. Most
+    /// users should use [`Paint`] for all painting needs.
+    ///
+    /// This method writes the ANSI code prefix irrespective of whether painting
+    /// is currently enabled or disabled. To write the prefix only if painting
+    /// is enabled, condition a call to this method on [`Paint::is_enabled()`].
+    ///
+    /// [`fmt::Display`]: fmt::Display
+    /// [`fmt::Debug`]: fmt::Debug
+    /// [`Paint`]: Paint
+    /// [`Paint::is_enabled()`]: Paint::is_enabled()
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::fmt;
+    /// use yansi::Style;
+    ///
+    /// struct CustomItem {
+    ///     item: u32,
+    ///     style: Style
+    /// }
+    ///
+    /// impl fmt::Display for CustomItem {
+    ///     fn fmt(&amp;self, f: &amp;mut fmt::Formatter) -&gt; fmt::Result {
+    ///         self.style.fmt_prefix(f)?;
+    ///         write!(f, &quot;number: {}&quot;, self.item)?;
+    ///         self.style.fmt_suffix(f)
+    ///     }
+    /// }
+    /// ```
+    </span><span class="kw">pub fn </span>fmt_prefix(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Write) -&gt; fmt::Result {
+        <span class="comment">// A user may just want a code-free string when no styles are applied.
+        </span><span class="kw">if </span><span class="self">self</span>.is_plain() {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">splice</span> = <span class="bool-val">false</span>;
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;\x1B[&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>splice = <span class="bool-val">false</span>;
+        <span class="macro">write!</span>(f, <span class="string">&quot;\x1B[&quot;</span>)<span class="question-mark">?</span>;
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">properties</span>.<span class="ident">iter</span>() {
-            <span class="kw">let</span> <span class="ident">k</span> = <span class="kw">if</span> <span class="ident">i</span> &gt;= <span class="number">5</span> { <span class="ident">i</span> + <span class="number">2</span> } <span class="kw">else</span> { <span class="ident">i</span> + <span class="number">1</span> };
-            <span class="ident">write_spliced</span>(<span class="kw-2">&amp;mut</span> <span class="ident">splice</span>, <span class="ident">f</span>, <span class="ident">k</span>)<span class="question-mark">?</span>;
+        <span class="kw">for </span>i <span class="kw">in </span><span class="self">self</span>.properties.iter() {
+            <span class="kw">let </span>k = <span class="kw">if </span>i &gt;= <span class="number">5 </span>{ i + <span class="number">2 </span>} <span class="kw">else </span>{ i + <span class="number">1 </span>};
+            write_spliced(<span class="kw-2">&amp;mut </span>splice, f, k)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">background</span> != <span class="ident">Color::Unset</span> {
-            <span class="ident">write_spliced</span>(<span class="kw-2">&amp;mut</span> <span class="ident">splice</span>, <span class="ident">f</span>, <span class="string">&quot;4&quot;</span>)<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">background</span>.<span class="ident">ascii_fmt</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
+        <span class="kw">if </span><span class="self">self</span>.background != Color::Unset {
+            write_spliced(<span class="kw-2">&amp;mut </span>splice, f, <span class="string">&quot;4&quot;</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.background.ascii_fmt(f)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">foreground</span> != <span class="ident">Color::Unset</span> {
-            <span class="ident">write_spliced</span>(<span class="kw-2">&amp;mut</span> <span class="ident">splice</span>, <span class="ident">f</span>, <span class="string">&quot;3&quot;</span>)<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">foreground</span>.<span class="ident">ascii_fmt</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
+        <span class="kw">if </span><span class="self">self</span>.foreground != Color::Unset {
+            write_spliced(<span class="kw-2">&amp;mut </span>splice, f, <span class="string">&quot;3&quot;</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.foreground.ascii_fmt(f)<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// All the codes end with an `m`.</span>
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;m&quot;</span>)
+        <span class="comment">// All the codes end with an `m`.
+        </span><span class="macro">write!</span>(f, <span class="string">&quot;m&quot;</span>)
     }
 
-    <span class="doccomment">/// Writes the ANSI code suffix for the currently set styles.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method is intended to be used inside of [`fmt::Display`] and</span>
-    <span class="doccomment">/// [`fmt::Debug`] implementations for custom or specialized use-cases. Most</span>
-    <span class="doccomment">/// users should use [`Paint`] for all painting needs.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method writes the ANSI code suffix irrespective of whether painting</span>
-    <span class="doccomment">/// is currently enabled or disabled. To write the suffix only if painting</span>
-    <span class="doccomment">/// is enabled, condition a call to this method on [`Paint::is_enabled()`].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`fmt::Display`]: fmt::Display</span>
-    <span class="doccomment">/// [`fmt::Debug`]: fmt::Debug</span>
-    <span class="doccomment">/// [`Paint`]: Paint</span>
-    <span class="doccomment">/// [`Paint::is_enabled()`]: Paint::is_enabled()</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use std::fmt;</span>
-    <span class="doccomment">/// use yansi::Style;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// struct CustomItem {</span>
-    <span class="doccomment">///     item: u32,</span>
-    <span class="doccomment">///     style: Style</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// impl fmt::Display for CustomItem {</span>
-    <span class="doccomment">///     fn fmt(&amp;self, f: &amp;mut fmt::Formatter) -&gt; fmt::Result {</span>
-    <span class="doccomment">///         self.style.fmt_prefix(f)?;</span>
-    <span class="doccomment">///         write!(f, &quot;number: {}&quot;, self.item)?;</span>
-    <span class="doccomment">///         self.style.fmt_suffix(f)</span>
-    <span class="doccomment">///     }</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fmt_suffix</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Write</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_plain</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="doccomment">/// Writes the ANSI code suffix for the currently set styles.
+    ///
+    /// This method is intended to be used inside of [`fmt::Display`] and
+    /// [`fmt::Debug`] implementations for custom or specialized use-cases. Most
+    /// users should use [`Paint`] for all painting needs.
+    ///
+    /// This method writes the ANSI code suffix irrespective of whether painting
+    /// is currently enabled or disabled. To write the suffix only if painting
+    /// is enabled, condition a call to this method on [`Paint::is_enabled()`].
+    ///
+    /// [`fmt::Display`]: fmt::Display
+    /// [`fmt::Debug`]: fmt::Debug
+    /// [`Paint`]: Paint
+    /// [`Paint::is_enabled()`]: Paint::is_enabled()
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use std::fmt;
+    /// use yansi::Style;
+    ///
+    /// struct CustomItem {
+    ///     item: u32,
+    ///     style: Style
+    /// }
+    ///
+    /// impl fmt::Display for CustomItem {
+    ///     fn fmt(&amp;self, f: &amp;mut fmt::Formatter) -&gt; fmt::Result {
+    ///         self.style.fmt_prefix(f)?;
+    ///         write!(f, &quot;number: {}&quot;, self.item)?;
+    ///         self.style.fmt_suffix(f)
+    ///     }
+    /// }
+    /// ```
+    </span><span class="kw">pub fn </span>fmt_suffix(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Write) -&gt; fmt::Result {
+        <span class="kw">if </span><span class="self">self</span>.is_plain() {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
 
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;\x1B[0m&quot;</span>)
+        <span class="macro">write!</span>(f, <span class="string">&quot;\x1B[0m&quot;</span>)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="yansi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="yansi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

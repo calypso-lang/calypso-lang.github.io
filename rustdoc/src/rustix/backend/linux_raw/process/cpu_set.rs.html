@@ -45,52 +45,52 @@
 <span id="45">45</span>
 <span id="46">46</span>
 <span id="47">47</span>
-</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">non_snake_case</span>)]</span>
+</pre><pre class="rust"><code><span class="attribute">#![allow(non_snake_case)]
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::types::RawCpuSet</span>;
-<span class="kw">use</span> <span class="ident">core::mem::size_of_val</span>;
+</span><span class="kw">use </span><span class="kw">super</span>::types::RawCpuSet;
+<span class="kw">use </span>core::mem::size_of_val;
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">CPU_SET</span>(<span class="ident">cpu</span>: <span class="ident">usize</span>, <span class="ident">cpuset</span>: <span class="kw-2">&amp;mut</span> <span class="ident">RawCpuSet</span>) {
-    <span class="kw">let</span> <span class="ident">size_in_bits</span> = <span class="number">8</span> * <span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="number">0</span>]); <span class="comment">// 32, 64 etc</span>
-    <span class="kw">let</span> (<span class="ident">idx</span>, <span class="ident">offset</span>) = (<span class="ident">cpu</span> / <span class="ident">size_in_bits</span>, <span class="ident">cpu</span> % <span class="ident">size_in_bits</span>);
-    <span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="ident">idx</span>] |= <span class="number">1</span> &lt;&lt; <span class="ident">offset</span>
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>CPU_SET(cpu: usize, cpuset: <span class="kw-2">&amp;mut </span>RawCpuSet) {
+    <span class="kw">let </span>size_in_bits = <span class="number">8 </span>* size_of_val(<span class="kw-2">&amp;</span>cpuset.bits[<span class="number">0</span>]); <span class="comment">// 32, 64 etc
+    </span><span class="kw">let </span>(idx, offset) = (cpu / size_in_bits, cpu % size_in_bits);
+    cpuset.bits[idx] |= <span class="number">1 </span>&lt;&lt; offset
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">CPU_ZERO</span>(<span class="ident">cpuset</span>: <span class="kw-2">&amp;mut</span> <span class="ident">RawCpuSet</span>) {
-    <span class="comment">// TODO: With, Rust 1.50, use `cpuset.bits.fill(0)` instead.</span>
-    <span class="kw">for</span> <span class="ident">element</span> <span class="kw">in</span> <span class="kw-2">&amp;mut</span> <span class="ident">cpuset</span>.<span class="ident">bits</span> {
-        <span class="kw-2">*</span><span class="ident">element</span> = <span class="number">0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>CPU_ZERO(cpuset: <span class="kw-2">&amp;mut </span>RawCpuSet) {
+    <span class="comment">// TODO: With, Rust 1.50, use `cpuset.bits.fill(0)` instead.
+    </span><span class="kw">for </span>element <span class="kw">in </span><span class="kw-2">&amp;mut </span>cpuset.bits {
+        <span class="kw-2">*</span>element = <span class="number">0</span>;
     }
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">CPU_CLR</span>(<span class="ident">cpu</span>: <span class="ident">usize</span>, <span class="ident">cpuset</span>: <span class="kw-2">&amp;mut</span> <span class="ident">RawCpuSet</span>) {
-    <span class="kw">let</span> <span class="ident">size_in_bits</span> = <span class="number">8</span> * <span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="number">0</span>]); <span class="comment">// 32, 64 etc</span>
-    <span class="kw">let</span> (<span class="ident">idx</span>, <span class="ident">offset</span>) = (<span class="ident">cpu</span> / <span class="ident">size_in_bits</span>, <span class="ident">cpu</span> % <span class="ident">size_in_bits</span>);
-    <span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="ident">idx</span>] &amp;= !(<span class="number">1</span> &lt;&lt; <span class="ident">offset</span>)
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>CPU_CLR(cpu: usize, cpuset: <span class="kw-2">&amp;mut </span>RawCpuSet) {
+    <span class="kw">let </span>size_in_bits = <span class="number">8 </span>* size_of_val(<span class="kw-2">&amp;</span>cpuset.bits[<span class="number">0</span>]); <span class="comment">// 32, 64 etc
+    </span><span class="kw">let </span>(idx, offset) = (cpu / size_in_bits, cpu % size_in_bits);
+    cpuset.bits[idx] &amp;= !(<span class="number">1 </span>&lt;&lt; offset)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">CPU_ISSET</span>(<span class="ident">cpu</span>: <span class="ident">usize</span>, <span class="ident">cpuset</span>: <span class="kw-2">&amp;</span><span class="ident">RawCpuSet</span>) -&gt; <span class="ident">bool</span> {
-    <span class="kw">let</span> <span class="ident">size_in_bits</span> = <span class="number">8</span> * <span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="number">0</span>]);
-    <span class="kw">let</span> (<span class="ident">idx</span>, <span class="ident">offset</span>) = (<span class="ident">cpu</span> / <span class="ident">size_in_bits</span>, <span class="ident">cpu</span> % <span class="ident">size_in_bits</span>);
-    (<span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="ident">idx</span>] &amp; (<span class="number">1</span> &lt;&lt; <span class="ident">offset</span>)) != <span class="number">0</span>
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>CPU_ISSET(cpu: usize, cpuset: <span class="kw-2">&amp;</span>RawCpuSet) -&gt; bool {
+    <span class="kw">let </span>size_in_bits = <span class="number">8 </span>* size_of_val(<span class="kw-2">&amp;</span>cpuset.bits[<span class="number">0</span>]);
+    <span class="kw">let </span>(idx, offset) = (cpu / size_in_bits, cpu % size_in_bits);
+    (cpuset.bits[idx] &amp; (<span class="number">1 </span>&lt;&lt; offset)) != <span class="number">0
+</span>}
+
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>CPU_COUNT_S(size_in_bytes: usize, cpuset: <span class="kw-2">&amp;</span>RawCpuSet) -&gt; u32 {
+    <span class="kw">let </span>size_of_mask = size_of_val(<span class="kw-2">&amp;</span>cpuset.bits[<span class="number">0</span>]);
+    <span class="kw">let </span>idx = size_in_bytes / size_of_mask;
+    cpuset.bits[..idx]
+        .iter()
+        .fold(<span class="number">0</span>, |acc, i| acc + i.count_ones())
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">CPU_COUNT_S</span>(<span class="ident">size_in_bytes</span>: <span class="ident">usize</span>, <span class="ident">cpuset</span>: <span class="kw-2">&amp;</span><span class="ident">RawCpuSet</span>) -&gt; <span class="ident">u32</span> {
-    <span class="kw">let</span> <span class="ident">size_of_mask</span> = <span class="ident">size_of_val</span>(<span class="kw-2">&amp;</span><span class="ident">cpuset</span>.<span class="ident">bits</span>[<span class="number">0</span>]);
-    <span class="kw">let</span> <span class="ident">idx</span> = <span class="ident">size_in_bytes</span> / <span class="ident">size_of_mask</span>;
-    <span class="ident">cpuset</span>.<span class="ident">bits</span>[..<span class="ident">idx</span>]
-        .<span class="ident">iter</span>()
-        .<span class="ident">fold</span>(<span class="number">0</span>, |<span class="ident">acc</span>, <span class="ident">i</span>| <span class="ident">acc</span> + <span class="ident">i</span>.<span class="ident">count_ones</span>())
-}
-
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">CPU_COUNT</span>(<span class="ident">cpuset</span>: <span class="kw-2">&amp;</span><span class="ident">RawCpuSet</span>) -&gt; <span class="ident">u32</span> {
-    <span class="ident">CPU_COUNT_S</span>(<span class="ident">core::mem::size_of</span>::&lt;<span class="ident">RawCpuSet</span>&gt;(), <span class="ident">cpuset</span>)
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>CPU_COUNT(cpuset: <span class="kw-2">&amp;</span>RawCpuSet) -&gt; u32 {
+    CPU_COUNT_S(core::mem::size_of::&lt;RawCpuSet&gt;(), cpuset)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

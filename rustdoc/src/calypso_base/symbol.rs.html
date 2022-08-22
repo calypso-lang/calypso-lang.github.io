@@ -244,232 +244,232 @@
 <span id="244">244</span>
 <span id="245">245</span>
 <span id="246">246</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::convert::AsRef</span>;
-<span class="kw">use</span> <span class="ident">std::fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Display</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>std::convert::AsRef;
+<span class="kw">use </span>std::fmt::{<span class="self">self</span>, Debug, Display};
 
-<span class="kw">use</span> <span class="ident">lasso</span>::{<span class="ident">Key</span>, <span class="ident">Spur</span>, <span class="ident">ThreadedRodeo</span>};
-<span class="kw">use</span> <span class="ident">once_cell::sync::OnceCell</span>;
+<span class="kw">use </span>lasso::{Key, Spur, ThreadedRodeo};
+<span class="kw">use </span>once_cell::sync::OnceCell;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::span::Span</span>;
+<span class="kw">use </span><span class="kw">super</span>::span::Span;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">lasso</span>;
+<span class="kw">pub use </span>lasso;
 
-<span class="doccomment">/// An interned string.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Symbol</span>(<span class="ident">Spur</span>);
+<span class="doccomment">/// An interned string.
+</span><span class="attribute">#[derive(Copy, Clone, PartialEq, Eq, Hash)]
+</span><span class="kw">pub struct </span>Symbol(Spur);
 
-<span class="kw">impl</span> <span class="ident">Symbol</span> {
-    <span class="doccomment">/// Intern a string and return the symbol.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">intern</span>(<span class="ident">string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">get_interner</span>().<span class="ident">get_or_intern</span>(<span class="ident">string</span>))
+<span class="kw">impl </span>Symbol {
+    <span class="doccomment">/// Intern a string and return the symbol.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>intern(string: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>(get_interner().get_or_intern(string))
     }
 
-    <span class="doccomment">/// Intern a static string and return the symbol.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">intern_static</span>(<span class="ident">string</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">get_interner</span>().<span class="ident">get_or_intern_static</span>(<span class="ident">string</span>))
+    <span class="doccomment">/// Intern a static string and return the symbol.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>intern_static(string: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>(get_interner().get_or_intern_static(string))
     }
 
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">intern_static_2</span>(<span class="ident">string</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) -&gt; <span class="self">Self</span> {
+    <span class="attribute">#[must_use]
+    #[doc(hidden)]
+    </span><span class="kw">pub fn </span>intern_static_2(string: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>(
-            <span class="ident">GLOBAL_INTERNER</span>
-                .<span class="ident">get_or_init</span>(<span class="ident">ThreadedRodeo::new</span>)
-                .<span class="ident">get_or_intern_static</span>(<span class="ident">string</span>),
+            GLOBAL_INTERNER
+                .get_or_init(ThreadedRodeo::new)
+                .get_or_intern_static(string),
         )
     }
 
-    <span class="doccomment">/// Get the raw index of a symbol.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="comment">// we know that `Spur` is 32 bits</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::cast_possible_truncation</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_u32</span>(<span class="self">self</span>) -&gt; <span class="ident">u32</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">into_usize</span>() <span class="kw">as</span> <span class="ident">u32</span>
+    <span class="doccomment">/// Get the raw index of a symbol.
+    </span><span class="attribute">#[must_use]
+    </span><span class="comment">// we know that `Spur` is 32 bits
+    </span><span class="attribute">#[allow(clippy::cast_possible_truncation)]
+    </span><span class="kw">pub fn </span>as_u32(<span class="self">self</span>) -&gt; u32 {
+        <span class="self">self</span>.<span class="number">0</span>.into_usize() <span class="kw">as </span>u32
     }
 
-    <span class="doccomment">/// Resolve a symbol to a static string.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_str</span>(<span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
-        <span class="ident">get_interner</span>().<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>)
+    <span class="doccomment">/// Resolve a symbol to a static string.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>as_str(<span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+        get_interner().resolve(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>)
     }
 
-    <span class="doccomment">/// Check if a symbol is the empty string.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span> == <span class="ident">special::EMPTY</span>
+    <span class="doccomment">/// Check if a symbol is the empty string.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>is_empty(<span class="self">self</span>) -&gt; bool {
+        <span class="self">self </span>== special::EMPTY
     }
 
-    <span class="doccomment">/// Check if a symbol is a keyword.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;calypso_interns&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_keyword</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="ident">kw::is</span>(<span class="self">self</span>)
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">Symbol</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">as_str</span>())
+    <span class="doccomment">/// Check if a symbol is a keyword.
+    </span><span class="attribute">#[must_use]
+    #[cfg(feature = <span class="string">&quot;calypso_interns&quot;</span>)]
+    </span><span class="kw">pub fn </span>is_keyword(<span class="self">self</span>) -&gt; bool {
+        kw::is(<span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Symbol</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">as_str</span>())
+<span class="kw">impl </span>Debug <span class="kw">for </span>Symbol {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.as_str())
     }
 }
 
-<span class="doccomment">/// An identifier, i.e. a combination of a symbol and a span.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Ident</span> {
-    <span class="doccomment">/// The symbol associated with this identifier</span>
-    <span class="kw">pub</span> <span class="ident">symbol</span>: <span class="ident">Symbol</span>,
-    <span class="doccomment">/// The span associated with this identifier</span>
-    <span class="kw">pub</span> <span class="ident">span</span>: <span class="ident">Span</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">std::ops::Deref</span> <span class="kw">for</span> <span class="ident">Ident</span> {
-    <span class="kw">type</span> <span class="ident">Target</span> = <span class="ident">Symbol</span>;
-
-    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Target</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">symbol</span>
+<span class="kw">impl </span>Display <span class="kw">for </span>Symbol {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.as_str())
     }
 }
 
-<span class="doccomment">/// A string that is potentially interned.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PotentiallyInterned</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="doccomment">/// Uninterned string.</span>
-    <span class="ident">Uninterned</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>),
-    <span class="doccomment">/// Interned string.</span>
-    <span class="ident">Interned</span>(<span class="ident">Symbol</span>),
+<span class="doccomment">/// An identifier, i.e. a combination of a symbol and a span.
+</span><span class="attribute">#[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
+</span><span class="kw">pub struct </span>Ident {
+    <span class="doccomment">/// The symbol associated with this identifier
+    </span><span class="kw">pub </span>symbol: Symbol,
+    <span class="doccomment">/// The span associated with this identifier
+    </span><span class="kw">pub </span>span: Span,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">PotentiallyInterned</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">as_ref</span>())
+<span class="kw">impl </span>std::ops::Deref <span class="kw">for </span>Ident {
+    <span class="kw">type </span>Target = Symbol;
+
+    <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Target {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.symbol
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">PotentiallyInterned</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.<span class="ident">as_ref</span>())
+<span class="doccomment">/// A string that is potentially interned.
+</span><span class="attribute">#[derive(Copy, Clone, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>PotentiallyInterned&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// Uninterned string.
+    </span>Uninterned(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str),
+    <span class="doccomment">/// Interned string.
+    </span>Interned(Symbol),
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Debug <span class="kw">for </span>PotentiallyInterned&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.as_ref())
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">PotentiallyInterned</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="doccomment">/// Potentially intern a string, if it is shorter than 255 characters.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">potentially_intern</span>(<span class="ident">string</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">if</span> <span class="ident">string</span>.<span class="ident">len</span>() &gt; <span class="number">255</span> {
-            <span class="ident"><span class="self">Self</span>::Uninterned</span>(<span class="ident">string</span>)
-        } <span class="kw">else</span> {
-            <span class="ident"><span class="self">Self</span>::Interned</span>(<span class="ident">Symbol::intern</span>(<span class="ident">string</span>))
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Display <span class="kw">for </span>PotentiallyInterned&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, <span class="self">self</span>.as_ref())
+    }
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; PotentiallyInterned&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// Potentially intern a string, if it is shorter than 255 characters.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>potentially_intern(string: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str) -&gt; <span class="self">Self </span>{
+        <span class="kw">if </span>string.len() &gt; <span class="number">255 </span>{
+            <span class="self">Self</span>::Uninterned(string)
+        } <span class="kw">else </span>{
+            <span class="self">Self</span>::Interned(Symbol::intern(string))
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt; <span class="kw">for</span> <span class="ident">PotentiallyInterned</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">PotentiallyInterned::Interned</span>(<span class="ident">sym</span>) =&gt; <span class="ident">sym</span>.<span class="ident">as_str</span>(),
-            <span class="ident">PotentiallyInterned::Uninterned</span>(<span class="ident">s</span>) =&gt; <span class="kw-2">*</span><span class="ident">s</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; AsRef&lt;str&gt; <span class="kw">for </span>PotentiallyInterned&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="kw">fn </span>as_ref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw">match </span><span class="self">self </span>{
+            PotentiallyInterned::Interned(sym) =&gt; sym.as_str(),
+            PotentiallyInterned::Uninterned(s) =&gt; <span class="kw-2">*</span>s,
         }
     }
 }
 
-<span class="comment">// I am aware global state is bad and whatnot, but this is the only way I know</span>
-<span class="comment">// of to have all this data live for `&#39;static` without plain leaking memory.</span>
-<span class="comment">//</span>
-<span class="comment">// Also it&#39;s easy. Ish.</span>
-<span class="kw">static</span> <span class="ident">GLOBAL_INTERNER</span>: <span class="ident">OnceCell</span>&lt;<span class="ident">ThreadedRodeo</span>&gt; = <span class="ident">OnceCell::new</span>();
+<span class="comment">// I am aware global state is bad and whatnot, but this is the only way I know
+// of to have all this data live for `&#39;static` without plain leaking memory.
+//
+// Also it&#39;s easy. Ish.
+</span><span class="kw">static </span>GLOBAL_INTERNER: OnceCell&lt;ThreadedRodeo&gt; = OnceCell::new();
 
-<span class="doccomment">/// Get the global interner.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_interner</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">ThreadedRodeo</span> {
-    <span class="kw">let</span> <span class="ident">int</span> = <span class="ident">GLOBAL_INTERNER</span>.<span class="ident">get_or_init</span>(<span class="ident">ThreadedRodeo::new</span>);
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;calypso_interns&quot;</span>)]</span>
-    {
-        <span class="ident">kw::init</span>();
+<span class="doccomment">/// Get the global interner.
+</span><span class="kw">pub fn </span>get_interner() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>ThreadedRodeo {
+    <span class="kw">let </span>int = GLOBAL_INTERNER.get_or_init(ThreadedRodeo::new);
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;calypso_interns&quot;</span>)]
+    </span>{
+        kw::init();
     }
-    <span class="ident">special::init</span>();
-    <span class="ident">int</span>
+    special::init();
+    int
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">intern_static</span> {
-    (<span class="macro-nonterminal">$</span><span class="kw">mod</span>:<span class="macro-nonterminal">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">mod_doc</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span> =&gt; {$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">enum_ident</span>:<span class="ident">ident</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>:<span class="ident">ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>:<span class="ident">expr</span>),<span class="kw-2">*</span>$(,)<span class="question-mark">?</span>}) =&gt; {
-        <span class="attribute">#[<span class="ident">doc</span> = <span class="macro-nonterminal">$</span><span class="macro-nonterminal">mod_doc</span>]</span>
-        <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-        <span class="kw">pub</span> <span class="kw">mod</span> <span class="macro-nonterminal">$</span><span class="kw">mod</span> {
-            <span class="macro">::lazy_static::lazy_static!</span> {
+<span class="macro">macro_rules! </span>intern_static {
+    (<span class="macro-nonterminal">$</span><span class="kw">mod</span>:<span class="macro-nonterminal">ident</span>, <span class="macro-nonterminal">$mod_doc</span>:expr, <span class="macro-nonterminal">$name</span>:ident =&gt; {$(<span class="macro-nonterminal">$enum_ident</span>:ident; <span class="macro-nonterminal">$static_ident</span>:ident: <span class="macro-nonterminal">$str</span>:expr; <span class="macro-nonterminal">$doc</span>:expr),<span class="kw-2">*</span>$(,)<span class="question-mark">?</span>}) =&gt; {
+        <span class="attribute">#[doc = <span class="macro-nonterminal">$mod_doc</span>]
+        #[allow(dead_code)]
+        </span><span class="kw">pub mod </span><span class="macro-nonterminal">$</span><span class="kw">mod </span>{
+            <span class="macro">::lazy_static::lazy_static! </span>{
                 $(
-                    <span class="attribute">#[<span class="macro-nonterminal">doc</span> = <span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>]</span>
-                    <span class="kw">pub</span> <span class="kw">static</span> <span class="kw-2">ref</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::symbol::Symbol</span>
-                        = <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::symbol::Symbol::intern_static_2</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">str</span>);
+                    <span class="attribute">#[<span class="macro-nonterminal">doc </span>= <span class="macro-nonterminal">$doc</span>]
+                    </span><span class="kw">pub static </span><span class="kw-2">ref </span><span class="macro-nonterminal">$static_ident</span>: <span class="macro-nonterminal">$crate::symbol::Symbol
+                        </span>= <span class="macro-nonterminal">$crate::symbol::Symbol::intern_static_2</span>(<span class="macro-nonterminal">$str</span>);
                 )*
             }
 
-            <span class="doccomment">/// Initialize all of the symbols in this module.</span>
-            <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">init</span>() {
-                $(<span class="ident">::lazy_static::initialize</span>(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>);)*
+            <span class="doccomment">/// Initialize all of the symbols in this module.
+            </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>init() {
+                $(::lazy_static::initialize(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$static_ident</span>);)*
             }
 
-            <span class="doccomment">/// An enum containing all of the statically interned values in this module.</span>
-            <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-            <span class="kw">pub</span> <span class="kw">enum</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span> {
+            <span class="doccomment">/// An enum containing all of the statically interned values in this module.
+            </span><span class="attribute">#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+            </span><span class="kw">pub enum </span><span class="macro-nonterminal">$name </span>{
                 $(
-                    <span class="attribute">#[<span class="ident">doc</span> = <span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>]</span>
-                    <span class="macro-nonterminal">$</span><span class="macro-nonterminal">enum_ident</span>,
+                    <span class="attribute">#[doc = <span class="macro-nonterminal">$doc</span>]
+                    </span><span class="macro-nonterminal">$enum_ident</span>,
                 )*
             }
 
-            <span class="kw">impl</span> <span class="ident">::std::convert::TryFrom</span>&lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::symbol::Symbol</span>&gt; <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span> {
-                <span class="kw">type</span> <span class="ident">Error</span> = <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::symbol::Symbol</span>;
+            <span class="kw">impl </span>::std::convert::TryFrom&lt;<span class="macro-nonterminal">$crate::symbol::Symbol</span>&gt; <span class="kw">for </span><span class="macro-nonterminal">$name </span>{
+                <span class="kw">type </span>Error = <span class="macro-nonterminal">$crate::symbol::Symbol</span>;
 
-                <span class="kw">fn</span> <span class="ident">try_from</span>(<span class="ident">sym</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::symbol::Symbol</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Error</span>&gt; {
+                <span class="kw">fn </span>try_from(sym: <span class="macro-nonterminal">$crate::symbol::Symbol</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Error&gt; {
                     $(
-                        <span class="kw">if</span> <span class="ident">sym</span> == <span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span> {
-                            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">enum_ident</span>);
+                        <span class="kw">if </span>sym == <span class="macro-nonterminal">$static_ident </span>{
+                            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="self">Self</span>::<span class="macro-nonterminal">$enum_ident</span>);
                         }
                     )*
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">sym</span>);
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(sym);
                 }
             }
-            <span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>&gt; <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::symbol::Symbol</span> {
-                <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">elem</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>) -&gt; <span class="self">Self</span> {
+            <span class="kw">impl </span>From&lt;<span class="macro-nonterminal">$name</span>&gt; <span class="kw">for </span><span class="macro-nonterminal">$crate::symbol::Symbol </span>{
+                <span class="kw">fn </span>from(elem: <span class="macro-nonterminal">$name</span>) -&gt; <span class="self">Self </span>{
                     $(
-                        <span class="kw">if</span> <span class="ident">elem</span> == <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">enum_ident</span> {
-                            <span class="kw">return</span> <span class="kw-2">*</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>;
+                        <span class="kw">if </span>elem == <span class="macro-nonterminal">$name</span>::<span class="macro-nonterminal">$enum_ident </span>{
+                            <span class="kw">return </span><span class="kw-2">*</span><span class="macro-nonterminal">$static_ident</span>;
                         }
                     )*
                     <span class="macro">unreachable!</span>()
                 }
             }
 
-            <span class="comment">// Not sure why, but I have to use `.deref()` like this,</span>
-            <span class="comment">// otherwise it infinitely recurses. :/</span>
-            <span class="kw">use</span> <span class="ident">::std::ops::Deref</span>;
+            <span class="comment">// Not sure why, but I have to use `.deref()` like this,
+            // otherwise it infinitely recurses. :/
+            </span><span class="kw">use </span>::std::ops::Deref;
             $(
-                <span class="kw">impl</span> <span class="ident">PartialEq</span>&lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>&gt; <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::symbol::Symbol</span> {
-                    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">symbol</span>: <span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>) -&gt; <span class="ident">bool</span> {
-                        <span class="self">self</span> == <span class="ident">symbol</span>.<span class="ident">deref</span>()
+                <span class="kw">impl </span>PartialEq&lt;<span class="macro-nonterminal">$static_ident</span>&gt; <span class="kw">for </span><span class="macro-nonterminal">$crate::symbol::Symbol </span>{
+                    <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, symbol: <span class="kw-2">&amp;</span><span class="macro-nonterminal">$static_ident</span>) -&gt; bool {
+                        <span class="self">self </span>== symbol.deref()
                     }
                 }
-                <span class="kw">impl</span> <span class="ident">PartialEq</span>&lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>&gt; <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span> {
-                    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">symbol</span>: <span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span>) -&gt; <span class="ident">bool</span> {
-                        <span class="self">self</span>.<span class="ident">deref</span>() == <span class="ident">symbol</span>.<span class="ident">deref</span>()
+                <span class="kw">impl </span>PartialEq&lt;<span class="macro-nonterminal">$static_ident</span>&gt; <span class="kw">for </span><span class="macro-nonterminal">$static_ident </span>{
+                    <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, symbol: <span class="kw-2">&amp;</span><span class="macro-nonterminal">$static_ident</span>) -&gt; bool {
+                        <span class="self">self</span>.deref() == symbol.deref()
                     }
                 }
-                <span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">static_ident</span> {}
+                <span class="kw">impl </span>Eq <span class="kw">for </span><span class="macro-nonterminal">$static_ident </span>{}
             )*
 
-            <span class="doccomment">/// Check if the given symbol is one of the statically interned</span>
-            <span class="doccomment">/// members in this module.</span>
-            <span class="attribute">#[<span class="ident">must_use</span>]</span>
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is</span>(<span class="ident">sym</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::symbol::Symbol</span>) -&gt; <span class="ident">bool</span> {
+            <span class="doccomment">/// Check if the given symbol is one of the statically interned
+            /// members in this module.
+            </span><span class="attribute">#[must_use]
+            </span><span class="kw">pub fn </span>is(sym: <span class="macro-nonterminal">$crate::symbol::Symbol</span>) -&gt; bool {
                 $(
-                    <span class="ident">sym</span> == <span class="macro-nonterminal">$</span><span class="macro-nonterminal">crate::symbol::Symbol::from</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">enum_ident</span>)
+                    sym == <span class="macro-nonterminal">$crate::symbol::Symbol::from</span>(<span class="macro-nonterminal">$name</span>::<span class="macro-nonterminal">$enum_ident</span>)
                 )||*
             }
         }
@@ -477,18 +477,18 @@
     }
 }
 
-<span class="macro">intern_static!</span> {<span class="ident">kw</span>, <span class="string">&quot;Keywords&quot;</span>, <span class="ident">Keyword</span> =&gt; {
-    <span class="ident">True</span>; <span class="ident">TRUE</span>: <span class="string">&quot;true&quot;</span>; <span class="string">&quot;True (`true`)&quot;</span>,
-    <span class="ident">False</span>; <span class="ident">FALSE</span>: <span class="string">&quot;false&quot;</span>; <span class="string">&quot;False (`false`)&quot;</span>,
-    <span class="ident">Let</span>; <span class="ident">LET</span>: <span class="string">&quot;let&quot;</span>; <span class="string">&quot;Let (`let`)&quot;</span>,
-    <span class="ident">Mut</span>; <span class="ident">MUT</span>: <span class="string">&quot;mut&quot;</span>; <span class="string">&quot;Mut (`mut`)&quot;</span>,
-    <span class="ident">Do</span>; <span class="ident">DO</span>: <span class="string">&quot;do&quot;</span>; <span class="string">&quot;Do (`do`)&quot;</span>,
-    <span class="ident">End</span>; <span class="ident">END</span>: <span class="string">&quot;end&quot;</span>; <span class="string">&quot;End (`end`)&quot;</span>,
-    <span class="ident">In</span>; <span class="ident">IN</span>: <span class="string">&quot;in&quot;</span>; <span class="string">&quot;In (`in`)&quot;</span>,
+<span class="macro">intern_static! </span>{kw, <span class="string">&quot;Keywords&quot;</span>, Keyword =&gt; {
+    True; TRUE: <span class="string">&quot;true&quot;</span>; <span class="string">&quot;True (`true`)&quot;</span>,
+    False; FALSE: <span class="string">&quot;false&quot;</span>; <span class="string">&quot;False (`false`)&quot;</span>,
+    Let; LET: <span class="string">&quot;let&quot;</span>; <span class="string">&quot;Let (`let`)&quot;</span>,
+    Mut; MUT: <span class="string">&quot;mut&quot;</span>; <span class="string">&quot;Mut (`mut`)&quot;</span>,
+    Do; DO: <span class="string">&quot;do&quot;</span>; <span class="string">&quot;Do (`do`)&quot;</span>,
+    End; END: <span class="string">&quot;end&quot;</span>; <span class="string">&quot;End (`end`)&quot;</span>,
+    In; IN: <span class="string">&quot;in&quot;</span>; <span class="string">&quot;In (`in`)&quot;</span>,
 }}
 
-<span class="macro">intern_static!</span> {<span class="ident">special</span>, <span class="string">&quot;Special strings&quot;</span>, <span class="ident">Special</span> =&gt; {
-    <span class="ident">Empty</span>; <span class="ident">EMPTY</span>: <span class="string">&quot;&quot;</span>; <span class="string">&quot;Empty string&quot;</span>
-}}
+<span class="macro">intern_static! </span>{special, <span class="string">&quot;Special strings&quot;</span>, Special =&gt; {
+    Empty; EMPTY: <span class="string">&quot;&quot;</span>; <span class="string">&quot;Empty string&quot;
+</span>}}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_base" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_base" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

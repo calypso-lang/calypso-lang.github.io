@@ -96,101 +96,101 @@
 <span id="96">96</span>
 <span id="97">97</span>
 </pre><pre class="rust"><code>
-<span class="doccomment">/// An iterator that produces only the `T` values as long as the</span>
-<span class="doccomment">/// inner iterator produces `Ok(T)`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Used by [`process_results`](crate::process_results), see its docs</span>
-<span class="doccomment">/// for more information.</span>
-<span class="attribute">#[<span class="ident">must_use</span> = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ProcessResults</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">I</span>, <span class="ident">E</span>: <span class="lifetime">&#39;a</span>&gt; {
-    <span class="ident">error</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="prelude-ty">Result</span>&lt;(), <span class="ident">E</span>&gt;,
-    <span class="ident">iter</span>: <span class="ident">I</span>,
+<span class="doccomment">/// An iterator that produces only the `T` values as long as the
+/// inner iterator produces `Ok(T)`.
+///
+/// Used by [`process_results`](crate::process_results), see its docs
+/// for more information.
+</span><span class="attribute">#[must_use = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]
+#[derive(Debug)]
+</span><span class="kw">pub struct </span>ProcessResults&lt;<span class="lifetime">&#39;a</span>, I, E: <span class="lifetime">&#39;a</span>&gt; {
+    error: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span><span class="prelude-ty">Result</span>&lt;(), E&gt;,
+    iter: I,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">I</span>, <span class="ident">T</span>, <span class="ident">E</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">ProcessResults</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">I</span>, <span class="ident">E</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">E</span>&gt;&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, I, T, E&gt; Iterator <span class="kw">for </span>ProcessResults&lt;<span class="lifetime">&#39;a</span>, I, E&gt;
+    <span class="kw">where </span>I: Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;T, E&gt;&gt;
 {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">T</span>;
+    <span class="kw">type </span>Item = T;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">next</span>() {
-            <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">x</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="ident">x</span>),
-            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">e</span>)) =&gt; {
-                <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">error</span> = <span class="prelude-val">Err</span>(<span class="ident">e</span>);
-                <span class="prelude-val">None</span>
-            }
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">match </span><span class="self">self</span>.iter.next() {
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(x)) =&gt; <span class="prelude-val">Some</span>(x),
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(e)) =&gt; {
+                <span class="kw-2">*</span><span class="self">self</span>.error = <span class="prelude-val">Err</span>(e);
+                <span class="prelude-val">None
+            </span>}
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
-        (<span class="number">0</span>, <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">size_hint</span>().<span class="number">1</span>)
+    <span class="kw">fn </span>size_hint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (usize, <span class="prelude-ty">Option</span>&lt;usize&gt;) {
+        (<span class="number">0</span>, <span class="self">self</span>.iter.size_hint().<span class="number">1</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">fold</span>&lt;<span class="ident">B</span>, <span class="ident">F</span>&gt;(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">init</span>: <span class="ident">B</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">B</span>
-    <span class="kw">where</span>
-        <span class="self">Self</span>: <span class="ident">Sized</span>,
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">B</span>, <span class="ident"><span class="self">Self</span>::Item</span>) -&gt; <span class="ident">B</span>,
+    <span class="kw">fn </span>fold&lt;B, F&gt;(<span class="kw-2">mut </span><span class="self">self</span>, init: B, <span class="kw-2">mut </span>f: F) -&gt; B
+    <span class="kw">where
+        </span><span class="self">Self</span>: Sized,
+        F: FnMut(B, <span class="self">Self</span>::Item) -&gt; B,
     {
-        <span class="kw">let</span> <span class="ident">error</span> = <span class="self">self</span>.<span class="ident">error</span>;
-        <span class="self">self</span>.<span class="ident">iter</span>
-            .<span class="ident">try_fold</span>(<span class="ident">init</span>, |<span class="ident">acc</span>, <span class="ident">opt</span>| <span class="kw">match</span> <span class="ident">opt</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">x</span>) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">f</span>(<span class="ident">acc</span>, <span class="ident">x</span>)),
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; {
-                    <span class="kw-2">*</span><span class="ident">error</span> = <span class="prelude-val">Err</span>(<span class="ident">e</span>);
-                    <span class="prelude-val">Err</span>(<span class="ident">acc</span>)
+        <span class="kw">let </span>error = <span class="self">self</span>.error;
+        <span class="self">self</span>.iter
+            .try_fold(init, |acc, opt| <span class="kw">match </span>opt {
+                <span class="prelude-val">Ok</span>(x) =&gt; <span class="prelude-val">Ok</span>(f(acc, x)),
+                <span class="prelude-val">Err</span>(e) =&gt; {
+                    <span class="kw-2">*</span>error = <span class="prelude-val">Err</span>(e);
+                    <span class="prelude-val">Err</span>(acc)
                 }
             })
-            .<span class="ident">unwrap_or_else</span>(|<span class="ident">e</span>| <span class="ident">e</span>)
+            .unwrap_or_else(|e| e)
     }
 }
 
-<span class="doccomment">/// “Lift” a function of the values of an iterator so that it can process</span>
-<span class="doccomment">/// an iterator of `Result` values instead.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `iterable` is an iterator or iterable with `Result&lt;T, E&gt;` elements, where</span>
-<span class="doccomment">/// `T` is the value type and `E` the error type.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `processor` is a closure that receives an adapted version of the iterable</span>
-<span class="doccomment">/// as the only argument — the adapted iterator produces elements of type `T`,</span>
-<span class="doccomment">/// as long as the original iterator produces `Ok` values.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If the original iterable produces an error at any point, the adapted</span>
-<span class="doccomment">/// iterator ends and the `process_results` function will return the</span>
-<span class="doccomment">/// error iself.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Otherwise, the return value from the closure is returned wrapped</span>
-<span class="doccomment">/// inside `Ok`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Example</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use itertools::process_results;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// type R = Result&lt;i32, &amp;&#39;static str&gt;;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let first_values: Vec&lt;R&gt; = vec![Ok(1), Ok(0), Ok(3)];</span>
-<span class="doccomment">/// let second_values: Vec&lt;R&gt; = vec![Ok(2), Ok(1), Err(&quot;overflow&quot;)];</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// // “Lift” the iterator .max() method to work on the values in Results using process_results</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let first_max = process_results(first_values, |iter| iter.max().unwrap_or(0));</span>
-<span class="doccomment">/// let second_max = process_results(second_values, |iter| iter.max().unwrap_or(0));</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(first_max, Ok(3));</span>
-<span class="doccomment">/// assert!(second_max.is_err());</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">process_results</span>&lt;<span class="ident">I</span>, <span class="ident">F</span>, <span class="ident">T</span>, <span class="ident">E</span>, <span class="ident">R</span>&gt;(<span class="ident">iterable</span>: <span class="ident">I</span>, <span class="ident">processor</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">R</span>, <span class="ident">E</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">E</span>&gt;&gt;,
-          <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="ident">ProcessResults</span>&lt;<span class="ident">I::IntoIter</span>, <span class="ident">E</span>&gt;) -&gt; <span class="ident">R</span>
+<span class="doccomment">/// “Lift” a function of the values of an iterator so that it can process
+/// an iterator of `Result` values instead.
+///
+/// `iterable` is an iterator or iterable with `Result&lt;T, E&gt;` elements, where
+/// `T` is the value type and `E` the error type.
+///
+/// `processor` is a closure that receives an adapted version of the iterable
+/// as the only argument — the adapted iterator produces elements of type `T`,
+/// as long as the original iterator produces `Ok` values.
+///
+/// If the original iterable produces an error at any point, the adapted
+/// iterator ends and the `process_results` function will return the
+/// error iself.
+///
+/// Otherwise, the return value from the closure is returned wrapped
+/// inside `Ok`.
+///
+/// # Example
+///
+/// ```
+/// use itertools::process_results;
+///
+/// type R = Result&lt;i32, &amp;&#39;static str&gt;;
+///
+/// let first_values: Vec&lt;R&gt; = vec![Ok(1), Ok(0), Ok(3)];
+/// let second_values: Vec&lt;R&gt; = vec![Ok(2), Ok(1), Err(&quot;overflow&quot;)];
+///
+/// // “Lift” the iterator .max() method to work on the values in Results using process_results
+///
+/// let first_max = process_results(first_values, |iter| iter.max().unwrap_or(0));
+/// let second_max = process_results(second_values, |iter| iter.max().unwrap_or(0));
+///
+/// assert_eq!(first_max, Ok(3));
+/// assert!(second_max.is_err());
+/// ```
+</span><span class="kw">pub fn </span>process_results&lt;I, F, T, E, R&gt;(iterable: I, processor: F) -&gt; <span class="prelude-ty">Result</span>&lt;R, E&gt;
+    <span class="kw">where </span>I: IntoIterator&lt;Item = <span class="prelude-ty">Result</span>&lt;T, E&gt;&gt;,
+          F: FnOnce(ProcessResults&lt;I::IntoIter, E&gt;) -&gt; R
 {
-    <span class="kw">let</span> <span class="ident">iter</span> = <span class="ident">iterable</span>.<span class="ident">into_iter</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">error</span> = <span class="prelude-val">Ok</span>(());
+    <span class="kw">let </span>iter = iterable.into_iter();
+    <span class="kw">let </span><span class="kw-2">mut </span>error = <span class="prelude-val">Ok</span>(());
 
-    <span class="kw">let</span> <span class="ident">result</span> = <span class="ident">processor</span>(<span class="ident">ProcessResults</span> { <span class="ident">error</span>: <span class="kw-2">&amp;mut</span> <span class="ident">error</span>, <span class="ident">iter</span> });
+    <span class="kw">let </span>result = processor(ProcessResults { error: <span class="kw-2">&amp;mut </span>error, iter });
 
-    <span class="ident">error</span>.<span class="ident">map</span>(|<span class="kw">_</span>| <span class="ident">result</span>)
+    error.map(|<span class="kw">_</span>| result)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

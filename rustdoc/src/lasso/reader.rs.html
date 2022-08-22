@@ -1009,1016 +1009,1016 @@
 <span id="1009">1009</span>
 <span id="1010">1010</span>
 <span id="1011">1011</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">arena::Arena</span>,
-    <span class="ident">hasher::RandomState</span>,
-    <span class="ident">keys</span>::{<span class="ident">Key</span>, <span class="ident">Spur</span>},
-    <span class="ident">resolver::RodeoResolver</span>,
-    <span class="ident">util</span>::{<span class="ident">Iter</span>, <span class="ident">Strings</span>},
-    <span class="ident">Rodeo</span>,
+</pre><pre class="rust"><code><span class="kw">use crate</span>::{
+    arena::Arena,
+    hasher::RandomState,
+    keys::{Key, Spur},
+    resolver::RodeoResolver,
+    util::{Iter, Strings},
+    Rodeo,
 };
-<span class="kw">use</span> <span class="ident">core</span>::{
-    <span class="ident">hash</span>::{<span class="ident">BuildHasher</span>, <span class="ident">Hash</span>, <span class="ident">Hasher</span>},
-    <span class="ident">ops::Index</span>,
+<span class="kw">use </span>core::{
+    hash::{BuildHasher, Hash, Hasher},
+    ops::Index,
 };
-<span class="kw">use</span> <span class="ident">hashbrown::HashMap</span>;
+<span class="kw">use </span>hashbrown::HashMap;
 
-<span class="macro">compile!</span> {
-    <span class="kw">if</span> <span class="attribute">#[<span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>]</span> {
-        <span class="kw">use</span> <span class="ident">alloc::vec::Vec</span>;
+<span class="macro">compile! </span>{
+    <span class="kw">if </span><span class="attribute">#[feature = <span class="string">&quot;no-std&quot;</span>] </span>{
+        <span class="kw">use </span>alloc::vec::Vec;
     }
 }
 
-<span class="doccomment">/// A read-only view of a [`Rodeo`] or [`ThreadedRodeo`] that allows contention-free access to interned strings,</span>
-<span class="doccomment">/// both key to string resolution and string to key lookups</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The key and hasher types are the same as the `Rodeo` or `ThreadedRodeo` that created it, can be acquired with the</span>
-<span class="doccomment">/// `into_reader` methods.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`Rodeo`]: crate::Rodeo</span>
-<span class="doccomment">/// [`ThreadedRodeo`]: crate::ThreadedRodeo</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span> = <span class="ident">Spur</span>, <span class="ident">S</span> = <span class="ident">RandomState</span>&gt; {
-    <span class="comment">// The logic behind this arrangement is more heavily documented inside of</span>
-    <span class="comment">// `Rodeo` itself</span>
-    <span class="ident">map</span>: <span class="ident">HashMap</span>&lt;<span class="ident">K</span>, (), ()&gt;,
-    <span class="ident">hasher</span>: <span class="ident">S</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">strings</span>: <span class="ident">Vec</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>&gt;,
-    <span class="ident">arena</span>: <span class="ident">Arena</span>,
+<span class="doccomment">/// A read-only view of a [`Rodeo`] or [`ThreadedRodeo`] that allows contention-free access to interned strings,
+/// both key to string resolution and string to key lookups
+///
+/// The key and hasher types are the same as the `Rodeo` or `ThreadedRodeo` that created it, can be acquired with the
+/// `into_reader` methods.
+///
+/// [`Rodeo`]: crate::Rodeo
+/// [`ThreadedRodeo`]: crate::ThreadedRodeo
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>RodeoReader&lt;K = Spur, S = RandomState&gt; {
+    <span class="comment">// The logic behind this arrangement is more heavily documented inside of
+    // `Rodeo` itself
+    </span>map: HashMap&lt;K, (), ()&gt;,
+    hasher: S,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) strings: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;,
+    arena: Arena,
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; {
-    <span class="doccomment">/// Creates a new RodeoReader</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Safety</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The references inside of `strings` must be absolutely unique, meaning</span>
-    <span class="doccomment">/// that no other references to those strings exist</span>
-    <span class="doccomment">///</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">map</span>: <span class="ident">HashMap</span>&lt;<span class="ident">K</span>, (), ()&gt;,
-        <span class="ident">hasher</span>: <span class="ident">S</span>,
-        <span class="ident">strings</span>: <span class="ident">Vec</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>&gt;,
-        <span class="ident">arena</span>: <span class="ident">Arena</span>,
-    ) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">map</span>,
-            <span class="ident">hasher</span>,
-            <span class="ident">strings</span>,
-            <span class="ident">arena</span>,
+<span class="kw">impl</span>&lt;K, S&gt; RodeoReader&lt;K, S&gt; {
+    <span class="doccomment">/// Creates a new RodeoReader
+    ///
+    /// # Safety
+    ///
+    /// The references inside of `strings` must be absolutely unique, meaning
+    /// that no other references to those strings exist
+    ///
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>new(
+        map: HashMap&lt;K, (), ()&gt;,
+        hasher: S,
+        strings: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;,
+        arena: Arena,
+    ) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            map,
+            hasher,
+            strings,
+            arena,
         }
     }
 
-    <span class="doccomment">/// Get the key value of a string, returning `None` if it doesn&#39;t exist</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lasso::Rodeo;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // ThreadedRodeo is interchangeable for Rodeo here</span>
-    <span class="doccomment">/// let mut rodeo = Rodeo::default();</span>
-    <span class="doccomment">/// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let rodeo = rodeo.into_reader();</span>
-    <span class="doccomment">/// assert_eq!(Some(key), rodeo.get(&quot;Strings of things with wings and dings&quot;));</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(None, rodeo.get(&quot;This string isn&#39;t interned&quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>&lt;<span class="ident">T</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">val</span>: <span class="ident">T</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">K</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">T</span>: <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt;,
-        <span class="ident">S</span>: <span class="ident">BuildHasher</span>,
-        <span class="ident">K</span>: <span class="ident">Key</span>,
+    <span class="doccomment">/// Get the key value of a string, returning `None` if it doesn&#39;t exist
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use lasso::Rodeo;
+    ///
+    /// // ThreadedRodeo is interchangeable for Rodeo here
+    /// let mut rodeo = Rodeo::default();
+    /// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);
+    ///
+    /// let rodeo = rodeo.into_reader();
+    /// assert_eq!(Some(key), rodeo.get(&quot;Strings of things with wings and dings&quot;));
+    ///
+    /// assert_eq!(None, rodeo.get(&quot;This string isn&#39;t interned&quot;));
+    /// ```
+    ///
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>get&lt;T&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, val: T) -&gt; <span class="prelude-ty">Option</span>&lt;K&gt;
+    <span class="kw">where
+        </span>T: AsRef&lt;str&gt;,
+        S: BuildHasher,
+        K: Key,
     {
-        <span class="kw">let</span> <span class="ident">string_slice</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> = <span class="ident">val</span>.<span class="ident">as_ref</span>();
+        <span class="kw">let </span>string_slice: <span class="kw-2">&amp;</span>str = val.as_ref();
 
-        <span class="comment">// Make a hash of the requested string</span>
-        <span class="kw">let</span> <span class="ident">hash</span> = {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> = <span class="self">self</span>.<span class="ident">hasher</span>.<span class="ident">build_hasher</span>();
-            <span class="ident">string_slice</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;mut</span> <span class="ident">state</span>);
+        <span class="comment">// Make a hash of the requested string
+        </span><span class="kw">let </span>hash = {
+            <span class="kw">let </span><span class="kw-2">mut </span>state = <span class="self">self</span>.hasher.build_hasher();
+            string_slice.hash(<span class="kw-2">&amp;mut </span>state);
 
-            <span class="ident">state</span>.<span class="ident">finish</span>()
+            state.finish()
         };
 
-        <span class="comment">// Get the map&#39;s entry that the string should occupy</span>
-        <span class="kw">let</span> <span class="ident">entry</span> = <span class="self">self</span>.<span class="ident">map</span>.<span class="ident">raw_entry</span>().<span class="ident">from_hash</span>(<span class="ident">hash</span>, |<span class="ident">key</span>| {
-            <span class="comment">// Safety: The index given by `key` will be in bounds of the strings vector</span>
-            <span class="kw">let</span> <span class="ident">key_string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> = <span class="kw">unsafe</span> { <span class="macro">index_unchecked!</span>(<span class="self">self</span>.<span class="ident">strings</span>, <span class="ident">key</span>.<span class="ident">into_usize</span>()) };
+        <span class="comment">// Get the map&#39;s entry that the string should occupy
+        </span><span class="kw">let </span>entry = <span class="self">self</span>.map.raw_entry().from_hash(hash, |key| {
+            <span class="comment">// Safety: The index given by `key` will be in bounds of the strings vector
+            </span><span class="kw">let </span>key_string: <span class="kw-2">&amp;</span>str = <span class="kw">unsafe </span>{ <span class="macro">index_unchecked!</span>(<span class="self">self</span>.strings, key.into_usize()) };
 
-            <span class="comment">// Compare the requested string against the key&#39;s string</span>
-            <span class="ident">string_slice</span> == <span class="ident">key_string</span>
+            <span class="comment">// Compare the requested string against the key&#39;s string
+            </span>string_slice == key_string
         });
 
-        <span class="ident">entry</span>.<span class="ident">map</span>(|(<span class="ident">key</span>, ())| <span class="kw-2">*</span><span class="ident">key</span>)
+        entry.map(|(key, ())| <span class="kw-2">*</span>key)
     }
 
-    <span class="doccomment">/// Returns `true` if the given string has been interned</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lasso::Rodeo;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // ThreadedRodeo is interchangeable for Rodeo here</span>
-    <span class="doccomment">/// let mut rodeo = Rodeo::default();</span>
-    <span class="doccomment">/// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let rodeo = rodeo.into_reader();</span>
-    <span class="doccomment">/// assert!(rodeo.contains(&quot;Strings of things with wings and dings&quot;));</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert!(!rodeo.contains(&quot;This string isn&#39;t interned&quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains</span>&lt;<span class="ident">T</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">val</span>: <span class="ident">T</span>) -&gt; <span class="ident">bool</span>
-    <span class="kw">where</span>
-        <span class="ident">T</span>: <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt;,
-        <span class="ident">S</span>: <span class="ident">BuildHasher</span>,
-        <span class="ident">K</span>: <span class="ident">Key</span>,
+    <span class="doccomment">/// Returns `true` if the given string has been interned
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use lasso::Rodeo;
+    ///
+    /// // ThreadedRodeo is interchangeable for Rodeo here
+    /// let mut rodeo = Rodeo::default();
+    /// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);
+    ///
+    /// let rodeo = rodeo.into_reader();
+    /// assert!(rodeo.contains(&quot;Strings of things with wings and dings&quot;));
+    ///
+    /// assert!(!rodeo.contains(&quot;This string isn&#39;t interned&quot;));
+    /// ```
+    ///
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>contains&lt;T&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, val: T) -&gt; bool
+    <span class="kw">where
+        </span>T: AsRef&lt;str&gt;,
+        S: BuildHasher,
+        K: Key,
     {
-        <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">val</span>).<span class="ident">is_some</span>()
+        <span class="self">self</span>.get(val).is_some()
     }
 
-    <span class="doccomment">/// Returns `true` if the given key exists in the current interner</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lasso::Rodeo;</span>
-    <span class="doccomment">/// # use lasso::{Key, Spur};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mut rodeo = Rodeo::default();</span>
-    <span class="doccomment">/// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);</span>
-    <span class="doccomment">/// # let key_that_doesnt_exist = Spur::try_from_usize(1000).unwrap();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let rodeo = rodeo.into_reader();</span>
-    <span class="doccomment">/// assert!(rodeo.contains_key(&amp;key));</span>
-    <span class="doccomment">/// assert!(!rodeo.contains_key(&amp;key_that_doesnt_exist));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">K</span>) -&gt; <span class="ident">bool</span>
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Key</span>,
+    <span class="doccomment">/// Returns `true` if the given key exists in the current interner
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use lasso::Rodeo;
+    /// # use lasso::{Key, Spur};
+    ///
+    /// let mut rodeo = Rodeo::default();
+    /// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);
+    /// # let key_that_doesnt_exist = Spur::try_from_usize(1000).unwrap();
+    ///
+    /// let rodeo = rodeo.into_reader();
+    /// assert!(rodeo.contains_key(&amp;key));
+    /// assert!(!rodeo.contains_key(&amp;key_that_doesnt_exist));
+    /// ```
+    ///
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>contains_key(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; bool
+    <span class="kw">where
+        </span>K: Key,
     {
-        <span class="ident">key</span>.<span class="ident">into_usize</span>() &lt; <span class="self">self</span>.<span class="ident">strings</span>.<span class="ident">len</span>()
+        key.into_usize() &lt; <span class="self">self</span>.strings.len()
     }
 
-    <span class="doccomment">/// Resolves a string by its key. Only keys made by the current Resolver or the creator</span>
-    <span class="doccomment">/// of the current Resolver may be used</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Panics if the key is out of bounds</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lasso::Rodeo;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // ThreadedRodeo is interchangeable for Rodeo here</span>
-    <span class="doccomment">/// let mut rodeo = Rodeo::default();</span>
-    <span class="doccomment">/// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let rodeo = rodeo.into_resolver();</span>
-    <span class="doccomment">/// assert_eq!(&quot;Strings of things with wings and dings&quot;, rodeo.resolve(&amp;key));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`Key`]: crate::Key</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">resolve</span>&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">K</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Key</span>,
+    <span class="doccomment">/// Resolves a string by its key. Only keys made by the current Resolver or the creator
+    /// of the current Resolver may be used
+    ///
+    /// # Panics
+    ///
+    /// Panics if the key is out of bounds
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use lasso::Rodeo;
+    ///
+    /// // ThreadedRodeo is interchangeable for Rodeo here
+    /// let mut rodeo = Rodeo::default();
+    /// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);
+    ///
+    /// let rodeo = rodeo.into_resolver();
+    /// assert_eq!(&quot;Strings of things with wings and dings&quot;, rodeo.resolve(&amp;key));
+    /// ```
+    ///
+    /// [`Key`]: crate::Key
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>resolve&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str
+    <span class="kw">where
+        </span>K: Key,
     {
-        <span class="comment">// Safety: The call to get_unchecked&#39;s safety relies on the Key::into_usize impl</span>
-        <span class="comment">// being symmetric and the caller having not fabricated a key. If the impl is sound</span>
-        <span class="comment">// and symmetric, then it will succeed, as the usize used to create it is a valid</span>
-        <span class="comment">// index into self.strings</span>
-        <span class="kw">unsafe</span> {
-            <span class="macro">assert!</span>(<span class="ident">key</span>.<span class="ident">into_usize</span>() &lt; <span class="self">self</span>.<span class="ident">strings</span>.<span class="ident">len</span>());
-            <span class="self">self</span>.<span class="ident">strings</span>.<span class="ident">get_unchecked</span>(<span class="ident">key</span>.<span class="ident">into_usize</span>())
+        <span class="comment">// Safety: The call to get_unchecked&#39;s safety relies on the Key::into_usize impl
+        // being symmetric and the caller having not fabricated a key. If the impl is sound
+        // and symmetric, then it will succeed, as the usize used to create it is a valid
+        // index into self.strings
+        </span><span class="kw">unsafe </span>{
+            <span class="macro">assert!</span>(key.into_usize() &lt; <span class="self">self</span>.strings.len());
+            <span class="self">self</span>.strings.get_unchecked(key.into_usize())
         }
     }
 
-    <span class="doccomment">/// Resolves a string by its key, returning `None` if the key is out of bounds. Only keys</span>
-    <span class="doccomment">/// made by the current Resolver or the creator of the current Resolver may be used</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lasso::Rodeo;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // ThreadedRodeo is interchangeable for Rodeo here</span>
-    <span class="doccomment">/// let mut rodeo = Rodeo::default();</span>
-    <span class="doccomment">/// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let rodeo = rodeo.into_resolver();</span>
-    <span class="doccomment">/// assert_eq!(Some(&quot;Strings of things with wings and dings&quot;), rodeo.try_resolve(&amp;key));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`Key`]: crate::Key</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">try_resolve</span>&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">K</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Key</span>,
+    <span class="doccomment">/// Resolves a string by its key, returning `None` if the key is out of bounds. Only keys
+    /// made by the current Resolver or the creator of the current Resolver may be used
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use lasso::Rodeo;
+    ///
+    /// // ThreadedRodeo is interchangeable for Rodeo here
+    /// let mut rodeo = Rodeo::default();
+    /// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);
+    ///
+    /// let rodeo = rodeo.into_resolver();
+    /// assert_eq!(Some(&quot;Strings of things with wings and dings&quot;), rodeo.try_resolve(&amp;key));
+    /// ```
+    ///
+    /// [`Key`]: crate::Key
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>try_resolve&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;
+    <span class="kw">where
+        </span>K: Key,
     {
-        <span class="comment">// Safety: The call to get_unchecked&#39;s safety relies on the Key::into_usize impl</span>
-        <span class="comment">// being symmetric and the caller having not fabricated a key. If the impl is sound</span>
-        <span class="comment">// and symmetric, then it will succeed, as the usize used to create it is a valid</span>
-        <span class="comment">// index into self.strings</span>
-        <span class="kw">unsafe</span> {
-            <span class="kw">if</span> <span class="ident">key</span>.<span class="ident">into_usize</span>() &lt; <span class="self">self</span>.<span class="ident">strings</span>.<span class="ident">len</span>() {
-                <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">strings</span>.<span class="ident">get_unchecked</span>(<span class="ident">key</span>.<span class="ident">into_usize</span>()))
-            } <span class="kw">else</span> {
-                <span class="prelude-val">None</span>
-            }
+        <span class="comment">// Safety: The call to get_unchecked&#39;s safety relies on the Key::into_usize impl
+        // being symmetric and the caller having not fabricated a key. If the impl is sound
+        // and symmetric, then it will succeed, as the usize used to create it is a valid
+        // index into self.strings
+        </span><span class="kw">unsafe </span>{
+            <span class="kw">if </span>key.into_usize() &lt; <span class="self">self</span>.strings.len() {
+                <span class="prelude-val">Some</span>(<span class="self">self</span>.strings.get_unchecked(key.into_usize()))
+            } <span class="kw">else </span>{
+                <span class="prelude-val">None
+            </span>}
         }
     }
 
-    <span class="doccomment">/// Resolves a string by its key without bounds checks</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Safety</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The key must be valid for the current Reader</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lasso::Rodeo;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // ThreadedRodeo is interchangeable for Rodeo here</span>
-    <span class="doccomment">/// let mut rodeo = Rodeo::default();</span>
-    <span class="doccomment">/// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let rodeo = rodeo.into_resolver();</span>
-    <span class="doccomment">/// unsafe {</span>
-    <span class="doccomment">///     assert_eq!(&quot;Strings of things with wings and dings&quot;, rodeo.resolve_unchecked(&amp;key));</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`Key`]: crate::Key</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">resolve_unchecked</span>&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">K</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Key</span>,
+    <span class="doccomment">/// Resolves a string by its key without bounds checks
+    ///
+    /// # Safety
+    ///
+    /// The key must be valid for the current Reader
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use lasso::Rodeo;
+    ///
+    /// // ThreadedRodeo is interchangeable for Rodeo here
+    /// let mut rodeo = Rodeo::default();
+    /// let key = rodeo.get_or_intern(&quot;Strings of things with wings and dings&quot;);
+    ///
+    /// let rodeo = rodeo.into_resolver();
+    /// unsafe {
+    ///     assert_eq!(&quot;Strings of things with wings and dings&quot;, rodeo.resolve_unchecked(&amp;key));
+    /// }
+    /// ```
+    ///
+    /// [`Key`]: crate::Key
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub unsafe fn </span>resolve_unchecked&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str
+    <span class="kw">where
+        </span>K: Key,
     {
-        <span class="self">self</span>.<span class="ident">strings</span>.<span class="ident">get_unchecked</span>(<span class="ident">key</span>.<span class="ident">into_usize</span>())
+        <span class="self">self</span>.strings.get_unchecked(key.into_usize())
     }
 
-    <span class="doccomment">/// Gets the number of interned strings</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lasso::Rodeo;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // ThreadedRodeo is interchangeable for Rodeo here</span>
-    <span class="doccomment">/// let mut rodeo = Rodeo::default();</span>
-    <span class="doccomment">/// rodeo.get_or_intern(&quot;Documentation often has little hidden bits in it&quot;);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let rodeo = rodeo.into_reader();</span>
-    <span class="doccomment">/// assert_eq!(rodeo.len(), 1);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">strings</span>.<span class="ident">len</span>()
+    <span class="doccomment">/// Gets the number of interned strings
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use lasso::Rodeo;
+    ///
+    /// // ThreadedRodeo is interchangeable for Rodeo here
+    /// let mut rodeo = Rodeo::default();
+    /// rodeo.get_or_intern(&quot;Documentation often has little hidden bits in it&quot;);
+    ///
+    /// let rodeo = rodeo.into_reader();
+    /// assert_eq!(rodeo.len(), 1);
+    /// ```
+    ///
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.strings.len()
     }
 
-    <span class="doccomment">/// Returns `true` if there are no currently interned strings</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lasso::Rodeo;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // ThreadedRodeo is interchangeable for Rodeo here</span>
-    <span class="doccomment">/// let rodeo = Rodeo::default();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let rodeo = rodeo.into_reader();</span>
-    <span class="doccomment">/// assert!(rodeo.is_empty());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">len</span>() == <span class="number">0</span>
+    <span class="doccomment">/// Returns `true` if there are no currently interned strings
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use lasso::Rodeo;
+    ///
+    /// // ThreadedRodeo is interchangeable for Rodeo here
+    /// let rodeo = Rodeo::default();
+    ///
+    /// let rodeo = rodeo.into_reader();
+    /// assert!(rodeo.is_empty());
+    /// ```
+    ///
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.len() == <span class="number">0
+    </span>}
+
+    <span class="doccomment">/// Returns an iterator over the interned strings and their key values
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>iter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Iter&lt;<span class="lifetime">&#39;_</span>, K&gt; {
+        Iter::from_reader(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Returns an iterator over the interned strings and their key values</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">K</span>&gt; {
-        <span class="ident">Iter::from_reader</span>(<span class="self">self</span>)
+    <span class="doccomment">/// Returns an iterator over the interned strings
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub fn </span>strings(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Strings&lt;<span class="lifetime">&#39;_</span>, K&gt; {
+        Strings::from_reader(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Returns an iterator over the interned strings</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">strings</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Strings</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">K</span>&gt; {
-        <span class="ident">Strings::from_reader</span>(<span class="self">self</span>)
-    }
+    <span class="doccomment">/// Consumes the current rodeo and makes it into a [`RodeoResolver`], allowing
+    /// contention-free access from multiple threads with the lowest possible memory consumption
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use lasso::Rodeo;
+    ///
+    /// // ThreadedRodeo is interchangeable for Rodeo here
+    /// let mut rodeo = Rodeo::default();
+    /// let key = rodeo.get_or_intern(&quot;Appear weak when you are strong, and strong when you are weak.&quot;);
+    /// let reader_rodeo = rodeo.into_reader();
+    ///
+    /// let resolver_rodeo = reader_rodeo.into_resolver();
+    /// assert_eq!(
+    ///     &quot;Appear weak when you are strong, and strong when you are weak.&quot;,
+    ///     resolver_rodeo.resolve(&amp;key),
+    /// );
+    /// ```
+    ///
+    /// [`RodeoResolver`]: crate::RodeoResolver
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    #[must_use]
+    </span><span class="kw">pub fn </span>into_resolver(<span class="self">self</span>) -&gt; RodeoResolver&lt;K&gt; {
+        <span class="kw">let </span>RodeoReader { strings, arena, .. } = <span class="self">self</span>;
 
-    <span class="doccomment">/// Consumes the current rodeo and makes it into a [`RodeoResolver`], allowing</span>
-    <span class="doccomment">/// contention-free access from multiple threads with the lowest possible memory consumption</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use lasso::Rodeo;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // ThreadedRodeo is interchangeable for Rodeo here</span>
-    <span class="doccomment">/// let mut rodeo = Rodeo::default();</span>
-    <span class="doccomment">/// let key = rodeo.get_or_intern(&quot;Appear weak when you are strong, and strong when you are weak.&quot;);</span>
-    <span class="doccomment">/// let reader_rodeo = rodeo.into_reader();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let resolver_rodeo = reader_rodeo.into_resolver();</span>
-    <span class="doccomment">/// assert_eq!(</span>
-    <span class="doccomment">///     &quot;Appear weak when you are strong, and strong when you are weak.&quot;,</span>
-    <span class="doccomment">///     resolver_rodeo.resolve(&amp;key),</span>
-    <span class="doccomment">/// );</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`RodeoResolver`]: crate::RodeoResolver</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_resolver</span>(<span class="self">self</span>) -&gt; <span class="ident">RodeoResolver</span>&lt;<span class="ident">K</span>&gt; {
-        <span class="kw">let</span> <span class="ident">RodeoReader</span> { <span class="ident">strings</span>, <span class="ident">arena</span>, .. } = <span class="self">self</span>;
-
-        <span class="comment">// Safety: The current reader no longer contains references to the strings</span>
-        <span class="comment">// in the vec given to RodeoResolver</span>
-        <span class="kw">unsafe</span> { <span class="ident">RodeoResolver::new</span>(<span class="ident">strings</span>, <span class="ident">arena</span>) }
-    }
-}
-
-<span class="kw">unsafe</span> <span class="kw">impl</span>&lt;<span class="ident">K</span>: <span class="ident">Sync</span>, <span class="ident">S</span>: <span class="ident">Sync</span>&gt; <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; {}
-<span class="kw">unsafe</span> <span class="kw">impl</span>&lt;<span class="ident">K</span>: <span class="ident">Send</span>, <span class="ident">S</span>: <span class="ident">Send</span>&gt; <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; {}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="ident">Key</span>, <span class="ident">S</span>&gt; <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Item</span> = (<span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>);
-    <span class="kw">type</span> <span class="ident">IntoIter</span> = <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>&gt;;
-
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::IntoIter</span> {
-        <span class="self">self</span>.<span class="ident">iter</span>()
+        <span class="comment">// Safety: The current reader no longer contains references to the strings
+        // in the vec given to RodeoResolver
+        </span><span class="kw">unsafe </span>{ RodeoResolver::new(strings, arena) }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; <span class="ident">Index</span>&lt;<span class="ident">K</span>&gt; <span class="kw">for</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Key</span>,
-    <span class="ident">S</span>: <span class="ident">BuildHasher</span>,
+<span class="kw">unsafe impl</span>&lt;K: Sync, S: Sync&gt; Sync <span class="kw">for </span>RodeoReader&lt;K, S&gt; {}
+<span class="kw">unsafe impl</span>&lt;K: Send, S: Send&gt; Send <span class="kw">for </span>RodeoReader&lt;K, S&gt; {}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: Key, S&gt; IntoIterator <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>RodeoReader&lt;K, S&gt; {
+    <span class="kw">type </span>Item = (K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str);
+    <span class="kw">type </span>IntoIter = Iter&lt;<span class="lifetime">&#39;a</span>, K&gt;;
+
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>into_iter(<span class="self">self</span>) -&gt; <span class="self">Self</span>::IntoIter {
+        <span class="self">self</span>.iter()
+    }
+}
+
+<span class="kw">impl</span>&lt;K, S&gt; Index&lt;K&gt; <span class="kw">for </span>RodeoReader&lt;K, S&gt;
+<span class="kw">where
+    </span>K: Key,
+    S: BuildHasher,
 {
-    <span class="kw">type</span> <span class="ident">Output</span> = <span class="ident">str</span>;
+    <span class="kw">type </span>Output = str;
 
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">idx</span>: <span class="ident">K</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Output</span> {
-        <span class="self">self</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">idx</span>)
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>index(<span class="kw-2">&amp;</span><span class="self">self</span>, idx: K) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Output {
+        <span class="self">self</span>.resolve(<span class="kw-2">&amp;</span>idx)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; {}
+<span class="kw">impl</span>&lt;K, S&gt; Eq <span class="kw">for </span>RodeoReader&lt;K, S&gt; {}
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; <span class="ident">PartialEq</span>&lt;<span class="self">Self</span>&gt; <span class="kw">for</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">strings</span> == <span class="ident">other</span>.<span class="ident">strings</span>
+<span class="kw">impl</span>&lt;K, S&gt; PartialEq&lt;<span class="self">Self</span>&gt; <span class="kw">for </span>RodeoReader&lt;K, S&gt; {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
+        <span class="self">self</span>.strings == other.strings
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; <span class="ident">PartialEq</span>&lt;<span class="ident">RodeoResolver</span>&lt;<span class="ident">K</span>&gt;&gt; <span class="kw">for</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">RodeoResolver</span>&lt;<span class="ident">K</span>&gt;) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">strings</span> == <span class="ident">other</span>.<span class="ident">strings</span>
+<span class="kw">impl</span>&lt;K, S&gt; PartialEq&lt;RodeoResolver&lt;K&gt;&gt; <span class="kw">for </span>RodeoReader&lt;K, S&gt; {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>RodeoResolver&lt;K&gt;) -&gt; bool {
+        <span class="self">self</span>.strings == other.strings
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; <span class="ident">PartialEq</span>&lt;<span class="ident">Rodeo</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt;&gt; <span class="kw">for</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Rodeo</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt;) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">strings</span> == <span class="ident">other</span>.<span class="ident">strings</span>
+<span class="kw">impl</span>&lt;K, S&gt; PartialEq&lt;Rodeo&lt;K, S&gt;&gt; <span class="kw">for </span>RodeoReader&lt;K, S&gt; {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Rodeo&lt;K, S&gt;) -&gt; bool {
+        <span class="self">self</span>.strings == other.strings
     }
 }
 
-<span class="macro">compile!</span> {
-    <span class="kw">if</span> <span class="attribute">#[<span class="ident">feature</span> = <span class="string">&quot;serialize&quot;</span>]</span> {
-        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Capacity</span>;
-        <span class="kw">use</span> <span class="ident">core::num::NonZeroUsize</span>;
-        <span class="kw">use</span> <span class="ident">hashbrown::hash_map::RawEntryMut</span>;
-        <span class="kw">use</span> <span class="ident">serde</span>::{
-            <span class="ident">de</span>::{<span class="ident">Deserialize</span>, <span class="ident">Deserializer</span>},
-            <span class="ident">ser</span>::{<span class="ident">Serialize</span>, <span class="ident">Serializer</span>},
+<span class="macro">compile! </span>{
+    <span class="kw">if </span><span class="attribute">#[feature = <span class="string">&quot;serialize&quot;</span>] </span>{
+        <span class="kw">use </span><span class="kw">crate</span>::Capacity;
+        <span class="kw">use </span>core::num::NonZeroUsize;
+        <span class="kw">use </span>hashbrown::hash_map::RawEntryMut;
+        <span class="kw">use </span>serde::{
+            de::{Deserialize, Deserializer},
+            ser::{Serialize, Serializer},
         };
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serialize&quot;</span>)]</span>
-<span class="kw">impl</span>&lt;<span class="ident">K</span>, <span class="ident">H</span>&gt; <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">H</span>&gt; {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">serialize</span>&lt;<span class="ident">S</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S::Ok</span>, <span class="ident">S::Error</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">Serializer</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+</span><span class="kw">impl</span>&lt;K, H&gt; Serialize <span class="kw">for </span>RodeoReader&lt;K, H&gt; {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+    <span class="kw">where
+        </span>S: Serializer,
     {
-        <span class="comment">// Serialize all of self as a `Vec&lt;String&gt;`</span>
-        <span class="self">self</span>.<span class="ident">strings</span>.<span class="ident">serialize</span>(<span class="ident">serializer</span>)
+        <span class="comment">// Serialize all of self as a `Vec&lt;String&gt;`
+        </span><span class="self">self</span>.strings.serialize(serializer)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serialize&quot;</span>)]</span>
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>, <span class="ident">K</span>: <span class="ident">Key</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span> + <span class="ident">Default</span>&gt; <span class="ident">Deserialize</span>&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for</span> <span class="ident">RodeoReader</span>&lt;<span class="ident">K</span>, <span class="ident">S</span>&gt; {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">deserialize</span>&lt;<span class="ident">D</span>&gt;(<span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident">D::Error</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">Deserializer</span>&lt;<span class="lifetime">&#39;de</span>&gt;,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>, K: Key, S: BuildHasher + Default&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>RodeoReader&lt;K, S&gt; {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
+    <span class="kw">where
+        </span>D: Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
     {
-        <span class="kw">let</span> <span class="ident">vector</span>: <span class="ident">Vec</span>&lt;<span class="ident">String</span>&gt; = <span class="ident">Vec::deserialize</span>(<span class="ident">deserializer</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">capacity</span> = {
-            <span class="kw">let</span> <span class="ident">total_bytes</span> = <span class="ident">vector</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="ident">s</span>| <span class="ident">s</span>.<span class="ident">len</span>()).<span class="ident">sum</span>::&lt;<span class="ident">usize</span>&gt;();
-            <span class="kw">let</span> <span class="ident">total_bytes</span> =
-                <span class="ident">NonZeroUsize::new</span>(<span class="ident">total_bytes</span>).<span class="ident">unwrap_or_else</span>(|| <span class="ident">Capacity::default</span>().<span class="ident">bytes</span>());
+        <span class="kw">let </span>vector: Vec&lt;String&gt; = Vec::deserialize(deserializer)<span class="question-mark">?</span>;
+        <span class="kw">let </span>capacity = {
+            <span class="kw">let </span>total_bytes = vector.iter().map(|s| s.len()).sum::&lt;usize&gt;();
+            <span class="kw">let </span>total_bytes =
+                NonZeroUsize::new(total_bytes).unwrap_or_else(|| Capacity::default().bytes());
 
-            <span class="ident">Capacity::new</span>(<span class="ident">vector</span>.<span class="ident">len</span>(), <span class="ident">total_bytes</span>)
+            Capacity::new(vector.len(), total_bytes)
         };
 
-        <span class="kw">let</span> <span class="ident">hasher</span>: <span class="ident">S</span> = <span class="ident">Default::default</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">strings</span> = <span class="ident">Vec::with_capacity</span>(<span class="ident">capacity</span>.<span class="ident">strings</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> = <span class="ident">HashMap::with_capacity_and_hasher</span>(<span class="ident">capacity</span>.<span class="ident">strings</span>, ());
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">arena</span> = <span class="ident">Arena::new</span>(<span class="ident">capacity</span>.<span class="ident">bytes</span>, <span class="ident">usize::max_value</span>())
-            .<span class="ident">expect</span>(<span class="string">&quot;failed to allocate memory for interner&quot;</span>);
+        <span class="kw">let </span>hasher: S = Default::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>strings = Vec::with_capacity(capacity.strings);
+        <span class="kw">let </span><span class="kw-2">mut </span>map = HashMap::with_capacity_and_hasher(capacity.strings, ());
+        <span class="kw">let </span><span class="kw-2">mut </span>arena = Arena::new(capacity.bytes, usize::max_value())
+            .expect(<span class="string">&quot;failed to allocate memory for interner&quot;</span>);
 
-        <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">string</span>) <span class="kw">in</span> <span class="ident">vector</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">let</span> <span class="ident">allocated</span> = <span class="kw">unsafe</span> {
-                <span class="ident">arena</span>
-                    .<span class="ident">store_str</span>(<span class="kw-2">&amp;</span><span class="ident">string</span>)
-                    .<span class="ident">expect</span>(<span class="string">&quot;failed to allocate enough memory&quot;</span>)
+        <span class="kw">for </span>(key, string) <span class="kw">in </span>vector.into_iter().enumerate() {
+            <span class="kw">let </span>allocated = <span class="kw">unsafe </span>{
+                arena
+                    .store_str(<span class="kw-2">&amp;</span>string)
+                    .expect(<span class="string">&quot;failed to allocate enough memory&quot;</span>)
             };
 
-            <span class="kw">let</span> <span class="ident">hash</span> = {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> = <span class="ident">hasher</span>.<span class="ident">build_hasher</span>();
-                <span class="ident">allocated</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;mut</span> <span class="ident">state</span>);
+            <span class="kw">let </span>hash = {
+                <span class="kw">let </span><span class="kw-2">mut </span>state = hasher.build_hasher();
+                allocated.hash(<span class="kw-2">&amp;mut </span>state);
 
-                <span class="ident">state</span>.<span class="ident">finish</span>()
+                state.finish()
             };
 
-            <span class="comment">// Get the map&#39;s entry that the string should occupy</span>
-            <span class="kw">let</span> <span class="ident">entry</span> = <span class="ident">map</span>.<span class="ident">raw_entry_mut</span>().<span class="ident">from_hash</span>(<span class="ident">hash</span>, |<span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">K</span>| {
-                <span class="comment">// Safety: The index given by `key` will be in bounds of the strings vector</span>
-                <span class="kw">let</span> <span class="ident">key_string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> = <span class="kw">unsafe</span> { <span class="macro">index_unchecked!</span>(<span class="ident">strings</span>, <span class="ident">key</span>.<span class="ident">into_usize</span>()) };
+            <span class="comment">// Get the map&#39;s entry that the string should occupy
+            </span><span class="kw">let </span>entry = map.raw_entry_mut().from_hash(hash, |key: <span class="kw-2">&amp;</span>K| {
+                <span class="comment">// Safety: The index given by `key` will be in bounds of the strings vector
+                </span><span class="kw">let </span>key_string: <span class="kw-2">&amp;</span>str = <span class="kw">unsafe </span>{ <span class="macro">index_unchecked!</span>(strings, key.into_usize()) };
 
-                <span class="comment">// Compare the requested string against the key&#39;s string</span>
-                <span class="ident">allocated</span> == <span class="ident">key_string</span>
+                <span class="comment">// Compare the requested string against the key&#39;s string
+                </span>allocated == key_string
             });
 
-            <span class="kw">match</span> <span class="ident">entry</span> {
-                <span class="ident">RawEntryMut::Occupied</span>(..) =&gt; {
+            <span class="kw">match </span>entry {
+                RawEntryMut::Occupied(..) =&gt; {
                     <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">&quot;re-interned a key while deserializing&quot;</span>);
                 }
-                <span class="ident">RawEntryMut::Vacant</span>(<span class="ident">entry</span>) =&gt; {
-                    <span class="comment">// Create the key from the vec&#39;s index that the string will hold</span>
-                    <span class="kw">let</span> <span class="ident">key</span> =
-                        <span class="ident">K::try_from_usize</span>(<span class="ident">key</span>).<span class="ident">expect</span>(<span class="string">&quot;failed to create key while deserializing&quot;</span>);
+                RawEntryMut::Vacant(entry) =&gt; {
+                    <span class="comment">// Create the key from the vec&#39;s index that the string will hold
+                    </span><span class="kw">let </span>key =
+                        K::try_from_usize(key).expect(<span class="string">&quot;failed to create key while deserializing&quot;</span>);
 
-                    <span class="comment">// Push the allocated string to the strings vector</span>
-                    <span class="ident">strings</span>.<span class="ident">push</span>(<span class="ident">allocated</span>);
+                    <span class="comment">// Push the allocated string to the strings vector
+                    </span>strings.push(allocated);
 
-                    <span class="comment">// Insert the key with the hash of the string that it points to, reusing the hash we made earlier</span>
-                    <span class="ident">entry</span>.<span class="ident">insert_with_hasher</span>(<span class="ident">hash</span>, <span class="ident">key</span>, (), |<span class="ident">key</span>| {
-                        <span class="kw">let</span> <span class="ident">key_string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> =
-                            <span class="kw">unsafe</span> { <span class="macro">index_unchecked!</span>(<span class="ident">strings</span>, <span class="ident">key</span>.<span class="ident">into_usize</span>()) };
+                    <span class="comment">// Insert the key with the hash of the string that it points to, reusing the hash we made earlier
+                    </span>entry.insert_with_hasher(hash, key, (), |key| {
+                        <span class="kw">let </span>key_string: <span class="kw-2">&amp;</span>str =
+                            <span class="kw">unsafe </span>{ <span class="macro">index_unchecked!</span>(strings, key.into_usize()) };
 
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">state</span> = <span class="ident">hasher</span>.<span class="ident">build_hasher</span>();
-                        <span class="ident">key_string</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;mut</span> <span class="ident">state</span>);
+                        <span class="kw">let </span><span class="kw-2">mut </span>state = hasher.build_hasher();
+                        key_string.hash(<span class="kw-2">&amp;mut </span>state);
 
-                        <span class="ident">state</span>.<span class="ident">finish</span>()
+                        state.finish()
                     });
                 }
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
-            <span class="ident">map</span>,
-            <span class="ident">hasher</span>,
-            <span class="ident">strings</span>,
-            <span class="ident">arena</span>,
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            map,
+            hasher,
+            strings,
+            arena,
         })
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">mod</span> <span class="ident">single_threaded</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serialize&quot;</span>)]</span>
-        <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::RodeoReader</span>;
-        <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Key</span>, <span class="ident">Rodeo</span>, <span class="ident">Spur</span>};
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">mod </span>single_threaded {
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+        </span><span class="kw">use </span><span class="kw">crate</span>::RodeoReader;
+        <span class="kw">use crate</span>::{Key, Rodeo, Spur};
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">get</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>get() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">key</span>), <span class="ident">reader</span>.<span class="ident">get</span>(<span class="string">&quot;A&quot;</span>));
+            <span class="kw">let </span>reader = rodeo.into_reader();
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(key), reader.get(<span class="string">&quot;A&quot;</span>));
 
-            <span class="macro">assert!</span>(<span class="ident">reader</span>.<span class="ident">get</span>(<span class="string">&quot;F&quot;</span>).<span class="ident">is_none</span>());
+            <span class="macro">assert!</span>(reader.get(<span class="string">&quot;F&quot;</span>).is_none());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">resolve</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>resolve() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="ident">reader</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+            <span class="kw">let </span>reader = rodeo.into_reader();
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, reader.resolve(<span class="kw-2">&amp;</span>key));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">miri</span>))]</span>
-        <span class="kw">fn</span> <span class="ident">resolve_panics</span>() {
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">Rodeo::default</span>().<span class="ident">into_reader</span>();
-            <span class="ident">reader</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">Spur::try_from_usize</span>(<span class="number">100</span>).<span class="ident">unwrap</span>());
+        <span class="attribute">#[test]
+        #[should_panic]
+        #[cfg(not(miri))]
+        </span><span class="kw">fn </span>resolve_panics() {
+            <span class="kw">let </span>reader = Rodeo::default().into_reader();
+            reader.resolve(<span class="kw-2">&amp;</span>Spur::try_from_usize(<span class="number">100</span>).unwrap());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">try_resolve</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>try_resolve() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;A&quot;</span>), <span class="ident">reader</span>.<span class="ident">try_resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+            <span class="kw">let </span>reader = rodeo.into_reader();
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;A&quot;</span>), reader.try_resolve(<span class="kw-2">&amp;</span>key));
             <span class="macro">assert_eq!</span>(
                 <span class="prelude-val">None</span>,
-                <span class="ident">reader</span>.<span class="ident">try_resolve</span>(<span class="kw-2">&amp;</span><span class="ident">Spur::try_from_usize</span>(<span class="number">100</span>).<span class="ident">unwrap</span>())
+                reader.try_resolve(<span class="kw-2">&amp;</span>Spur::try_from_usize(<span class="number">100</span>).unwrap())
             );
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">resolve_unchecked</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>resolve_unchecked() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="kw">unsafe</span> {
-                <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="ident">reader</span>.<span class="ident">resolve_unchecked</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+            <span class="kw">let </span>reader = rodeo.into_reader();
+            <span class="kw">unsafe </span>{
+                <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, reader.resolve_unchecked(<span class="kw-2">&amp;</span>key));
             }
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">len</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
-            <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;B&quot;</span>);
-            <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;C&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>len() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
+            rodeo.get_or_intern(<span class="string">&quot;B&quot;</span>);
+            rodeo.get_or_intern(<span class="string">&quot;C&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">reader</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+            <span class="kw">let </span>reader = rodeo.into_reader();
+            <span class="macro">assert_eq!</span>(reader.len(), <span class="number">3</span>);
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">empty</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>empty() {
+            <span class="kw">let </span>rodeo = Rodeo::default();
+            <span class="kw">let </span>reader = rodeo.into_reader();
 
-            <span class="macro">assert!</span>(<span class="ident">reader</span>.<span class="ident">is_empty</span>());
+            <span class="macro">assert!</span>(reader.is_empty());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">iter</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">a</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;a&quot;</span>);
-            <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;b&quot;</span>);
-            <span class="kw">let</span> <span class="ident">c</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;c&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>iter() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
+            <span class="kw">let </span>b = rodeo.get_or_intern(<span class="string">&quot;b&quot;</span>);
+            <span class="kw">let </span>c = rodeo.get_or_intern(<span class="string">&quot;c&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> = <span class="ident">resolver</span>.<span class="ident">iter</span>();
+            <span class="kw">let </span>resolver = rodeo.into_reader();
+            <span class="kw">let </span><span class="kw-2">mut </span>iter = resolver.iter();
 
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">a</span>, <span class="string">&quot;a&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="string">&quot;b&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">c</span>, <span class="string">&quot;c&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">iter</span>.<span class="ident">next</span>());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((a, <span class="string">&quot;a&quot;</span>)), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((b, <span class="string">&quot;b&quot;</span>)), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((c, <span class="string">&quot;c&quot;</span>)), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">strings</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;a&quot;</span>);
-            <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;b&quot;</span>);
-            <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;c&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>strings() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
+            rodeo.get_or_intern(<span class="string">&quot;b&quot;</span>);
+            rodeo.get_or_intern(<span class="string">&quot;c&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> = <span class="ident">resolver</span>.<span class="ident">strings</span>();
+            <span class="kw">let </span>resolver = rodeo.into_reader();
+            <span class="kw">let </span><span class="kw-2">mut </span>iter = resolver.strings();
 
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;a&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;b&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;c&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">iter</span>.<span class="ident">next</span>());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;a&quot;</span>), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;b&quot;</span>), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;c&quot;</span>), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">drops</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>drops() {
+            <span class="kw">let </span>rodeo = Rodeo::default();
+            <span class="kw">let _ </span>= rodeo.into_reader();
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">into_resolver</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>into_resolver() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>().<span class="ident">into_resolver</span>();
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="ident">resolver</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+            <span class="kw">let </span>resolver = rodeo.into_reader().into_resolver();
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, resolver.resolve(<span class="kw-2">&amp;</span>key));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;ahasher&quot;</span>)))]</span>
-        <span class="kw">fn</span> <span class="ident">debug</span>() {
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">Rodeo::default</span>().<span class="ident">into_reader</span>();
-            <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">reader</span>);
+        <span class="attribute">#[test]
+        #[cfg(not(any(feature = <span class="string">&quot;no-std&quot;</span>, feature = <span class="string">&quot;ahasher&quot;</span>)))]
+        </span><span class="kw">fn </span>debug() {
+            <span class="kw">let </span>reader = Rodeo::default().into_reader();
+            <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, reader);
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">contains</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;&quot;</span>);
-            <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>contains() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            rodeo.get_or_intern(<span class="string">&quot;&quot;</span>);
+            <span class="kw">let </span>resolver = rodeo.into_reader();
 
-            <span class="macro">assert!</span>(<span class="ident">resolver</span>.<span class="ident">contains</span>(<span class="string">&quot;&quot;</span>));
-            <span class="macro">assert!</span>(<span class="ident">resolver</span>.<span class="ident">contains</span>(<span class="string">&quot;&quot;</span>));
+            <span class="macro">assert!</span>(resolver.contains(<span class="string">&quot;&quot;</span>));
+            <span class="macro">assert!</span>(resolver.contains(<span class="string">&quot;&quot;</span>));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">contains_key</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;&quot;</span>);
-            <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>contains_key() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;&quot;</span>);
+            <span class="kw">let </span>resolver = rodeo.into_reader();
 
-            <span class="macro">assert!</span>(<span class="ident">resolver</span>.<span class="ident">contains</span>(<span class="string">&quot;&quot;</span>));
-            <span class="macro">assert!</span>(<span class="ident">resolver</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
-            <span class="macro">assert!</span>(!<span class="ident">resolver</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">Spur::try_from_usize</span>(<span class="number">10000</span>).<span class="ident">unwrap</span>()));
+            <span class="macro">assert!</span>(resolver.contains(<span class="string">&quot;&quot;</span>));
+            <span class="macro">assert!</span>(resolver.contains_key(<span class="kw-2">&amp;</span>key));
+            <span class="macro">assert!</span>(!resolver.contains_key(<span class="kw-2">&amp;</span>Spur::try_from_usize(<span class="number">10000</span>).unwrap()));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">into_iterator</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;d&quot;</span>, <span class="string">&quot;e&quot;</span>]
-                .<span class="ident">iter</span>()
-                .<span class="ident">collect</span>::&lt;<span class="ident">Rodeo</span>&gt;()
-                .<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>into_iterator() {
+            <span class="kw">let </span>rodeo = [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;d&quot;</span>, <span class="string">&quot;e&quot;</span>]
+                .iter()
+                .collect::&lt;Rodeo&gt;()
+                .into_reader();
 
-            <span class="kw">for</span> ((<span class="ident">key</span>, <span class="ident">string</span>), (<span class="ident">expected_key</span>, <span class="ident">expected_string</span>)) <span class="kw">in</span> <span class="ident">rodeo</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(
+            <span class="kw">for </span>((key, string), (expected_key, expected_string)) <span class="kw">in </span>rodeo.into_iter().zip(
                 [(<span class="number">0usize</span>, <span class="string">&quot;a&quot;</span>), (<span class="number">1</span>, <span class="string">&quot;b&quot;</span>), (<span class="number">2</span>, <span class="string">&quot;c&quot;</span>), (<span class="number">3</span>, <span class="string">&quot;d&quot;</span>), (<span class="number">4</span>, <span class="string">&quot;e&quot;</span>)]
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">copied</span>(),
+                    .iter()
+                    .copied(),
             ) {
-                <span class="macro">assert_eq!</span>(<span class="ident">key</span>, <span class="ident">Spur::try_from_usize</span>(<span class="ident">expected_key</span>).<span class="ident">unwrap</span>());
-                <span class="macro">assert_eq!</span>(<span class="ident">string</span>, <span class="ident">expected_string</span>);
+                <span class="macro">assert_eq!</span>(key, Spur::try_from_usize(expected_key).unwrap());
+                <span class="macro">assert_eq!</span>(string, expected_string);
             }
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">index</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>index() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">reader</span>[<span class="ident">key</span>]);
+            <span class="kw">let </span>reader = rodeo.into_reader();
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="kw-2">&amp;</span>reader[key]);
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serialize&quot;</span>)]</span>
-        <span class="kw">fn</span> <span class="ident">empty_serialize</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>().<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        #[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+        </span><span class="kw">fn </span>empty_serialize() {
+            <span class="kw">let </span>rodeo = Rodeo::default().into_reader();
 
-            <span class="kw">let</span> <span class="ident">ser</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">ser2</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">ser</span>, <span class="ident">ser2</span>);
+            <span class="kw">let </span>ser = serde_json::to_string(<span class="kw-2">&amp;</span>rodeo).unwrap();
+            <span class="kw">let </span>ser2 = serde_json::to_string(<span class="kw-2">&amp;</span>rodeo).unwrap();
+            <span class="macro">assert_eq!</span>(ser, ser2);
 
-            <span class="kw">let</span> <span class="ident">deser</span>: <span class="ident">RodeoReader</span> = <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">ser</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert!</span>(<span class="ident">deser</span>.<span class="ident">is_empty</span>());
-            <span class="kw">let</span> <span class="ident">deser2</span>: <span class="ident">RodeoReader</span> = <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">ser2</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert!</span>(<span class="ident">deser2</span>.<span class="ident">is_empty</span>());
+            <span class="kw">let </span>deser: RodeoReader = serde_json::from_str(<span class="kw-2">&amp;</span>ser).unwrap();
+            <span class="macro">assert!</span>(deser.is_empty());
+            <span class="kw">let </span>deser2: RodeoReader = serde_json::from_str(<span class="kw-2">&amp;</span>ser2).unwrap();
+            <span class="macro">assert!</span>(deser2.is_empty());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serialize&quot;</span>)]</span>
-        <span class="kw">fn</span> <span class="ident">filled_serialize</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">a</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;a&quot;</span>);
-            <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;b&quot;</span>);
-            <span class="kw">let</span> <span class="ident">c</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;c&quot;</span>);
-            <span class="kw">let</span> <span class="ident">d</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;d&quot;</span>);
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        #[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+        </span><span class="kw">fn </span>filled_serialize() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
+            <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
+            <span class="kw">let </span>b = rodeo.get_or_intern(<span class="string">&quot;b&quot;</span>);
+            <span class="kw">let </span>c = rodeo.get_or_intern(<span class="string">&quot;c&quot;</span>);
+            <span class="kw">let </span>d = rodeo.get_or_intern(<span class="string">&quot;d&quot;</span>);
+            <span class="kw">let </span>rodeo = rodeo.into_reader();
 
-            <span class="kw">let</span> <span class="ident">ser</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">ser2</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">ser</span>, <span class="ident">ser2</span>);
+            <span class="kw">let </span>ser = serde_json::to_string(<span class="kw-2">&amp;</span>rodeo).unwrap();
+            <span class="kw">let </span>ser2 = serde_json::to_string(<span class="kw-2">&amp;</span>rodeo).unwrap();
+            <span class="macro">assert_eq!</span>(ser, ser2);
 
-            <span class="kw">let</span> <span class="ident">deser</span>: <span class="ident">RodeoReader</span> = <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">ser</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">deser2</span>: <span class="ident">RodeoReader</span> = <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">ser2</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let </span>deser: RodeoReader = serde_json::from_str(<span class="kw-2">&amp;</span>ser).unwrap();
+            <span class="kw">let </span>deser2: RodeoReader = serde_json::from_str(<span class="kw-2">&amp;</span>ser2).unwrap();
 
-            <span class="kw">for</span> (((<span class="ident">correct_key</span>, <span class="ident">correct_str</span>), (<span class="ident">key1</span>, <span class="ident">str1</span>)), (<span class="ident">key2</span>, <span class="ident">str2</span>)) <span class="kw">in</span>
-                [(<span class="ident">a</span>, <span class="string">&quot;a&quot;</span>), (<span class="ident">b</span>, <span class="string">&quot;b&quot;</span>), (<span class="ident">c</span>, <span class="string">&quot;c&quot;</span>), (<span class="ident">d</span>, <span class="string">&quot;d&quot;</span>)]
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">copied</span>()
-                    .<span class="ident">zip</span>(<span class="kw-2">&amp;</span><span class="ident">deser</span>)
-                    .<span class="ident">zip</span>(<span class="kw-2">&amp;</span><span class="ident">deser2</span>)
+            <span class="kw">for </span>(((correct_key, correct_str), (key1, str1)), (key2, str2)) <span class="kw">in
+                </span>[(a, <span class="string">&quot;a&quot;</span>), (b, <span class="string">&quot;b&quot;</span>), (c, <span class="string">&quot;c&quot;</span>), (d, <span class="string">&quot;d&quot;</span>)]
+                    .iter()
+                    .copied()
+                    .zip(<span class="kw-2">&amp;</span>deser)
+                    .zip(<span class="kw-2">&amp;</span>deser2)
             {
-                <span class="macro">assert_eq!</span>(<span class="ident">correct_key</span>, <span class="ident">key1</span>);
-                <span class="macro">assert_eq!</span>(<span class="ident">correct_key</span>, <span class="ident">key2</span>);
+                <span class="macro">assert_eq!</span>(correct_key, key1);
+                <span class="macro">assert_eq!</span>(correct_key, key2);
 
-                <span class="macro">assert_eq!</span>(<span class="ident">correct_str</span>, <span class="ident">str1</span>);
-                <span class="macro">assert_eq!</span>(<span class="ident">correct_str</span>, <span class="ident">str2</span>);
+                <span class="macro">assert_eq!</span>(correct_str, str1);
+                <span class="macro">assert_eq!</span>(correct_str, str2);
             }
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">reader_eq</span>() {
-            <span class="kw">let</span> <span class="ident">a</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">Rodeo::default</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">a</span>.<span class="ident">into_reader</span>(), <span class="ident">b</span>.<span class="ident">into_reader</span>());
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>reader_eq() {
+            <span class="kw">let </span>a = Rodeo::default();
+            <span class="kw">let </span>b = Rodeo::default();
+            <span class="macro">assert_eq!</span>(a.into_reader(), b.into_reader());
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> = <span class="ident">Rodeo::default</span>();
-            <span class="ident">a</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;a&quot;</span>);
-            <span class="ident">a</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;b&quot;</span>);
-            <span class="ident">a</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;c&quot;</span>);
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span> = <span class="ident">Rodeo::default</span>();
-            <span class="ident">b</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;a&quot;</span>);
-            <span class="ident">b</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;b&quot;</span>);
-            <span class="ident">b</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;c&quot;</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">a</span>.<span class="ident">into_reader</span>(), <span class="ident">b</span>.<span class="ident">into_reader</span>());
+            <span class="kw">let </span><span class="kw-2">mut </span>a = Rodeo::default();
+            a.get_or_intern(<span class="string">&quot;a&quot;</span>);
+            a.get_or_intern(<span class="string">&quot;b&quot;</span>);
+            a.get_or_intern(<span class="string">&quot;c&quot;</span>);
+            <span class="kw">let </span><span class="kw-2">mut </span>b = Rodeo::default();
+            b.get_or_intern(<span class="string">&quot;a&quot;</span>);
+            b.get_or_intern(<span class="string">&quot;b&quot;</span>);
+            b.get_or_intern(<span class="string">&quot;c&quot;</span>);
+            <span class="macro">assert_eq!</span>(a.into_reader(), b.into_reader());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">resolver_eq</span>() {
-            <span class="kw">let</span> <span class="ident">a</span> = <span class="ident">Rodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">Rodeo::default</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">a</span>.<span class="ident">into_reader</span>(), <span class="ident">b</span>.<span class="ident">into_resolver</span>());
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>resolver_eq() {
+            <span class="kw">let </span>a = Rodeo::default();
+            <span class="kw">let </span>b = Rodeo::default();
+            <span class="macro">assert_eq!</span>(a.into_reader(), b.into_resolver());
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> = <span class="ident">Rodeo::default</span>();
-            <span class="ident">a</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;a&quot;</span>);
-            <span class="ident">a</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;b&quot;</span>);
-            <span class="ident">a</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;c&quot;</span>);
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span> = <span class="ident">Rodeo::default</span>();
-            <span class="ident">b</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;a&quot;</span>);
-            <span class="ident">b</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;b&quot;</span>);
-            <span class="ident">b</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;c&quot;</span>);
-            <span class="macro">assert_eq!</span>(<span class="ident">a</span>.<span class="ident">into_reader</span>(), <span class="ident">b</span>.<span class="ident">into_resolver</span>());
+            <span class="kw">let </span><span class="kw-2">mut </span>a = Rodeo::default();
+            a.get_or_intern(<span class="string">&quot;a&quot;</span>);
+            a.get_or_intern(<span class="string">&quot;b&quot;</span>);
+            a.get_or_intern(<span class="string">&quot;c&quot;</span>);
+            <span class="kw">let </span><span class="kw-2">mut </span>b = Rodeo::default();
+            b.get_or_intern(<span class="string">&quot;a&quot;</span>);
+            b.get_or_intern(<span class="string">&quot;b&quot;</span>);
+            b.get_or_intern(<span class="string">&quot;c&quot;</span>);
+            <span class="macro">assert_eq!</span>(a.into_reader(), b.into_resolver());
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">miri</span>, <span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>)), <span class="ident">features</span> = <span class="string">&quot;multi-threaded&quot;</span>))]</span>
-    <span class="kw">mod</span> <span class="ident">multi_threaded</span> {
-        <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">locks::Arc</span>, <span class="ident">RodeoReader</span>, <span class="ident">ThreadedRodeo</span>};
-        <span class="kw">use</span> <span class="ident">std::thread</span>;
+    <span class="attribute">#[cfg(all(not(any(miri, feature = <span class="string">&quot;no-std&quot;</span>)), features = <span class="string">&quot;multi-threaded&quot;</span>))]
+    </span><span class="kw">mod </span>multi_threaded {
+        <span class="kw">use crate</span>::{locks::Arc, RodeoReader, ThreadedRodeo};
+        <span class="kw">use </span>std::thread;
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">get</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>get() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>key = rodeo.intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">key</span>), <span class="ident">reader</span>.<span class="ident">get</span>(<span class="string">&quot;A&quot;</span>));
+            <span class="kw">let </span>reader = rodeo.into_reader();
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(key), reader.get(<span class="string">&quot;A&quot;</span>));
 
-            <span class="macro">assert!</span>(<span class="ident">reader</span>.<span class="ident">get</span>(<span class="string">&quot;F&quot;</span>).<span class="ident">is_none</span>());
+            <span class="macro">assert!</span>(reader.get(<span class="string">&quot;F&quot;</span>).is_none());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">miri</span>))]</span>
-        <span class="kw">fn</span> <span class="ident">get_threaded</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        #[cfg(not(miri))]
+        </span><span class="kw">fn </span>get_threaded() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>key = rodeo.intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">Arc::new</span>(<span class="ident">rodeo</span>.<span class="ident">into_reader</span>());
+            <span class="kw">let </span>reader = Arc::new(rodeo.into_reader());
 
-            <span class="kw">let</span> <span class="ident">moved</span> = <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">reader</span>);
-            <span class="ident">thread::spawn</span>(<span class="kw">move</span> || {
-                <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">key</span>), <span class="ident">moved</span>.<span class="ident">get</span>(<span class="string">&quot;A&quot;</span>));
-                <span class="macro">assert!</span>(<span class="ident">moved</span>.<span class="ident">get</span>(<span class="string">&quot;F&quot;</span>).<span class="ident">is_none</span>());
+            <span class="kw">let </span>moved = Arc::clone(<span class="kw-2">&amp;</span>reader);
+            thread::spawn(<span class="kw">move </span>|| {
+                <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(key), moved.get(<span class="string">&quot;A&quot;</span>));
+                <span class="macro">assert!</span>(moved.get(<span class="string">&quot;F&quot;</span>).is_none());
             });
 
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="ident">key</span>), <span class="ident">reader</span>.<span class="ident">get</span>(<span class="string">&quot;A&quot;</span>));
-            <span class="macro">assert!</span>(<span class="ident">reader</span>.<span class="ident">get</span>(<span class="string">&quot;F&quot;</span>).<span class="ident">is_none</span>());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(key), reader.get(<span class="string">&quot;A&quot;</span>));
+            <span class="macro">assert!</span>(reader.get(<span class="string">&quot;F&quot;</span>).is_none());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">resolve</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>resolve() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>key = rodeo.intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="ident">reader</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+            <span class="kw">let </span>reader = rodeo.into_reader();
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, reader.resolve(<span class="kw-2">&amp;</span>key));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">miri</span>))]</span>
-        <span class="kw">fn</span> <span class="ident">resolve_threaded</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        #[cfg(not(miri))]
+        </span><span class="kw">fn </span>resolve_threaded() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>key = rodeo.intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">Arc::new</span>(<span class="ident">rodeo</span>.<span class="ident">into_reader</span>());
+            <span class="kw">let </span>reader = Arc::new(rodeo.into_reader());
 
-            <span class="kw">let</span> <span class="ident">moved</span> = <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">reader</span>);
-            <span class="ident">thread::spawn</span>(<span class="kw">move</span> || {
-                <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="ident">moved</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+            <span class="kw">let </span>moved = Arc::clone(<span class="kw-2">&amp;</span>reader);
+            thread::spawn(<span class="kw">move </span>|| {
+                <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, moved.resolve(<span class="kw-2">&amp;</span>key));
             });
 
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="ident">reader</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, reader.resolve(<span class="kw-2">&amp;</span>key));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">len</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="ident">rodeo</span>.<span class="ident">intern</span>(<span class="string">&quot;A&quot;</span>);
-            <span class="ident">rodeo</span>.<span class="ident">intern</span>(<span class="string">&quot;B&quot;</span>);
-            <span class="ident">rodeo</span>.<span class="ident">intern</span>(<span class="string">&quot;C&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>len() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            rodeo.intern(<span class="string">&quot;A&quot;</span>);
+            rodeo.intern(<span class="string">&quot;B&quot;</span>);
+            rodeo.intern(<span class="string">&quot;C&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">reader</span>.<span class="ident">len</span>(), <span class="number">3</span>);
+            <span class="kw">let </span>reader = rodeo.into_reader();
+            <span class="macro">assert_eq!</span>(reader.len(), <span class="number">3</span>);
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">empty</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>empty() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>reader = rodeo.into_reader();
 
-            <span class="macro">assert!</span>(<span class="ident">reader</span>.<span class="ident">is_empty</span>());
+            <span class="macro">assert!</span>(reader.is_empty());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">clone</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">intern</span>(<span class="string">&quot;Test&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>clone() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>key = rodeo.intern(<span class="string">&quot;Test&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader_rodeo</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;Test&quot;</span>, <span class="ident">reader_rodeo</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+            <span class="kw">let </span>reader_rodeo = rodeo.into_reader();
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;Test&quot;</span>, reader_rodeo.resolve(<span class="kw-2">&amp;</span>key));
 
-            <span class="kw">let</span> <span class="ident">cloned</span> = <span class="ident">reader_rodeo</span>.<span class="ident">clone</span>();
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;Test&quot;</span>, <span class="ident">cloned</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+            <span class="kw">let </span>cloned = reader_rodeo.clone();
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;Test&quot;</span>, cloned.resolve(<span class="kw-2">&amp;</span>key));
 
-            <span class="ident">drop</span>(<span class="ident">reader_rodeo</span>);
+            drop(reader_rodeo);
 
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;Test&quot;</span>, <span class="ident">cloned</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;Test&quot;</span>, cloned.resolve(<span class="kw-2">&amp;</span>key));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">iter</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">a</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;a&quot;</span>);
-            <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;b&quot;</span>);
-            <span class="kw">let</span> <span class="ident">c</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;c&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>iter() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
+            <span class="kw">let </span>b = rodeo.get_or_intern(<span class="string">&quot;b&quot;</span>);
+            <span class="kw">let </span>c = rodeo.get_or_intern(<span class="string">&quot;c&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_resolver</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> = <span class="ident">resolver</span>.<span class="ident">iter</span>();
+            <span class="kw">let </span>resolver = rodeo.into_resolver();
+            <span class="kw">let </span><span class="kw-2">mut </span>iter = resolver.iter();
 
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">a</span>, <span class="string">&quot;a&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="string">&quot;b&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((<span class="ident">c</span>, <span class="string">&quot;c&quot;</span>)), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">iter</span>.<span class="ident">next</span>());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((a, <span class="string">&quot;a&quot;</span>)), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((b, <span class="string">&quot;b&quot;</span>)), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>((c, <span class="string">&quot;c&quot;</span>)), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">strings</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;a&quot;</span>);
-            <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;b&quot;</span>);
-            <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;c&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>strings() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
+            rodeo.get_or_intern(<span class="string">&quot;b&quot;</span>);
+            rodeo.get_or_intern(<span class="string">&quot;c&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_resolver</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">iter</span> = <span class="ident">resolver</span>.<span class="ident">strings</span>();
+            <span class="kw">let </span>resolver = rodeo.into_resolver();
+            <span class="kw">let </span><span class="kw-2">mut </span>iter = resolver.strings();
 
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;a&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;b&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;c&quot;</span>), <span class="ident">iter</span>.<span class="ident">next</span>());
-            <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">iter</span>.<span class="ident">next</span>());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;a&quot;</span>), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;b&quot;</span>), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;c&quot;</span>), iter.next());
+            <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">drops</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>drops() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let _ </span>= rodeo.into_reader();
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">miri</span>))]</span>
-        <span class="kw">fn</span> <span class="ident">drop_threaded</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">Arc::new</span>(<span class="ident">rodeo</span>.<span class="ident">into_reader</span>());
+        <span class="attribute">#[test]
+        #[cfg(not(miri))]
+        </span><span class="kw">fn </span>drop_threaded() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>reader = Arc::new(rodeo.into_reader());
 
-            <span class="kw">let</span> <span class="ident">moved</span> = <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">reader</span>);
-            <span class="ident">thread::spawn</span>(<span class="kw">move</span> || {
-                <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">moved</span>;
+            <span class="kw">let </span>moved = Arc::clone(<span class="kw-2">&amp;</span>reader);
+            thread::spawn(<span class="kw">move </span>|| {
+                <span class="kw">let _ </span>= moved;
             });
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">into_resolver</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>into_resolver() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>key = rodeo.intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>().<span class="ident">into_resolver</span>();
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="ident">resolver</span>.<span class="ident">resolve</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
+            <span class="kw">let </span>resolver = rodeo.into_reader().into_resolver();
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, resolver.resolve(<span class="kw-2">&amp;</span>key));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>))]</span>
-        <span class="kw">fn</span> <span class="ident">debug</span>() {
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">ThreadedRodeo::default</span>().<span class="ident">into_reader</span>();
-            <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">reader</span>);
+        <span class="attribute">#[test]
+        #[cfg(not(feature = <span class="string">&quot;no-std&quot;</span>))]
+        </span><span class="kw">fn </span>debug() {
+            <span class="kw">let </span>reader = ThreadedRodeo::default().into_reader();
+            <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, reader);
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">contains</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;&quot;</span>);
-            <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>contains() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = ThreadedRodeo::default();
+            rodeo.get_or_intern(<span class="string">&quot;&quot;</span>);
+            <span class="kw">let </span>resolver = rodeo.into_reader();
 
-            <span class="macro">assert!</span>(<span class="ident">resolver</span>.<span class="ident">contains</span>(<span class="string">&quot;&quot;</span>));
-            <span class="macro">assert!</span>(<span class="ident">resolver</span>.<span class="ident">contains</span>(<span class="string">&quot;&quot;</span>));
+            <span class="macro">assert!</span>(resolver.contains(<span class="string">&quot;&quot;</span>));
+            <span class="macro">assert!</span>(resolver.contains(<span class="string">&quot;&quot;</span>));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">contains_key</span>() {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;&quot;</span>);
-            <span class="kw">let</span> <span class="ident">resolver</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>contains_key() {
+            <span class="kw">let </span><span class="kw-2">mut </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;&quot;</span>);
+            <span class="kw">let </span>resolver = rodeo.into_reader();
 
-            <span class="macro">assert!</span>(<span class="ident">resolver</span>.<span class="ident">contains</span>(<span class="string">&quot;&quot;</span>));
-            <span class="macro">assert!</span>(<span class="ident">resolver</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>));
-            <span class="macro">assert!</span>(!<span class="ident">resolver</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">Spur::try_from_usize</span>(<span class="number">10000</span>).<span class="ident">unwrap</span>()));
+            <span class="macro">assert!</span>(resolver.contains(<span class="string">&quot;&quot;</span>));
+            <span class="macro">assert!</span>(resolver.contains_key(<span class="kw-2">&amp;</span>key));
+            <span class="macro">assert!</span>(!resolver.contains_key(<span class="kw-2">&amp;</span>Spur::try_from_usize(<span class="number">10000</span>).unwrap()));
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">into_iterator</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;d&quot;</span>, <span class="string">&quot;e&quot;</span>]
-                .<span class="ident">iter</span>()
-                .<span class="ident">collect</span>::&lt;<span class="ident">ThreadedRodeo</span>&gt;()
-                .<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>into_iterator() {
+            <span class="kw">let </span>rodeo = [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;d&quot;</span>, <span class="string">&quot;e&quot;</span>]
+                .iter()
+                .collect::&lt;ThreadedRodeo&gt;()
+                .into_reader();
 
-            <span class="kw">for</span> ((<span class="ident">key</span>, <span class="ident">string</span>), (<span class="ident">expected_key</span>, <span class="ident">expected_string</span>)) <span class="kw">in</span> <span class="ident">rodeo</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(
+            <span class="kw">for </span>((key, string), (expected_key, expected_string)) <span class="kw">in </span>rodeo.into_iter().zip(
                 [(<span class="number">0usize</span>, <span class="string">&quot;a&quot;</span>), (<span class="number">1</span>, <span class="string">&quot;b&quot;</span>), (<span class="number">2</span>, <span class="string">&quot;c&quot;</span>), (<span class="number">3</span>, <span class="string">&quot;d&quot;</span>), (<span class="number">4</span>, <span class="string">&quot;e&quot;</span>)]
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">copied</span>(),
+                    .iter()
+                    .copied(),
             ) {
-                <span class="macro">assert_eq!</span>(<span class="ident">key</span>, <span class="ident">Spur::try_from_usize</span>(<span class="ident">expected_key</span>).<span class="ident">unwrap</span>());
-                <span class="macro">assert_eq!</span>(<span class="ident">string</span>, <span class="ident">expected_string</span>);
+                <span class="macro">assert_eq!</span>(key, Spur::try_from_usize(expected_key).unwrap());
+                <span class="macro">assert_eq!</span>(string, expected_string);
             }
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="kw">fn</span> <span class="ident">index</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">rodeo</span>.<span class="ident">intern</span>(<span class="string">&quot;A&quot;</span>);
+        <span class="attribute">#[test]
+        </span><span class="kw">fn </span>index() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>key = rodeo.intern(<span class="string">&quot;A&quot;</span>);
 
-            <span class="kw">let</span> <span class="ident">reader</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">reader</span>[<span class="ident">key</span>]);
+            <span class="kw">let </span>reader = rodeo.into_reader();
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="kw-2">&amp;</span>reader[key]);
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serialize&quot;</span>)]</span>
-        <span class="kw">fn</span> <span class="ident">empty_serialize</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>().<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        #[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+        </span><span class="kw">fn </span>empty_serialize() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default().into_reader();
 
-            <span class="kw">let</span> <span class="ident">ser</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">ser2</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">ser</span>, <span class="ident">ser2</span>);
+            <span class="kw">let </span>ser = serde_json::to_string(<span class="kw-2">&amp;</span>rodeo).unwrap();
+            <span class="kw">let </span>ser2 = serde_json::to_string(<span class="kw-2">&amp;</span>rodeo).unwrap();
+            <span class="macro">assert_eq!</span>(ser, ser2);
 
-            <span class="kw">let</span> <span class="ident">deser</span>: <span class="ident">RodeoReader</span> = <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">ser</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert!</span>(<span class="ident">deser</span>.<span class="ident">is_empty</span>());
-            <span class="kw">let</span> <span class="ident">deser2</span>: <span class="ident">RodeoReader</span> = <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">ser2</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert!</span>(<span class="ident">deser2</span>.<span class="ident">is_empty</span>());
+            <span class="kw">let </span>deser: RodeoReader = serde_json::from_str(<span class="kw-2">&amp;</span>ser).unwrap();
+            <span class="macro">assert!</span>(deser.is_empty());
+            <span class="kw">let </span>deser2: RodeoReader = serde_json::from_str(<span class="kw-2">&amp;</span>ser2).unwrap();
+            <span class="macro">assert!</span>(deser2.is_empty());
         }
 
-        <span class="attribute">#[<span class="ident">test</span>]</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serialize&quot;</span>)]</span>
-        <span class="kw">fn</span> <span class="ident">filled_serialize</span>() {
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">ThreadedRodeo::default</span>();
-            <span class="kw">let</span> <span class="ident">a</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;a&quot;</span>);
-            <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;b&quot;</span>);
-            <span class="kw">let</span> <span class="ident">c</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;c&quot;</span>);
-            <span class="kw">let</span> <span class="ident">d</span> = <span class="ident">rodeo</span>.<span class="ident">get_or_intern</span>(<span class="string">&quot;d&quot;</span>);
-            <span class="kw">let</span> <span class="ident">rodeo</span> = <span class="ident">rodeo</span>.<span class="ident">into_reader</span>();
+        <span class="attribute">#[test]
+        #[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+        </span><span class="kw">fn </span>filled_serialize() {
+            <span class="kw">let </span>rodeo = ThreadedRodeo::default();
+            <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
+            <span class="kw">let </span>b = rodeo.get_or_intern(<span class="string">&quot;b&quot;</span>);
+            <span class="kw">let </span>c = rodeo.get_or_intern(<span class="string">&quot;c&quot;</span>);
+            <span class="kw">let </span>d = rodeo.get_or_intern(<span class="string">&quot;d&quot;</span>);
+            <span class="kw">let </span>rodeo = rodeo.into_reader();
 
-            <span class="kw">let</span> <span class="ident">ser</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">ser2</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">rodeo</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">ser</span>, <span class="ident">ser2</span>);
+            <span class="kw">let </span>ser = serde_json::to_string(<span class="kw-2">&amp;</span>rodeo).unwrap();
+            <span class="kw">let </span>ser2 = serde_json::to_string(<span class="kw-2">&amp;</span>rodeo).unwrap();
+            <span class="macro">assert_eq!</span>(ser, ser2);
 
-            <span class="kw">let</span> <span class="ident">deser</span>: <span class="ident">RodeoReader</span> = <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">ser</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">deser2</span>: <span class="ident">RodeoReader</span> = <span class="ident">serde_json::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">ser2</span>).<span class="ident">unwrap</span>();
+            <span class="kw">let </span>deser: RodeoReader = serde_json::from_str(<span class="kw-2">&amp;</span>ser).unwrap();
+            <span class="kw">let </span>deser2: RodeoReader = serde_json::from_str(<span class="kw-2">&amp;</span>ser2).unwrap();
 
-            <span class="kw">for</span> (((<span class="ident">correct_key</span>, <span class="ident">correct_str</span>), (<span class="ident">key1</span>, <span class="ident">str1</span>)), (<span class="ident">key2</span>, <span class="ident">str2</span>)) <span class="kw">in</span>
-                [(<span class="ident">a</span>, <span class="string">&quot;a&quot;</span>), (<span class="ident">b</span>, <span class="string">&quot;b&quot;</span>), (<span class="ident">c</span>, <span class="string">&quot;c&quot;</span>), (<span class="ident">d</span>, <span class="string">&quot;d&quot;</span>)]
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">copied</span>()
-                    .<span class="ident">zip</span>(<span class="kw-2">&amp;</span><span class="ident">deser</span>)
-                    .<span class="ident">zip</span>(<span class="kw-2">&amp;</span><span class="ident">deser2</span>)
+            <span class="kw">for </span>(((correct_key, correct_str), (key1, str1)), (key2, str2)) <span class="kw">in
+                </span>[(a, <span class="string">&quot;a&quot;</span>), (b, <span class="string">&quot;b&quot;</span>), (c, <span class="string">&quot;c&quot;</span>), (d, <span class="string">&quot;d&quot;</span>)]
+                    .iter()
+                    .copied()
+                    .zip(<span class="kw-2">&amp;</span>deser)
+                    .zip(<span class="kw-2">&amp;</span>deser2)
             {
-                <span class="macro">assert_eq!</span>(<span class="ident">correct_key</span>, <span class="ident">key1</span>);
-                <span class="macro">assert_eq!</span>(<span class="ident">correct_key</span>, <span class="ident">key2</span>);
+                <span class="macro">assert_eq!</span>(correct_key, key1);
+                <span class="macro">assert_eq!</span>(correct_key, key2);
 
-                <span class="macro">assert_eq!</span>(<span class="ident">correct_str</span>, <span class="ident">str1</span>);
-                <span class="macro">assert_eq!</span>(<span class="ident">correct_str</span>, <span class="ident">str2</span>);
+                <span class="macro">assert_eq!</span>(correct_str, str1);
+                <span class="macro">assert_eq!</span>(correct_str, str2);
             }
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -74,81 +74,81 @@
 <span id="74">74</span>
 <span id="75">75</span>
 <span id="76">76</span>
-</pre><pre class="rust"><code><span class="doccomment">//! I/O operations.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! I/O operations.
 
-<span class="kw">mod</span> <span class="ident">close</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-<span class="kw">mod</span> <span class="ident">dup</span>;
-<span class="kw">mod</span> <span class="ident">errno</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;android&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>))]</span>
-<span class="kw">mod</span> <span class="ident">eventfd</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod</span> <span class="ident">fd</span>;
-<span class="kw">mod</span> <span class="ident">ioctl</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">windows</span>, <span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>)))]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;net&quot;</span>)]</span>
-<span class="kw">mod</span> <span class="ident">is_read_write</span>;
-<span class="kw">mod</span> <span class="ident">owned_fd</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">windows</span>, <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>)))]</span>
-<span class="kw">mod</span> <span class="ident">pipe</span>;
-<span class="kw">mod</span> <span class="ident">poll</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;procfs&quot;</span>, <span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;android&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>)))]</span>
-<span class="kw">mod</span> <span class="ident">procfs</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-<span class="kw">mod</span> <span class="ident">read_write</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
-<span class="kw">mod</span> <span class="ident">seek_from</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-<span class="kw">mod</span> <span class="ident">stdio</span>;
+</span><span class="kw">mod </span>close;
+<span class="attribute">#[cfg(not(windows))]
+</span><span class="kw">mod </span>dup;
+<span class="kw">mod </span>errno;
+<span class="attribute">#[cfg(any(target_os = <span class="string">&quot;android&quot;</span>, target_os = <span class="string">&quot;linux&quot;</span>))]
+</span><span class="kw">mod </span>eventfd;
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;std&quot;</span>))]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>fd;
+<span class="kw">mod </span>ioctl;
+<span class="attribute">#[cfg(not(any(windows, target_os = <span class="string">&quot;redox&quot;</span>)))]
+#[cfg(feature = <span class="string">&quot;net&quot;</span>)]
+</span><span class="kw">mod </span>is_read_write;
+<span class="kw">mod </span>owned_fd;
+<span class="attribute">#[cfg(not(any(windows, target_os = <span class="string">&quot;wasi&quot;</span>)))]
+</span><span class="kw">mod </span>pipe;
+<span class="kw">mod </span>poll;
+<span class="attribute">#[cfg(all(feature = <span class="string">&quot;procfs&quot;</span>, any(target_os = <span class="string">&quot;android&quot;</span>, target_os = <span class="string">&quot;linux&quot;</span>)))]
+</span><span class="kw">mod </span>procfs;
+<span class="attribute">#[cfg(not(windows))]
+</span><span class="kw">mod </span>read_write;
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;std&quot;</span>))]
+</span><span class="kw">mod </span>seek_from;
+<span class="attribute">#[cfg(not(windows))]
+</span><span class="kw">mod </span>stdio;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;android&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend::io::epoll</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">close::close</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">windows</span>, <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">dup</span>::{<span class="ident">dup</span>, <span class="ident">dup2</span>, <span class="ident">dup3</span>, <span class="ident">DupFlags</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">errno</span>::{<span class="ident">retry_on_intr</span>, <span class="ident">Errno</span>, <span class="prelude-ty">Result</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;android&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">eventfd</span>::{<span class="ident">eventfd</span>, <span class="ident">EventfdFlags</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;ios&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ioctl::ioctl_fioclex</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ioctl::ioctl_fionbio</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ioctl::ioctl_fionread</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;android&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ioctl</span>::{<span class="ident">ioctl_blkpbszget</span>, <span class="ident">ioctl_blksszget</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">windows</span>, <span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ioctl</span>::{<span class="ident">ioctl_tiocexcl</span>, <span class="ident">ioctl_tiocnxcl</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">windows</span>, <span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>)))]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;net&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">is_read_write::is_read_write</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">owned_fd::OwnedFd</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">windows</span>, <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">pipe::pipe</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(
-    <span class="ident">windows</span>,
-    <span class="ident">target_os</span> = <span class="string">&quot;illumos&quot;</span>,
-    <span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>,
-    <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>,
-)))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">pipe::PIPE_BUF</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">windows</span>, <span class="ident">target_os</span> = <span class="string">&quot;ios&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;macos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">pipe</span>::{<span class="ident">pipe_with</span>, <span class="ident">PipeFlags</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">poll</span>::{<span class="ident">poll</span>, <span class="ident">PollFd</span>, <span class="ident">PollFlags</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;procfs&quot;</span>, <span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;android&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">procfs</span>::{<span class="ident">proc_self_fd</span>, <span class="ident">proc_self_fdinfo_fd</span>, <span class="ident">proc_self_maps</span>, <span class="ident">proc_self_pagemap</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">read_write</span>::{<span class="ident">pread</span>, <span class="ident">pwrite</span>, <span class="ident">read</span>, <span class="ident">readv</span>, <span class="ident">write</span>, <span class="ident">writev</span>, <span class="ident">IoSlice</span>, <span class="ident">IoSliceMut</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">windows</span>, <span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>)))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">read_write</span>::{<span class="ident">preadv</span>, <span class="ident">pwritev</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;android&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;linux&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">read_write</span>::{<span class="ident">preadv2</span>, <span class="ident">pwritev2</span>, <span class="ident">ReadWriteFlags</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">seek_from::SeekFrom</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">std::io::SeekFrom</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">stdio</span>::{
-    <span class="ident">raw_stderr</span>, <span class="ident">raw_stdin</span>, <span class="ident">raw_stdout</span>, <span class="ident">stderr</span>, <span class="ident">stdin</span>, <span class="ident">stdout</span>, <span class="ident">take_stderr</span>, <span class="ident">take_stdin</span>, <span class="ident">take_stdout</span>,
+<span class="attribute">#[cfg(any(target_os = <span class="string">&quot;android&quot;</span>, target_os = <span class="string">&quot;linux&quot;</span>))]
+</span><span class="kw">pub use </span><span class="kw">crate</span>::backend::io::epoll;
+<span class="kw">pub use </span>close::close;
+<span class="attribute">#[cfg(not(any(windows, target_os = <span class="string">&quot;wasi&quot;</span>)))]
+</span><span class="kw">pub use </span>dup::{dup, dup2, dup3, DupFlags};
+<span class="kw">pub use </span>errno::{retry_on_intr, Errno, <span class="prelude-ty">Result</span>};
+<span class="attribute">#[cfg(any(target_os = <span class="string">&quot;android&quot;</span>, target_os = <span class="string">&quot;linux&quot;</span>))]
+</span><span class="kw">pub use </span>eventfd::{eventfd, EventfdFlags};
+<span class="attribute">#[cfg(any(target_os = <span class="string">&quot;ios&quot;</span>, target_os = <span class="string">&quot;macos&quot;</span>))]
+</span><span class="kw">pub use </span>ioctl::ioctl_fioclex;
+<span class="kw">pub use </span>ioctl::ioctl_fionbio;
+<span class="attribute">#[cfg(not(target_os = <span class="string">&quot;redox&quot;</span>))]
+</span><span class="kw">pub use </span>ioctl::ioctl_fionread;
+<span class="attribute">#[cfg(any(target_os = <span class="string">&quot;android&quot;</span>, target_os = <span class="string">&quot;linux&quot;</span>))]
+</span><span class="kw">pub use </span>ioctl::{ioctl_blkpbszget, ioctl_blksszget};
+<span class="attribute">#[cfg(not(any(windows, target_os = <span class="string">&quot;redox&quot;</span>, target_os = <span class="string">&quot;wasi&quot;</span>)))]
+</span><span class="kw">pub use </span>ioctl::{ioctl_tiocexcl, ioctl_tiocnxcl};
+<span class="attribute">#[cfg(not(any(windows, target_os = <span class="string">&quot;redox&quot;</span>)))]
+#[cfg(feature = <span class="string">&quot;net&quot;</span>)]
+</span><span class="kw">pub use </span>is_read_write::is_read_write;
+<span class="kw">pub use </span>owned_fd::OwnedFd;
+<span class="attribute">#[cfg(not(any(windows, target_os = <span class="string">&quot;wasi&quot;</span>)))]
+</span><span class="kw">pub use </span>pipe::pipe;
+<span class="attribute">#[cfg(not(any(
+    windows,
+    target_os = <span class="string">&quot;illumos&quot;</span>,
+    target_os = <span class="string">&quot;redox&quot;</span>,
+    target_os = <span class="string">&quot;wasi&quot;</span>,
+)))]
+</span><span class="kw">pub use </span>pipe::PIPE_BUF;
+<span class="attribute">#[cfg(not(any(windows, target_os = <span class="string">&quot;ios&quot;</span>, target_os = <span class="string">&quot;macos&quot;</span>, target_os = <span class="string">&quot;wasi&quot;</span>)))]
+</span><span class="kw">pub use </span>pipe::{pipe_with, PipeFlags};
+<span class="kw">pub use </span>poll::{poll, PollFd, PollFlags};
+<span class="attribute">#[cfg(all(feature = <span class="string">&quot;procfs&quot;</span>, any(target_os = <span class="string">&quot;android&quot;</span>, target_os = <span class="string">&quot;linux&quot;</span>)))]
+</span><span class="kw">pub use </span>procfs::{proc_self_fd, proc_self_fdinfo_fd, proc_self_maps, proc_self_pagemap};
+<span class="attribute">#[cfg(not(windows))]
+</span><span class="kw">pub use </span>read_write::{pread, pwrite, read, readv, write, writev, IoSlice, IoSliceMut};
+<span class="attribute">#[cfg(not(any(windows, target_os = <span class="string">&quot;redox&quot;</span>)))]
+</span><span class="kw">pub use </span>read_write::{preadv, pwritev};
+<span class="attribute">#[cfg(any(target_os = <span class="string">&quot;android&quot;</span>, target_os = <span class="string">&quot;linux&quot;</span>))]
+</span><span class="kw">pub use </span>read_write::{preadv2, pwritev2, ReadWriteFlags};
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;std&quot;</span>))]
+</span><span class="kw">pub use </span>seek_from::SeekFrom;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+</span><span class="kw">pub use </span>std::io::SeekFrom;
+<span class="attribute">#[cfg(not(windows))]
+</span><span class="kw">pub use </span>stdio::{
+    raw_stderr, raw_stdin, raw_stdout, stderr, stdin, stdout, take_stderr, take_stdin, take_stdout,
 };
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -234,241 +234,241 @@
 <span id="234">234</span>
 <span id="235">235</span>
 <span id="236">236</span>
-</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
+</pre><pre class="rust"><code><span class="attribute">#![allow(missing_docs)]
 
-<span class="doccomment">//! Document tree traversal to walk a shared borrow of a document tree.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Each method of the [`Visit`] trait is a hook that can be overridden</span>
-<span class="doccomment">//! to customize the behavior when mutating the corresponding type of node.</span>
-<span class="doccomment">//! By default, every method recursively visits the substructure of the</span>
-<span class="doccomment">//! input by invoking the right visitor method of each of its fields.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use toml_edit::{Item, ArrayOfTables, Table, Value};</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! pub trait Visit&lt;&#39;doc&gt; {</span>
-<span class="doccomment">//!     /* ... */</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     fn visit_item(&amp;mut self, i: &amp;&#39;doc Item) {</span>
-<span class="doccomment">//!         visit_item(self, i);</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     /* ... */</span>
-<span class="doccomment">//!     # fn visit_value(&amp;mut self, i: &amp;&#39;doc Value);</span>
-<span class="doccomment">//!     # fn visit_table(&amp;mut self, i: &amp;&#39;doc Table);</span>
-<span class="doccomment">//!     # fn visit_array_of_tables(&amp;mut self, i: &amp;&#39;doc ArrayOfTables);</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! pub fn visit_item&lt;&#39;doc, V&gt;(v: &amp;mut V, node: &amp;&#39;doc Item)</span>
-<span class="doccomment">//! where</span>
-<span class="doccomment">//!     V: Visit&lt;&#39;doc&gt; + ?Sized,</span>
-<span class="doccomment">//! {</span>
-<span class="doccomment">//!     match node {</span>
-<span class="doccomment">//!         Item::None =&gt; {}</span>
-<span class="doccomment">//!         Item::Value(value) =&gt; v.visit_value(value),</span>
-<span class="doccomment">//!         Item::Table(table) =&gt; v.visit_table(table),</span>
-<span class="doccomment">//!         Item::ArrayOfTables(array) =&gt; v.visit_array_of_tables(array),</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The API is modeled after [`syn::visit`](https://docs.rs/syn/1/syn/visit).</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Examples</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This visitor stores every string in the document.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! # use toml_edit::*;</span>
-<span class="doccomment">//! use toml_edit::visit::*;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #[derive(Default)]</span>
-<span class="doccomment">//! struct StringCollector&lt;&#39;doc&gt; {</span>
-<span class="doccomment">//!     strings: Vec&lt;&amp;&#39;doc str&gt;,</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! impl&lt;&#39;doc&gt; Visit&lt;&#39;doc&gt; for StringCollector&lt;&#39;doc&gt; {</span>
-<span class="doccomment">//!     fn visit_string(&amp;mut self, node: &amp;&#39;doc Formatted&lt;String&gt;) {</span>
-<span class="doccomment">//!          self.strings.push(node.value().as_str());</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let input = r#&quot;</span>
-<span class="doccomment">//! laputa = &quot;sky-castle&quot;</span>
-<span class="doccomment">//! the-force = { value = &quot;surrounds-you&quot; }</span>
-<span class="doccomment">//! &quot;#;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let mut document: Document = input.parse().unwrap();</span>
-<span class="doccomment">//! let mut visitor = StringCollector::default();</span>
-<span class="doccomment">//! visitor.visit_document(&amp;document);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! assert_eq!(visitor.strings, vec![&quot;sky-castle&quot;, &quot;surrounds-you&quot;]);</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! For a more complex example where the visitor has internal state, see `examples/visit.rs`</span>
-<span class="doccomment">//! [on GitHub](https://github.com/ordian/toml_edit/blob/master/examples/visit.rs).</span>
+</span><span class="doccomment">//! Document tree traversal to walk a shared borrow of a document tree.
+//!
+//! Each method of the [`Visit`] trait is a hook that can be overridden
+//! to customize the behavior when mutating the corresponding type of node.
+//! By default, every method recursively visits the substructure of the
+//! input by invoking the right visitor method of each of its fields.
+//!
+//! ```
+//! # use toml_edit::{Item, ArrayOfTables, Table, Value};
+//!
+//! pub trait Visit&lt;&#39;doc&gt; {
+//!     /* ... */
+//!
+//!     fn visit_item(&amp;mut self, i: &amp;&#39;doc Item) {
+//!         visit_item(self, i);
+//!     }
+//!
+//!     /* ... */
+//!     # fn visit_value(&amp;mut self, i: &amp;&#39;doc Value);
+//!     # fn visit_table(&amp;mut self, i: &amp;&#39;doc Table);
+//!     # fn visit_array_of_tables(&amp;mut self, i: &amp;&#39;doc ArrayOfTables);
+//! }
+//!
+//! pub fn visit_item&lt;&#39;doc, V&gt;(v: &amp;mut V, node: &amp;&#39;doc Item)
+//! where
+//!     V: Visit&lt;&#39;doc&gt; + ?Sized,
+//! {
+//!     match node {
+//!         Item::None =&gt; {}
+//!         Item::Value(value) =&gt; v.visit_value(value),
+//!         Item::Table(table) =&gt; v.visit_table(table),
+//!         Item::ArrayOfTables(array) =&gt; v.visit_array_of_tables(array),
+//!     }
+//! }
+//! ```
+//!
+//! The API is modeled after [`syn::visit`](https://docs.rs/syn/1/syn/visit).
+//!
+//! # Examples
+//!
+//! This visitor stores every string in the document.
+//!
+//! ```
+//! # use toml_edit::*;
+//! use toml_edit::visit::*;
+//!
+//! #[derive(Default)]
+//! struct StringCollector&lt;&#39;doc&gt; {
+//!     strings: Vec&lt;&amp;&#39;doc str&gt;,
+//! }
+//!
+//! impl&lt;&#39;doc&gt; Visit&lt;&#39;doc&gt; for StringCollector&lt;&#39;doc&gt; {
+//!     fn visit_string(&amp;mut self, node: &amp;&#39;doc Formatted&lt;String&gt;) {
+//!          self.strings.push(node.value().as_str());
+//!     }
+//! }
+//!
+//! let input = r#&quot;
+//! laputa = &quot;sky-castle&quot;
+//! the-force = { value = &quot;surrounds-you&quot; }
+//! &quot;#;
+//!
+//! let mut document: Document = input.parse().unwrap();
+//! let mut visitor = StringCollector::default();
+//! visitor.visit_document(&amp;document);
+//!
+//! assert_eq!(visitor.strings, vec![&quot;sky-castle&quot;, &quot;surrounds-you&quot;]);
+//! ```
+//!
+//! For a more complex example where the visitor has internal state, see `examples/visit.rs`
+//! [on GitHub](https://github.com/ordian/toml_edit/blob/master/examples/visit.rs).
 
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">Array</span>, <span class="ident">ArrayOfTables</span>, <span class="ident">Datetime</span>, <span class="ident">Document</span>, <span class="ident">Formatted</span>, <span class="ident">InlineTable</span>, <span class="ident">Item</span>, <span class="ident">Table</span>, <span class="ident">TableLike</span>, <span class="ident">Value</span>,
+</span><span class="kw">use crate</span>::{
+    Array, ArrayOfTables, Datetime, Document, Formatted, InlineTable, Item, Table, TableLike, Value,
 };
 
-<span class="doccomment">/// Document tree traversal to mutate an exclusive borrow of a document tree in-place.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See the [module documentation](self) for details.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Visit</span>&lt;<span class="lifetime">&#39;doc</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">visit_document</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Document</span>) {
-        <span class="ident">visit_document</span>(<span class="self">self</span>, <span class="ident">node</span>);
+<span class="doccomment">/// Document tree traversal to mutate an exclusive borrow of a document tree in-place.
+///
+/// See the [module documentation](self) for details.
+</span><span class="kw">pub trait </span>Visit&lt;<span class="lifetime">&#39;doc</span>&gt; {
+    <span class="kw">fn </span>visit_document(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Document) {
+        visit_document(<span class="self">self</span>, node);
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_item</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Item</span>) {
-        <span class="ident">visit_item</span>(<span class="self">self</span>, <span class="ident">node</span>);
+    <span class="kw">fn </span>visit_item(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Item) {
+        visit_item(<span class="self">self</span>, node);
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_table</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Table</span>) {
-        <span class="ident">visit_table</span>(<span class="self">self</span>, <span class="ident">node</span>);
+    <span class="kw">fn </span>visit_table(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Table) {
+        visit_table(<span class="self">self</span>, node);
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_inline_table</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">InlineTable</span>) {
-        <span class="ident">visit_inline_table</span>(<span class="self">self</span>, <span class="ident">node</span>)
+    <span class="kw">fn </span>visit_inline_table(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>InlineTable) {
+        visit_inline_table(<span class="self">self</span>, node)
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_table_like</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="kw">dyn</span> <span class="ident">TableLike</span>) {
-        <span class="ident">visit_table_like</span>(<span class="self">self</span>, <span class="ident">node</span>);
+    <span class="kw">fn </span>visit_table_like(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span><span class="kw">dyn </span>TableLike) {
+        visit_table_like(<span class="self">self</span>, node);
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_table_like_kv</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">str</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Item</span>) {
-        <span class="ident">visit_table_like_kv</span>(<span class="self">self</span>, <span class="ident">key</span>, <span class="ident">node</span>);
+    <span class="kw">fn </span>visit_table_like_kv(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>str, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Item) {
+        visit_table_like_kv(<span class="self">self</span>, key, node);
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_array</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Array</span>) {
-        <span class="ident">visit_array</span>(<span class="self">self</span>, <span class="ident">node</span>);
+    <span class="kw">fn </span>visit_array(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Array) {
+        visit_array(<span class="self">self</span>, node);
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_array_of_tables</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">ArrayOfTables</span>) {
-        <span class="ident">visit_array_of_tables</span>(<span class="self">self</span>, <span class="ident">node</span>);
+    <span class="kw">fn </span>visit_array_of_tables(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>ArrayOfTables) {
+        visit_array_of_tables(<span class="self">self</span>, node);
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_value</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Value</span>) {
-        <span class="ident">visit_value</span>(<span class="self">self</span>, <span class="ident">node</span>);
+    <span class="kw">fn </span>visit_value(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Value) {
+        visit_value(<span class="self">self</span>, node);
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_boolean</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Formatted</span>&lt;<span class="ident">bool</span>&gt;) {
-        <span class="ident">visit_boolean</span>(<span class="self">self</span>, <span class="ident">node</span>)
+    <span class="kw">fn </span>visit_boolean(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Formatted&lt;bool&gt;) {
+        visit_boolean(<span class="self">self</span>, node)
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_datetime</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Formatted</span>&lt;<span class="ident">Datetime</span>&gt;) {
-        <span class="ident">visit_datetime</span>(<span class="self">self</span>, <span class="ident">node</span>);
+    <span class="kw">fn </span>visit_datetime(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Formatted&lt;Datetime&gt;) {
+        visit_datetime(<span class="self">self</span>, node);
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_float</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Formatted</span>&lt;<span class="ident">f64</span>&gt;) {
-        <span class="ident">visit_float</span>(<span class="self">self</span>, <span class="ident">node</span>)
+    <span class="kw">fn </span>visit_float(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Formatted&lt;f64&gt;) {
+        visit_float(<span class="self">self</span>, node)
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_integer</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Formatted</span>&lt;<span class="ident">i64</span>&gt;) {
-        <span class="ident">visit_integer</span>(<span class="self">self</span>, <span class="ident">node</span>)
+    <span class="kw">fn </span>visit_integer(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Formatted&lt;i64&gt;) {
+        visit_integer(<span class="self">self</span>, node)
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_string</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Formatted</span>&lt;<span class="ident">String</span>&gt;) {
-        <span class="ident">visit_string</span>(<span class="self">self</span>, <span class="ident">node</span>)
+    <span class="kw">fn </span>visit_string(<span class="kw-2">&amp;mut </span><span class="self">self</span>, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Formatted&lt;String&gt;) {
+        visit_string(<span class="self">self</span>, node)
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">visit_document</span>&lt;<span class="lifetime">&#39;doc</span>, <span class="ident">V</span>&gt;(<span class="ident">v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Document</span>)
-<span class="kw">where</span>
-    <span class="ident">V</span>: <span class="ident">Visit</span>&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">pub fn </span>visit_document&lt;<span class="lifetime">&#39;doc</span>, V&gt;(v: <span class="kw-2">&amp;mut </span>V, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Document)
+<span class="kw">where
+    </span>V: Visit&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span>Sized,
 {
-    <span class="ident">v</span>.<span class="ident">visit_table</span>(<span class="ident">node</span>.<span class="ident">as_table</span>());
+    v.visit_table(node.as_table());
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">visit_item</span>&lt;<span class="lifetime">&#39;doc</span>, <span class="ident">V</span>&gt;(<span class="ident">v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Item</span>)
-<span class="kw">where</span>
-    <span class="ident">V</span>: <span class="ident">Visit</span>&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">pub fn </span>visit_item&lt;<span class="lifetime">&#39;doc</span>, V&gt;(v: <span class="kw-2">&amp;mut </span>V, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Item)
+<span class="kw">where
+    </span>V: Visit&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span>Sized,
 {
-    <span class="kw">match</span> <span class="ident">node</span> {
-        <span class="ident">Item::None</span> =&gt; {}
-        <span class="ident">Item::Value</span>(<span class="ident">value</span>) =&gt; <span class="ident">v</span>.<span class="ident">visit_value</span>(<span class="ident">value</span>),
-        <span class="ident">Item::Table</span>(<span class="ident">table</span>) =&gt; <span class="ident">v</span>.<span class="ident">visit_table</span>(<span class="ident">table</span>),
-        <span class="ident">Item::ArrayOfTables</span>(<span class="ident">array</span>) =&gt; <span class="ident">v</span>.<span class="ident">visit_array_of_tables</span>(<span class="ident">array</span>),
+    <span class="kw">match </span>node {
+        Item::None =&gt; {}
+        Item::Value(value) =&gt; v.visit_value(value),
+        Item::Table(table) =&gt; v.visit_table(table),
+        Item::ArrayOfTables(array) =&gt; v.visit_array_of_tables(array),
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">visit_table</span>&lt;<span class="lifetime">&#39;doc</span>, <span class="ident">V</span>&gt;(<span class="ident">v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Table</span>)
-<span class="kw">where</span>
-    <span class="ident">V</span>: <span class="ident">Visit</span>&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">pub fn </span>visit_table&lt;<span class="lifetime">&#39;doc</span>, V&gt;(v: <span class="kw-2">&amp;mut </span>V, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Table)
+<span class="kw">where
+    </span>V: Visit&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span>Sized,
 {
-    <span class="ident">v</span>.<span class="ident">visit_table_like</span>(<span class="ident">node</span>)
+    v.visit_table_like(node)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">visit_inline_table</span>&lt;<span class="lifetime">&#39;doc</span>, <span class="ident">V</span>&gt;(<span class="ident">v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">InlineTable</span>)
-<span class="kw">where</span>
-    <span class="ident">V</span>: <span class="ident">Visit</span>&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">pub fn </span>visit_inline_table&lt;<span class="lifetime">&#39;doc</span>, V&gt;(v: <span class="kw-2">&amp;mut </span>V, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>InlineTable)
+<span class="kw">where
+    </span>V: Visit&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span>Sized,
 {
-    <span class="ident">v</span>.<span class="ident">visit_table_like</span>(<span class="ident">node</span>)
+    v.visit_table_like(node)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">visit_table_like</span>&lt;<span class="lifetime">&#39;doc</span>, <span class="ident">V</span>&gt;(<span class="ident">v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="kw">dyn</span> <span class="ident">TableLike</span>)
-<span class="kw">where</span>
-    <span class="ident">V</span>: <span class="ident">Visit</span>&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">pub fn </span>visit_table_like&lt;<span class="lifetime">&#39;doc</span>, V&gt;(v: <span class="kw-2">&amp;mut </span>V, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span><span class="kw">dyn </span>TableLike)
+<span class="kw">where
+    </span>V: Visit&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span>Sized,
 {
-    <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">item</span>) <span class="kw">in</span> <span class="ident">node</span>.<span class="ident">iter</span>() {
-        <span class="ident">v</span>.<span class="ident">visit_table_like_kv</span>(<span class="ident">key</span>, <span class="ident">item</span>)
+    <span class="kw">for </span>(key, item) <span class="kw">in </span>node.iter() {
+        v.visit_table_like_kv(key, item)
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">visit_table_like_kv</span>&lt;<span class="lifetime">&#39;doc</span>, <span class="ident">V</span>&gt;(<span class="ident">v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">_key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">str</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Item</span>)
-<span class="kw">where</span>
-    <span class="ident">V</span>: <span class="ident">Visit</span>&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">pub fn </span>visit_table_like_kv&lt;<span class="lifetime">&#39;doc</span>, V&gt;(v: <span class="kw-2">&amp;mut </span>V, _key: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>str, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Item)
+<span class="kw">where
+    </span>V: Visit&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span>Sized,
 {
-    <span class="ident">v</span>.<span class="ident">visit_item</span>(<span class="ident">node</span>)
+    v.visit_item(node)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">visit_array</span>&lt;<span class="lifetime">&#39;doc</span>, <span class="ident">V</span>&gt;(<span class="ident">v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Array</span>)
-<span class="kw">where</span>
-    <span class="ident">V</span>: <span class="ident">Visit</span>&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">pub fn </span>visit_array&lt;<span class="lifetime">&#39;doc</span>, V&gt;(v: <span class="kw-2">&amp;mut </span>V, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Array)
+<span class="kw">where
+    </span>V: Visit&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span>Sized,
 {
-    <span class="kw">for</span> <span class="ident">value</span> <span class="kw">in</span> <span class="ident">node</span>.<span class="ident">iter</span>() {
-        <span class="ident">v</span>.<span class="ident">visit_value</span>(<span class="ident">value</span>);
+    <span class="kw">for </span>value <span class="kw">in </span>node.iter() {
+        v.visit_value(value);
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">visit_array_of_tables</span>&lt;<span class="lifetime">&#39;doc</span>, <span class="ident">V</span>&gt;(<span class="ident">v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">ArrayOfTables</span>)
-<span class="kw">where</span>
-    <span class="ident">V</span>: <span class="ident">Visit</span>&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">pub fn </span>visit_array_of_tables&lt;<span class="lifetime">&#39;doc</span>, V&gt;(v: <span class="kw-2">&amp;mut </span>V, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>ArrayOfTables)
+<span class="kw">where
+    </span>V: Visit&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span>Sized,
 {
-    <span class="kw">for</span> <span class="ident">table</span> <span class="kw">in</span> <span class="ident">node</span>.<span class="ident">iter</span>() {
-        <span class="ident">v</span>.<span class="ident">visit_table</span>(<span class="ident">table</span>);
+    <span class="kw">for </span>table <span class="kw">in </span>node.iter() {
+        v.visit_table(table);
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">visit_value</span>&lt;<span class="lifetime">&#39;doc</span>, <span class="ident">V</span>&gt;(<span class="ident">v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="ident">Value</span>)
-<span class="kw">where</span>
-    <span class="ident">V</span>: <span class="ident">Visit</span>&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">pub fn </span>visit_value&lt;<span class="lifetime">&#39;doc</span>, V&gt;(v: <span class="kw-2">&amp;mut </span>V, node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span>Value)
+<span class="kw">where
+    </span>V: Visit&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span>Sized,
 {
-    <span class="kw">match</span> <span class="ident">node</span> {
-        <span class="ident">Value::String</span>(<span class="ident">s</span>) =&gt; <span class="ident">v</span>.<span class="ident">visit_string</span>(<span class="ident">s</span>),
-        <span class="ident">Value::Integer</span>(<span class="ident">i</span>) =&gt; <span class="ident">v</span>.<span class="ident">visit_integer</span>(<span class="ident">i</span>),
-        <span class="ident">Value::Float</span>(<span class="ident">f</span>) =&gt; <span class="ident">v</span>.<span class="ident">visit_float</span>(<span class="ident">f</span>),
-        <span class="ident">Value::Boolean</span>(<span class="ident">b</span>) =&gt; <span class="ident">v</span>.<span class="ident">visit_boolean</span>(<span class="ident">b</span>),
-        <span class="ident">Value::Datetime</span>(<span class="ident">dt</span>) =&gt; <span class="ident">v</span>.<span class="ident">visit_datetime</span>(<span class="ident">dt</span>),
-        <span class="ident">Value::Array</span>(<span class="ident">array</span>) =&gt; <span class="ident">v</span>.<span class="ident">visit_array</span>(<span class="ident">array</span>),
-        <span class="ident">Value::InlineTable</span>(<span class="ident">table</span>) =&gt; <span class="ident">v</span>.<span class="ident">visit_inline_table</span>(<span class="ident">table</span>),
+    <span class="kw">match </span>node {
+        Value::String(s) =&gt; v.visit_string(s),
+        Value::Integer(i) =&gt; v.visit_integer(i),
+        Value::Float(f) =&gt; v.visit_float(f),
+        Value::Boolean(b) =&gt; v.visit_boolean(b),
+        Value::Datetime(dt) =&gt; v.visit_datetime(dt),
+        Value::Array(array) =&gt; v.visit_array(array),
+        Value::InlineTable(table) =&gt; v.visit_inline_table(table),
     }
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">empty_visit</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>: <span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>: <span class="ident">ty</span>) =&gt; {
-        <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>&lt;<span class="lifetime">&#39;doc</span>, <span class="ident">V</span>&gt;(<span class="ident">_v</span>: <span class="kw-2">&amp;mut</span> <span class="ident">V</span>, <span class="ident">_node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>)
-        <span class="kw">where</span>
-            <span class="ident">V</span>: <span class="ident">Visit</span>&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="macro">macro_rules! </span>empty_visit {
+    (<span class="macro-nonterminal">$name</span>: ident, <span class="macro-nonterminal">$t</span>: ty) =&gt; {
+        <span class="kw">fn </span><span class="macro-nonterminal">$name</span>&lt;<span class="lifetime">&#39;doc</span>, V&gt;(_v: <span class="kw-2">&amp;mut </span>V, _node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;doc </span><span class="macro-nonterminal">$t</span>)
+        <span class="kw">where
+            </span>V: Visit&lt;<span class="lifetime">&#39;doc</span>&gt; + <span class="question-mark">?</span>Sized,
         {
         }
     };
 }
 
-<span class="macro">empty_visit!</span>(<span class="ident">visit_boolean</span>, <span class="ident">Formatted</span>&lt;<span class="ident">bool</span>&gt;);
-<span class="macro">empty_visit!</span>(<span class="ident">visit_datetime</span>, <span class="ident">Formatted</span>&lt;<span class="ident">Datetime</span>&gt;);
-<span class="macro">empty_visit!</span>(<span class="ident">visit_float</span>, <span class="ident">Formatted</span>&lt;<span class="ident">f64</span>&gt;);
-<span class="macro">empty_visit!</span>(<span class="ident">visit_integer</span>, <span class="ident">Formatted</span>&lt;<span class="ident">i64</span>&gt;);
-<span class="macro">empty_visit!</span>(<span class="ident">visit_string</span>, <span class="ident">Formatted</span>&lt;<span class="ident">String</span>&gt;);
+<span class="macro">empty_visit!</span>(visit_boolean, Formatted&lt;bool&gt;);
+<span class="macro">empty_visit!</span>(visit_datetime, Formatted&lt;Datetime&gt;);
+<span class="macro">empty_visit!</span>(visit_float, Formatted&lt;f64&gt;);
+<span class="macro">empty_visit!</span>(visit_integer, Formatted&lt;i64&gt;);
+<span class="macro">empty_visit!</span>(visit_string, Formatted&lt;String&gt;);
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="toml_edit" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="toml_edit" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

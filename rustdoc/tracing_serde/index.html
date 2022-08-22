@@ -29,7 +29,7 @@ tracing = &quot;0.1&quot;
 tracing-serde = &quot;0.1&quot;</code></pre></div>
 <p>Next, add this to your crate:</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">tracing_serde::AsSerde</span>;</code></pre></div>
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>tracing_serde::AsSerde;</code></pre></div>
 <p>Please read the <a href="https://docs.rs/tracing/latest/tracing/index.html"><code>tracing</code> documentation</a>
 for more information on how to create trace data.</p>
 <p>This crate provides the <code>as_serde</code> function, via the <code>AsSerde</code> trait,
@@ -39,36 +39,36 @@ and <code>Record</code> <code>tracing</code> values.</p>
 <p>Implement a <code>Subscriber</code> to format the serialization of <code>tracing</code>
 types how you’d like.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">tracing_serde::AsSerde</span>;
-<span class="kw">use</span> <span class="ident">serde_json::json</span>;
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>tracing_serde::AsSerde;
+<span class="kw">use </span>serde_json::json;
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">JsonSubscriber</span> {
-    <span class="ident">next_id</span>: <span class="ident">AtomicUsize</span>, <span class="comment">// you need to assign span IDs, so you need a counter</span>
-}
+<span class="kw">pub struct </span>JsonSubscriber {
+    next_id: AtomicUsize, <span class="comment">// you need to assign span IDs, so you need a counter
+</span>}
 
-<span class="kw">impl</span> <span class="ident">Subscriber</span> <span class="kw">for</span> <span class="ident">JsonSubscriber</span> {
+<span class="kw">impl </span>Subscriber <span class="kw">for </span>JsonSubscriber {
 
-    <span class="kw">fn</span> <span class="ident">new_span</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">attrs</span>: <span class="kw-2">&amp;</span><span class="ident">Attributes</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">Id</span> {
-        <span class="kw">let</span> <span class="ident">id</span> = <span class="self">self</span>.<span class="ident">next_id</span>.<span class="ident">fetch_add</span>(<span class="number">1</span>, <span class="ident">Ordering::Relaxed</span>);
-        <span class="kw">let</span> <span class="ident">id</span> = <span class="ident">Id::from_u64</span>(<span class="ident">id</span> <span class="kw">as</span> <span class="ident">u64</span>);
-        <span class="kw">let</span> <span class="ident">json</span> = <span class="macro">json!</span>({
+    <span class="kw">fn </span>new_span(<span class="kw-2">&amp;</span><span class="self">self</span>, attrs: <span class="kw-2">&amp;</span>Attributes&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; Id {
+        <span class="kw">let </span>id = <span class="self">self</span>.next_id.fetch_add(<span class="number">1</span>, Ordering::Relaxed);
+        <span class="kw">let </span>id = Id::from_u64(id <span class="kw">as </span>u64);
+        <span class="kw">let </span>json = <span class="macro">json!</span>({
         <span class="string">&quot;new_span&quot;</span>: {
-            <span class="string">&quot;attributes&quot;</span>: <span class="ident">attrs</span>.<span class="ident">as_serde</span>(),
-            <span class="string">&quot;id&quot;</span>: <span class="ident">id</span>.<span class="ident">as_serde</span>(),
+            <span class="string">&quot;attributes&quot;</span>: attrs.as_serde(),
+            <span class="string">&quot;id&quot;</span>: id.as_serde(),
         }});
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">json</span>);
-        <span class="ident">id</span>
+        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, json);
+        id
     }
 
-    <span class="kw">fn</span> <span class="ident">event</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">event</span>: <span class="kw-2">&amp;</span><span class="ident">Event</span>&lt;<span class="lifetime">&#39;_</span>&gt;) {
-        <span class="kw">let</span> <span class="ident">json</span> = <span class="macro">json!</span>({
-           <span class="string">&quot;event&quot;</span>: <span class="ident">event</span>.<span class="ident">as_serde</span>(),
+    <span class="kw">fn </span>event(<span class="kw-2">&amp;</span><span class="self">self</span>, event: <span class="kw-2">&amp;</span>Event&lt;<span class="lifetime">&#39;_</span>&gt;) {
+        <span class="kw">let </span>json = <span class="macro">json!</span>({
+           <span class="string">&quot;event&quot;</span>: event.as_serde(),
         });
-        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">json</span>);
+        <span class="macro">println!</span>(<span class="string">&quot;{}&quot;</span>, json);
     }
 
-    <span class="comment">// ...</span>
-}</code></pre></div>
+    <span class="comment">// ...
+</span>}</code></pre></div>
 <p>After you implement your <code>Subscriber</code>, you can use your <code>tracing</code>
 subscriber (<code>JsonSubscriber</code> in the above example) to record serialized
 trace data.</p>
@@ -105,4 +105,4 @@ long as doing so complies with this policy.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SerializeAttributes.html" title="tracing_serde::SerializeAttributes struct">SerializeAttributes</a></div><div class="item-right docblock-short"><p>Implements <code>serde::Serialize</code> to write <code>Attributes</code> data to a serializer.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SerializeEvent.html" title="tracing_serde::SerializeEvent struct">SerializeEvent</a></div><div class="item-right docblock-short"><p>Implements <code>serde::Serialize</code> to write <code>Event</code> data to a serializer.</p>
 </div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SerializeField.html" title="tracing_serde::SerializeField struct">SerializeField</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SerializeFieldSet.html" title="tracing_serde::SerializeFieldSet struct">SerializeFieldSet</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SerializeId.html" title="tracing_serde::SerializeId struct">SerializeId</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SerializeLevel.html" title="tracing_serde::SerializeLevel struct">SerializeLevel</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SerializeMetadata.html" title="tracing_serde::SerializeMetadata struct">SerializeMetadata</a></div><div class="item-right docblock-short"></div></div><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.SerializeRecord.html" title="tracing_serde::SerializeRecord struct">SerializeRecord</a></div><div class="item-right docblock-short"><p>Implements <code>serde::Serialize</code> to write <code>Record</code> data to a serializer.</p>
-</div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.AsSerde.html" title="tracing_serde::AsSerde trait">AsSerde</a></div><div class="item-right docblock-short"></div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="tracing_serde" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</div></div></div><h2 id="traits" class="small-section-header"><a href="#traits">Traits</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="trait" href="trait.AsSerde.html" title="tracing_serde::AsSerde trait">AsSerde</a></div><div class="item-right docblock-short"></div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="tracing_serde" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

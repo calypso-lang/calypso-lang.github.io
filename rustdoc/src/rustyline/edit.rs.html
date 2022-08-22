@@ -759,766 +759,766 @@
 <span id="759">759</span>
 <span id="760">760</span>
 <span id="761">761</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Command processor</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Command processor
 
-<span class="kw">use</span> <span class="ident">log::debug</span>;
-<span class="kw">use</span> <span class="ident">std::cell::RefCell</span>;
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
-<span class="kw">use</span> <span class="ident">std::rc::Rc</span>;
-<span class="kw">use</span> <span class="ident">unicode_segmentation::UnicodeSegmentation</span>;
-<span class="kw">use</span> <span class="ident">unicode_width::UnicodeWidthChar</span>;
+</span><span class="kw">use </span>log::debug;
+<span class="kw">use </span>std::cell::RefCell;
+<span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::rc::Rc;
+<span class="kw">use </span>unicode_segmentation::UnicodeSegmentation;
+<span class="kw">use </span>unicode_width::UnicodeWidthChar;
 
-<span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">Context</span>, <span class="ident">Helper</span>, <span class="prelude-ty">Result</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::ReadlineError</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::highlight::Highlighter</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::hint::Hint</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::history::SearchDirection</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keymap</span>::{<span class="ident">Anchor</span>, <span class="ident">At</span>, <span class="ident">CharSearch</span>, <span class="ident">Cmd</span>, <span class="ident">Movement</span>, <span class="ident">RepeatCount</span>, <span class="ident">Word</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keymap</span>::{<span class="ident">InputState</span>, <span class="ident">Invoke</span>, <span class="ident">Refresher</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::layout</span>::{<span class="ident">Layout</span>, <span class="ident">Position</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::line_buffer</span>::{<span class="ident">LineBuffer</span>, <span class="ident">WordAction</span>, <span class="ident">MAX_LINE</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::tty</span>::{<span class="ident">Renderer</span>, <span class="ident">Term</span>, <span class="ident">Terminal</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::undo::Changeset</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validate</span>::{<span class="ident">ValidationContext</span>, <span class="ident">ValidationResult</span>};
+<span class="kw">use super</span>::{Context, Helper, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span><span class="kw">crate</span>::error::ReadlineError;
+<span class="kw">use </span><span class="kw">crate</span>::highlight::Highlighter;
+<span class="kw">use </span><span class="kw">crate</span>::hint::Hint;
+<span class="kw">use </span><span class="kw">crate</span>::history::SearchDirection;
+<span class="kw">use </span><span class="kw">crate</span>::keymap::{Anchor, At, CharSearch, Cmd, Movement, RepeatCount, Word};
+<span class="kw">use </span><span class="kw">crate</span>::keymap::{InputState, Invoke, Refresher};
+<span class="kw">use </span><span class="kw">crate</span>::layout::{Layout, Position};
+<span class="kw">use </span><span class="kw">crate</span>::line_buffer::{LineBuffer, WordAction, MAX_LINE};
+<span class="kw">use </span><span class="kw">crate</span>::tty::{Renderer, Term, Terminal};
+<span class="kw">use </span><span class="kw">crate</span>::undo::Changeset;
+<span class="kw">use </span><span class="kw">crate</span>::validate::{ValidationContext, ValidationResult};
 
-<span class="doccomment">/// Represent the state during line editing.</span>
-<span class="doccomment">/// Implement rendering.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">State</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>: <span class="ident">Helper</span>&gt; {
-    <span class="kw">pub</span> <span class="ident">out</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;out</span> <span class="kw-2">mut</span> &lt;<span class="ident">Terminal</span> <span class="kw">as</span> <span class="ident">Term</span>&gt;<span class="ident">::Writer</span>,
-    <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;prompt</span> <span class="ident">str</span>,  <span class="comment">// Prompt to display (rl_prompt)</span>
-    <span class="ident">prompt_size</span>: <span class="ident">Position</span>, <span class="comment">// Prompt Unicode/visible width and height</span>
-    <span class="kw">pub</span> <span class="ident">line</span>: <span class="ident">LineBuffer</span>,  <span class="comment">// Edited line buffer</span>
-    <span class="kw">pub</span> <span class="ident">layout</span>: <span class="ident">Layout</span>,
-    <span class="ident">saved_line_for_history</span>: <span class="ident">LineBuffer</span>, <span class="comment">// Current edited line before history browsing</span>
-    <span class="ident">byte_buffer</span>: [<span class="ident">u8</span>; <span class="number">4</span>],
-    <span class="kw">pub</span> <span class="ident">changes</span>: <span class="ident">Rc</span>&lt;<span class="ident">RefCell</span>&lt;<span class="ident">Changeset</span>&gt;&gt;, <span class="comment">// changes to line, for undo/redo</span>
-    <span class="kw">pub</span> <span class="ident">helper</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;out</span> <span class="ident">H</span>&gt;,
-    <span class="kw">pub</span> <span class="ident">ctx</span>: <span class="ident">Context</span>&lt;<span class="lifetime">&#39;out</span>&gt;,          <span class="comment">// Give access to history for `hinter`</span>
-    <span class="kw">pub</span> <span class="ident">hint</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">Hint</span>&gt;&gt;, <span class="comment">// last hint displayed</span>
-    <span class="ident">highlight_char</span>: <span class="ident">bool</span>,            <span class="comment">// `true` if a char has been highlighted</span>
+<span class="doccomment">/// Represent the state during line editing.
+/// Implement rendering.
+</span><span class="kw">pub struct </span>State&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H: Helper&gt; {
+    <span class="kw">pub </span>out: <span class="kw-2">&amp;</span><span class="lifetime">&#39;out </span><span class="kw-2">mut </span>&lt;Terminal <span class="kw">as </span>Term&gt;::Writer,
+    prompt: <span class="kw-2">&amp;</span><span class="lifetime">&#39;prompt </span>str,  <span class="comment">// Prompt to display (rl_prompt)
+    </span>prompt_size: Position, <span class="comment">// Prompt Unicode/visible width and height
+    </span><span class="kw">pub </span>line: LineBuffer,  <span class="comment">// Edited line buffer
+    </span><span class="kw">pub </span>layout: Layout,
+    saved_line_for_history: LineBuffer, <span class="comment">// Current edited line before history browsing
+    </span>byte_buffer: [u8; <span class="number">4</span>],
+    <span class="kw">pub </span>changes: Rc&lt;RefCell&lt;Changeset&gt;&gt;, <span class="comment">// changes to line, for undo/redo
+    </span><span class="kw">pub </span>helper: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;out </span>H&gt;,
+    <span class="kw">pub </span>ctx: Context&lt;<span class="lifetime">&#39;out</span>&gt;,          <span class="comment">// Give access to history for `hinter`
+    </span><span class="kw">pub </span>hint: <span class="prelude-ty">Option</span>&lt;Box&lt;<span class="kw">dyn </span>Hint&gt;&gt;, <span class="comment">// last hint displayed
+    </span>highlight_char: bool,            <span class="comment">// `true` if a char has been highlighted
+</span>}
+
+<span class="kw">enum </span>Info&lt;<span class="lifetime">&#39;m</span>&gt; {
+    NoHint,
+    Hint,
+    Msg(<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;m </span>str&gt;),
 }
 
-<span class="kw">enum</span> <span class="ident">Info</span>&lt;<span class="lifetime">&#39;m</span>&gt; {
-    <span class="ident">NoHint</span>,
-    <span class="ident">Hint</span>,
-    <span class="ident">Msg</span>(<span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;m</span> <span class="ident">str</span>&gt;),
-}
-
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>: <span class="ident">Helper</span>&gt; <span class="ident">State</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>&gt; {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">out</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;out</span> <span class="kw-2">mut</span> &lt;<span class="ident">Terminal</span> <span class="kw">as</span> <span class="ident">Term</span>&gt;<span class="ident">::Writer</span>,
-        <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;prompt</span> <span class="ident">str</span>,
-        <span class="ident">helper</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;out</span> <span class="ident">H</span>&gt;,
-        <span class="ident">ctx</span>: <span class="ident">Context</span>&lt;<span class="lifetime">&#39;out</span>&gt;,
-    ) -&gt; <span class="ident">State</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>&gt; {
-        <span class="kw">let</span> <span class="ident">prompt_size</span> = <span class="ident">out</span>.<span class="ident">calculate_position</span>(<span class="ident">prompt</span>, <span class="ident">Position::default</span>());
-        <span class="ident">State</span> {
-            <span class="ident">out</span>,
-            <span class="ident">prompt</span>,
-            <span class="ident">prompt_size</span>,
-            <span class="ident">line</span>: <span class="ident">LineBuffer::with_capacity</span>(<span class="ident">MAX_LINE</span>).<span class="ident">can_growth</span>(<span class="bool-val">true</span>),
-            <span class="ident">layout</span>: <span class="ident">Layout::default</span>(),
-            <span class="ident">saved_line_for_history</span>: <span class="ident">LineBuffer::with_capacity</span>(<span class="ident">MAX_LINE</span>).<span class="ident">can_growth</span>(<span class="bool-val">true</span>),
-            <span class="ident">byte_buffer</span>: [<span class="number">0</span>; <span class="number">4</span>],
-            <span class="ident">changes</span>: <span class="ident">Rc::new</span>(<span class="ident">RefCell::new</span>(<span class="ident">Changeset::new</span>())),
-            <span class="ident">helper</span>,
-            <span class="ident">ctx</span>,
-            <span class="ident">hint</span>: <span class="prelude-val">None</span>,
-            <span class="ident">highlight_char</span>: <span class="bool-val">false</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H: Helper&gt; State&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H&gt; {
+    <span class="kw">pub fn </span>new(
+        out: <span class="kw-2">&amp;</span><span class="lifetime">&#39;out </span><span class="kw-2">mut </span>&lt;Terminal <span class="kw">as </span>Term&gt;::Writer,
+        prompt: <span class="kw-2">&amp;</span><span class="lifetime">&#39;prompt </span>str,
+        helper: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;out </span>H&gt;,
+        ctx: Context&lt;<span class="lifetime">&#39;out</span>&gt;,
+    ) -&gt; State&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H&gt; {
+        <span class="kw">let </span>prompt_size = out.calculate_position(prompt, Position::default());
+        State {
+            out,
+            prompt,
+            prompt_size,
+            line: LineBuffer::with_capacity(MAX_LINE).can_growth(<span class="bool-val">true</span>),
+            layout: Layout::default(),
+            saved_line_for_history: LineBuffer::with_capacity(MAX_LINE).can_growth(<span class="bool-val">true</span>),
+            byte_buffer: [<span class="number">0</span>; <span class="number">4</span>],
+            changes: Rc::new(RefCell::new(Changeset::new())),
+            helper,
+            ctx,
+            hint: <span class="prelude-val">None</span>,
+            highlight_char: <span class="bool-val">false</span>,
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">highlighter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Highlighter</span>&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">colors_enabled</span>() {
-            <span class="self">self</span>.<span class="ident">helper</span>.<span class="ident">map</span>(|<span class="ident">h</span>| <span class="ident">h</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Highlighter</span>)
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+    <span class="kw">pub fn </span>highlighter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn </span>Highlighter&gt; {
+        <span class="kw">if </span><span class="self">self</span>.out.colors_enabled() {
+            <span class="self">self</span>.helper.map(|h| h <span class="kw">as </span><span class="kw-2">&amp;</span><span class="kw">dyn </span>Highlighter)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">next_cmd</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">input_state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">InputState</span>,
-        <span class="ident">rdr</span>: <span class="kw-2">&amp;mut</span> &lt;<span class="ident">Terminal</span> <span class="kw">as</span> <span class="ident">Term</span>&gt;<span class="ident">::Reader</span>,
-        <span class="ident">single_esc_abort</span>: <span class="ident">bool</span>,
-        <span class="ident">ignore_external_print</span>: <span class="ident">bool</span>,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">Cmd</span>&gt; {
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">rc</span> = <span class="ident">input_state</span>.<span class="ident">next_cmd</span>(<span class="ident">rdr</span>, <span class="self">self</span>, <span class="ident">single_esc_abort</span>, <span class="ident">ignore_external_print</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">ReadlineError::WindowResized</span>) = <span class="ident">rc</span> {
-                <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;SIGWINCH&quot;</span>);
-                <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">update_size</span>();
-                <span class="self">self</span>.<span class="ident">prompt_size</span> = <span class="self">self</span>
-                    .<span class="ident">out</span>
-                    .<span class="ident">calculate_position</span>(<span class="self">self</span>.<span class="ident">prompt</span>, <span class="ident">Position::default</span>());
-                <span class="self">self</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
+    <span class="kw">pub fn </span>next_cmd(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        input_state: <span class="kw-2">&amp;mut </span>InputState,
+        rdr: <span class="kw-2">&amp;mut </span>&lt;Terminal <span class="kw">as </span>Term&gt;::Reader,
+        single_esc_abort: bool,
+        ignore_external_print: bool,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Cmd&gt; {
+        <span class="kw">loop </span>{
+            <span class="kw">let </span>rc = input_state.next_cmd(rdr, <span class="self">self</span>, single_esc_abort, ignore_external_print);
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(ReadlineError::WindowResized) = rc {
+                <span class="macro">debug!</span>(target: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;SIGWINCH&quot;</span>);
+                <span class="self">self</span>.out.update_size();
+                <span class="self">self</span>.prompt_size = <span class="self">self
+                    </span>.out
+                    .calculate_position(<span class="self">self</span>.prompt, Position::default());
+                <span class="self">self</span>.refresh_line()<span class="question-mark">?</span>;
                 <span class="kw">continue</span>;
             }
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">Cmd::Replace</span>(..)) = <span class="ident">rc</span> {
-                <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
+            <span class="kw">if let </span><span class="prelude-val">Ok</span>(Cmd::Replace(..)) = rc {
+                <span class="self">self</span>.changes.borrow_mut().begin();
             }
-            <span class="kw">return</span> <span class="ident">rc</span>;
+            <span class="kw">return </span>rc;
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">backup</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">saved_line_for_history</span>
-            .<span class="ident">update</span>(<span class="self">self</span>.<span class="ident">line</span>.<span class="ident">as_str</span>(), <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">pos</span>());
+    <span class="kw">pub fn </span>backup(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.saved_line_for_history
+            .update(<span class="self">self</span>.line.as_str(), <span class="self">self</span>.line.pos());
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">restore</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">update</span>(
-            <span class="self">self</span>.<span class="ident">saved_line_for_history</span>.<span class="ident">as_str</span>(),
-            <span class="self">self</span>.<span class="ident">saved_line_for_history</span>.<span class="ident">pos</span>(),
+    <span class="kw">pub fn </span>restore(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.line.update(
+            <span class="self">self</span>.saved_line_for_history.as_str(),
+            <span class="self">self</span>.saved_line_for_history.pos(),
         );
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">move_cursor</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="comment">// calculate the desired position of the cursor</span>
-        <span class="kw">let</span> <span class="ident">cursor</span> = <span class="self">self</span>
-            .<span class="ident">out</span>
-            .<span class="ident">calculate_position</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">line</span>[..<span class="self">self</span>.<span class="ident">line</span>.<span class="ident">pos</span>()], <span class="self">self</span>.<span class="ident">prompt_size</span>);
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span> == <span class="ident">cursor</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="kw">pub fn </span>move_cursor(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="comment">// calculate the desired position of the cursor
+        </span><span class="kw">let </span>cursor = <span class="self">self
+            </span>.out
+            .calculate_position(<span class="kw-2">&amp;</span><span class="self">self</span>.line[..<span class="self">self</span>.line.pos()], <span class="self">self</span>.prompt_size);
+        <span class="kw">if </span><span class="self">self</span>.layout.cursor == cursor {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">highlight_char</span>() {
-            <span class="kw">let</span> <span class="ident">prompt_size</span> = <span class="self">self</span>.<span class="ident">prompt_size</span>;
-            <span class="self">self</span>.<span class="ident">refresh</span>(<span class="self">self</span>.<span class="ident">prompt</span>, <span class="ident">prompt_size</span>, <span class="bool-val">true</span>, <span class="ident">Info::NoHint</span>)<span class="question-mark">?</span>;
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">move_cursor</span>(<span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span>, <span class="ident">cursor</span>)<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">prompt_size</span> = <span class="self">self</span>.<span class="ident">prompt_size</span>;
-            <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span> = <span class="ident">cursor</span>;
-            <span class="macro">debug_assert!</span>(<span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">prompt_size</span> &lt;= <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span>);
-            <span class="macro">debug_assert!</span>(<span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span> &lt;= <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">end</span>);
+        <span class="kw">if </span><span class="self">self</span>.highlight_char() {
+            <span class="kw">let </span>prompt_size = <span class="self">self</span>.prompt_size;
+            <span class="self">self</span>.refresh(<span class="self">self</span>.prompt, prompt_size, <span class="bool-val">true</span>, Info::NoHint)<span class="question-mark">?</span>;
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.out.move_cursor(<span class="self">self</span>.layout.cursor, cursor)<span class="question-mark">?</span>;
+            <span class="self">self</span>.layout.prompt_size = <span class="self">self</span>.prompt_size;
+            <span class="self">self</span>.layout.cursor = cursor;
+            <span class="macro">debug_assert!</span>(<span class="self">self</span>.layout.prompt_size &lt;= <span class="self">self</span>.layout.cursor);
+            <span class="macro">debug_assert!</span>(<span class="self">self</span>.layout.cursor &lt;= <span class="self">self</span>.layout.end);
         }
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">move_cursor_to_end</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span> == <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">end</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="kw">pub fn </span>move_cursor_to_end(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.layout.cursor == <span class="self">self</span>.layout.end {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
-        <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">move_cursor</span>(<span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span>, <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">end</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span> = <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">end</span>;
+        <span class="self">self</span>.out.move_cursor(<span class="self">self</span>.layout.cursor, <span class="self">self</span>.layout.end)<span class="question-mark">?</span>;
+        <span class="self">self</span>.layout.cursor = <span class="self">self</span>.layout.end;
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">move_cursor_at_leftmost</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">rdr</span>: <span class="kw-2">&amp;mut</span> &lt;<span class="ident">Terminal</span> <span class="kw">as</span> <span class="ident">Term</span>&gt;<span class="ident">::Reader</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">move_cursor_at_leftmost</span>(<span class="ident">rdr</span>)
+    <span class="kw">pub fn </span>move_cursor_at_leftmost(<span class="kw-2">&amp;mut </span><span class="self">self</span>, rdr: <span class="kw-2">&amp;mut </span>&lt;Terminal <span class="kw">as </span>Term&gt;::Reader) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.out.move_cursor_at_leftmost(rdr)
     }
 
-    <span class="kw">fn</span> <span class="ident">refresh</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="ident">prompt_size</span>: <span class="ident">Position</span>,
-        <span class="ident">default_prompt</span>: <span class="ident">bool</span>,
-        <span class="ident">info</span>: <span class="ident">Info</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
+    <span class="kw">fn </span>refresh(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        prompt: <span class="kw-2">&amp;</span>str,
+        prompt_size: Position,
+        default_prompt: bool,
+        info: Info&lt;<span class="lifetime">&#39;_</span>&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">info</span> = <span class="kw">match</span> <span class="ident">info</span> {
-            <span class="ident">Info::NoHint</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="ident">Info::Hint</span> =&gt; <span class="self">self</span>.<span class="ident">hint</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(|<span class="ident">h</span>| <span class="ident">h</span>.<span class="ident">display</span>()),
-            <span class="ident">Info::Msg</span>(<span class="ident">msg</span>) =&gt; <span class="ident">msg</span>,
+        <span class="kw">let </span>info = <span class="kw">match </span>info {
+            Info::NoHint =&gt; <span class="prelude-val">None</span>,
+            Info::Hint =&gt; <span class="self">self</span>.hint.as_ref().map(|h| h.display()),
+            Info::Msg(msg) =&gt; msg,
         };
-        <span class="kw">let</span> <span class="ident">highlighter</span> = <span class="kw">if</span> <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">colors_enabled</span>() {
-            <span class="self">self</span>.<span class="ident">helper</span>.<span class="ident">map</span>(|<span class="ident">h</span>| <span class="ident">h</span> <span class="kw">as</span> <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Highlighter</span>)
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        };
+        <span class="kw">let </span>highlighter = <span class="kw">if </span><span class="self">self</span>.out.colors_enabled() {
+            <span class="self">self</span>.helper.map(|h| h <span class="kw">as </span><span class="kw-2">&amp;</span><span class="kw">dyn </span>Highlighter)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
 
-        <span class="kw">let</span> <span class="ident">new_layout</span> = <span class="self">self</span>
-            .<span class="ident">out</span>
-            .<span class="ident">compute_layout</span>(<span class="ident">prompt_size</span>, <span class="ident">default_prompt</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">line</span>, <span class="ident">info</span>);
+        <span class="kw">let </span>new_layout = <span class="self">self
+            </span>.out
+            .compute_layout(prompt_size, default_prompt, <span class="kw-2">&amp;</span><span class="self">self</span>.line, info);
 
-        <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;old layout: {:?}&quot;</span>, <span class="self">self</span>.<span class="ident">layout</span>);
-        <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;new layout: {:?}&quot;</span>, <span class="ident">new_layout</span>);
-        <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">refresh_line</span>(
-            <span class="ident">prompt</span>,
-            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">line</span>,
-            <span class="ident">info</span>,
-            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">layout</span>,
-            <span class="kw-2">&amp;</span><span class="ident">new_layout</span>,
-            <span class="ident">highlighter</span>,
+        <span class="macro">debug!</span>(target: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;old layout: {:?}&quot;</span>, <span class="self">self</span>.layout);
+        <span class="macro">debug!</span>(target: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;new layout: {:?}&quot;</span>, new_layout);
+        <span class="self">self</span>.out.refresh_line(
+            prompt,
+            <span class="kw-2">&amp;</span><span class="self">self</span>.line,
+            info,
+            <span class="kw-2">&amp;</span><span class="self">self</span>.layout,
+            <span class="kw-2">&amp;</span>new_layout,
+            highlighter,
         )<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">layout</span> = <span class="ident">new_layout</span>;
+        <span class="self">self</span>.layout = new_layout;
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">hint</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">hinter</span>) = <span class="self">self</span>.<span class="ident">helper</span> {
-            <span class="kw">let</span> <span class="ident">hint</span> = <span class="ident">hinter</span>.<span class="ident">hint</span>(<span class="self">self</span>.<span class="ident">line</span>.<span class="ident">as_str</span>(), <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">pos</span>(), <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">ctx</span>);
-            <span class="self">self</span>.<span class="ident">hint</span> = <span class="kw">match</span> <span class="ident">hint</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="kw">if</span> !<span class="ident">val</span>.<span class="ident">display</span>().<span class="ident">is_empty</span>() =&gt; <span class="prelude-val">Some</span>(<span class="ident">Box::new</span>(<span class="ident">val</span>) <span class="kw">as</span> <span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">Hint</span>&gt;),
-                <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+    <span class="kw">pub fn </span>hint(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(hinter) = <span class="self">self</span>.helper {
+            <span class="kw">let </span>hint = hinter.hint(<span class="self">self</span>.line.as_str(), <span class="self">self</span>.line.pos(), <span class="kw-2">&amp;</span><span class="self">self</span>.ctx);
+            <span class="self">self</span>.hint = <span class="kw">match </span>hint {
+                <span class="prelude-val">Some</span>(val) <span class="kw">if </span>!val.display().is_empty() =&gt; <span class="prelude-val">Some</span>(Box::new(val) <span class="kw">as </span>Box&lt;<span class="kw">dyn </span>Hint&gt;),
+                <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
             };
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">hint</span> = <span class="prelude-val">None</span>;
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.hint = <span class="prelude-val">None</span>;
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">highlight_char</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">highlighter</span>) = <span class="self">self</span>.<span class="ident">highlighter</span>() {
-            <span class="kw">let</span> <span class="ident">highlight_char</span> = <span class="ident">highlighter</span>.<span class="ident">highlight_char</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">line</span>, <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">pos</span>());
-            <span class="kw">if</span> <span class="ident">highlight_char</span> {
-                <span class="self">self</span>.<span class="ident">highlight_char</span> = <span class="bool-val">true</span>;
-                <span class="bool-val">true</span>
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">highlight_char</span> {
-                <span class="comment">// previously highlighted =&gt; force a full refresh</span>
-                <span class="self">self</span>.<span class="ident">highlight_char</span> = <span class="bool-val">false</span>;
-                <span class="bool-val">true</span>
-            } <span class="kw">else</span> {
-                <span class="bool-val">false</span>
-            }
-        } <span class="kw">else</span> {
-            <span class="bool-val">false</span>
-        }
+    <span class="kw">fn </span>highlight_char(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; bool {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(highlighter) = <span class="self">self</span>.highlighter() {
+            <span class="kw">let </span>highlight_char = highlighter.highlight_char(<span class="kw-2">&amp;</span><span class="self">self</span>.line, <span class="self">self</span>.line.pos());
+            <span class="kw">if </span>highlight_char {
+                <span class="self">self</span>.highlight_char = <span class="bool-val">true</span>;
+                <span class="bool-val">true
+            </span>} <span class="kw">else if </span><span class="self">self</span>.highlight_char {
+                <span class="comment">// previously highlighted =&gt; force a full refresh
+                </span><span class="self">self</span>.highlight_char = <span class="bool-val">false</span>;
+                <span class="bool-val">true
+            </span>} <span class="kw">else </span>{
+                <span class="bool-val">false
+            </span>}
+        } <span class="kw">else </span>{
+            <span class="bool-val">false
+        </span>}
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_default_prompt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">default_prompt</span>
+    <span class="kw">pub fn </span>is_default_prompt(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.layout.default_prompt
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">validate</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">ValidationResult</span>&gt; {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">validator</span>) = <span class="self">self</span>.<span class="ident">helper</span> {
-            <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
-            <span class="kw">let</span> <span class="ident">result</span> = <span class="ident">validator</span>.<span class="ident">validate</span>(<span class="kw-2">&amp;mut</span> <span class="ident">ValidationContext::new</span>(<span class="self">self</span>))<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">corrected</span> = <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
-            <span class="kw">match</span> <span class="ident">result</span> {
-                <span class="ident">ValidationResult::Incomplete</span> =&gt; {}
-                <span class="ident">ValidationResult::Valid</span>(<span class="kw-2">ref</span> <span class="ident">msg</span>) =&gt; {
-                    <span class="comment">// Accept the line regardless of where the cursor is.</span>
-                    <span class="kw">if</span> <span class="ident">corrected</span> || <span class="self">self</span>.<span class="ident">has_hint</span>() || <span class="ident">msg</span>.<span class="ident">is_some</span>() {
-                        <span class="comment">// Force a refresh without hints to leave the previous</span>
-                        <span class="comment">// line as the user typed it after a newline.</span>
-                        <span class="self">self</span>.<span class="ident">refresh_line_with_msg</span>(<span class="ident">msg</span>.<span class="ident">as_deref</span>())<span class="question-mark">?</span>;
+    <span class="kw">pub fn </span>validate(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;ValidationResult&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(validator) = <span class="self">self</span>.helper {
+            <span class="self">self</span>.changes.borrow_mut().begin();
+            <span class="kw">let </span>result = validator.validate(<span class="kw-2">&amp;mut </span>ValidationContext::new(<span class="self">self</span>))<span class="question-mark">?</span>;
+            <span class="kw">let </span>corrected = <span class="self">self</span>.changes.borrow_mut().end();
+            <span class="kw">match </span>result {
+                ValidationResult::Incomplete =&gt; {}
+                ValidationResult::Valid(<span class="kw-2">ref </span>msg) =&gt; {
+                    <span class="comment">// Accept the line regardless of where the cursor is.
+                    </span><span class="kw">if </span>corrected || <span class="self">self</span>.has_hint() || msg.is_some() {
+                        <span class="comment">// Force a refresh without hints to leave the previous
+                        // line as the user typed it after a newline.
+                        </span><span class="self">self</span>.refresh_line_with_msg(msg.as_deref())<span class="question-mark">?</span>;
                     }
                 }
-                <span class="ident">ValidationResult::Invalid</span>(<span class="kw-2">ref</span> <span class="ident">msg</span>) =&gt; {
-                    <span class="kw">if</span> <span class="ident">corrected</span> || <span class="self">self</span>.<span class="ident">has_hint</span>() || <span class="ident">msg</span>.<span class="ident">is_some</span>() {
-                        <span class="self">self</span>.<span class="ident">refresh_line_with_msg</span>(<span class="ident">msg</span>.<span class="ident">as_deref</span>())<span class="question-mark">?</span>;
+                ValidationResult::Invalid(<span class="kw-2">ref </span>msg) =&gt; {
+                    <span class="kw">if </span>corrected || <span class="self">self</span>.has_hint() || msg.is_some() {
+                        <span class="self">self</span>.refresh_line_with_msg(msg.as_deref())<span class="question-mark">?</span>;
                     }
                 }
             }
-            <span class="prelude-val">Ok</span>(<span class="ident">result</span>)
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">ValidationResult::Valid</span>(<span class="prelude-val">None</span>))
+            <span class="prelude-val">Ok</span>(result)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Ok</span>(ValidationResult::Valid(<span class="prelude-val">None</span>))
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>: <span class="ident">Helper</span>&gt; <span class="ident">Invoke</span> <span class="kw">for</span> <span class="ident">State</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">input</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">as_str</span>()
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H: Helper&gt; Invoke <span class="kw">for </span>State&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H&gt; {
+    <span class="kw">fn </span>input(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="self">self</span>.line.as_str()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>: <span class="ident">Helper</span>&gt; <span class="ident">Refresher</span> <span class="kw">for</span> <span class="ident">State</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">refresh_line</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">prompt_size</span> = <span class="self">self</span>.<span class="ident">prompt_size</span>;
-        <span class="self">self</span>.<span class="ident">hint</span>();
-        <span class="self">self</span>.<span class="ident">highlight_char</span>();
-        <span class="self">self</span>.<span class="ident">refresh</span>(<span class="self">self</span>.<span class="ident">prompt</span>, <span class="ident">prompt_size</span>, <span class="bool-val">true</span>, <span class="ident">Info::Hint</span>)
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H: Helper&gt; Refresher <span class="kw">for </span>State&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H&gt; {
+    <span class="kw">fn </span>refresh_line(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>prompt_size = <span class="self">self</span>.prompt_size;
+        <span class="self">self</span>.hint();
+        <span class="self">self</span>.highlight_char();
+        <span class="self">self</span>.refresh(<span class="self">self</span>.prompt, prompt_size, <span class="bool-val">true</span>, Info::Hint)
     }
 
-    <span class="kw">fn</span> <span class="ident">refresh_line_with_msg</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">msg</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">prompt_size</span> = <span class="self">self</span>.<span class="ident">prompt_size</span>;
-        <span class="self">self</span>.<span class="ident">hint</span> = <span class="prelude-val">None</span>;
-        <span class="self">self</span>.<span class="ident">highlight_char</span>();
-        <span class="self">self</span>.<span class="ident">refresh</span>(<span class="self">self</span>.<span class="ident">prompt</span>, <span class="ident">prompt_size</span>, <span class="bool-val">true</span>, <span class="ident">Info::Msg</span>(<span class="ident">msg</span>))
+    <span class="kw">fn </span>refresh_line_with_msg(<span class="kw-2">&amp;mut </span><span class="self">self</span>, msg: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>prompt_size = <span class="self">self</span>.prompt_size;
+        <span class="self">self</span>.hint = <span class="prelude-val">None</span>;
+        <span class="self">self</span>.highlight_char();
+        <span class="self">self</span>.refresh(<span class="self">self</span>.prompt, prompt_size, <span class="bool-val">true</span>, Info::Msg(msg))
     }
 
-    <span class="kw">fn</span> <span class="ident">refresh_prompt_and_line</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">prompt_size</span> = <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">calculate_position</span>(<span class="ident">prompt</span>, <span class="ident">Position::default</span>());
-        <span class="self">self</span>.<span class="ident">hint</span>();
-        <span class="self">self</span>.<span class="ident">highlight_char</span>();
-        <span class="self">self</span>.<span class="ident">refresh</span>(<span class="ident">prompt</span>, <span class="ident">prompt_size</span>, <span class="bool-val">false</span>, <span class="ident">Info::Hint</span>)
+    <span class="kw">fn </span>refresh_prompt_and_line(<span class="kw-2">&amp;mut </span><span class="self">self</span>, prompt: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>prompt_size = <span class="self">self</span>.out.calculate_position(prompt, Position::default());
+        <span class="self">self</span>.hint();
+        <span class="self">self</span>.highlight_char();
+        <span class="self">self</span>.refresh(prompt, prompt_size, <span class="bool-val">false</span>, Info::Hint)
     }
 
-    <span class="kw">fn</span> <span class="ident">doing_insert</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
+    <span class="kw">fn </span>doing_insert(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.changes.borrow_mut().begin();
     }
 
-    <span class="kw">fn</span> <span class="ident">done_inserting</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
+    <span class="kw">fn </span>done_inserting(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.changes.borrow_mut().end();
     }
 
-    <span class="kw">fn</span> <span class="ident">last_insert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">String</span>&gt; {
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow</span>().<span class="ident">last_insert</span>()
+    <span class="kw">fn </span>last_insert(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="self">self</span>.changes.borrow().last_insert()
     }
 
-    <span class="kw">fn</span> <span class="ident">is_cursor_at_end</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">pos</span>() == <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">len</span>()
+    <span class="kw">fn </span>is_cursor_at_end(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.line.pos() == <span class="self">self</span>.line.len()
     }
 
-    <span class="kw">fn</span> <span class="ident">has_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">hint</span>.<span class="ident">is_some</span>()
+    <span class="kw">fn </span>has_hint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.hint.is_some()
     }
 
-    <span class="kw">fn</span> <span class="ident">hint_text</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>&gt; {
-        <span class="self">self</span>.<span class="ident">hint</span>.<span class="ident">as_ref</span>().<span class="ident">and_then</span>(|<span class="ident">hint</span>| <span class="ident">hint</span>.<span class="ident">completion</span>())
+    <span class="kw">fn </span>hint_text(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+        <span class="self">self</span>.hint.as_ref().and_then(|hint| hint.completion())
     }
 
-    <span class="kw">fn</span> <span class="ident">line</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">str</span> {
-        <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">as_str</span>()
+    <span class="kw">fn </span>line(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="self">self</span>.line.as_str()
     }
 
-    <span class="kw">fn</span> <span class="ident">pos</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">pos</span>()
+    <span class="kw">fn </span>pos(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.line.pos()
     }
 
-    <span class="kw">fn</span> <span class="ident">external_print</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">msg</span>: <span class="ident">String</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">clear_rows</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">layout</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">end</span>.<span class="ident">row</span> = <span class="number">0</span>;
-        <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span>.<span class="ident">row</span> = <span class="number">0</span>;
-        <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">write_and_flush</span>(<span class="ident">msg</span>.<span class="ident">as_str</span>())<span class="question-mark">?</span>;
-        <span class="kw">if</span> !<span class="ident">msg</span>.<span class="ident">ends_with</span>(<span class="string">&#39;\n&#39;</span>) {
-            <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">write_and_flush</span>(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">fn </span>external_print(<span class="kw-2">&amp;mut </span><span class="self">self</span>, msg: String) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.out.clear_rows(<span class="kw-2">&amp;</span><span class="self">self</span>.layout)<span class="question-mark">?</span>;
+        <span class="self">self</span>.layout.end.row = <span class="number">0</span>;
+        <span class="self">self</span>.layout.cursor.row = <span class="number">0</span>;
+        <span class="self">self</span>.out.write_and_flush(msg.as_str())<span class="question-mark">?</span>;
+        <span class="kw">if </span>!msg.ends_with(<span class="string">&#39;\n&#39;</span>) {
+            <span class="self">self</span>.out.write_and_flush(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
         }
-        <span class="self">self</span>.<span class="ident">refresh_line</span>()
+        <span class="self">self</span>.refresh_line()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>: <span class="ident">Helper</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">State</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;State&quot;</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;prompt&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prompt</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;prompt_size&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prompt_size</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;buf&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">line</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;cols&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">out</span>.<span class="ident">get_columns</span>())
-            .<span class="ident">field</span>(<span class="string">&quot;layout&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">layout</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;saved_line_for_history&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">saved_line_for_history</span>)
-            .<span class="ident">finish</span>()
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H: Helper&gt; fmt::Debug <span class="kw">for </span>State&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H&gt; {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        f.debug_struct(<span class="string">&quot;State&quot;</span>)
+            .field(<span class="string">&quot;prompt&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.prompt)
+            .field(<span class="string">&quot;prompt_size&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.prompt_size)
+            .field(<span class="string">&quot;buf&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.line)
+            .field(<span class="string">&quot;cols&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.out.get_columns())
+            .field(<span class="string">&quot;layout&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.layout)
+            .field(<span class="string">&quot;saved_line_for_history&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.saved_line_for_history)
+            .finish()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>: <span class="ident">Helper</span>&gt; <span class="ident">State</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, <span class="ident">H</span>&gt; {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear_screen</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">clear_screen</span>()<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span> = <span class="ident">Position::default</span>();
-        <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">end</span> = <span class="ident">Position::default</span>();
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H: Helper&gt; State&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;prompt</span>, H&gt; {
+    <span class="kw">pub fn </span>clear_screen(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.out.clear_screen()<span class="question-mark">?</span>;
+        <span class="self">self</span>.layout.cursor = Position::default();
+        <span class="self">self</span>.layout.end = Position::default();
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Insert the character `ch` at cursor current position.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_insert</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ch</span>: <span class="ident">char</span>, <span class="ident">n</span>: <span class="ident">RepeatCount</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">push</span>) = <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">insert</span>(<span class="ident">ch</span>, <span class="ident">n</span>) {
-            <span class="kw">if</span> <span class="ident">push</span> {
-                <span class="kw">let</span> <span class="ident">prompt_size</span> = <span class="self">self</span>.<span class="ident">prompt_size</span>;
-                <span class="kw">let</span> <span class="ident">no_previous_hint</span> = <span class="self">self</span>.<span class="ident">hint</span>.<span class="ident">is_none</span>();
-                <span class="self">self</span>.<span class="ident">hint</span>();
-                <span class="kw">let</span> <span class="ident">width</span> = <span class="ident">ch</span>.<span class="ident">width</span>().<span class="ident">unwrap_or</span>(<span class="number">0</span>);
-                <span class="kw">if</span> <span class="ident">n</span> == <span class="number">1</span>
-                    &amp;&amp; <span class="ident">width</span> != <span class="number">0</span> <span class="comment">// Ctrl-V + \t or \n ...</span>
-                    &amp;&amp; <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span>.<span class="ident">col</span> + <span class="ident">width</span> &lt; <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">get_columns</span>()
-                    &amp;&amp; (<span class="self">self</span>.<span class="ident">hint</span>.<span class="ident">is_none</span>() &amp;&amp; <span class="ident">no_previous_hint</span>) <span class="comment">// TODO refresh only current line</span>
-                    &amp;&amp; !<span class="self">self</span>.<span class="ident">highlight_char</span>()
+    <span class="doccomment">/// Insert the character `ch` at cursor current position.
+    </span><span class="kw">pub fn </span>edit_insert(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ch: char, n: RepeatCount) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(push) = <span class="self">self</span>.line.insert(ch, n) {
+            <span class="kw">if </span>push {
+                <span class="kw">let </span>prompt_size = <span class="self">self</span>.prompt_size;
+                <span class="kw">let </span>no_previous_hint = <span class="self">self</span>.hint.is_none();
+                <span class="self">self</span>.hint();
+                <span class="kw">let </span>width = ch.width().unwrap_or(<span class="number">0</span>);
+                <span class="kw">if </span>n == <span class="number">1
+                    </span>&amp;&amp; width != <span class="number">0 </span><span class="comment">// Ctrl-V + \t or \n ...
+                    </span>&amp;&amp; <span class="self">self</span>.layout.cursor.col + width &lt; <span class="self">self</span>.out.get_columns()
+                    &amp;&amp; (<span class="self">self</span>.hint.is_none() &amp;&amp; no_previous_hint) <span class="comment">// TODO refresh only current line
+                    </span>&amp;&amp; !<span class="self">self</span>.highlight_char()
                 {
-                    <span class="comment">// Avoid a full update of the line in the trivial case.</span>
-                    <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span>.<span class="ident">col</span> += <span class="ident">width</span>;
-                    <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">end</span>.<span class="ident">col</span> += <span class="ident">width</span>;
-                    <span class="macro">debug_assert!</span>(<span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">prompt_size</span> &lt;= <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span>);
-                    <span class="macro">debug_assert!</span>(<span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">cursor</span> &lt;= <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">end</span>);
-                    <span class="kw">let</span> <span class="ident">bits</span> = <span class="ident">ch</span>.<span class="ident">encode_utf8</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">byte_buffer</span>);
-                    <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">write_and_flush</span>(<span class="ident">bits</span>)
-                } <span class="kw">else</span> {
-                    <span class="self">self</span>.<span class="ident">refresh</span>(<span class="self">self</span>.<span class="ident">prompt</span>, <span class="ident">prompt_size</span>, <span class="bool-val">true</span>, <span class="ident">Info::Hint</span>)
+                    <span class="comment">// Avoid a full update of the line in the trivial case.
+                    </span><span class="self">self</span>.layout.cursor.col += width;
+                    <span class="self">self</span>.layout.end.col += width;
+                    <span class="macro">debug_assert!</span>(<span class="self">self</span>.layout.prompt_size &lt;= <span class="self">self</span>.layout.cursor);
+                    <span class="macro">debug_assert!</span>(<span class="self">self</span>.layout.cursor &lt;= <span class="self">self</span>.layout.end);
+                    <span class="kw">let </span>bits = ch.encode_utf8(<span class="kw-2">&amp;mut </span><span class="self">self</span>.byte_buffer);
+                    <span class="self">self</span>.out.write_and_flush(bits)
+                } <span class="kw">else </span>{
+                    <span class="self">self</span>.refresh(<span class="self">self</span>.prompt, prompt_size, <span class="bool-val">true</span>, Info::Hint)
                 }
-            } <span class="kw">else</span> {
-                <span class="self">self</span>.<span class="ident">refresh_line</span>()
+            } <span class="kw">else </span>{
+                <span class="self">self</span>.refresh_line()
             }
-        } <span class="kw">else</span> {
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="doccomment">/// Replace a single (or n) character(s) under the cursor (Vi mode)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_replace_char</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ch</span>: <span class="ident">char</span>, <span class="ident">n</span>: <span class="ident">RepeatCount</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
-        <span class="kw">let</span> <span class="ident">succeed</span> = <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">chars</span>) = <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">delete</span>(<span class="ident">n</span>) {
-            <span class="kw">let</span> <span class="ident">count</span> = <span class="ident">chars</span>.<span class="ident">graphemes</span>(<span class="bool-val">true</span>).<span class="ident">count</span>();
-            <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">insert</span>(<span class="ident">ch</span>, <span class="ident">count</span>);
-            <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_backward</span>(<span class="number">1</span>);
-            <span class="bool-val">true</span>
-        } <span class="kw">else</span> {
-            <span class="bool-val">false</span>
-        };
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
-        <span class="kw">if</span> <span class="ident">succeed</span> {
-            <span class="self">self</span>.<span class="ident">refresh_line</span>()
-        } <span class="kw">else</span> {
+    <span class="doccomment">/// Replace a single (or n) character(s) under the cursor (Vi mode)
+    </span><span class="kw">pub fn </span>edit_replace_char(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ch: char, n: RepeatCount) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.changes.borrow_mut().begin();
+        <span class="kw">let </span>succeed = <span class="kw">if let </span><span class="prelude-val">Some</span>(chars) = <span class="self">self</span>.line.delete(n) {
+            <span class="kw">let </span>count = chars.graphemes(<span class="bool-val">true</span>).count();
+            <span class="self">self</span>.line.insert(ch, count);
+            <span class="self">self</span>.line.move_backward(<span class="number">1</span>);
+            <span class="bool-val">true
+        </span>} <span class="kw">else </span>{
+            <span class="bool-val">false
+        </span>};
+        <span class="self">self</span>.changes.borrow_mut().end();
+        <span class="kw">if </span>succeed {
+            <span class="self">self</span>.refresh_line()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="doccomment">/// Overwrite the character under the cursor (Vi mode)</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_overwrite_char</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ch</span>: <span class="ident">char</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">end</span>) = <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">next_pos</span>(<span class="number">1</span>) {
+    <span class="doccomment">/// Overwrite the character under the cursor (Vi mode)
+    </span><span class="kw">pub fn </span>edit_overwrite_char(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ch: char) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(end) = <span class="self">self</span>.line.next_pos(<span class="number">1</span>) {
             {
-                <span class="kw">let</span> <span class="ident">text</span> = <span class="ident">ch</span>.<span class="ident">encode_utf8</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">byte_buffer</span>);
-                <span class="kw">let</span> <span class="ident">start</span> = <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">pos</span>();
-                <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">replace</span>(<span class="ident">start</span>..<span class="ident">end</span>, <span class="ident">text</span>);
+                <span class="kw">let </span>text = ch.encode_utf8(<span class="kw-2">&amp;mut </span><span class="self">self</span>.byte_buffer);
+                <span class="kw">let </span>start = <span class="self">self</span>.line.pos();
+                <span class="self">self</span>.line.replace(start..end, text);
             }
-            <span class="self">self</span>.<span class="ident">refresh_line</span>()
-        } <span class="kw">else</span> {
+            <span class="self">self</span>.refresh_line()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="comment">// Yank/paste `text` at current position.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_yank</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">input_state</span>: <span class="kw-2">&amp;</span><span class="ident">InputState</span>,
-        <span class="ident">text</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="ident">anchor</span>: <span class="ident">Anchor</span>,
-        <span class="ident">n</span>: <span class="ident">RepeatCount</span>,
+    <span class="comment">// Yank/paste `text` at current position.
+    </span><span class="kw">pub fn </span>edit_yank(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        input_state: <span class="kw-2">&amp;</span>InputState,
+        text: <span class="kw-2">&amp;</span>str,
+        anchor: Anchor,
+        n: RepeatCount,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Anchor::After</span> = <span class="ident">anchor</span> {
-            <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_forward</span>(<span class="number">1</span>);
+        <span class="kw">if let </span>Anchor::After = anchor {
+            <span class="self">self</span>.line.move_forward(<span class="number">1</span>);
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">yank</span>(<span class="ident">text</span>, <span class="ident">n</span>).<span class="ident">is_some</span>() {
-            <span class="kw">if</span> !<span class="ident">input_state</span>.<span class="ident">is_emacs_mode</span>() {
-                <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_backward</span>(<span class="number">1</span>);
+        <span class="kw">if </span><span class="self">self</span>.line.yank(text, n).is_some() {
+            <span class="kw">if </span>!input_state.is_emacs_mode() {
+                <span class="self">self</span>.line.move_backward(<span class="number">1</span>);
             }
-            <span class="self">self</span>.<span class="ident">refresh_line</span>()
-        } <span class="kw">else</span> {
+            <span class="self">self</span>.refresh_line()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="comment">// Delete previously yanked text and yank/paste `text` at current position.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_yank_pop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yank_size</span>: <span class="ident">usize</span>, <span class="ident">text</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
-        <span class="kw">let</span> <span class="ident">result</span> = <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">yank_pop</span>(<span class="ident">yank_size</span>, <span class="ident">text</span>).<span class="ident">is_some</span>() {
-            <span class="self">self</span>.<span class="ident">refresh_line</span>()
-        } <span class="kw">else</span> {
+    <span class="comment">// Delete previously yanked text and yank/paste `text` at current position.
+    </span><span class="kw">pub fn </span>edit_yank_pop(<span class="kw-2">&amp;mut </span><span class="self">self</span>, yank_size: usize, text: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.changes.borrow_mut().begin();
+        <span class="kw">let </span>result = <span class="kw">if </span><span class="self">self</span>.line.yank_pop(yank_size, text).is_some() {
+            <span class="self">self</span>.refresh_line()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         };
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
-        <span class="ident">result</span>
+        <span class="self">self</span>.changes.borrow_mut().end();
+        result
     }
 
-    <span class="doccomment">/// Move cursor on the left.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_move_backward</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">n</span>: <span class="ident">RepeatCount</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_backward</span>(<span class="ident">n</span>) {
-            <span class="self">self</span>.<span class="ident">move_cursor</span>()
-        } <span class="kw">else</span> {
+    <span class="doccomment">/// Move cursor on the left.
+    </span><span class="kw">pub fn </span>edit_move_backward(<span class="kw-2">&amp;mut </span><span class="self">self</span>, n: RepeatCount) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.move_backward(n) {
+            <span class="self">self</span>.move_cursor()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="doccomment">/// Move cursor on the right.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_move_forward</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">n</span>: <span class="ident">RepeatCount</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_forward</span>(<span class="ident">n</span>) {
-            <span class="self">self</span>.<span class="ident">move_cursor</span>()
-        } <span class="kw">else</span> {
+    <span class="doccomment">/// Move cursor on the right.
+    </span><span class="kw">pub fn </span>edit_move_forward(<span class="kw-2">&amp;mut </span><span class="self">self</span>, n: RepeatCount) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.move_forward(n) {
+            <span class="self">self</span>.move_cursor()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="doccomment">/// Move cursor to the start of the line.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_move_home</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_home</span>() {
-            <span class="self">self</span>.<span class="ident">move_cursor</span>()
-        } <span class="kw">else</span> {
+    <span class="doccomment">/// Move cursor to the start of the line.
+    </span><span class="kw">pub fn </span>edit_move_home(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.move_home() {
+            <span class="self">self</span>.move_cursor()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="doccomment">/// Move cursor to the end of the line.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_move_end</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_end</span>() {
-            <span class="self">self</span>.<span class="ident">move_cursor</span>()
-        } <span class="kw">else</span> {
+    <span class="doccomment">/// Move cursor to the end of the line.
+    </span><span class="kw">pub fn </span>edit_move_end(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.move_end() {
+            <span class="self">self</span>.move_cursor()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="doccomment">/// Move cursor to the start of the buffer.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_move_buffer_start</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_buffer_start</span>() {
-            <span class="self">self</span>.<span class="ident">move_cursor</span>()
-        } <span class="kw">else</span> {
+    <span class="doccomment">/// Move cursor to the start of the buffer.
+    </span><span class="kw">pub fn </span>edit_move_buffer_start(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.move_buffer_start() {
+            <span class="self">self</span>.move_cursor()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="doccomment">/// Move cursor to the end of the buffer.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_move_buffer_end</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_buffer_end</span>() {
-            <span class="self">self</span>.<span class="ident">move_cursor</span>()
-        } <span class="kw">else</span> {
+    <span class="doccomment">/// Move cursor to the end of the buffer.
+    </span><span class="kw">pub fn </span>edit_move_buffer_end(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.move_buffer_end() {
+            <span class="self">self</span>.move_cursor()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_kill</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">mvt</span>: <span class="kw-2">&amp;</span><span class="ident">Movement</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">kill</span>(<span class="ident">mvt</span>) {
-            <span class="self">self</span>.<span class="ident">refresh_line</span>()
-        } <span class="kw">else</span> {
+    <span class="kw">pub fn </span>edit_kill(<span class="kw-2">&amp;mut </span><span class="self">self</span>, mvt: <span class="kw-2">&amp;</span>Movement) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.kill(mvt) {
+            <span class="self">self</span>.refresh_line()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_insert_text</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">text</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="ident">text</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="kw">pub fn </span>edit_insert_text(<span class="kw-2">&amp;mut </span><span class="self">self</span>, text: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span>text.is_empty() {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
-        <span class="kw">let</span> <span class="ident">cursor</span> = <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">pos</span>();
-        <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">insert_str</span>(<span class="ident">cursor</span>, <span class="ident">text</span>);
-        <span class="self">self</span>.<span class="ident">refresh_line</span>()
+        <span class="kw">let </span>cursor = <span class="self">self</span>.line.pos();
+        <span class="self">self</span>.line.insert_str(cursor, text);
+        <span class="self">self</span>.refresh_line()
     }
 
-    <span class="doccomment">/// Exchange the char before cursor with the character at cursor.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_transpose_chars</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
-        <span class="kw">let</span> <span class="ident">succeed</span> = <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">transpose_chars</span>();
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
-        <span class="kw">if</span> <span class="ident">succeed</span> {
-            <span class="self">self</span>.<span class="ident">refresh_line</span>()
-        } <span class="kw">else</span> {
+    <span class="doccomment">/// Exchange the char before cursor with the character at cursor.
+    </span><span class="kw">pub fn </span>edit_transpose_chars(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.changes.borrow_mut().begin();
+        <span class="kw">let </span>succeed = <span class="self">self</span>.line.transpose_chars();
+        <span class="self">self</span>.changes.borrow_mut().end();
+        <span class="kw">if </span>succeed {
+            <span class="self">self</span>.refresh_line()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_move_to_prev_word</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">word_def</span>: <span class="ident">Word</span>, <span class="ident">n</span>: <span class="ident">RepeatCount</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_to_prev_word</span>(<span class="ident">word_def</span>, <span class="ident">n</span>) {
-            <span class="self">self</span>.<span class="ident">move_cursor</span>()
-        } <span class="kw">else</span> {
+    <span class="kw">pub fn </span>edit_move_to_prev_word(<span class="kw-2">&amp;mut </span><span class="self">self</span>, word_def: Word, n: RepeatCount) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.move_to_prev_word(word_def, n) {
+            <span class="self">self</span>.move_cursor()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_move_to_next_word</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">at</span>: <span class="ident">At</span>, <span class="ident">word_def</span>: <span class="ident">Word</span>, <span class="ident">n</span>: <span class="ident">RepeatCount</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_to_next_word</span>(<span class="ident">at</span>, <span class="ident">word_def</span>, <span class="ident">n</span>) {
-            <span class="self">self</span>.<span class="ident">move_cursor</span>()
-        } <span class="kw">else</span> {
+    <span class="kw">pub fn </span>edit_move_to_next_word(<span class="kw-2">&amp;mut </span><span class="self">self</span>, at: At, word_def: Word, n: RepeatCount) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.move_to_next_word(at, word_def, n) {
+            <span class="self">self</span>.move_cursor()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="doccomment">/// Moves the cursor to the same column in the line above</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_move_line_up</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">n</span>: <span class="ident">RepeatCount</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">bool</span>&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_to_line_up</span>(<span class="ident">n</span>) {
-            <span class="self">self</span>.<span class="ident">move_cursor</span>()<span class="question-mark">?</span>;
+    <span class="doccomment">/// Moves the cursor to the same column in the line above
+    </span><span class="kw">pub fn </span>edit_move_line_up(<span class="kw-2">&amp;mut </span><span class="self">self</span>, n: RepeatCount) -&gt; <span class="prelude-ty">Result</span>&lt;bool&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.move_to_line_up(n) {
+            <span class="self">self</span>.move_cursor()<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
-        } <span class="kw">else</span> {
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>)
         }
     }
 
-    <span class="doccomment">/// Moves the cursor to the same column in the line above</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_move_line_down</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">n</span>: <span class="ident">RepeatCount</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">bool</span>&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_to_line_down</span>(<span class="ident">n</span>) {
-            <span class="self">self</span>.<span class="ident">move_cursor</span>()<span class="question-mark">?</span>;
+    <span class="doccomment">/// Moves the cursor to the same column in the line above
+    </span><span class="kw">pub fn </span>edit_move_line_down(<span class="kw-2">&amp;mut </span><span class="self">self</span>, n: RepeatCount) -&gt; <span class="prelude-ty">Result</span>&lt;bool&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.move_to_line_down(n) {
+            <span class="self">self</span>.move_cursor()<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>)
-        } <span class="kw">else</span> {
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(<span class="bool-val">false</span>)
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_move_to</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">cs</span>: <span class="ident">CharSearch</span>, <span class="ident">n</span>: <span class="ident">RepeatCount</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">move_to</span>(<span class="ident">cs</span>, <span class="ident">n</span>) {
-            <span class="self">self</span>.<span class="ident">move_cursor</span>()
-        } <span class="kw">else</span> {
+    <span class="kw">pub fn </span>edit_move_to(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cs: CharSearch, n: RepeatCount) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.move_to(cs, n) {
+            <span class="self">self</span>.move_cursor()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_word</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">a</span>: <span class="ident">WordAction</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
-        <span class="kw">let</span> <span class="ident">succeed</span> = <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">edit_word</span>(<span class="ident">a</span>);
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
-        <span class="kw">if</span> <span class="ident">succeed</span> {
-            <span class="self">self</span>.<span class="ident">refresh_line</span>()
-        } <span class="kw">else</span> {
+    <span class="kw">pub fn </span>edit_word(<span class="kw-2">&amp;mut </span><span class="self">self</span>, a: WordAction) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.changes.borrow_mut().begin();
+        <span class="kw">let </span>succeed = <span class="self">self</span>.line.edit_word(a);
+        <span class="self">self</span>.changes.borrow_mut().end();
+        <span class="kw">if </span>succeed {
+            <span class="self">self</span>.refresh_line()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_transpose_words</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">n</span>: <span class="ident">RepeatCount</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
-        <span class="kw">let</span> <span class="ident">succeed</span> = <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">transpose_words</span>(<span class="ident">n</span>);
-        <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
-        <span class="kw">if</span> <span class="ident">succeed</span> {
-            <span class="self">self</span>.<span class="ident">refresh_line</span>()
-        } <span class="kw">else</span> {
+    <span class="kw">pub fn </span>edit_transpose_words(<span class="kw-2">&amp;mut </span><span class="self">self</span>, n: RepeatCount) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.changes.borrow_mut().begin();
+        <span class="kw">let </span>succeed = <span class="self">self</span>.line.transpose_words(n);
+        <span class="self">self</span>.changes.borrow_mut().end();
+        <span class="kw">if </span>succeed {
+            <span class="self">self</span>.refresh_line()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 
-    <span class="doccomment">/// Substitute the currently edited line with the next or previous history</span>
-    <span class="doccomment">/// entry.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_history_next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">prev</span>: <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">history</span> = <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history</span>;
-        <span class="kw">if</span> <span class="ident">history</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="doccomment">/// Substitute the currently edited line with the next or previous history
+    /// entry.
+    </span><span class="kw">pub fn </span>edit_history_next(<span class="kw-2">&amp;mut </span><span class="self">self</span>, prev: bool) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>history = <span class="self">self</span>.ctx.history;
+        <span class="kw">if </span>history.is_empty() {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> == <span class="ident">history</span>.<span class="ident">len</span>() {
-            <span class="kw">if</span> <span class="ident">prev</span> {
-                <span class="comment">// Save the current edited line before overwriting it</span>
-                <span class="self">self</span>.<span class="ident">backup</span>();
-            } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        <span class="kw">if </span><span class="self">self</span>.ctx.history_index == history.len() {
+            <span class="kw">if </span>prev {
+                <span class="comment">// Save the current edited line before overwriting it
+                </span><span class="self">self</span>.backup();
+            } <span class="kw">else </span>{
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(());
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> == <span class="number">0</span> &amp;&amp; <span class="ident">prev</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        } <span class="kw">else if </span><span class="self">self</span>.ctx.history_index == <span class="number">0 </span>&amp;&amp; prev {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
-        <span class="kw">if</span> <span class="ident">prev</span> {
-            <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> -= <span class="number">1</span>;
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> += <span class="number">1</span>;
+        <span class="kw">if </span>prev {
+            <span class="self">self</span>.ctx.history_index -= <span class="number">1</span>;
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.ctx.history_index += <span class="number">1</span>;
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> &lt; <span class="ident">history</span>.<span class="ident">len</span>() {
-            <span class="kw">let</span> <span class="ident">buf</span> = <span class="ident">history</span>.<span class="ident">get</span>(<span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span>).<span class="ident">unwrap</span>();
-            <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
-            <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">update</span>(<span class="ident">buf</span>, <span class="ident">buf</span>.<span class="ident">len</span>());
-            <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
-        } <span class="kw">else</span> {
-            <span class="comment">// Restore current edited line</span>
-            <span class="self">self</span>.<span class="ident">restore</span>();
+        <span class="kw">if </span><span class="self">self</span>.ctx.history_index &lt; history.len() {
+            <span class="kw">let </span>buf = history.get(<span class="self">self</span>.ctx.history_index).unwrap();
+            <span class="self">self</span>.changes.borrow_mut().begin();
+            <span class="self">self</span>.line.update(buf, buf.len());
+            <span class="self">self</span>.changes.borrow_mut().end();
+        } <span class="kw">else </span>{
+            <span class="comment">// Restore current edited line
+            </span><span class="self">self</span>.restore();
         }
-        <span class="self">self</span>.<span class="ident">refresh_line</span>()
+        <span class="self">self</span>.refresh_line()
     }
 
-    <span class="comment">// Non-incremental, anchored search</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_history_search</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">dir</span>: <span class="ident">SearchDirection</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">history</span> = <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history</span>;
-        <span class="kw">if</span> <span class="ident">history</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">beep</span>();
+    <span class="comment">// Non-incremental, anchored search
+    </span><span class="kw">pub fn </span>edit_history_search(<span class="kw-2">&amp;mut </span><span class="self">self</span>, dir: SearchDirection) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>history = <span class="self">self</span>.ctx.history;
+        <span class="kw">if </span>history.is_empty() {
+            <span class="kw">return </span><span class="self">self</span>.out.beep();
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> == <span class="ident">history</span>.<span class="ident">len</span>() &amp;&amp; <span class="ident">dir</span> == <span class="ident">SearchDirection::Forward</span>
-            || <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> == <span class="number">0</span> &amp;&amp; <span class="ident">dir</span> == <span class="ident">SearchDirection::Reverse</span>
+        <span class="kw">if </span><span class="self">self</span>.ctx.history_index == history.len() &amp;&amp; dir == SearchDirection::Forward
+            || <span class="self">self</span>.ctx.history_index == <span class="number">0 </span>&amp;&amp; dir == SearchDirection::Reverse
         {
-            <span class="kw">return</span> <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">beep</span>();
+            <span class="kw">return </span><span class="self">self</span>.out.beep();
         }
-        <span class="kw">if</span> <span class="ident">dir</span> == <span class="ident">SearchDirection::Reverse</span> {
-            <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> -= <span class="number">1</span>;
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> += <span class="number">1</span>;
+        <span class="kw">if </span>dir == SearchDirection::Reverse {
+            <span class="self">self</span>.ctx.history_index -= <span class="number">1</span>;
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.ctx.history_index += <span class="number">1</span>;
         }
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">sr</span>) = <span class="ident">history</span>.<span class="ident">starts_with</span>(
-            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">line</span>.<span class="ident">as_str</span>()[..<span class="self">self</span>.<span class="ident">line</span>.<span class="ident">pos</span>()],
-            <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span>,
-            <span class="ident">dir</span>,
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(sr) = history.starts_with(
+            <span class="kw-2">&amp;</span><span class="self">self</span>.line.as_str()[..<span class="self">self</span>.line.pos()],
+            <span class="self">self</span>.ctx.history_index,
+            dir,
         ) {
-            <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> = <span class="ident">sr</span>.<span class="ident">idx</span>;
-            <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
-            <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">update</span>(<span class="ident">sr</span>.<span class="ident">entry</span>, <span class="ident">sr</span>.<span class="ident">pos</span>);
-            <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
-            <span class="self">self</span>.<span class="ident">refresh_line</span>()
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">out</span>.<span class="ident">beep</span>()
+            <span class="self">self</span>.ctx.history_index = sr.idx;
+            <span class="self">self</span>.changes.borrow_mut().begin();
+            <span class="self">self</span>.line.update(sr.entry, sr.pos);
+            <span class="self">self</span>.changes.borrow_mut().end();
+            <span class="self">self</span>.refresh_line()
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.out.beep()
         }
     }
 
-    <span class="doccomment">/// Substitute the currently edited line with the first/last history entry.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_history</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">first</span>: <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">history</span> = <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history</span>;
-        <span class="kw">if</span> <span class="ident">history</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="doccomment">/// Substitute the currently edited line with the first/last history entry.
+    </span><span class="kw">pub fn </span>edit_history(<span class="kw-2">&amp;mut </span><span class="self">self</span>, first: bool) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">let </span>history = <span class="self">self</span>.ctx.history;
+        <span class="kw">if </span>history.is_empty() {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> == <span class="ident">history</span>.<span class="ident">len</span>() {
-            <span class="kw">if</span> <span class="ident">first</span> {
-                <span class="comment">// Save the current edited line before overwriting it</span>
-                <span class="self">self</span>.<span class="ident">backup</span>();
-            } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        <span class="kw">if </span><span class="self">self</span>.ctx.history_index == history.len() {
+            <span class="kw">if </span>first {
+                <span class="comment">// Save the current edited line before overwriting it
+                </span><span class="self">self</span>.backup();
+            } <span class="kw">else </span>{
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(());
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> == <span class="number">0</span> &amp;&amp; <span class="ident">first</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        } <span class="kw">else if </span><span class="self">self</span>.ctx.history_index == <span class="number">0 </span>&amp;&amp; first {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
-        <span class="kw">if</span> <span class="ident">first</span> {
-            <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> = <span class="number">0</span>;
-            <span class="kw">let</span> <span class="ident">buf</span> = <span class="ident">history</span>.<span class="ident">get</span>(<span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span>).<span class="ident">unwrap</span>();
-            <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
-            <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">update</span>(<span class="ident">buf</span>, <span class="ident">buf</span>.<span class="ident">len</span>());
-            <span class="self">self</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> = <span class="ident">history</span>.<span class="ident">len</span>();
-            <span class="comment">// Restore current edited line</span>
-            <span class="self">self</span>.<span class="ident">restore</span>();
+        <span class="kw">if </span>first {
+            <span class="self">self</span>.ctx.history_index = <span class="number">0</span>;
+            <span class="kw">let </span>buf = history.get(<span class="self">self</span>.ctx.history_index).unwrap();
+            <span class="self">self</span>.changes.borrow_mut().begin();
+            <span class="self">self</span>.line.update(buf, buf.len());
+            <span class="self">self</span>.changes.borrow_mut().end();
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.ctx.history_index = history.len();
+            <span class="comment">// Restore current edited line
+            </span><span class="self">self</span>.restore();
         }
-        <span class="self">self</span>.<span class="ident">refresh_line</span>()
+        <span class="self">self</span>.refresh_line()
     }
 
-    <span class="doccomment">/// Change the indentation of the lines covered by movement</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_indent</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">mvt</span>: <span class="kw-2">&amp;</span><span class="ident">Movement</span>, <span class="ident">amount</span>: <span class="ident">usize</span>, <span class="ident">dedent</span>: <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">line</span>.<span class="ident">indent</span>(<span class="ident">mvt</span>, <span class="ident">amount</span>, <span class="ident">dedent</span>) {
-            <span class="self">self</span>.<span class="ident">refresh_line</span>()
-        } <span class="kw">else</span> {
+    <span class="doccomment">/// Change the indentation of the lines covered by movement
+    </span><span class="kw">pub fn </span>edit_indent(<span class="kw-2">&amp;mut </span><span class="self">self</span>, mvt: <span class="kw-2">&amp;</span>Movement, amount: usize, dedent: bool) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="kw">if </span><span class="self">self</span>.line.indent(mvt, amount, dedent) {
+            <span class="self">self</span>.refresh_line()
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">init_state</span>&lt;<span class="lifetime">&#39;out</span>, <span class="ident">H</span>: <span class="ident">Helper</span>&gt;(
-    <span class="ident">out</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;out</span> <span class="kw-2">mut</span> &lt;<span class="ident">Terminal</span> <span class="kw">as</span> <span class="ident">Term</span>&gt;<span class="ident">::Writer</span>,
-    <span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">pos</span>: <span class="ident">usize</span>,
-    <span class="ident">helper</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;out</span> <span class="ident">H</span>&gt;,
-    <span class="ident">history</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;out</span> <span class="ident"><span class="kw">crate</span>::history::History</span>,
-) -&gt; <span class="ident">State</span>&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;static</span>, <span class="ident">H</span>&gt; {
-    <span class="ident">State</span> {
-        <span class="ident">out</span>,
-        <span class="ident">prompt</span>: <span class="string">&quot;&quot;</span>,
-        <span class="ident">prompt_size</span>: <span class="ident">Position::default</span>(),
-        <span class="ident">line</span>: <span class="ident">LineBuffer::init</span>(<span class="ident">line</span>, <span class="ident">pos</span>, <span class="prelude-val">None</span>),
-        <span class="ident">layout</span>: <span class="ident">Layout::default</span>(),
-        <span class="ident">saved_line_for_history</span>: <span class="ident">LineBuffer::with_capacity</span>(<span class="number">100</span>),
-        <span class="ident">byte_buffer</span>: [<span class="number">0</span>; <span class="number">4</span>],
-        <span class="ident">changes</span>: <span class="ident">Rc::new</span>(<span class="ident">RefCell::new</span>(<span class="ident">Changeset::new</span>())),
-        <span class="ident">helper</span>,
-        <span class="ident">ctx</span>: <span class="ident">Context::new</span>(<span class="ident">history</span>),
-        <span class="ident">hint</span>: <span class="prelude-val">Some</span>(<span class="ident">Box::new</span>(<span class="string">&quot;hint&quot;</span>.<span class="ident">to_owned</span>())),
-        <span class="ident">highlight_char</span>: <span class="bool-val">false</span>,
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">pub fn </span>init_state&lt;<span class="lifetime">&#39;out</span>, H: Helper&gt;(
+    out: <span class="kw-2">&amp;</span><span class="lifetime">&#39;out </span><span class="kw-2">mut </span>&lt;Terminal <span class="kw">as </span>Term&gt;::Writer,
+    line: <span class="kw-2">&amp;</span>str,
+    pos: usize,
+    helper: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;out </span>H&gt;,
+    history: <span class="kw-2">&amp;</span><span class="lifetime">&#39;out </span><span class="kw">crate</span>::history::History,
+) -&gt; State&lt;<span class="lifetime">&#39;out</span>, <span class="lifetime">&#39;static</span>, H&gt; {
+    State {
+        out,
+        prompt: <span class="string">&quot;&quot;</span>,
+        prompt_size: Position::default(),
+        line: LineBuffer::init(line, pos, <span class="prelude-val">None</span>),
+        layout: Layout::default(),
+        saved_line_for_history: LineBuffer::with_capacity(<span class="number">100</span>),
+        byte_buffer: [<span class="number">0</span>; <span class="number">4</span>],
+        changes: Rc::new(RefCell::new(Changeset::new())),
+        helper,
+        ctx: Context::new(history),
+        hint: <span class="prelude-val">Some</span>(Box::new(<span class="string">&quot;hint&quot;</span>.to_owned())),
+        highlight_char: <span class="bool-val">false</span>,
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::init_state</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::history::History</span>;
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::tty::Sink</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use </span><span class="kw">super</span>::init_state;
+    <span class="kw">use </span><span class="kw">crate</span>::history::History;
+    <span class="kw">use </span><span class="kw">crate</span>::tty::Sink;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">edit_history_next</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> = <span class="ident">Sink::default</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">history</span> = <span class="ident">History::new</span>();
-        <span class="ident">history</span>.<span class="ident">add</span>(<span class="string">&quot;line0&quot;</span>);
-        <span class="ident">history</span>.<span class="ident">add</span>(<span class="string">&quot;line1&quot;</span>);
-        <span class="kw">let</span> <span class="ident">line</span> = <span class="string">&quot;current edited line&quot;</span>;
-        <span class="kw">let</span> <span class="ident">helper</span>: <span class="prelude-ty">Option</span>&lt;()&gt; = <span class="prelude-val">None</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> = <span class="ident">init_state</span>(<span class="kw-2">&amp;mut</span> <span class="ident">out</span>, <span class="ident">line</span>, <span class="number">6</span>, <span class="ident">helper</span>.<span class="ident">as_ref</span>(), <span class="kw-2">&amp;</span><span class="ident">history</span>);
-        <span class="ident">s</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span> = <span class="ident">history</span>.<span class="ident">len</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>edit_history_next() {
+        <span class="kw">let </span><span class="kw-2">mut </span>out = Sink::default();
+        <span class="kw">let </span><span class="kw-2">mut </span>history = History::new();
+        history.add(<span class="string">&quot;line0&quot;</span>);
+        history.add(<span class="string">&quot;line1&quot;</span>);
+        <span class="kw">let </span>line = <span class="string">&quot;current edited line&quot;</span>;
+        <span class="kw">let </span>helper: <span class="prelude-ty">Option</span>&lt;()&gt; = <span class="prelude-val">None</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>s = init_state(<span class="kw-2">&amp;mut </span>out, line, <span class="number">6</span>, helper.as_ref(), <span class="kw-2">&amp;</span>history);
+        s.ctx.history_index = history.len();
 
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">2</span> {
-            <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">false</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">line</span>, <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">as_str</span>());
+        <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">2 </span>{
+            s.edit_history_next(<span class="bool-val">false</span>).unwrap();
+            <span class="macro">assert_eq!</span>(line, s.line.as_str());
         }
 
-        <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">line</span>, <span class="ident">s</span>.<span class="ident">saved_line_for_history</span>.<span class="ident">as_str</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">1</span>, <span class="ident">s</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span>);
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;line1&quot;</span>, <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">as_str</span>());
+        s.edit_history_next(<span class="bool-val">true</span>).unwrap();
+        <span class="macro">assert_eq!</span>(line, s.saved_line_for_history.as_str());
+        <span class="macro">assert_eq!</span>(<span class="number">1</span>, s.ctx.history_index);
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;line1&quot;</span>, s.line.as_str());
 
-        <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">2</span> {
-            <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">true</span>).<span class="ident">unwrap</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">line</span>, <span class="ident">s</span>.<span class="ident">saved_line_for_history</span>.<span class="ident">as_str</span>());
-            <span class="macro">assert_eq!</span>(<span class="number">0</span>, <span class="ident">s</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span>);
-            <span class="macro">assert_eq!</span>(<span class="string">&quot;line0&quot;</span>, <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">as_str</span>());
+        <span class="kw">for _ in </span><span class="number">0</span>..<span class="number">2 </span>{
+            s.edit_history_next(<span class="bool-val">true</span>).unwrap();
+            <span class="macro">assert_eq!</span>(line, s.saved_line_for_history.as_str());
+            <span class="macro">assert_eq!</span>(<span class="number">0</span>, s.ctx.history_index);
+            <span class="macro">assert_eq!</span>(<span class="string">&quot;line0&quot;</span>, s.line.as_str());
         }
 
-        <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">false</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">line</span>, <span class="ident">s</span>.<span class="ident">saved_line_for_history</span>.<span class="ident">as_str</span>());
-        <span class="macro">assert_eq!</span>(<span class="number">1</span>, <span class="ident">s</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span>);
-        <span class="macro">assert_eq!</span>(<span class="string">&quot;line1&quot;</span>, <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">as_str</span>());
+        s.edit_history_next(<span class="bool-val">false</span>).unwrap();
+        <span class="macro">assert_eq!</span>(line, s.saved_line_for_history.as_str());
+        <span class="macro">assert_eq!</span>(<span class="number">1</span>, s.ctx.history_index);
+        <span class="macro">assert_eq!</span>(<span class="string">&quot;line1&quot;</span>, s.line.as_str());
 
-        <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">false</span>).<span class="ident">unwrap</span>();
-        <span class="comment">// assert_eq!(line, s.saved_line_for_history);</span>
-        <span class="macro">assert_eq!</span>(<span class="number">2</span>, <span class="ident">s</span>.<span class="ident">ctx</span>.<span class="ident">history_index</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">line</span>, <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">as_str</span>());
+        s.edit_history_next(<span class="bool-val">false</span>).unwrap();
+        <span class="comment">// assert_eq!(line, s.saved_line_for_history);
+        </span><span class="macro">assert_eq!</span>(<span class="number">2</span>, s.ctx.history_index);
+        <span class="macro">assert_eq!</span>(line, s.line.as_str());
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

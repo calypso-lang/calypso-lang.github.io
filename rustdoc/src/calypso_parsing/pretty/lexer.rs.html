@@ -38,45 +38,45 @@
 <span id="38">38</span>
 <span id="39">39</span>
 <span id="40">40</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">super</span>::Printer</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::lexer::Lexeme</span>;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::Printer;
+<span class="kw">use </span><span class="kw">crate</span>::lexer::Lexeme;
 
-<span class="kw">use</span> <span class="ident">calypso_diagnostic::prelude</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">calypso_diagnostic::reporting::files::Files</span>;
+<span class="kw">use </span>calypso_diagnostic::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>calypso_diagnostic::reporting::files::Files;
 
-<span class="kw">impl</span> <span class="ident">Printer</span> {
-    <span class="doccomment">/// Print a token</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function errors when it can&#39;t get the line/col location of a token from the byte span.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">print_token</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">tok</span>: <span class="kw-2">&amp;</span><span class="ident">Lexeme</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">CalResult</span>&lt;<span class="ident">String</span>&gt; {
-        <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">tok</span>.<span class="ident">value</span>();
-        <span class="kw">let</span> <span class="ident">span</span> = <span class="ident">tok</span>.<span class="ident">span</span>();
-        <span class="kw">let</span> <span class="ident">lo</span> = <span class="ident">span</span>.<span class="ident">lo</span>();
-        <span class="kw">let</span> <span class="ident">hi</span> = <span class="ident">span</span>.<span class="ident">hi</span>();
+<span class="kw">impl </span>Printer {
+    <span class="doccomment">/// Print a token
+    ///
+    /// # Errors
+    ///
+    /// This function errors when it can&#39;t get the line/col location of a token from the byte span.
+    </span><span class="kw">pub fn </span>print_token(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tok: <span class="kw-2">&amp;</span>Lexeme&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; CalResult&lt;String&gt; {
+        <span class="kw">let </span>value = tok.value();
+        <span class="kw">let </span>span = tok.span();
+        <span class="kw">let </span>lo = span.lo();
+        <span class="kw">let </span>hi = span.hi();
 
-        <span class="kw">let</span> <span class="ident">sourcemgr</span> = <span class="self">self</span>.<span class="ident">gcx</span>.<span class="ident">sourcemgr</span>.<span class="ident">read</span>();
-        <span class="kw">let</span> <span class="ident">lo_loc</span> = <span class="ident">sourcemgr</span>
-            .<span class="ident">location</span>(<span class="self">self</span>.<span class="ident">file_id</span>, <span class="ident">lo</span> <span class="kw">as</span> <span class="ident">usize</span>)
-            .<span class="ident">map_err</span>(<span class="ident">DiagnosticError::from</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">hi_loc</span> = <span class="ident">sourcemgr</span>
-            .<span class="ident">location</span>(<span class="self">self</span>.<span class="ident">file_id</span>, <span class="ident">hi</span> <span class="kw">as</span> <span class="ident">usize</span>)
-            .<span class="ident">map_err</span>(<span class="ident">DiagnosticError::from</span>)<span class="question-mark">?</span>;
-        <span class="ident">drop</span>(<span class="ident">sourcemgr</span>);
+        <span class="kw">let </span>sourcemgr = <span class="self">self</span>.gcx.sourcemgr.read();
+        <span class="kw">let </span>lo_loc = sourcemgr
+            .location(<span class="self">self</span>.file_id, lo <span class="kw">as </span>usize)
+            .map_err(DiagnosticError::from)<span class="question-mark">?</span>;
+        <span class="kw">let </span>hi_loc = sourcemgr
+            .location(<span class="self">self</span>.file_id, hi <span class="kw">as </span>usize)
+            .map_err(DiagnosticError::from)<span class="question-mark">?</span>;
+        drop(sourcemgr);
 
         <span class="prelude-val">Ok</span>(<span class="macro">format!</span>(
             <span class="string">&quot;text: `{}` @ {}..{} (a.k.a. {}:{}..{}:{}), type: {:?}&quot;</span>,
-            <span class="ident">value</span>.<span class="number">1</span>,
-            <span class="ident">lo</span>,
-            <span class="ident">hi</span>,
-            <span class="ident">lo_loc</span>.<span class="ident">line_number</span>,
-            <span class="ident">lo_loc</span>.<span class="ident">column_number</span>,
-            <span class="ident">hi_loc</span>.<span class="ident">line_number</span>,
-            <span class="ident">hi_loc</span>.<span class="ident">column_number</span>,
-            <span class="ident">value</span>.<span class="number">0</span>,
+            value.<span class="number">1</span>,
+            lo,
+            hi,
+            lo_loc.line_number,
+            lo_loc.column_number,
+            hi_loc.line_number,
+            hi_loc.column_number,
+            value.<span class="number">0</span>,
         ))
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="calypso_parsing" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="calypso_parsing" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

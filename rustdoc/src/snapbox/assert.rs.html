@@ -514,412 +514,412 @@
 <span id="514">514</span>
 <span id="515">515</span>
 <span id="516">516</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::data::DataFormat</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Action</span>;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::data::DataFormat;
+<span class="kw">use </span><span class="kw">crate</span>::Action;
 
-<span class="doccomment">/// Snapshot assertion against a file&#39;s contents</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Useful for one-off assertions with the snapshot stored in a file</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// let actual = &quot;...&quot;;</span>
-<span class="doccomment">/// snapbox::Assert::new()</span>
-<span class="doccomment">///     .action_env(&quot;SNAPSHOTS&quot;)</span>
-<span class="doccomment">///     .matches_path(actual, &quot;tests/fixtures/help_output_is_clean.txt&quot;);</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Assert</span> {
-    <span class="ident">action</span>: <span class="ident">Action</span>,
-    <span class="ident">action_var</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">String</span>&gt;,
-    <span class="ident">substitutions</span>: <span class="ident"><span class="kw">crate</span>::Substitutions</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">palette</span>: <span class="ident"><span class="kw">crate</span>::report::Palette</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">data_format</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">DataFormat</span>&gt;,
+<span class="doccomment">/// Snapshot assertion against a file&#39;s contents
+///
+/// Useful for one-off assertions with the snapshot stored in a file
+///
+/// # Examples
+///
+/// ```rust,no_run
+/// let actual = &quot;...&quot;;
+/// snapbox::Assert::new()
+///     .action_env(&quot;SNAPSHOTS&quot;)
+///     .matches_path(actual, &quot;tests/fixtures/help_output_is_clean.txt&quot;);
+/// ```
+</span><span class="attribute">#[derive(Clone, Debug)]
+</span><span class="kw">pub struct </span>Assert {
+    action: Action,
+    action_var: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    substitutions: <span class="kw">crate</span>::Substitutions,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) palette: <span class="kw">crate</span>::report::Palette,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) data_format: <span class="prelude-ty">Option</span>&lt;DataFormat&gt;,
 }
 
-<span class="doccomment">/// # Assertions</span>
-<span class="kw">impl</span> <span class="ident">Assert</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident">Default::default</span>()
+<span class="doccomment">/// # Assertions
+</span><span class="kw">impl </span>Assert {
+    <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        Default::default()
     }
 
-    <span class="doccomment">/// Check if a value is the same as an expected value</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// When the content is text, newlines are normalized.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// let output = &quot;something&quot;;</span>
-    <span class="doccomment">/// let expected = &quot;something&quot;;</span>
-    <span class="doccomment">/// snapbox::Assert::new().eq(expected, output);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">expected</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;, <span class="ident">actual</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;) {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">expected</span>.<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">actual</span>.<span class="ident">into</span>();
-        <span class="self">self</span>.<span class="ident">eq_inner</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="doccomment">/// Check if a value is the same as an expected value
+    ///
+    /// When the content is text, newlines are normalized.
+    ///
+    /// ```rust
+    /// let output = &quot;something&quot;;
+    /// let expected = &quot;something&quot;;
+    /// snapbox::Assert::new().eq(expected, output);
+    /// ```
+    </span><span class="attribute">#[track_caller]
+    </span><span class="kw">pub fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, expected: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;, actual: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;) {
+        <span class="kw">let </span>expected = expected.into();
+        <span class="kw">let </span>actual = actual.into();
+        <span class="self">self</span>.eq_inner(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">fn</span> <span class="ident">eq_inner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">expected</span>: <span class="ident"><span class="kw">crate</span>::Data</span>, <span class="ident">actual</span>: <span class="ident"><span class="kw">crate</span>::Data</span>) {
-        <span class="kw">let</span> (<span class="ident">pattern</span>, <span class="ident">actual</span>) = <span class="self">self</span>.<span class="ident">normalize_eq</span>(<span class="prelude-val">Ok</span>(<span class="ident">expected</span>), <span class="ident">actual</span>);
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">desc</span>) = <span class="ident">pattern</span>.<span class="ident">and_then</span>(|<span class="ident">p</span>| <span class="self">self</span>.<span class="ident">try_verify</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="kw-2">&amp;</span><span class="ident">actual</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)) {
-            <span class="macro">panic!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="self">self</span>.<span class="ident">palette</span>.<span class="ident">error</span>(<span class="string">&quot;Eq failed&quot;</span>), <span class="ident">desc</span>);
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">fn </span>eq_inner(<span class="kw-2">&amp;</span><span class="self">self</span>, expected: <span class="kw">crate</span>::Data, actual: <span class="kw">crate</span>::Data) {
+        <span class="kw">let </span>(pattern, actual) = <span class="self">self</span>.normalize_eq(<span class="prelude-val">Ok</span>(expected), actual);
+        <span class="kw">if let </span><span class="prelude-val">Err</span>(desc) = pattern.and_then(|p| <span class="self">self</span>.try_verify(<span class="kw-2">&amp;</span>p, <span class="kw-2">&amp;</span>actual, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)) {
+            <span class="macro">panic!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="self">self</span>.palette.error(<span class="string">&quot;Eq failed&quot;</span>), desc);
         }
     }
 
-    <span class="doccomment">/// Check if a value matches a pattern</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Pattern syntax:</span>
-    <span class="doccomment">/// - `...` is a line-wildcard when on a line by itself</span>
-    <span class="doccomment">/// - `[..]` is a character-wildcard when inside a line</span>
-    <span class="doccomment">/// - `[EXE]` matches `.exe` on Windows</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Normalization:</span>
-    <span class="doccomment">/// - Newlines</span>
-    <span class="doccomment">/// - `\` to `/`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// let output = &quot;something&quot;;</span>
-    <span class="doccomment">/// let expected = &quot;so[..]g&quot;;</span>
-    <span class="doccomment">/// snapbox::Assert::new().matches(expected, output);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">matches</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pattern</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;, <span class="ident">actual</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;) {
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="ident">pattern</span>.<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">actual</span>.<span class="ident">into</span>();
-        <span class="self">self</span>.<span class="ident">matches_inner</span>(<span class="ident">pattern</span>, <span class="ident">actual</span>);
+    <span class="doccomment">/// Check if a value matches a pattern
+    ///
+    /// Pattern syntax:
+    /// - `...` is a line-wildcard when on a line by itself
+    /// - `[..]` is a character-wildcard when inside a line
+    /// - `[EXE]` matches `.exe` on Windows
+    ///
+    /// Normalization:
+    /// - Newlines
+    /// - `\` to `/`
+    ///
+    /// ```rust
+    /// let output = &quot;something&quot;;
+    /// let expected = &quot;so[..]g&quot;;
+    /// snapbox::Assert::new().matches(expected, output);
+    /// ```
+    </span><span class="attribute">#[track_caller]
+    </span><span class="kw">pub fn </span>matches(<span class="kw-2">&amp;</span><span class="self">self</span>, pattern: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;, actual: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;) {
+        <span class="kw">let </span>pattern = pattern.into();
+        <span class="kw">let </span>actual = actual.into();
+        <span class="self">self</span>.matches_inner(pattern, actual);
     }
 
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">fn</span> <span class="ident">matches_inner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pattern</span>: <span class="ident"><span class="kw">crate</span>::Data</span>, <span class="ident">actual</span>: <span class="ident"><span class="kw">crate</span>::Data</span>) {
-        <span class="kw">let</span> (<span class="ident">pattern</span>, <span class="ident">actual</span>) = <span class="self">self</span>.<span class="ident">normalize_match</span>(<span class="prelude-val">Ok</span>(<span class="ident">pattern</span>), <span class="ident">actual</span>);
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">desc</span>) = <span class="ident">pattern</span>.<span class="ident">and_then</span>(|<span class="ident">p</span>| <span class="self">self</span>.<span class="ident">try_verify</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="kw-2">&amp;</span><span class="ident">actual</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)) {
-            <span class="macro">panic!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="self">self</span>.<span class="ident">palette</span>.<span class="ident">error</span>(<span class="string">&quot;Match failed&quot;</span>), <span class="ident">desc</span>);
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">fn </span>matches_inner(<span class="kw-2">&amp;</span><span class="self">self</span>, pattern: <span class="kw">crate</span>::Data, actual: <span class="kw">crate</span>::Data) {
+        <span class="kw">let </span>(pattern, actual) = <span class="self">self</span>.normalize_match(<span class="prelude-val">Ok</span>(pattern), actual);
+        <span class="kw">if let </span><span class="prelude-val">Err</span>(desc) = pattern.and_then(|p| <span class="self">self</span>.try_verify(<span class="kw-2">&amp;</span>p, <span class="kw-2">&amp;</span>actual, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>)) {
+            <span class="macro">panic!</span>(<span class="string">&quot;{}: {}&quot;</span>, <span class="self">self</span>.palette.error(<span class="string">&quot;Match failed&quot;</span>), desc);
         }
     }
 
-    <span class="doccomment">/// Check if a value matches the content of a file</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// When the content is text, newlines are normalized.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust,no_run</span>
-    <span class="doccomment">/// let output = &quot;something&quot;;</span>
-    <span class="doccomment">/// let expected_path = &quot;tests/snapshots/output.txt&quot;;</span>
-    <span class="doccomment">/// snapbox::Assert::new().eq_path(output, expected_path);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">eq_path</span>(
+    <span class="doccomment">/// Check if a value matches the content of a file
+    ///
+    /// When the content is text, newlines are normalized.
+    ///
+    /// ```rust,no_run
+    /// let output = &quot;something&quot;;
+    /// let expected_path = &quot;tests/snapshots/output.txt&quot;;
+    /// snapbox::Assert::new().eq_path(output, expected_path);
+    /// ```
+    </span><span class="attribute">#[track_caller]
+    </span><span class="kw">pub fn </span>eq_path(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">expected_path</span>: <span class="kw">impl</span> <span class="ident">AsRef</span>&lt;<span class="ident">std::path::Path</span>&gt;,
-        <span class="ident">actual</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
+        expected_path: <span class="kw">impl </span>AsRef&lt;std::path::Path&gt;,
+        actual: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;,
     ) {
-        <span class="kw">let</span> <span class="ident">expected_path</span> = <span class="ident">expected_path</span>.<span class="ident">as_ref</span>();
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">actual</span>.<span class="ident">into</span>();
-        <span class="self">self</span>.<span class="ident">eq_path_inner</span>(<span class="ident">expected_path</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>expected_path = expected_path.as_ref();
+        <span class="kw">let </span>actual = actual.into();
+        <span class="self">self</span>.eq_path_inner(expected_path, actual);
     }
 
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">fn</span> <span class="ident">eq_path_inner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pattern_path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>, <span class="ident">actual</span>: <span class="ident"><span class="kw">crate</span>::Data</span>) {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">action</span> {
-            <span class="ident">Action::Skip</span> =&gt; {
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">fn </span>eq_path_inner(<span class="kw-2">&amp;</span><span class="self">self</span>, pattern_path: <span class="kw-2">&amp;</span>std::path::Path, actual: <span class="kw">crate</span>::Data) {
+        <span class="kw">match </span><span class="self">self</span>.action {
+            Action::Skip =&gt; {
                 <span class="kw">return</span>;
             }
-            <span class="ident">Action::Ignore</span> | <span class="ident">Action::Verify</span> | <span class="ident">Action::Overwrite</span> =&gt; {}
+            Action::Ignore | Action::Verify | Action::Overwrite =&gt; {}
         }
 
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident"><span class="kw">crate</span>::Data::read_from</span>(<span class="ident">pattern_path</span>, <span class="self">self</span>.<span class="ident">data_format</span>());
-        <span class="kw">let</span> (<span class="ident">expected</span>, <span class="ident">actual</span>) = <span class="self">self</span>.<span class="ident">normalize_eq</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>expected = <span class="kw">crate</span>::Data::read_from(pattern_path, <span class="self">self</span>.data_format());
+        <span class="kw">let </span>(expected, actual) = <span class="self">self</span>.normalize_eq(expected, actual);
 
-        <span class="self">self</span>.<span class="ident">do_action</span>(
-            <span class="ident">expected</span>,
-            <span class="ident">actual</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::path::display_relpath</span>(<span class="ident">pattern_path</span>)),
+        <span class="self">self</span>.do_action(
+            expected,
+            actual,
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw">crate</span>::path::display_relpath(pattern_path)),
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="string">&quot;In-memory&quot;</span>),
-            <span class="ident">pattern_path</span>,
+            pattern_path,
         );
     }
 
-    <span class="doccomment">/// Check if a value matches the pattern in a file</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Pattern syntax:</span>
-    <span class="doccomment">/// - `...` is a line-wildcard when on a line by itself</span>
-    <span class="doccomment">/// - `[..]` is a character-wildcard when inside a line</span>
-    <span class="doccomment">/// - `[EXE]` matches `.exe` on Windows (override with [`Assert::substitutions`])</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Normalization:</span>
-    <span class="doccomment">/// - Newlines</span>
-    <span class="doccomment">/// - `\` to `/`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust,no_run</span>
-    <span class="doccomment">/// let output = &quot;something&quot;;</span>
-    <span class="doccomment">/// let expected_path = &quot;tests/snapshots/output.txt&quot;;</span>
-    <span class="doccomment">/// snapbox::Assert::new().matches_path(expected_path, output);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">matches_path</span>(
+    <span class="doccomment">/// Check if a value matches the pattern in a file
+    ///
+    /// Pattern syntax:
+    /// - `...` is a line-wildcard when on a line by itself
+    /// - `[..]` is a character-wildcard when inside a line
+    /// - `[EXE]` matches `.exe` on Windows (override with [`Assert::substitutions`])
+    ///
+    /// Normalization:
+    /// - Newlines
+    /// - `\` to `/`
+    ///
+    /// ```rust,no_run
+    /// let output = &quot;something&quot;;
+    /// let expected_path = &quot;tests/snapshots/output.txt&quot;;
+    /// snapbox::Assert::new().matches_path(expected_path, output);
+    /// ```
+    </span><span class="attribute">#[track_caller]
+    </span><span class="kw">pub fn </span>matches_path(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">pattern_path</span>: <span class="kw">impl</span> <span class="ident">AsRef</span>&lt;<span class="ident">std::path::Path</span>&gt;,
-        <span class="ident">actual</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
+        pattern_path: <span class="kw">impl </span>AsRef&lt;std::path::Path&gt;,
+        actual: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;,
     ) {
-        <span class="kw">let</span> <span class="ident">pattern_path</span> = <span class="ident">pattern_path</span>.<span class="ident">as_ref</span>();
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">actual</span>.<span class="ident">into</span>();
-        <span class="self">self</span>.<span class="ident">matches_path_inner</span>(<span class="ident">pattern_path</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>pattern_path = pattern_path.as_ref();
+        <span class="kw">let </span>actual = actual.into();
+        <span class="self">self</span>.matches_path_inner(pattern_path, actual);
     }
 
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">fn</span> <span class="ident">matches_path_inner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pattern_path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>, <span class="ident">actual</span>: <span class="ident"><span class="kw">crate</span>::Data</span>) {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">action</span> {
-            <span class="ident">Action::Skip</span> =&gt; {
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">fn </span>matches_path_inner(<span class="kw-2">&amp;</span><span class="self">self</span>, pattern_path: <span class="kw-2">&amp;</span>std::path::Path, actual: <span class="kw">crate</span>::Data) {
+        <span class="kw">match </span><span class="self">self</span>.action {
+            Action::Skip =&gt; {
                 <span class="kw">return</span>;
             }
-            <span class="ident">Action::Ignore</span> | <span class="ident">Action::Verify</span> | <span class="ident">Action::Overwrite</span> =&gt; {}
+            Action::Ignore | Action::Verify | Action::Overwrite =&gt; {}
         }
 
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident"><span class="kw">crate</span>::Data::read_from</span>(<span class="ident">pattern_path</span>, <span class="self">self</span>.<span class="ident">data_format</span>());
-        <span class="kw">let</span> (<span class="ident">expected</span>, <span class="ident">actual</span>) = <span class="self">self</span>.<span class="ident">normalize_match</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>expected = <span class="kw">crate</span>::Data::read_from(pattern_path, <span class="self">self</span>.data_format());
+        <span class="kw">let </span>(expected, actual) = <span class="self">self</span>.normalize_match(expected, actual);
 
-        <span class="self">self</span>.<span class="ident">do_action</span>(
-            <span class="ident">expected</span>,
-            <span class="ident">actual</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::path::display_relpath</span>(<span class="ident">pattern_path</span>)),
+        <span class="self">self</span>.do_action(
+            expected,
+            actual,
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw">crate</span>::path::display_relpath(pattern_path)),
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="string">&quot;In-memory&quot;</span>),
-            <span class="ident">pattern_path</span>,
+            pattern_path,
         );
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">normalize_eq</span>(
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>normalize_eq(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">expected</span>: <span class="ident"><span class="kw">crate</span>::Result</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
-        <span class="kw-2">mut</span> <span class="ident">actual</span>: <span class="ident"><span class="kw">crate</span>::Data</span>,
-    ) -&gt; (<span class="ident"><span class="kw">crate</span>::Result</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;, <span class="ident"><span class="kw">crate</span>::Data</span>) {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">expected</span>.<span class="ident">map</span>(|<span class="ident">d</span>| <span class="ident">d</span>.<span class="ident">map_text</span>(<span class="ident"><span class="kw">crate</span>::utils::normalize_lines</span>));
-        <span class="comment">// On `expected` being an error, make a best guess</span>
-        <span class="kw">let</span> <span class="ident">format</span> = <span class="ident">expected</span>
-            .<span class="ident">as_ref</span>()
-            .<span class="ident">map</span>(|<span class="ident">d</span>| <span class="ident">d</span>.<span class="ident">format</span>())
-            .<span class="ident">unwrap_or</span>(<span class="ident">DataFormat::Text</span>);
+        expected: <span class="kw">crate</span>::Result&lt;<span class="kw">crate</span>::Data&gt;,
+        <span class="kw-2">mut </span>actual: <span class="kw">crate</span>::Data,
+    ) -&gt; (<span class="kw">crate</span>::Result&lt;<span class="kw">crate</span>::Data&gt;, <span class="kw">crate</span>::Data) {
+        <span class="kw">let </span>expected = expected.map(|d| d.map_text(<span class="kw">crate</span>::utils::normalize_lines));
+        <span class="comment">// On `expected` being an error, make a best guess
+        </span><span class="kw">let </span>format = expected
+            .as_ref()
+            .map(|d| d.format())
+            .unwrap_or(DataFormat::Text);
 
-        <span class="ident">actual</span> = <span class="ident">actual</span>
-            .<span class="ident">try_coerce</span>(<span class="ident">format</span>)
-            .<span class="ident">map_text</span>(<span class="ident"><span class="kw">crate</span>::utils::normalize_text</span>);
+        actual = actual
+            .try_coerce(format)
+            .map_text(<span class="kw">crate</span>::utils::normalize_text);
 
-        (<span class="ident">expected</span>, <span class="ident">actual</span>)
+        (expected, actual)
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">normalize_match</span>(
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>normalize_match(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">expected</span>: <span class="ident"><span class="kw">crate</span>::Result</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
-        <span class="kw-2">mut</span> <span class="ident">actual</span>: <span class="ident"><span class="kw">crate</span>::Data</span>,
-    ) -&gt; (<span class="ident"><span class="kw">crate</span>::Result</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;, <span class="ident"><span class="kw">crate</span>::Data</span>) {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">expected</span>.<span class="ident">map</span>(|<span class="ident">d</span>| <span class="ident">d</span>.<span class="ident">map_text</span>(<span class="ident"><span class="kw">crate</span>::utils::normalize_lines</span>));
-        <span class="comment">// On `expected` being an error, make a best guess</span>
-        <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">expected</span>), <span class="ident">format</span>) = <span class="ident">expected</span>
-            .<span class="ident">as_ref</span>()
-            .<span class="ident">map</span>(|<span class="ident">d</span>| (<span class="ident">d</span>.<span class="ident">as_str</span>(), <span class="ident">d</span>.<span class="ident">format</span>()))
-            .<span class="ident">unwrap_or</span>((<span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>), <span class="ident">DataFormat::Text</span>))
+        expected: <span class="kw">crate</span>::Result&lt;<span class="kw">crate</span>::Data&gt;,
+        <span class="kw-2">mut </span>actual: <span class="kw">crate</span>::Data,
+    ) -&gt; (<span class="kw">crate</span>::Result&lt;<span class="kw">crate</span>::Data&gt;, <span class="kw">crate</span>::Data) {
+        <span class="kw">let </span>expected = expected.map(|d| d.map_text(<span class="kw">crate</span>::utils::normalize_lines));
+        <span class="comment">// On `expected` being an error, make a best guess
+        </span><span class="kw">if let </span>(<span class="prelude-val">Some</span>(expected), format) = expected
+            .as_ref()
+            .map(|d| (d.as_str(), d.format()))
+            .unwrap_or((<span class="prelude-val">Some</span>(<span class="string">&quot;&quot;</span>), DataFormat::Text))
         {
-            <span class="ident">actual</span> = <span class="ident">actual</span>
-                .<span class="ident">try_coerce</span>(<span class="ident">format</span>)
-                .<span class="ident">map_text</span>(<span class="ident"><span class="kw">crate</span>::utils::normalize_text</span>)
-                .<span class="ident">map_text</span>(|<span class="ident">t</span>| <span class="self">self</span>.<span class="ident">substitutions</span>.<span class="ident">normalize</span>(<span class="ident">t</span>, <span class="ident">expected</span>));
+            actual = actual
+                .try_coerce(format)
+                .map_text(<span class="kw">crate</span>::utils::normalize_text)
+                .map_text(|t| <span class="self">self</span>.substitutions.normalize(t, expected));
         }
 
-        (<span class="ident">expected</span>, <span class="ident">actual</span>)
+        (expected, actual)
     }
 
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">do_action</span>(
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>do_action(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">expected</span>: <span class="ident"><span class="kw">crate</span>::Result</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
-        <span class="ident">actual</span>: <span class="ident"><span class="kw">crate</span>::Data</span>,
-        <span class="ident">expected_name</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">std::fmt::Display</span>&gt;,
-        <span class="ident">actual_name</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">std::fmt::Display</span>&gt;,
-        <span class="ident">expected_path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>,
+        expected: <span class="kw">crate</span>::Result&lt;<span class="kw">crate</span>::Data&gt;,
+        actual: <span class="kw">crate</span>::Data,
+        expected_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn </span>std::fmt::Display&gt;,
+        actual_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn </span>std::fmt::Display&gt;,
+        expected_path: <span class="kw-2">&amp;</span>std::path::Path,
     ) {
-        <span class="kw">let</span> <span class="ident">result</span> =
-            <span class="ident">expected</span>.<span class="ident">and_then</span>(|<span class="ident">e</span>| <span class="self">self</span>.<span class="ident">try_verify</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>, <span class="kw-2">&amp;</span><span class="ident">actual</span>, <span class="ident">expected_name</span>, <span class="ident">actual_name</span>));
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) = <span class="ident">result</span> {
-            <span class="kw">match</span> <span class="self">self</span>.<span class="ident">action</span> {
-                <span class="ident">Action::Skip</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Bailed out earlier&quot;</span>),
-                <span class="ident">Action::Ignore</span> =&gt; {
-                    <span class="kw">use</span> <span class="ident">std::io::Write</span>;
+        <span class="kw">let </span>result =
+            expected.and_then(|e| <span class="self">self</span>.try_verify(<span class="kw-2">&amp;</span>e, <span class="kw-2">&amp;</span>actual, expected_name, actual_name));
+        <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = result {
+            <span class="kw">match </span><span class="self">self</span>.action {
+                Action::Skip =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Bailed out earlier&quot;</span>),
+                Action::Ignore =&gt; {
+                    <span class="kw">use </span>std::io::Write;
 
-                    <span class="kw">let</span> <span class="kw">_</span> = <span class="macro">writeln!</span>(
-                        <span class="ident">std::io::stderr</span>(),
+                    <span class="kw">let _ </span>= <span class="macro">writeln!</span>(
+                        std::io::stderr(),
                         <span class="string">&quot;{}: {}&quot;</span>,
-                        <span class="self">self</span>.<span class="ident">palette</span>.<span class="ident">warn</span>(<span class="string">&quot;Ignoring failure&quot;</span>),
-                        <span class="ident">err</span>
+                        <span class="self">self</span>.palette.warn(<span class="string">&quot;Ignoring failure&quot;</span>),
+                        err
                     );
                 }
-                <span class="ident">Action::Verify</span> =&gt; {
-                    <span class="kw">use</span> <span class="ident">std::fmt::Write</span>;
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> = <span class="ident">String::new</span>();
-                    <span class="macro">write!</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>).<span class="ident">unwrap</span>();
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">action_var</span>) = <span class="self">self</span>.<span class="ident">action_var</span>.<span class="ident">as_deref</span>() {
+                Action::Verify =&gt; {
+                    <span class="kw">use </span>std::fmt::Write;
+                    <span class="kw">let </span><span class="kw-2">mut </span>buffer = String::new();
+                    <span class="macro">write!</span>(<span class="kw-2">&amp;mut </span>buffer, <span class="string">&quot;{}&quot;</span>, err).unwrap();
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(action_var) = <span class="self">self</span>.action_var.as_deref() {
                         <span class="macro">writeln!</span>(
-                            <span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>,
+                            <span class="kw-2">&amp;mut </span>buffer,
                             <span class="string">&quot;{}&quot;</span>,
-                            <span class="self">self</span>.<span class="ident">palette</span>
-                                .<span class="ident">hint</span>(<span class="macro">format_args!</span>(<span class="string">&quot;Update with {}=overwrite&quot;</span>, <span class="ident">action_var</span>))
+                            <span class="self">self</span>.palette
+                                .hint(<span class="macro">format_args!</span>(<span class="string">&quot;Update with {}=overwrite&quot;</span>, action_var))
                         )
-                        .<span class="ident">unwrap</span>();
+                        .unwrap();
                     }
-                    <span class="macro">panic!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">buffer</span>);
+                    <span class="macro">panic!</span>(<span class="string">&quot;{}&quot;</span>, buffer);
                 }
-                <span class="ident">Action::Overwrite</span> =&gt; {
-                    <span class="kw">use</span> <span class="ident">std::io::Write</span>;
+                Action::Overwrite =&gt; {
+                    <span class="kw">use </span>std::io::Write;
 
-                    <span class="kw">let</span> <span class="kw">_</span> = <span class="macro">writeln!</span>(
-                        <span class="ident">std::io::stderr</span>(),
+                    <span class="kw">let _ </span>= <span class="macro">writeln!</span>(
+                        std::io::stderr(),
                         <span class="string">&quot;{}: {}&quot;</span>,
-                        <span class="self">self</span>.<span class="ident">palette</span>.<span class="ident">warn</span>(<span class="string">&quot;Fixing&quot;</span>),
-                        <span class="ident">err</span>
+                        <span class="self">self</span>.palette.warn(<span class="string">&quot;Fixing&quot;</span>),
+                        err
                     );
-                    <span class="ident">actual</span>.<span class="ident">write_to</span>(<span class="ident">expected_path</span>).<span class="ident">unwrap</span>();
+                    actual.write_to(expected_path).unwrap();
                 }
             }
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">try_verify</span>(
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>try_verify(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">expected</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::Data</span>,
-        <span class="ident">actual</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::Data</span>,
-        <span class="ident">expected_name</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">std::fmt::Display</span>&gt;,
-        <span class="ident">actual_name</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">std::fmt::Display</span>&gt;,
-    ) -&gt; <span class="ident"><span class="kw">crate</span>::Result</span>&lt;()&gt; {
-        <span class="kw">if</span> <span class="ident">expected</span> != <span class="ident">actual</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> = <span class="ident">String::new</span>();
-            <span class="ident"><span class="kw">crate</span>::report::write_diff</span>(
-                <span class="kw-2">&amp;mut</span> <span class="ident">buf</span>,
-                <span class="ident">expected</span>,
-                <span class="ident">actual</span>,
-                <span class="ident">expected_name</span>,
-                <span class="ident">actual_name</span>,
-                <span class="self">self</span>.<span class="ident">palette</span>,
+        expected: <span class="kw-2">&amp;</span><span class="kw">crate</span>::Data,
+        actual: <span class="kw-2">&amp;</span><span class="kw">crate</span>::Data,
+        expected_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn </span>std::fmt::Display&gt;,
+        actual_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn </span>std::fmt::Display&gt;,
+    ) -&gt; <span class="kw">crate</span>::Result&lt;()&gt; {
+        <span class="kw">if </span>expected != actual {
+            <span class="kw">let </span><span class="kw-2">mut </span>buf = String::new();
+            <span class="kw">crate</span>::report::write_diff(
+                <span class="kw-2">&amp;mut </span>buf,
+                expected,
+                actual,
+                expected_name,
+                actual_name,
+                <span class="self">self</span>.palette,
             )
-            .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident">e</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
-            <span class="prelude-val">Err</span>(<span class="ident">buf</span>.<span class="ident">into</span>())
-        } <span class="kw">else</span> {
+            .map_err(|e| e.to_string())<span class="question-mark">?</span>;
+            <span class="prelude-val">Err</span>(buf.into())
+        } <span class="kw">else </span>{
             <span class="prelude-val">Ok</span>(())
         }
     }
 }
 
-<span class="doccomment">/// # Directory Assertions</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Assert</span> {
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">subset_eq</span>(
+<span class="doccomment">/// # Directory Assertions
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+</span><span class="kw">impl </span>Assert {
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">pub fn </span>subset_eq(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">expected_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
-        <span class="ident">actual_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
+        expected_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
+        actual_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
     ) {
-        <span class="kw">let</span> <span class="ident">expected_root</span> = <span class="ident">expected_root</span>.<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">actual_root</span> = <span class="ident">actual_root</span>.<span class="ident">into</span>();
-        <span class="self">self</span>.<span class="ident">subset_eq_inner</span>(<span class="ident">expected_root</span>, <span class="ident">actual_root</span>)
+        <span class="kw">let </span>expected_root = expected_root.into();
+        <span class="kw">let </span>actual_root = actual_root.into();
+        <span class="self">self</span>.subset_eq_inner(expected_root, actual_root)
     }
 
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">fn</span> <span class="ident">subset_eq_inner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">expected_root</span>: <span class="ident">std::path::PathBuf</span>, <span class="ident">actual_root</span>: <span class="ident">std::path::PathBuf</span>) {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">action</span> {
-            <span class="ident">Action::Skip</span> =&gt; {
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">fn </span>subset_eq_inner(<span class="kw-2">&amp;</span><span class="self">self</span>, expected_root: std::path::PathBuf, actual_root: std::path::PathBuf) {
+        <span class="kw">match </span><span class="self">self</span>.action {
+            Action::Skip =&gt; {
                 <span class="kw">return</span>;
             }
-            <span class="ident">Action::Ignore</span> | <span class="ident">Action::Verify</span> | <span class="ident">Action::Overwrite</span> =&gt; {}
+            Action::Ignore | Action::Verify | Action::Overwrite =&gt; {}
         }
 
-        <span class="kw">let</span> <span class="ident">checks</span>: <span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt; =
-            <span class="ident"><span class="kw">crate</span>::path::PathDiff::subset_eq_iter_inner</span>(<span class="ident">expected_root</span>, <span class="ident">actual_root</span>).<span class="ident">collect</span>();
-        <span class="self">self</span>.<span class="ident">verify</span>(<span class="ident">checks</span>);
+        <span class="kw">let </span>checks: Vec&lt;<span class="kw">_</span>&gt; =
+            <span class="kw">crate</span>::path::PathDiff::subset_eq_iter_inner(expected_root, actual_root).collect();
+        <span class="self">self</span>.verify(checks);
     }
 
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">subset_matches</span>(
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">pub fn </span>subset_matches(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">pattern_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
-        <span class="ident">actual_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
+        pattern_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
+        actual_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
     ) {
-        <span class="kw">let</span> <span class="ident">pattern_root</span> = <span class="ident">pattern_root</span>.<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">actual_root</span> = <span class="ident">actual_root</span>.<span class="ident">into</span>();
-        <span class="self">self</span>.<span class="ident">subset_matches_inner</span>(<span class="ident">pattern_root</span>, <span class="ident">actual_root</span>)
+        <span class="kw">let </span>pattern_root = pattern_root.into();
+        <span class="kw">let </span>actual_root = actual_root.into();
+        <span class="self">self</span>.subset_matches_inner(pattern_root, actual_root)
     }
 
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">fn</span> <span class="ident">subset_matches_inner</span>(
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">fn </span>subset_matches_inner(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">expected_root</span>: <span class="ident">std::path::PathBuf</span>,
-        <span class="ident">actual_root</span>: <span class="ident">std::path::PathBuf</span>,
+        expected_root: std::path::PathBuf,
+        actual_root: std::path::PathBuf,
     ) {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">action</span> {
-            <span class="ident">Action::Skip</span> =&gt; {
+        <span class="kw">match </span><span class="self">self</span>.action {
+            Action::Skip =&gt; {
                 <span class="kw">return</span>;
             }
-            <span class="ident">Action::Ignore</span> | <span class="ident">Action::Verify</span> | <span class="ident">Action::Overwrite</span> =&gt; {}
+            Action::Ignore | Action::Verify | Action::Overwrite =&gt; {}
         }
 
-        <span class="kw">let</span> <span class="ident">checks</span>: <span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt; = <span class="ident"><span class="kw">crate</span>::path::PathDiff::subset_matches_iter_inner</span>(
-            <span class="ident">expected_root</span>,
-            <span class="ident">actual_root</span>,
-            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">substitutions</span>,
+        <span class="kw">let </span>checks: Vec&lt;<span class="kw">_</span>&gt; = <span class="kw">crate</span>::path::PathDiff::subset_matches_iter_inner(
+            expected_root,
+            actual_root,
+            <span class="kw-2">&amp;</span><span class="self">self</span>.substitutions,
         )
-        .<span class="ident">collect</span>();
-        <span class="self">self</span>.<span class="ident">verify</span>(<span class="ident">checks</span>);
+        .collect();
+        <span class="self">self</span>.verify(checks);
     }
 
-    <span class="attribute">#[<span class="ident">track_caller</span>]</span>
-    <span class="kw">fn</span> <span class="ident">verify</span>(
+    <span class="attribute">#[track_caller]
+    </span><span class="kw">fn </span>verify(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="kw-2">mut</span> <span class="ident">checks</span>: <span class="ident">Vec</span>&lt;<span class="prelude-ty">Result</span>&lt;(<span class="ident">std::path::PathBuf</span>, <span class="ident">std::path::PathBuf</span>), <span class="ident"><span class="kw">crate</span>::path::PathDiff</span>&gt;&gt;,
+        <span class="kw-2">mut </span>checks: Vec&lt;<span class="prelude-ty">Result</span>&lt;(std::path::PathBuf, std::path::PathBuf), <span class="kw">crate</span>::path::PathDiff&gt;&gt;,
     ) {
-        <span class="kw">if</span> <span class="ident">checks</span>.<span class="ident">iter</span>().<span class="ident">all</span>(<span class="ident">Result::is_ok</span>) {
-            <span class="kw">for</span> <span class="ident">check</span> <span class="kw">in</span> <span class="ident">checks</span> {
-                <span class="kw">let</span> (<span class="ident">_expected_path</span>, <span class="ident">_actual_path</span>) = <span class="ident">check</span>.<span class="ident">unwrap</span>();
+        <span class="kw">if </span>checks.iter().all(Result::is_ok) {
+            <span class="kw">for </span>check <span class="kw">in </span>checks {
+                <span class="kw">let </span>(_expected_path, _actual_path) = check.unwrap();
                 <span class="macro">crate::debug!</span>(
                     <span class="string">&quot;{}: is {}&quot;</span>,
-                    <span class="ident">_expected_path</span>.<span class="ident">display</span>(),
-                    <span class="self">self</span>.<span class="ident">palette</span>.<span class="ident">info</span>(<span class="string">&quot;good&quot;</span>)
+                    _expected_path.display(),
+                    <span class="self">self</span>.palette.info(<span class="string">&quot;good&quot;</span>)
                 );
             }
-        } <span class="kw">else</span> {
-            <span class="ident">checks</span>.<span class="ident">sort_by_key</span>(|<span class="ident">c</span>| <span class="kw">match</span> <span class="ident">c</span> {
-                <span class="prelude-val">Ok</span>((<span class="ident">expected_path</span>, <span class="ident">_actual_path</span>)) =&gt; <span class="prelude-val">Some</span>(<span class="ident">expected_path</span>.<span class="ident">clone</span>()),
-                <span class="prelude-val">Err</span>(<span class="ident">diff</span>) =&gt; <span class="ident">diff</span>.<span class="ident">expected_path</span>().<span class="ident">map</span>(|<span class="ident">p</span>| <span class="ident">p</span>.<span class="ident">to_owned</span>()),
+        } <span class="kw">else </span>{
+            checks.sort_by_key(|c| <span class="kw">match </span>c {
+                <span class="prelude-val">Ok</span>((expected_path, _actual_path)) =&gt; <span class="prelude-val">Some</span>(expected_path.clone()),
+                <span class="prelude-val">Err</span>(diff) =&gt; diff.expected_path().map(|p| p.to_owned()),
             });
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> = <span class="ident">String::new</span>();
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ok</span> = <span class="bool-val">true</span>;
-            <span class="kw">for</span> <span class="ident">check</span> <span class="kw">in</span> <span class="ident">checks</span> {
-                <span class="kw">use</span> <span class="ident">std::fmt::Write</span>;
-                <span class="kw">match</span> <span class="ident">check</span> {
-                    <span class="prelude-val">Ok</span>((<span class="ident">expected_path</span>, <span class="ident">_actual_path</span>)) =&gt; {
-                        <span class="kw">let</span> <span class="kw">_</span> = <span class="macro">writeln!</span>(
-                            <span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>,
+            <span class="kw">let </span><span class="kw-2">mut </span>buffer = String::new();
+            <span class="kw">let </span><span class="kw-2">mut </span>ok = <span class="bool-val">true</span>;
+            <span class="kw">for </span>check <span class="kw">in </span>checks {
+                <span class="kw">use </span>std::fmt::Write;
+                <span class="kw">match </span>check {
+                    <span class="prelude-val">Ok</span>((expected_path, _actual_path)) =&gt; {
+                        <span class="kw">let _ </span>= <span class="macro">writeln!</span>(
+                            <span class="kw-2">&amp;mut </span>buffer,
                             <span class="string">&quot;{}: is {}&quot;</span>,
-                            <span class="ident">expected_path</span>.<span class="ident">display</span>(),
-                            <span class="self">self</span>.<span class="ident">palette</span>.<span class="ident">info</span>(<span class="string">&quot;good&quot;</span>),
+                            expected_path.display(),
+                            <span class="self">self</span>.palette.info(<span class="string">&quot;good&quot;</span>),
                         );
                     }
-                    <span class="prelude-val">Err</span>(<span class="ident">diff</span>) =&gt; {
-                        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">diff</span>.<span class="ident">write</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>, <span class="self">self</span>.<span class="ident">palette</span>);
-                        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">action</span> {
-                            <span class="ident">Action::Skip</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Bailed out earlier&quot;</span>),
-                            <span class="ident">Action::Ignore</span> | <span class="ident">Action::Verify</span> =&gt; {
-                                <span class="ident">ok</span> = <span class="bool-val">false</span>;
+                    <span class="prelude-val">Err</span>(diff) =&gt; {
+                        <span class="kw">let _ </span>= diff.write(<span class="kw-2">&amp;mut </span>buffer, <span class="self">self</span>.palette);
+                        <span class="kw">match </span><span class="self">self</span>.action {
+                            Action::Skip =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Bailed out earlier&quot;</span>),
+                            Action::Ignore | Action::Verify =&gt; {
+                                ok = <span class="bool-val">false</span>;
                             }
-                            <span class="ident">Action::Overwrite</span> =&gt; {
-                                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) = <span class="ident">diff</span>.<span class="ident">overwrite</span>() {
-                                    <span class="ident">ok</span> = <span class="bool-val">false</span>;
-                                    <span class="kw">let</span> <span class="ident">path</span> = <span class="ident">diff</span>
-                                        .<span class="ident">expected_path</span>()
-                                        .<span class="ident">expect</span>(<span class="string">&quot;always present when overwrite can fail&quot;</span>);
-                                    <span class="kw">let</span> <span class="kw">_</span> = <span class="macro">writeln!</span>(
-                                        <span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>,
+                            Action::Overwrite =&gt; {
+                                <span class="kw">if let </span><span class="prelude-val">Err</span>(err) = diff.overwrite() {
+                                    ok = <span class="bool-val">false</span>;
+                                    <span class="kw">let </span>path = diff
+                                        .expected_path()
+                                        .expect(<span class="string">&quot;always present when overwrite can fail&quot;</span>);
+                                    <span class="kw">let _ </span>= <span class="macro">writeln!</span>(
+                                        <span class="kw-2">&amp;mut </span>buffer,
                                         <span class="string">&quot;{} to overwrite {}: {}&quot;</span>,
-                                        <span class="self">self</span>.<span class="ident">palette</span>.<span class="ident">error</span>(<span class="string">&quot;Failed&quot;</span>),
-                                        <span class="ident">path</span>.<span class="ident">display</span>(),
-                                        <span class="ident">err</span>
+                                        <span class="self">self</span>.palette.error(<span class="string">&quot;Failed&quot;</span>),
+                                        path.display(),
+                                        err
                                     );
                                 }
                             }
@@ -927,108 +927,108 @@
                     }
                 }
             }
-            <span class="kw">if</span> <span class="ident">ok</span> {
-                <span class="kw">use</span> <span class="ident">std::io::Write</span>;
-                <span class="kw">let</span> <span class="kw">_</span> = <span class="macro">write!</span>(<span class="ident">std::io::stderr</span>(), <span class="string">&quot;{}&quot;</span>, <span class="ident">buffer</span>);
-                <span class="kw">match</span> <span class="self">self</span>.<span class="ident">action</span> {
-                    <span class="ident">Action::Skip</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Bailed out earlier&quot;</span>),
-                    <span class="ident">Action::Ignore</span> =&gt; {
-                        <span class="kw">let</span> <span class="kw">_</span> = <span class="macro">write!</span>(
-                            <span class="ident">std::io::stderr</span>(),
+            <span class="kw">if </span>ok {
+                <span class="kw">use </span>std::io::Write;
+                <span class="kw">let _ </span>= <span class="macro">write!</span>(std::io::stderr(), <span class="string">&quot;{}&quot;</span>, buffer);
+                <span class="kw">match </span><span class="self">self</span>.action {
+                    Action::Skip =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Bailed out earlier&quot;</span>),
+                    Action::Ignore =&gt; {
+                        <span class="kw">let _ </span>= <span class="macro">write!</span>(
+                            std::io::stderr(),
                             <span class="string">&quot;{}&quot;</span>,
-                            <span class="self">self</span>.<span class="ident">palette</span>.<span class="ident">warn</span>(<span class="string">&quot;Ignoring above failures&quot;</span>)
+                            <span class="self">self</span>.palette.warn(<span class="string">&quot;Ignoring above failures&quot;</span>)
                         );
                     }
-                    <span class="ident">Action::Verify</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Something had to fail to get here&quot;</span>),
-                    <span class="ident">Action::Overwrite</span> =&gt; {
-                        <span class="kw">let</span> <span class="kw">_</span> = <span class="macro">write!</span>(
-                            <span class="ident">std::io::stderr</span>(),
+                    Action::Verify =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Something had to fail to get here&quot;</span>),
+                    Action::Overwrite =&gt; {
+                        <span class="kw">let _ </span>= <span class="macro">write!</span>(
+                            std::io::stderr(),
                             <span class="string">&quot;{}&quot;</span>,
-                            <span class="self">self</span>.<span class="ident">palette</span>.<span class="ident">warn</span>(<span class="string">&quot;Overwrote above failures&quot;</span>)
+                            <span class="self">self</span>.palette.warn(<span class="string">&quot;Overwrote above failures&quot;</span>)
                         );
                     }
                 }
-            } <span class="kw">else</span> {
-                <span class="kw">match</span> <span class="self">self</span>.<span class="ident">action</span> {
-                    <span class="ident">Action::Skip</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Bailed out earlier&quot;</span>),
-                    <span class="ident">Action::Ignore</span> =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Shouldn&#39;t be able to fail&quot;</span>),
-                    <span class="ident">Action::Verify</span> =&gt; {
-                        <span class="kw">use</span> <span class="ident">std::fmt::Write</span>;
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">action_var</span>) = <span class="self">self</span>.<span class="ident">action_var</span>.<span class="ident">as_deref</span>() {
+            } <span class="kw">else </span>{
+                <span class="kw">match </span><span class="self">self</span>.action {
+                    Action::Skip =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Bailed out earlier&quot;</span>),
+                    Action::Ignore =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Shouldn&#39;t be able to fail&quot;</span>),
+                    Action::Verify =&gt; {
+                        <span class="kw">use </span>std::fmt::Write;
+                        <span class="kw">if let </span><span class="prelude-val">Some</span>(action_var) = <span class="self">self</span>.action_var.as_deref() {
                             <span class="macro">writeln!</span>(
-                                <span class="kw-2">&amp;mut</span> <span class="ident">buffer</span>,
+                                <span class="kw-2">&amp;mut </span>buffer,
                                 <span class="string">&quot;{}&quot;</span>,
-                                <span class="self">self</span>.<span class="ident">palette</span>
-                                    .<span class="ident">hint</span>(<span class="macro">format_args!</span>(<span class="string">&quot;Update with {}=overwrite&quot;</span>, <span class="ident">action_var</span>))
+                                <span class="self">self</span>.palette
+                                    .hint(<span class="macro">format_args!</span>(<span class="string">&quot;Update with {}=overwrite&quot;</span>, action_var))
                             )
-                            .<span class="ident">unwrap</span>();
+                            .unwrap();
                         }
                     }
-                    <span class="ident">Action::Overwrite</span> =&gt; {}
+                    Action::Overwrite =&gt; {}
                 }
-                <span class="macro">panic!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">buffer</span>);
+                <span class="macro">panic!</span>(<span class="string">&quot;{}&quot;</span>, buffer);
             }
         }
     }
 }
 
-<span class="doccomment">/// # Customize Behavior</span>
-<span class="kw">impl</span> <span class="ident">Assert</span> {
-    <span class="doccomment">/// Override the color palette</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">palette</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">palette</span>: <span class="ident"><span class="kw">crate</span>::report::Palette</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">palette</span> = <span class="ident">palette</span>;
-        <span class="self">self</span>
-    }
+<span class="doccomment">/// # Customize Behavior
+</span><span class="kw">impl </span>Assert {
+    <span class="doccomment">/// Override the color palette
+    </span><span class="kw">pub fn </span>palette(<span class="kw-2">mut </span><span class="self">self</span>, palette: <span class="kw">crate</span>::report::Palette) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.palette = palette;
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Read the failure action from an environment variable</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">action_env</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">var_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">action</span> = <span class="ident">Action::with_env_var</span>(<span class="ident">var_name</span>);
-        <span class="self">self</span>.<span class="ident">action</span> = <span class="ident">action</span>.<span class="ident">unwrap_or</span>(<span class="self">self</span>.<span class="ident">action</span>);
-        <span class="self">self</span>.<span class="ident">action_var</span> = <span class="prelude-val">Some</span>(<span class="ident">var_name</span>.<span class="ident">to_owned</span>());
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Read the failure action from an environment variable
+    </span><span class="kw">pub fn </span>action_env(<span class="kw-2">mut </span><span class="self">self</span>, var_name: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>action = Action::with_env_var(var_name);
+        <span class="self">self</span>.action = action.unwrap_or(<span class="self">self</span>.action);
+        <span class="self">self</span>.action_var = <span class="prelude-val">Some</span>(var_name.to_owned());
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Override the failure action</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">action</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">action</span>: <span class="ident">Action</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">action</span> = <span class="ident">action</span>;
-        <span class="self">self</span>.<span class="ident">action_var</span> = <span class="prelude-val">None</span>;
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Override the failure action
+    </span><span class="kw">pub fn </span>action(<span class="kw-2">mut </span><span class="self">self</span>, action: Action) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.action = action;
+        <span class="self">self</span>.action_var = <span class="prelude-val">None</span>;
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Override the default [`Substitutions`][crate::Substitutions]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">substitutions</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">substitutions</span>: <span class="ident"><span class="kw">crate</span>::Substitutions</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">substitutions</span> = <span class="ident">substitutions</span>;
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Override the default [`Substitutions`][crate::Substitutions]
+    </span><span class="kw">pub fn </span>substitutions(<span class="kw-2">mut </span><span class="self">self</span>, substitutions: <span class="kw">crate</span>::Substitutions) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.substitutions = substitutions;
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Specify whether the content should be treated as binary or not</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The default is to auto-detect</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">binary</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">data_format</span> = <span class="kw">if</span> <span class="ident">yes</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">DataFormat::Binary</span>)
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">DataFormat::Text</span>)
+    <span class="doccomment">/// Specify whether the content should be treated as binary or not
+    ///
+    /// The default is to auto-detect
+    </span><span class="kw">pub fn </span>binary(<span class="kw-2">mut </span><span class="self">self</span>, yes: bool) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.data_format = <span class="kw">if </span>yes {
+            <span class="prelude-val">Some</span>(DataFormat::Binary)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Some</span>(DataFormat::Text)
         };
-        <span class="self">self</span>
-    }
+        <span class="self">self
+    </span>}
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">data_format</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">DataFormat</span>&gt; {
-        <span class="self">self</span>.<span class="ident">data_format</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>data_format(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;DataFormat&gt; {
+        <span class="self">self</span>.data_format
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Assert</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">action</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">action_var</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">substitutions</span>: <span class="ident">Default::default</span>(),
-            <span class="ident">palette</span>: <span class="ident"><span class="kw">crate</span>::report::Palette::auto</span>(),
-            <span class="ident">data_format</span>: <span class="ident">Default::default</span>(),
+<span class="kw">impl </span>Default <span class="kw">for </span>Assert {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            action: Default::default(),
+            action_var: Default::default(),
+            substitutions: Default::default(),
+            palette: <span class="kw">crate</span>::report::Palette::auto(),
+            data_format: Default::default(),
         }
-        .<span class="ident">substitutions</span>(<span class="ident"><span class="kw">crate</span>::Substitutions::with_exe</span>())
+        .substitutions(<span class="kw">crate</span>::Substitutions::with_exe())
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

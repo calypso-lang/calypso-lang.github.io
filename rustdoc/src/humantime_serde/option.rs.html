@@ -44,51 +44,51 @@
 <span id="44">44</span>
 <span id="45">45</span>
 <span id="46">46</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Convenience module to allow serialization via `humantime_serde` for `Option`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Example</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! use serde::{Serialize, Deserialize};</span>
-<span class="doccomment">//! use std::time::{Duration, SystemTime};</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #[derive(Serialize, Deserialize)]</span>
-<span class="doccomment">//! struct Foo {</span>
-<span class="doccomment">//!     #[serde(with = &quot;humantime_serde::option&quot;)]</span>
-<span class="doccomment">//!     timeout: Option&lt;Duration&gt;,</span>
-<span class="doccomment">//!     #[serde(default)]</span>
-<span class="doccomment">//!     #[serde(with = &quot;humantime_serde::option&quot;)]</span>
-<span class="doccomment">//!     time: Option&lt;SystemTime&gt;,</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Convenience module to allow serialization via `humantime_serde` for `Option`
+//!
+//! # Example
+//!
+//! ```
+//! use serde::{Serialize, Deserialize};
+//! use std::time::{Duration, SystemTime};
+//!
+//! #[derive(Serialize, Deserialize)]
+//! struct Foo {
+//!     #[serde(with = &quot;humantime_serde::option&quot;)]
+//!     timeout: Option&lt;Duration&gt;,
+//!     #[serde(default)]
+//!     #[serde(with = &quot;humantime_serde::option&quot;)]
+//!     time: Option&lt;SystemTime&gt;,
+//! }
+//! ```
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::Serde</span>;
-<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Deserializer</span>, <span class="ident">Serialize</span>, <span class="ident">Serializer</span>};
+</span><span class="kw">use </span><span class="kw">super</span>::Serde;
+<span class="kw">use </span>serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-<span class="doccomment">/// Serializes an `Option&lt;Duration&gt;` or `Option&lt;SystemTime&gt;`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function can be used with `serde_derive`&#39;s `with` and</span>
-<span class="doccomment">/// `deserialize_with` annotations.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">serialize</span>&lt;<span class="ident">T</span>, <span class="ident">S</span>&gt;(<span class="ident">d</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt;, <span class="ident">s</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S::Ok</span>, <span class="ident">S::Error</span>&gt;
-<span class="kw">where</span>
-    <span class="kw">for</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Serde</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>&gt;: <span class="ident">Serialize</span>,
-    <span class="ident">S</span>: <span class="ident">Serializer</span>,
+<span class="doccomment">/// Serializes an `Option&lt;Duration&gt;` or `Option&lt;SystemTime&gt;`
+///
+/// This function can be used with `serde_derive`&#39;s `with` and
+/// `deserialize_with` annotations.
+</span><span class="kw">pub fn </span>serialize&lt;T, S&gt;(d: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;T&gt;, s: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+<span class="kw">where
+    for</span>&lt;<span class="lifetime">&#39;a</span>&gt; Serde&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>T&gt;: Serialize,
+    S: Serializer,
 {
-    <span class="kw">let</span> <span class="ident">nested</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">Serde</span>&lt;<span class="kw-2">&amp;</span><span class="ident">T</span>&gt;&gt; = <span class="ident">d</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="ident">Into::into</span>);
-    <span class="ident">nested</span>.<span class="ident">serialize</span>(<span class="ident">s</span>)
+    <span class="kw">let </span>nested: <span class="prelude-ty">Option</span>&lt;Serde&lt;<span class="kw-2">&amp;</span>T&gt;&gt; = d.as_ref().map(Into::into);
+    nested.serialize(s)
 }
 
-<span class="doccomment">/// Deserialize an `Option&lt;Duration&gt;` or `Option&lt;SystemTime&gt;`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This function can be used with `serde_derive`&#39;s `with` and</span>
-<span class="doccomment">/// `deserialize_with` annotations.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">deserialize</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>, <span class="ident">D</span>&gt;(<span class="ident">d</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">T</span>&gt;, <span class="ident">D::Error</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">Serde</span>&lt;<span class="ident">T</span>&gt;: <span class="ident">Deserialize</span>&lt;<span class="lifetime">&#39;a</span>&gt;,
-    <span class="ident">D</span>: <span class="ident">Deserializer</span>&lt;<span class="lifetime">&#39;a</span>&gt;,
+<span class="doccomment">/// Deserialize an `Option&lt;Duration&gt;` or `Option&lt;SystemTime&gt;`
+///
+/// This function can be used with `serde_derive`&#39;s `with` and
+/// `deserialize_with` annotations.
+</span><span class="kw">pub fn </span>deserialize&lt;<span class="lifetime">&#39;a</span>, T, D&gt;(d: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;T&gt;, D::Error&gt;
+<span class="kw">where
+    </span>Serde&lt;T&gt;: Deserialize&lt;<span class="lifetime">&#39;a</span>&gt;,
+    D: Deserializer&lt;<span class="lifetime">&#39;a</span>&gt;,
 {
-    <span class="kw">let</span> <span class="ident">got</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">Serde</span>&lt;<span class="ident">T</span>&gt;&gt; = <span class="ident">Deserialize::deserialize</span>(<span class="ident">d</span>)<span class="question-mark">?</span>;
-    <span class="prelude-val">Ok</span>(<span class="ident">got</span>.<span class="ident">map</span>(<span class="ident">Serde::into_inner</span>))
+    <span class="kw">let </span>got: <span class="prelude-ty">Option</span>&lt;Serde&lt;T&gt;&gt; = Deserialize::deserialize(d)<span class="question-mark">?</span>;
+    <span class="prelude-val">Ok</span>(got.map(Serde::into_inner))
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="humantime_serde" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="humantime_serde" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -8,32 +8,32 @@ macro.</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered"><code>
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">enum</span> <span class="ident">Expr</span> {
-    <span class="ident">Number</span>(<span class="ident">i64</span>),
-    <span class="ident">Pair</span>(<span class="ident">Box</span>&lt;<span class="ident">Expr</span>&gt;, <span class="ident">Box</span>&lt;<span class="ident">Expr</span>&gt;),
+<span class="attribute">#[derive(PartialEq, Debug)]
+</span><span class="kw">enum </span>Expr {
+    Number(i64),
+    Pair(Box&lt;Expr&gt;, Box&lt;Expr&gt;),
 }
 
-<span class="kw">fn</span> <span class="ident">expr</span>&lt;<span class="ident">Input</span>&gt;() -&gt; <span class="ident">FnOpaque</span>&lt;<span class="ident">Input</span>, <span class="ident">Expr</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">Input</span>: <span class="ident">Stream</span>&lt;<span class="ident">Token</span> = <span class="ident">char</span>&gt;,
-    <span class="ident">Input::Error</span>: <span class="ident">ParseError</span>&lt;<span class="ident">Input::Token</span>, <span class="ident">Input::Range</span>, <span class="ident">Input::Position</span>&gt;,
+<span class="kw">fn </span>expr&lt;Input&gt;() -&gt; FnOpaque&lt;Input, Expr&gt;
+<span class="kw">where
+    </span>Input: Stream&lt;Token = char&gt;,
+    Input::Error: ParseError&lt;Input::Token, Input::Range, Input::Position&gt;,
 {
     <span class="macro">opaque!</span>(
-        <span class="comment">// `no_partial` disables partial parsing and replaces the partial state with `()`,</span>
-        <span class="comment">// letting us avoid naming that type</span>
-        <span class="ident">no_partial</span>(<span class="ident">choice</span>((
-            <span class="ident">from_str</span>(<span class="ident">many1</span>::&lt;<span class="ident">String</span>, <span class="kw">_</span>, <span class="kw">_</span>&gt;(<span class="ident">digit</span>()))
-                .<span class="ident">map</span>(<span class="ident">Expr::Number</span>),
-            (<span class="ident">char</span>(<span class="string">&#39;(&#39;</span>), <span class="ident">expr</span>(), <span class="ident">char</span>(<span class="string">&#39;,&#39;</span>), <span class="ident">expr</span>(), <span class="ident">char</span>(<span class="string">&#39;)&#39;</span>))
-                .<span class="ident">map</span>(|(<span class="kw">_</span>, <span class="ident">l</span>, <span class="kw">_</span>, <span class="ident">r</span>, <span class="kw">_</span>)| <span class="ident">Expr::Pair</span>(<span class="ident">Box::new</span>(<span class="ident">l</span>), <span class="ident">Box::new</span>(<span class="ident">r</span>)))
+        <span class="comment">// `no_partial` disables partial parsing and replaces the partial state with `()`,
+        // letting us avoid naming that type
+        </span>no_partial(choice((
+            from_str(many1::&lt;String, <span class="kw">_</span>, <span class="kw">_</span>&gt;(digit()))
+                .map(Expr::Number),
+            (char(<span class="string">&#39;(&#39;</span>), expr(), char(<span class="string">&#39;,&#39;</span>), expr(), char(<span class="string">&#39;)&#39;</span>))
+                .map(|(<span class="kw">_</span>, l, <span class="kw">_</span>, r, <span class="kw">_</span>)| Expr::Pair(Box::new(l), Box::new(r)))
         ))),
     )
 }
 
 <span class="macro">assert_eq!</span>(
-    <span class="ident">expr</span>().<span class="ident">easy_parse</span>(<span class="string">&quot;123&quot;</span>),
-    <span class="prelude-val">Ok</span>((<span class="ident">Expr::Number</span>(<span class="number">123</span>), <span class="string">&quot;&quot;</span>))
+    expr().easy_parse(<span class="string">&quot;123&quot;</span>),
+    <span class="prelude-val">Ok</span>((Expr::Number(<span class="number">123</span>), <span class="string">&quot;&quot;</span>))
 );
 </code></pre></div>
-</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="combine" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</div></details></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="combine" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

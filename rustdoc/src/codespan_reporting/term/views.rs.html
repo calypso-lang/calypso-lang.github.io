@@ -476,478 +476,478 @@
 <span id="476">476</span>
 <span id="477">477</span>
 <span id="478">478</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::ops::Range</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>std::ops::Range;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::diagnostic</span>::{<span class="ident">Diagnostic</span>, <span class="ident">LabelStyle</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::files</span>::{<span class="ident">Error</span>, <span class="ident">Files</span>, <span class="ident">Location</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::term::renderer</span>::{<span class="ident">Locus</span>, <span class="ident">MultiLabel</span>, <span class="ident">Renderer</span>, <span class="ident">SingleLabel</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::term::Config</span>;
+<span class="kw">use </span><span class="kw">crate</span>::diagnostic::{Diagnostic, LabelStyle};
+<span class="kw">use </span><span class="kw">crate</span>::files::{Error, Files, Location};
+<span class="kw">use </span><span class="kw">crate</span>::term::renderer::{Locus, MultiLabel, Renderer, SingleLabel};
+<span class="kw">use </span><span class="kw">crate</span>::term::Config;
 
-<span class="doccomment">/// Count the number of decimal digits in `n`.</span>
-<span class="kw">fn</span> <span class="ident">count_digits</span>(<span class="kw-2">mut</span> <span class="ident">n</span>: <span class="ident">usize</span>) -&gt; <span class="ident">usize</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">count</span> = <span class="number">0</span>;
-    <span class="kw">while</span> <span class="ident">n</span> != <span class="number">0</span> {
-        <span class="ident">count</span> += <span class="number">1</span>;
-        <span class="ident">n</span> /= <span class="number">10</span>; <span class="comment">// remove last digit</span>
-    }
-    <span class="ident">count</span>
+<span class="doccomment">/// Count the number of decimal digits in `n`.
+</span><span class="kw">fn </span>count_digits(<span class="kw-2">mut </span>n: usize) -&gt; usize {
+    <span class="kw">let </span><span class="kw-2">mut </span>count = <span class="number">0</span>;
+    <span class="kw">while </span>n != <span class="number">0 </span>{
+        count += <span class="number">1</span>;
+        n /= <span class="number">10</span>; <span class="comment">// remove last digit
+    </span>}
+    count
 }
 
-<span class="doccomment">/// Output a richly formatted diagnostic, with source code previews.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RichDiagnostic</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="lifetime">&#39;config</span>, <span class="ident">FileId</span>&gt; {
-    <span class="ident">diagnostic</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;diagnostic</span> <span class="ident">Diagnostic</span>&lt;<span class="ident">FileId</span>&gt;,
-    <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>,
+<span class="doccomment">/// Output a richly formatted diagnostic, with source code previews.
+</span><span class="kw">pub struct </span>RichDiagnostic&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="lifetime">&#39;config</span>, FileId&gt; {
+    diagnostic: <span class="kw-2">&amp;</span><span class="lifetime">&#39;diagnostic </span>Diagnostic&lt;FileId&gt;,
+    config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config </span>Config,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="lifetime">&#39;config</span>, <span class="ident">FileId</span>&gt; <span class="ident">RichDiagnostic</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="lifetime">&#39;config</span>, <span class="ident">FileId</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">FileId</span>: <span class="ident">Copy</span> + <span class="ident">PartialEq</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="lifetime">&#39;config</span>, FileId&gt; RichDiagnostic&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="lifetime">&#39;config</span>, FileId&gt;
+<span class="kw">where
+    </span>FileId: Copy + PartialEq,
 {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">diagnostic</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;diagnostic</span> <span class="ident">Diagnostic</span>&lt;<span class="ident">FileId</span>&gt;,
-        <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config</span> <span class="ident">Config</span>,
-    ) -&gt; <span class="ident">RichDiagnostic</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="lifetime">&#39;config</span>, <span class="ident">FileId</span>&gt; {
-        <span class="ident">RichDiagnostic</span> { <span class="ident">diagnostic</span>, <span class="ident">config</span> }
+    <span class="kw">pub fn </span>new(
+        diagnostic: <span class="kw-2">&amp;</span><span class="lifetime">&#39;diagnostic </span>Diagnostic&lt;FileId&gt;,
+        config: <span class="kw-2">&amp;</span><span class="lifetime">&#39;config </span>Config,
+    ) -&gt; RichDiagnostic&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="lifetime">&#39;config</span>, FileId&gt; {
+        RichDiagnostic { diagnostic, config }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">render</span>&lt;<span class="lifetime">&#39;files</span>&gt;(
+    <span class="kw">pub fn </span>render&lt;<span class="lifetime">&#39;files</span>&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">files</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;files</span> <span class="kw">impl</span> <span class="ident">Files</span>&lt;<span class="lifetime">&#39;files</span>, <span class="ident">FileId</span> = <span class="ident">FileId</span>&gt;,
-        <span class="ident">renderer</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Renderer</span>&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">Error</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">FileId</span>: <span class="lifetime">&#39;files</span>,
+        files: <span class="kw-2">&amp;</span><span class="lifetime">&#39;files </span><span class="kw">impl </span>Files&lt;<span class="lifetime">&#39;files</span>, FileId = FileId&gt;,
+        renderer: <span class="kw-2">&amp;mut </span>Renderer&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;
+    <span class="kw">where
+        </span>FileId: <span class="lifetime">&#39;files</span>,
     {
-        <span class="kw">use</span> <span class="ident">std::collections::BTreeMap</span>;
+        <span class="kw">use </span>std::collections::BTreeMap;
 
-        <span class="kw">struct</span> <span class="ident">LabeledFile</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="ident">FileId</span>&gt; {
-            <span class="ident">file_id</span>: <span class="ident">FileId</span>,
-            <span class="ident">start</span>: <span class="ident">usize</span>,
-            <span class="ident">name</span>: <span class="ident">String</span>,
-            <span class="ident">location</span>: <span class="ident">Location</span>,
-            <span class="ident">num_multi_labels</span>: <span class="ident">usize</span>,
-            <span class="ident">lines</span>: <span class="ident">BTreeMap</span>&lt;<span class="ident">usize</span>, <span class="ident">Line</span>&lt;<span class="lifetime">&#39;diagnostic</span>&gt;&gt;,
-            <span class="ident">max_label_style</span>: <span class="ident">LabelStyle</span>,
+        <span class="kw">struct </span>LabeledFile&lt;<span class="lifetime">&#39;diagnostic</span>, FileId&gt; {
+            file_id: FileId,
+            start: usize,
+            name: String,
+            location: Location,
+            num_multi_labels: usize,
+            lines: BTreeMap&lt;usize, Line&lt;<span class="lifetime">&#39;diagnostic</span>&gt;&gt;,
+            max_label_style: LabelStyle,
         }
 
-        <span class="kw">impl</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="ident">FileId</span>&gt; <span class="ident">LabeledFile</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="ident">FileId</span>&gt; {
-            <span class="kw">fn</span> <span class="ident">get_or_insert_line</span>(
-                <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-                <span class="ident">line_index</span>: <span class="ident">usize</span>,
-                <span class="ident">line_range</span>: <span class="ident">Range</span>&lt;<span class="ident">usize</span>&gt;,
-                <span class="ident">line_number</span>: <span class="ident">usize</span>,
-            ) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Line</span>&lt;<span class="lifetime">&#39;diagnostic</span>&gt; {
-                <span class="self">self</span>.<span class="ident">lines</span>.<span class="ident">entry</span>(<span class="ident">line_index</span>).<span class="ident">or_insert_with</span>(|| <span class="ident">Line</span> {
-                    <span class="ident">range</span>: <span class="ident">line_range</span>,
-                    <span class="ident">number</span>: <span class="ident">line_number</span>,
-                    <span class="ident">single_labels</span>: <span class="macro">vec!</span>[],
-                    <span class="ident">multi_labels</span>: <span class="macro">vec!</span>[],
-                    <span class="comment">// This has to be false by default so we know if it must be rendered by another condition already.</span>
-                    <span class="ident">must_render</span>: <span class="bool-val">false</span>,
+        <span class="kw">impl</span>&lt;<span class="lifetime">&#39;diagnostic</span>, FileId&gt; LabeledFile&lt;<span class="lifetime">&#39;diagnostic</span>, FileId&gt; {
+            <span class="kw">fn </span>get_or_insert_line(
+                <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+                line_index: usize,
+                line_range: Range&lt;usize&gt;,
+                line_number: usize,
+            ) -&gt; <span class="kw-2">&amp;mut </span>Line&lt;<span class="lifetime">&#39;diagnostic</span>&gt; {
+                <span class="self">self</span>.lines.entry(line_index).or_insert_with(|| Line {
+                    range: line_range,
+                    number: line_number,
+                    single_labels: <span class="macro">vec!</span>[],
+                    multi_labels: <span class="macro">vec!</span>[],
+                    <span class="comment">// This has to be false by default so we know if it must be rendered by another condition already.
+                    </span>must_render: <span class="bool-val">false</span>,
                 })
             }
         }
 
-        <span class="kw">struct</span> <span class="ident">Line</span>&lt;<span class="lifetime">&#39;diagnostic</span>&gt; {
-            <span class="ident">number</span>: <span class="ident">usize</span>,
-            <span class="ident">range</span>: <span class="ident">std::ops::Range</span>&lt;<span class="ident">usize</span>&gt;,
-            <span class="comment">// TODO: How do we reuse these allocations?</span>
-            <span class="ident">single_labels</span>: <span class="ident">Vec</span>&lt;<span class="ident">SingleLabel</span>&lt;<span class="lifetime">&#39;diagnostic</span>&gt;&gt;,
-            <span class="ident">multi_labels</span>: <span class="ident">Vec</span>&lt;(<span class="ident">usize</span>, <span class="ident">LabelStyle</span>, <span class="ident">MultiLabel</span>&lt;<span class="lifetime">&#39;diagnostic</span>&gt;)&gt;,
-            <span class="ident">must_render</span>: <span class="ident">bool</span>,
+        <span class="kw">struct </span>Line&lt;<span class="lifetime">&#39;diagnostic</span>&gt; {
+            number: usize,
+            range: std::ops::Range&lt;usize&gt;,
+            <span class="comment">// TODO: How do we reuse these allocations?
+            </span>single_labels: Vec&lt;SingleLabel&lt;<span class="lifetime">&#39;diagnostic</span>&gt;&gt;,
+            multi_labels: Vec&lt;(usize, LabelStyle, MultiLabel&lt;<span class="lifetime">&#39;diagnostic</span>&gt;)&gt;,
+            must_render: bool,
         }
 
-        <span class="comment">// TODO: Make this data structure external, to allow for allocation reuse</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">labeled_files</span> = <span class="ident">Vec</span>::&lt;<span class="ident">LabeledFile</span>&lt;<span class="lifetime">&#39;_</span>, <span class="kw">_</span>&gt;&gt;<span class="ident">::new</span>();
-        <span class="comment">// Keep track of the outer padding to use when rendering the</span>
-        <span class="comment">// snippets of source code.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">outer_padding</span> = <span class="number">0</span>;
+        <span class="comment">// TODO: Make this data structure external, to allow for allocation reuse
+        </span><span class="kw">let </span><span class="kw-2">mut </span>labeled_files = Vec::&lt;LabeledFile&lt;<span class="lifetime">&#39;_</span>, <span class="kw">_</span>&gt;&gt;::new();
+        <span class="comment">// Keep track of the outer padding to use when rendering the
+        // snippets of source code.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>outer_padding = <span class="number">0</span>;
 
-        <span class="comment">// Group labels by file</span>
-        <span class="kw">for</span> <span class="ident">label</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">labels</span> {
-            <span class="kw">let</span> <span class="ident">start_line_index</span> = <span class="ident">files</span>.<span class="ident">line_index</span>(<span class="ident">label</span>.<span class="ident">file_id</span>, <span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">start</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">start_line_number</span> = <span class="ident">files</span>.<span class="ident">line_number</span>(<span class="ident">label</span>.<span class="ident">file_id</span>, <span class="ident">start_line_index</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">start_line_range</span> = <span class="ident">files</span>.<span class="ident">line_range</span>(<span class="ident">label</span>.<span class="ident">file_id</span>, <span class="ident">start_line_index</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">end_line_index</span> = <span class="ident">files</span>.<span class="ident">line_index</span>(<span class="ident">label</span>.<span class="ident">file_id</span>, <span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">end</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">end_line_number</span> = <span class="ident">files</span>.<span class="ident">line_number</span>(<span class="ident">label</span>.<span class="ident">file_id</span>, <span class="ident">end_line_index</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">end_line_range</span> = <span class="ident">files</span>.<span class="ident">line_range</span>(<span class="ident">label</span>.<span class="ident">file_id</span>, <span class="ident">end_line_index</span>)<span class="question-mark">?</span>;
+        <span class="comment">// Group labels by file
+        </span><span class="kw">for </span>label <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.diagnostic.labels {
+            <span class="kw">let </span>start_line_index = files.line_index(label.file_id, label.range.start)<span class="question-mark">?</span>;
+            <span class="kw">let </span>start_line_number = files.line_number(label.file_id, start_line_index)<span class="question-mark">?</span>;
+            <span class="kw">let </span>start_line_range = files.line_range(label.file_id, start_line_index)<span class="question-mark">?</span>;
+            <span class="kw">let </span>end_line_index = files.line_index(label.file_id, label.range.end)<span class="question-mark">?</span>;
+            <span class="kw">let </span>end_line_number = files.line_number(label.file_id, end_line_index)<span class="question-mark">?</span>;
+            <span class="kw">let </span>end_line_range = files.line_range(label.file_id, end_line_index)<span class="question-mark">?</span>;
 
-            <span class="ident">outer_padding</span> = <span class="ident">std::cmp::max</span>(<span class="ident">outer_padding</span>, <span class="ident">count_digits</span>(<span class="ident">start_line_number</span>));
-            <span class="ident">outer_padding</span> = <span class="ident">std::cmp::max</span>(<span class="ident">outer_padding</span>, <span class="ident">count_digits</span>(<span class="ident">end_line_number</span>));
+            outer_padding = std::cmp::max(outer_padding, count_digits(start_line_number));
+            outer_padding = std::cmp::max(outer_padding, count_digits(end_line_number));
 
-            <span class="comment">// NOTE: This could be made more efficient by using an associative</span>
-            <span class="comment">// data structure like a hashmap or B-tree,  but we use a vector to</span>
-            <span class="comment">// preserve the order that unique files appear in the list of labels.</span>
-            <span class="kw">let</span> <span class="ident">labeled_file</span> = <span class="kw">match</span> <span class="ident">labeled_files</span>
-                .<span class="ident">iter_mut</span>()
-                .<span class="ident">find</span>(|<span class="ident">labeled_file</span>| <span class="ident">label</span>.<span class="ident">file_id</span> == <span class="ident">labeled_file</span>.<span class="ident">file_id</span>)
+            <span class="comment">// NOTE: This could be made more efficient by using an associative
+            // data structure like a hashmap or B-tree,  but we use a vector to
+            // preserve the order that unique files appear in the list of labels.
+            </span><span class="kw">let </span>labeled_file = <span class="kw">match </span>labeled_files
+                .iter_mut()
+                .find(|labeled_file| label.file_id == labeled_file.file_id)
             {
-                <span class="prelude-val">Some</span>(<span class="ident">labeled_file</span>) =&gt; {
-                    <span class="comment">// another diagnostic also referenced this file</span>
-                    <span class="kw">if</span> <span class="ident">labeled_file</span>.<span class="ident">max_label_style</span> &gt; <span class="ident">label</span>.<span class="ident">style</span>
-                        || (<span class="ident">labeled_file</span>.<span class="ident">max_label_style</span> == <span class="ident">label</span>.<span class="ident">style</span>
-                            &amp;&amp; <span class="ident">labeled_file</span>.<span class="ident">start</span> &gt; <span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">start</span>)
+                <span class="prelude-val">Some</span>(labeled_file) =&gt; {
+                    <span class="comment">// another diagnostic also referenced this file
+                    </span><span class="kw">if </span>labeled_file.max_label_style &gt; label.style
+                        || (labeled_file.max_label_style == label.style
+                            &amp;&amp; labeled_file.start &gt; label.range.start)
                     {
-                        <span class="comment">// this label has a higher style or has the same style but starts earlier</span>
-                        <span class="ident">labeled_file</span>.<span class="ident">start</span> = <span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">start</span>;
-                        <span class="ident">labeled_file</span>.<span class="ident">location</span> = <span class="ident">files</span>.<span class="ident">location</span>(<span class="ident">label</span>.<span class="ident">file_id</span>, <span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">start</span>)<span class="question-mark">?</span>;
-                        <span class="ident">labeled_file</span>.<span class="ident">max_label_style</span> = <span class="ident">label</span>.<span class="ident">style</span>;
+                        <span class="comment">// this label has a higher style or has the same style but starts earlier
+                        </span>labeled_file.start = label.range.start;
+                        labeled_file.location = files.location(label.file_id, label.range.start)<span class="question-mark">?</span>;
+                        labeled_file.max_label_style = label.style;
                     }
-                    <span class="ident">labeled_file</span>
+                    labeled_file
                 }
-                <span class="prelude-val">None</span> =&gt; {
-                    <span class="comment">// no other diagnostic referenced this file yet</span>
-                    <span class="ident">labeled_files</span>.<span class="ident">push</span>(<span class="ident">LabeledFile</span> {
-                        <span class="ident">file_id</span>: <span class="ident">label</span>.<span class="ident">file_id</span>,
-                        <span class="ident">start</span>: <span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">start</span>,
-                        <span class="ident">name</span>: <span class="ident">files</span>.<span class="ident">name</span>(<span class="ident">label</span>.<span class="ident">file_id</span>)<span class="question-mark">?</span>.<span class="ident">to_string</span>(),
-                        <span class="ident">location</span>: <span class="ident">files</span>.<span class="ident">location</span>(<span class="ident">label</span>.<span class="ident">file_id</span>, <span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">start</span>)<span class="question-mark">?</span>,
-                        <span class="ident">num_multi_labels</span>: <span class="number">0</span>,
-                        <span class="ident">lines</span>: <span class="ident">BTreeMap::new</span>(),
-                        <span class="ident">max_label_style</span>: <span class="ident">label</span>.<span class="ident">style</span>,
+                <span class="prelude-val">None </span>=&gt; {
+                    <span class="comment">// no other diagnostic referenced this file yet
+                    </span>labeled_files.push(LabeledFile {
+                        file_id: label.file_id,
+                        start: label.range.start,
+                        name: files.name(label.file_id)<span class="question-mark">?</span>.to_string(),
+                        location: files.location(label.file_id, label.range.start)<span class="question-mark">?</span>,
+                        num_multi_labels: <span class="number">0</span>,
+                        lines: BTreeMap::new(),
+                        max_label_style: label.style,
                     });
-                    <span class="comment">// this unwrap should never fail because we just pushed an element</span>
-                    <span class="ident">labeled_files</span>
-                        .<span class="ident">last_mut</span>()
-                        .<span class="ident">expect</span>(<span class="string">&quot;just pushed an element that disappeared&quot;</span>)
+                    <span class="comment">// this unwrap should never fail because we just pushed an element
+                    </span>labeled_files
+                        .last_mut()
+                        .expect(<span class="string">&quot;just pushed an element that disappeared&quot;</span>)
                 }
             };
 
-            <span class="kw">if</span> <span class="ident">start_line_index</span> == <span class="ident">end_line_index</span> {
-                <span class="comment">// Single line</span>
-                <span class="comment">//</span>
-                <span class="comment">// ```text</span>
-                <span class="comment">// 2 │ (+ test &quot;&quot;)</span>
-                <span class="comment">//   │         ^^ expected `Int` but found `String`</span>
-                <span class="comment">// ```</span>
-                <span class="kw">let</span> <span class="ident">label_start</span> = <span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">start</span> - <span class="ident">start_line_range</span>.<span class="ident">start</span>;
-                <span class="comment">// Ensure that we print at least one caret, even when we</span>
-                <span class="comment">// have a zero-length source range.</span>
-                <span class="kw">let</span> <span class="ident">label_end</span> =
-                    <span class="ident">usize::max</span>(<span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">end</span> - <span class="ident">start_line_range</span>.<span class="ident">start</span>, <span class="ident">label_start</span> + <span class="number">1</span>);
+            <span class="kw">if </span>start_line_index == end_line_index {
+                <span class="comment">// Single line
+                //
+                // ```text
+                // 2 │ (+ test &quot;&quot;)
+                //   │         ^^ expected `Int` but found `String`
+                // ```
+                </span><span class="kw">let </span>label_start = label.range.start - start_line_range.start;
+                <span class="comment">// Ensure that we print at least one caret, even when we
+                // have a zero-length source range.
+                </span><span class="kw">let </span>label_end =
+                    usize::max(label.range.end - start_line_range.start, label_start + <span class="number">1</span>);
 
-                <span class="kw">let</span> <span class="ident">line</span> = <span class="ident">labeled_file</span>.<span class="ident">get_or_insert_line</span>(
-                    <span class="ident">start_line_index</span>,
-                    <span class="ident">start_line_range</span>,
-                    <span class="ident">start_line_number</span>,
+                <span class="kw">let </span>line = labeled_file.get_or_insert_line(
+                    start_line_index,
+                    start_line_range,
+                    start_line_number,
                 );
 
-                <span class="comment">// Ensure that the single line labels are lexicographically</span>
-                <span class="comment">// sorted by the range of source code that they cover.</span>
-                <span class="kw">let</span> <span class="ident">index</span> = <span class="kw">match</span> <span class="ident">line</span>.<span class="ident">single_labels</span>.<span class="ident">binary_search_by</span>(|(<span class="kw">_</span>, <span class="ident">range</span>, <span class="kw">_</span>)| {
-                    <span class="comment">// `Range&lt;usize&gt;` doesn&#39;t implement `Ord`, so convert to `(usize, usize)`</span>
-                    <span class="comment">// to piggyback off its lexicographic comparison implementation.</span>
-                    (<span class="ident">range</span>.<span class="ident">start</span>, <span class="ident">range</span>.<span class="ident">end</span>).<span class="ident">cmp</span>(<span class="kw-2">&amp;</span>(<span class="ident">label_start</span>, <span class="ident">label_end</span>))
+                <span class="comment">// Ensure that the single line labels are lexicographically
+                // sorted by the range of source code that they cover.
+                </span><span class="kw">let </span>index = <span class="kw">match </span>line.single_labels.binary_search_by(|(<span class="kw">_</span>, range, <span class="kw">_</span>)| {
+                    <span class="comment">// `Range&lt;usize&gt;` doesn&#39;t implement `Ord`, so convert to `(usize, usize)`
+                    // to piggyback off its lexicographic comparison implementation.
+                    </span>(range.start, range.end).cmp(<span class="kw-2">&amp;</span>(label_start, label_end))
                 }) {
-                    <span class="comment">// If the ranges are the same, order the labels in reverse</span>
-                    <span class="comment">// to how they were originally specified in the diagnostic.</span>
-                    <span class="comment">// This helps with printing in the renderer.</span>
-                    <span class="prelude-val">Ok</span>(<span class="ident">index</span>) | <span class="prelude-val">Err</span>(<span class="ident">index</span>) =&gt; <span class="ident">index</span>,
+                    <span class="comment">// If the ranges are the same, order the labels in reverse
+                    // to how they were originally specified in the diagnostic.
+                    // This helps with printing in the renderer.
+                    </span><span class="prelude-val">Ok</span>(index) | <span class="prelude-val">Err</span>(index) =&gt; index,
                 };
 
-                <span class="ident">line</span>.<span class="ident">single_labels</span>
-                    .<span class="ident">insert</span>(<span class="ident">index</span>, (<span class="ident">label</span>.<span class="ident">style</span>, <span class="ident">label_start</span>..<span class="ident">label_end</span>, <span class="kw-2">&amp;</span><span class="ident">label</span>.<span class="ident">message</span>));
+                line.single_labels
+                    .insert(index, (label.style, label_start..label_end, <span class="kw-2">&amp;</span>label.message));
 
-                <span class="comment">// If this line is not rendered, the SingleLabel is not visible.</span>
-                <span class="ident">line</span>.<span class="ident">must_render</span> = <span class="bool-val">true</span>;
-            } <span class="kw">else</span> {
-                <span class="comment">// Multiple lines</span>
-                <span class="comment">//</span>
-                <span class="comment">// ```text</span>
-                <span class="comment">// 4 │   fizz₁ num = case (mod num 5) (mod num 3) of</span>
-                <span class="comment">//   │ ╭─────────────^</span>
-                <span class="comment">// 5 │ │     0 0 =&gt; &quot;FizzBuzz&quot;</span>
-                <span class="comment">// 6 │ │     0 _ =&gt; &quot;Fizz&quot;</span>
-                <span class="comment">// 7 │ │     _ 0 =&gt; &quot;Buzz&quot;</span>
-                <span class="comment">// 8 │ │     _ _ =&gt; num</span>
-                <span class="comment">//   │ ╰──────────────^ `case` clauses have incompatible types</span>
-                <span class="comment">// ```</span>
+                <span class="comment">// If this line is not rendered, the SingleLabel is not visible.
+                </span>line.must_render = <span class="bool-val">true</span>;
+            } <span class="kw">else </span>{
+                <span class="comment">// Multiple lines
+                //
+                // ```text
+                // 4 │   fizz₁ num = case (mod num 5) (mod num 3) of
+                //   │ ╭─────────────^
+                // 5 │ │     0 0 =&gt; &quot;FizzBuzz&quot;
+                // 6 │ │     0 _ =&gt; &quot;Fizz&quot;
+                // 7 │ │     _ 0 =&gt; &quot;Buzz&quot;
+                // 8 │ │     _ _ =&gt; num
+                //   │ ╰──────────────^ `case` clauses have incompatible types
+                // ```
 
-                <span class="kw">let</span> <span class="ident">label_index</span> = <span class="ident">labeled_file</span>.<span class="ident">num_multi_labels</span>;
-                <span class="ident">labeled_file</span>.<span class="ident">num_multi_labels</span> += <span class="number">1</span>;
+                </span><span class="kw">let </span>label_index = labeled_file.num_multi_labels;
+                labeled_file.num_multi_labels += <span class="number">1</span>;
 
-                <span class="comment">// First labeled line</span>
-                <span class="kw">let</span> <span class="ident">label_start</span> = <span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">start</span> - <span class="ident">start_line_range</span>.<span class="ident">start</span>;
+                <span class="comment">// First labeled line
+                </span><span class="kw">let </span>label_start = label.range.start - start_line_range.start;
 
-                <span class="kw">let</span> <span class="ident">start_line</span> = <span class="ident">labeled_file</span>.<span class="ident">get_or_insert_line</span>(
-                    <span class="ident">start_line_index</span>,
-                    <span class="ident">start_line_range</span>.<span class="ident">clone</span>(),
-                    <span class="ident">start_line_number</span>,
+                <span class="kw">let </span>start_line = labeled_file.get_or_insert_line(
+                    start_line_index,
+                    start_line_range.clone(),
+                    start_line_number,
                 );
 
-                <span class="ident">start_line</span>.<span class="ident">multi_labels</span>.<span class="ident">push</span>((
-                    <span class="ident">label_index</span>,
-                    <span class="ident">label</span>.<span class="ident">style</span>,
-                    <span class="ident">MultiLabel::Top</span>(<span class="ident">label_start</span>),
+                start_line.multi_labels.push((
+                    label_index,
+                    label.style,
+                    MultiLabel::Top(label_start),
                 ));
 
-                <span class="comment">// The first line has to be rendered so the start of the label is visible.</span>
-                <span class="ident">start_line</span>.<span class="ident">must_render</span> = <span class="bool-val">true</span>;
+                <span class="comment">// The first line has to be rendered so the start of the label is visible.
+                </span>start_line.must_render = <span class="bool-val">true</span>;
 
-                <span class="comment">// Marked lines</span>
-                <span class="comment">//</span>
-                <span class="comment">// ```text</span>
-                <span class="comment">// 5 │ │     0 0 =&gt; &quot;FizzBuzz&quot;</span>
-                <span class="comment">// 6 │ │     0 _ =&gt; &quot;Fizz&quot;</span>
-                <span class="comment">// 7 │ │     _ 0 =&gt; &quot;Buzz&quot;</span>
-                <span class="comment">// ```</span>
-                <span class="kw">for</span> <span class="ident">line_index</span> <span class="kw">in</span> (<span class="ident">start_line_index</span> + <span class="number">1</span>)..<span class="ident">end_line_index</span> {
-                    <span class="kw">let</span> <span class="ident">line_range</span> = <span class="ident">files</span>.<span class="ident">line_range</span>(<span class="ident">label</span>.<span class="ident">file_id</span>, <span class="ident">line_index</span>)<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">line_number</span> = <span class="ident">files</span>.<span class="ident">line_number</span>(<span class="ident">label</span>.<span class="ident">file_id</span>, <span class="ident">line_index</span>)<span class="question-mark">?</span>;
+                <span class="comment">// Marked lines
+                //
+                // ```text
+                // 5 │ │     0 0 =&gt; &quot;FizzBuzz&quot;
+                // 6 │ │     0 _ =&gt; &quot;Fizz&quot;
+                // 7 │ │     _ 0 =&gt; &quot;Buzz&quot;
+                // ```
+                </span><span class="kw">for </span>line_index <span class="kw">in </span>(start_line_index + <span class="number">1</span>)..end_line_index {
+                    <span class="kw">let </span>line_range = files.line_range(label.file_id, line_index)<span class="question-mark">?</span>;
+                    <span class="kw">let </span>line_number = files.line_number(label.file_id, line_index)<span class="question-mark">?</span>;
 
-                    <span class="ident">outer_padding</span> = <span class="ident">std::cmp::max</span>(<span class="ident">outer_padding</span>, <span class="ident">count_digits</span>(<span class="ident">line_number</span>));
+                    outer_padding = std::cmp::max(outer_padding, count_digits(line_number));
 
-                    <span class="kw">let</span> <span class="ident">line</span> = <span class="ident">labeled_file</span>.<span class="ident">get_or_insert_line</span>(<span class="ident">line_index</span>, <span class="ident">line_range</span>, <span class="ident">line_number</span>);
+                    <span class="kw">let </span>line = labeled_file.get_or_insert_line(line_index, line_range, line_number);
 
-                    <span class="ident">line</span>.<span class="ident">multi_labels</span>
-                        .<span class="ident">push</span>((<span class="ident">label_index</span>, <span class="ident">label</span>.<span class="ident">style</span>, <span class="ident">MultiLabel::Left</span>));
+                    line.multi_labels
+                        .push((label_index, label.style, MultiLabel::Left));
 
-                    <span class="comment">// The line should be rendered to match the configuration of how much context to show.</span>
-                    <span class="ident">line</span>.<span class="ident">must_render</span> |=
-                        <span class="comment">// Is this line part of the context after the start of the label?</span>
-                        <span class="ident">line_index</span> - <span class="ident">start_line_index</span> &lt;= <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">start_context_lines</span>
+                    <span class="comment">// The line should be rendered to match the configuration of how much context to show.
+                    </span>line.must_render |=
+                        <span class="comment">// Is this line part of the context after the start of the label?
+                        </span>line_index - start_line_index &lt;= <span class="self">self</span>.config.start_context_lines
                         ||
-                        <span class="comment">// Is this line part of the context before the end of the label?</span>
-                        <span class="ident">end_line_index</span> - <span class="ident">line_index</span> &lt;= <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">end_context_lines</span>;
+                        <span class="comment">// Is this line part of the context before the end of the label?
+                        </span>end_line_index - line_index &lt;= <span class="self">self</span>.config.end_context_lines;
                 }
 
-                <span class="comment">// Last labeled line</span>
-                <span class="comment">//</span>
-                <span class="comment">// ```text</span>
-                <span class="comment">// 8 │ │     _ _ =&gt; num</span>
-                <span class="comment">//   │ ╰──────────────^ `case` clauses have incompatible types</span>
-                <span class="comment">// ```</span>
-                <span class="kw">let</span> <span class="ident">label_end</span> = <span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">end</span> - <span class="ident">end_line_range</span>.<span class="ident">start</span>;
+                <span class="comment">// Last labeled line
+                //
+                // ```text
+                // 8 │ │     _ _ =&gt; num
+                //   │ ╰──────────────^ `case` clauses have incompatible types
+                // ```
+                </span><span class="kw">let </span>label_end = label.range.end - end_line_range.start;
 
-                <span class="kw">let</span> <span class="ident">end_line</span> = <span class="ident">labeled_file</span>.<span class="ident">get_or_insert_line</span>(
-                    <span class="ident">end_line_index</span>,
-                    <span class="ident">end_line_range</span>,
-                    <span class="ident">end_line_number</span>,
+                <span class="kw">let </span>end_line = labeled_file.get_or_insert_line(
+                    end_line_index,
+                    end_line_range,
+                    end_line_number,
                 );
 
-                <span class="ident">end_line</span>.<span class="ident">multi_labels</span>.<span class="ident">push</span>((
-                    <span class="ident">label_index</span>,
-                    <span class="ident">label</span>.<span class="ident">style</span>,
-                    <span class="ident">MultiLabel::Bottom</span>(<span class="ident">label_end</span>, <span class="kw-2">&amp;</span><span class="ident">label</span>.<span class="ident">message</span>),
+                end_line.multi_labels.push((
+                    label_index,
+                    label.style,
+                    MultiLabel::Bottom(label_end, <span class="kw-2">&amp;</span>label.message),
                 ));
 
-                <span class="comment">// The last line has to be rendered so the end of the label is visible.</span>
-                <span class="ident">end_line</span>.<span class="ident">must_render</span> = <span class="bool-val">true</span>;
+                <span class="comment">// The last line has to be rendered so the end of the label is visible.
+                </span>end_line.must_render = <span class="bool-val">true</span>;
             }
         }
 
-        <span class="comment">// Header and message</span>
-        <span class="comment">//</span>
-        <span class="comment">// ```text</span>
-        <span class="comment">// error[E0001]: unexpected type in `+` application</span>
-        <span class="comment">// ```</span>
-        <span class="ident">renderer</span>.<span class="ident">render_header</span>(
+        <span class="comment">// Header and message
+        //
+        // ```text
+        // error[E0001]: unexpected type in `+` application
+        // ```
+        </span>renderer.render_header(
             <span class="prelude-val">None</span>,
-            <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">severity</span>,
-            <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">code</span>.<span class="ident">as_deref</span>(),
-            <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">message</span>.<span class="ident">as_str</span>(),
+            <span class="self">self</span>.diagnostic.severity,
+            <span class="self">self</span>.diagnostic.code.as_deref(),
+            <span class="self">self</span>.diagnostic.message.as_str(),
         )<span class="question-mark">?</span>;
 
-        <span class="comment">// Source snippets</span>
-        <span class="comment">//</span>
-        <span class="comment">// ```text</span>
-        <span class="comment">//   ┌─ test:2:9</span>
-        <span class="comment">//   │</span>
-        <span class="comment">// 2 │ (+ test &quot;&quot;)</span>
-        <span class="comment">//   │         ^^ expected `Int` but found `String`</span>
-        <span class="comment">//   │</span>
-        <span class="comment">// ```</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">labeled_files</span> = <span class="ident">labeled_files</span>.<span class="ident">into_iter</span>().<span class="ident">peekable</span>();
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">labeled_file</span>) = <span class="ident">labeled_files</span>.<span class="ident">next</span>() {
-            <span class="kw">let</span> <span class="ident">source</span> = <span class="ident">files</span>.<span class="ident">source</span>(<span class="ident">labeled_file</span>.<span class="ident">file_id</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">source</span> = <span class="ident">source</span>.<span class="ident">as_ref</span>();
+        <span class="comment">// Source snippets
+        //
+        // ```text
+        //   ┌─ test:2:9
+        //   │
+        // 2 │ (+ test &quot;&quot;)
+        //   │         ^^ expected `Int` but found `String`
+        //   │
+        // ```
+        </span><span class="kw">let </span><span class="kw-2">mut </span>labeled_files = labeled_files.into_iter().peekable();
+        <span class="kw">while let </span><span class="prelude-val">Some</span>(labeled_file) = labeled_files.next() {
+            <span class="kw">let </span>source = files.source(labeled_file.file_id)<span class="question-mark">?</span>;
+            <span class="kw">let </span>source = source.as_ref();
 
-            <span class="comment">// Top left border and locus.</span>
-            <span class="comment">//</span>
-            <span class="comment">// ```text</span>
-            <span class="comment">// ┌─ test:2:9</span>
-            <span class="comment">// ```</span>
-            <span class="kw">if</span> !<span class="ident">labeled_file</span>.<span class="ident">lines</span>.<span class="ident">is_empty</span>() {
-                <span class="ident">renderer</span>.<span class="ident">render_snippet_start</span>(
-                    <span class="ident">outer_padding</span>,
-                    <span class="kw-2">&amp;</span><span class="ident">Locus</span> {
-                        <span class="ident">name</span>: <span class="ident">labeled_file</span>.<span class="ident">name</span>,
-                        <span class="ident">location</span>: <span class="ident">labeled_file</span>.<span class="ident">location</span>,
+            <span class="comment">// Top left border and locus.
+            //
+            // ```text
+            // ┌─ test:2:9
+            // ```
+            </span><span class="kw">if </span>!labeled_file.lines.is_empty() {
+                renderer.render_snippet_start(
+                    outer_padding,
+                    <span class="kw-2">&amp;</span>Locus {
+                        name: labeled_file.name,
+                        location: labeled_file.location,
                     },
                 )<span class="question-mark">?</span>;
-                <span class="ident">renderer</span>.<span class="ident">render_snippet_empty</span>(
-                    <span class="ident">outer_padding</span>,
-                    <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">severity</span>,
-                    <span class="ident">labeled_file</span>.<span class="ident">num_multi_labels</span>,
+                renderer.render_snippet_empty(
+                    outer_padding,
+                    <span class="self">self</span>.diagnostic.severity,
+                    labeled_file.num_multi_labels,
                     <span class="kw-2">&amp;</span>[],
                 )<span class="question-mark">?</span>;
             }
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lines</span> = <span class="ident">labeled_file</span>
-                .<span class="ident">lines</span>
-                .<span class="ident">iter</span>()
-                .<span class="ident">filter</span>(|(<span class="kw">_</span>, <span class="ident">line</span>)| <span class="ident">line</span>.<span class="ident">must_render</span>)
-                .<span class="ident">peekable</span>();
+            <span class="kw">let </span><span class="kw-2">mut </span>lines = labeled_file
+                .lines
+                .iter()
+                .filter(|(<span class="kw">_</span>, line)| line.must_render)
+                .peekable();
 
-            <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">line_index</span>, <span class="ident">line</span>)) = <span class="ident">lines</span>.<span class="ident">next</span>() {
-                <span class="ident">renderer</span>.<span class="ident">render_snippet_source</span>(
-                    <span class="ident">outer_padding</span>,
-                    <span class="ident">line</span>.<span class="ident">number</span>,
-                    <span class="kw-2">&amp;</span><span class="ident">source</span>[<span class="ident">line</span>.<span class="ident">range</span>.<span class="ident">clone</span>()],
-                    <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">severity</span>,
-                    <span class="kw-2">&amp;</span><span class="ident">line</span>.<span class="ident">single_labels</span>,
-                    <span class="ident">labeled_file</span>.<span class="ident">num_multi_labels</span>,
-                    <span class="kw-2">&amp;</span><span class="ident">line</span>.<span class="ident">multi_labels</span>,
+            <span class="kw">while let </span><span class="prelude-val">Some</span>((line_index, line)) = lines.next() {
+                renderer.render_snippet_source(
+                    outer_padding,
+                    line.number,
+                    <span class="kw-2">&amp;</span>source[line.range.clone()],
+                    <span class="self">self</span>.diagnostic.severity,
+                    <span class="kw-2">&amp;</span>line.single_labels,
+                    labeled_file.num_multi_labels,
+                    <span class="kw-2">&amp;</span>line.multi_labels,
                 )<span class="question-mark">?</span>;
 
-                <span class="comment">// Check to see if we need to render any intermediate stuff</span>
-                <span class="comment">// before rendering the next line.</span>
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">next_line_index</span>, <span class="kw">_</span>)) = <span class="ident">lines</span>.<span class="ident">peek</span>() {
-                    <span class="kw">match</span> <span class="ident">next_line_index</span>.<span class="ident">checked_sub</span>(<span class="kw-2">*</span><span class="ident">line_index</span>) {
-                        <span class="comment">// Consecutive lines</span>
-                        <span class="prelude-val">Some</span>(<span class="number">1</span>) =&gt; {}
-                        <span class="comment">// One line between the current line and the next line</span>
-                        <span class="prelude-val">Some</span>(<span class="number">2</span>) =&gt; {
-                            <span class="comment">// Write a source line</span>
-                            <span class="kw">let</span> <span class="ident">file_id</span> = <span class="ident">labeled_file</span>.<span class="ident">file_id</span>;
+                <span class="comment">// Check to see if we need to render any intermediate stuff
+                // before rendering the next line.
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>((next_line_index, <span class="kw">_</span>)) = lines.peek() {
+                    <span class="kw">match </span>next_line_index.checked_sub(<span class="kw-2">*</span>line_index) {
+                        <span class="comment">// Consecutive lines
+                        </span><span class="prelude-val">Some</span>(<span class="number">1</span>) =&gt; {}
+                        <span class="comment">// One line between the current line and the next line
+                        </span><span class="prelude-val">Some</span>(<span class="number">2</span>) =&gt; {
+                            <span class="comment">// Write a source line
+                            </span><span class="kw">let </span>file_id = labeled_file.file_id;
 
-                            <span class="comment">// This line was not intended to be rendered initially.</span>
-                            <span class="comment">// To render the line right, we have to get back the original labels.</span>
-                            <span class="kw">let</span> <span class="ident">labels</span> = <span class="ident">labeled_file</span>
-                                .<span class="ident">lines</span>
-                                .<span class="ident">get</span>(<span class="kw-2">&amp;</span>(<span class="ident">line_index</span> + <span class="number">1</span>))
-                                .<span class="ident">map_or</span>(<span class="kw-2">&amp;</span>[][..], |<span class="ident">line</span>| <span class="kw-2">&amp;</span><span class="ident">line</span>.<span class="ident">multi_labels</span>[..]);
+                            <span class="comment">// This line was not intended to be rendered initially.
+                            // To render the line right, we have to get back the original labels.
+                            </span><span class="kw">let </span>labels = labeled_file
+                                .lines
+                                .get(<span class="kw-2">&amp;</span>(line_index + <span class="number">1</span>))
+                                .map_or(<span class="kw-2">&amp;</span>[][..], |line| <span class="kw-2">&amp;</span>line.multi_labels[..]);
 
-                            <span class="ident">renderer</span>.<span class="ident">render_snippet_source</span>(
-                                <span class="ident">outer_padding</span>,
-                                <span class="ident">files</span>.<span class="ident">line_number</span>(<span class="ident">file_id</span>, <span class="ident">line_index</span> + <span class="number">1</span>)<span class="question-mark">?</span>,
-                                <span class="kw-2">&amp;</span><span class="ident">source</span>[<span class="ident">files</span>.<span class="ident">line_range</span>(<span class="ident">file_id</span>, <span class="ident">line_index</span> + <span class="number">1</span>)<span class="question-mark">?</span>],
-                                <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">severity</span>,
+                            renderer.render_snippet_source(
+                                outer_padding,
+                                files.line_number(file_id, line_index + <span class="number">1</span>)<span class="question-mark">?</span>,
+                                <span class="kw-2">&amp;</span>source[files.line_range(file_id, line_index + <span class="number">1</span>)<span class="question-mark">?</span>],
+                                <span class="self">self</span>.diagnostic.severity,
                                 <span class="kw-2">&amp;</span>[],
-                                <span class="ident">labeled_file</span>.<span class="ident">num_multi_labels</span>,
-                                <span class="ident">labels</span>,
+                                labeled_file.num_multi_labels,
+                                labels,
                             )<span class="question-mark">?</span>;
                         }
-                        <span class="comment">// More than one line between the current line and the next line.</span>
-                        <span class="prelude-val">Some</span>(<span class="kw">_</span>) | <span class="prelude-val">None</span> =&gt; {
-                            <span class="comment">// Source break</span>
-                            <span class="comment">//</span>
-                            <span class="comment">// ```text</span>
-                            <span class="comment">// ·</span>
-                            <span class="comment">// ```</span>
-                            <span class="ident">renderer</span>.<span class="ident">render_snippet_break</span>(
-                                <span class="ident">outer_padding</span>,
-                                <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">severity</span>,
-                                <span class="ident">labeled_file</span>.<span class="ident">num_multi_labels</span>,
-                                <span class="kw-2">&amp;</span><span class="ident">line</span>.<span class="ident">multi_labels</span>,
+                        <span class="comment">// More than one line between the current line and the next line.
+                        </span><span class="prelude-val">Some</span>(<span class="kw">_</span>) | <span class="prelude-val">None </span>=&gt; {
+                            <span class="comment">// Source break
+                            //
+                            // ```text
+                            // ·
+                            // ```
+                            </span>renderer.render_snippet_break(
+                                outer_padding,
+                                <span class="self">self</span>.diagnostic.severity,
+                                labeled_file.num_multi_labels,
+                                <span class="kw-2">&amp;</span>line.multi_labels,
                             )<span class="question-mark">?</span>;
                         }
                     }
                 }
             }
 
-            <span class="comment">// Check to see if we should render a trailing border after the</span>
-            <span class="comment">// final line of the snippet.</span>
-            <span class="kw">if</span> <span class="ident">labeled_files</span>.<span class="ident">peek</span>().<span class="ident">is_none</span>() &amp;&amp; <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">notes</span>.<span class="ident">is_empty</span>() {
-                <span class="comment">// We don&#39;t render a border if we are at the final newline</span>
-                <span class="comment">// without trailing notes, because it would end up looking too</span>
-                <span class="comment">// spaced-out in combination with the final new line.</span>
-            } <span class="kw">else</span> {
-                <span class="comment">// Render the trailing snippet border.</span>
-                <span class="ident">renderer</span>.<span class="ident">render_snippet_empty</span>(
-                    <span class="ident">outer_padding</span>,
-                    <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">severity</span>,
-                    <span class="ident">labeled_file</span>.<span class="ident">num_multi_labels</span>,
+            <span class="comment">// Check to see if we should render a trailing border after the
+            // final line of the snippet.
+            </span><span class="kw">if </span>labeled_files.peek().is_none() &amp;&amp; <span class="self">self</span>.diagnostic.notes.is_empty() {
+                <span class="comment">// We don&#39;t render a border if we are at the final newline
+                // without trailing notes, because it would end up looking too
+                // spaced-out in combination with the final new line.
+            </span>} <span class="kw">else </span>{
+                <span class="comment">// Render the trailing snippet border.
+                </span>renderer.render_snippet_empty(
+                    outer_padding,
+                    <span class="self">self</span>.diagnostic.severity,
+                    labeled_file.num_multi_labels,
                     <span class="kw-2">&amp;</span>[],
                 )<span class="question-mark">?</span>;
             }
         }
 
-        <span class="comment">// Additional notes</span>
-        <span class="comment">//</span>
-        <span class="comment">// ```text</span>
-        <span class="comment">// = expected type `Int`</span>
-        <span class="comment">//      found type `String`</span>
-        <span class="comment">// ```</span>
-        <span class="kw">for</span> <span class="ident">note</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">notes</span> {
-            <span class="ident">renderer</span>.<span class="ident">render_snippet_note</span>(<span class="ident">outer_padding</span>, <span class="ident">note</span>)<span class="question-mark">?</span>;
+        <span class="comment">// Additional notes
+        //
+        // ```text
+        // = expected type `Int`
+        //      found type `String`
+        // ```
+        </span><span class="kw">for </span>note <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.diagnostic.notes {
+            renderer.render_snippet_note(outer_padding, note)<span class="question-mark">?</span>;
         }
-        <span class="ident">renderer</span>.<span class="ident">render_empty</span>()
+        renderer.render_empty()
     }
 }
 
-<span class="doccomment">/// Output a short diagnostic, with a line number, severity, and message.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ShortDiagnostic</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="ident">FileId</span>&gt; {
-    <span class="ident">diagnostic</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;diagnostic</span> <span class="ident">Diagnostic</span>&lt;<span class="ident">FileId</span>&gt;,
-    <span class="ident">show_notes</span>: <span class="ident">bool</span>,
+<span class="doccomment">/// Output a short diagnostic, with a line number, severity, and message.
+</span><span class="kw">pub struct </span>ShortDiagnostic&lt;<span class="lifetime">&#39;diagnostic</span>, FileId&gt; {
+    diagnostic: <span class="kw-2">&amp;</span><span class="lifetime">&#39;diagnostic </span>Diagnostic&lt;FileId&gt;,
+    show_notes: bool,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="ident">FileId</span>&gt; <span class="ident">ShortDiagnostic</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="ident">FileId</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">FileId</span>: <span class="ident">Copy</span> + <span class="ident">PartialEq</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;diagnostic</span>, FileId&gt; ShortDiagnostic&lt;<span class="lifetime">&#39;diagnostic</span>, FileId&gt;
+<span class="kw">where
+    </span>FileId: Copy + PartialEq,
 {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(
-        <span class="ident">diagnostic</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;diagnostic</span> <span class="ident">Diagnostic</span>&lt;<span class="ident">FileId</span>&gt;,
-        <span class="ident">show_notes</span>: <span class="ident">bool</span>,
-    ) -&gt; <span class="ident">ShortDiagnostic</span>&lt;<span class="lifetime">&#39;diagnostic</span>, <span class="ident">FileId</span>&gt; {
-        <span class="ident">ShortDiagnostic</span> {
-            <span class="ident">diagnostic</span>,
-            <span class="ident">show_notes</span>,
+    <span class="kw">pub fn </span>new(
+        diagnostic: <span class="kw-2">&amp;</span><span class="lifetime">&#39;diagnostic </span>Diagnostic&lt;FileId&gt;,
+        show_notes: bool,
+    ) -&gt; ShortDiagnostic&lt;<span class="lifetime">&#39;diagnostic</span>, FileId&gt; {
+        ShortDiagnostic {
+            diagnostic,
+            show_notes,
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">render</span>&lt;<span class="lifetime">&#39;files</span>&gt;(
+    <span class="kw">pub fn </span>render&lt;<span class="lifetime">&#39;files</span>&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">files</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;files</span> <span class="kw">impl</span> <span class="ident">Files</span>&lt;<span class="lifetime">&#39;files</span>, <span class="ident">FileId</span> = <span class="ident">FileId</span>&gt;,
-        <span class="ident">renderer</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Renderer</span>&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">Error</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">FileId</span>: <span class="lifetime">&#39;files</span>,
+        files: <span class="kw-2">&amp;</span><span class="lifetime">&#39;files </span><span class="kw">impl </span>Files&lt;<span class="lifetime">&#39;files</span>, FileId = FileId&gt;,
+        renderer: <span class="kw-2">&amp;mut </span>Renderer&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt;
+    <span class="kw">where
+        </span>FileId: <span class="lifetime">&#39;files</span>,
     {
-        <span class="comment">// Located headers</span>
-        <span class="comment">//</span>
-        <span class="comment">// ```text</span>
-        <span class="comment">// test:2:9: error[E0001]: unexpected type in `+` application</span>
-        <span class="comment">// ```</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">primary_labels_encountered</span> = <span class="number">0</span>;
-        <span class="kw">let</span> <span class="ident">labels</span> = <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">labels</span>.<span class="ident">iter</span>();
-        <span class="kw">for</span> <span class="ident">label</span> <span class="kw">in</span> <span class="ident">labels</span>.<span class="ident">filter</span>(|<span class="ident">label</span>| <span class="ident">label</span>.<span class="ident">style</span> == <span class="ident">LabelStyle::Primary</span>) {
-            <span class="ident">primary_labels_encountered</span> += <span class="number">1</span>;
+        <span class="comment">// Located headers
+        //
+        // ```text
+        // test:2:9: error[E0001]: unexpected type in `+` application
+        // ```
+        </span><span class="kw">let </span><span class="kw-2">mut </span>primary_labels_encountered = <span class="number">0</span>;
+        <span class="kw">let </span>labels = <span class="self">self</span>.diagnostic.labels.iter();
+        <span class="kw">for </span>label <span class="kw">in </span>labels.filter(|label| label.style == LabelStyle::Primary) {
+            primary_labels_encountered += <span class="number">1</span>;
 
-            <span class="ident">renderer</span>.<span class="ident">render_header</span>(
-                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">Locus</span> {
-                    <span class="ident">name</span>: <span class="ident">files</span>.<span class="ident">name</span>(<span class="ident">label</span>.<span class="ident">file_id</span>)<span class="question-mark">?</span>.<span class="ident">to_string</span>(),
-                    <span class="ident">location</span>: <span class="ident">files</span>.<span class="ident">location</span>(<span class="ident">label</span>.<span class="ident">file_id</span>, <span class="ident">label</span>.<span class="ident">range</span>.<span class="ident">start</span>)<span class="question-mark">?</span>,
+            renderer.render_header(
+                <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>Locus {
+                    name: files.name(label.file_id)<span class="question-mark">?</span>.to_string(),
+                    location: files.location(label.file_id, label.range.start)<span class="question-mark">?</span>,
                 }),
-                <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">severity</span>,
-                <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">code</span>.<span class="ident">as_deref</span>(),
-                <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">message</span>.<span class="ident">as_str</span>(),
+                <span class="self">self</span>.diagnostic.severity,
+                <span class="self">self</span>.diagnostic.code.as_deref(),
+                <span class="self">self</span>.diagnostic.message.as_str(),
             )<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// Fallback to printing a non-located header if no primary labels were encountered</span>
-        <span class="comment">//</span>
-        <span class="comment">// ```text</span>
-        <span class="comment">// error[E0002]: Bad config found</span>
-        <span class="comment">// ```</span>
-        <span class="kw">if</span> <span class="ident">primary_labels_encountered</span> == <span class="number">0</span> {
-            <span class="ident">renderer</span>.<span class="ident">render_header</span>(
+        <span class="comment">// Fallback to printing a non-located header if no primary labels were encountered
+        //
+        // ```text
+        // error[E0002]: Bad config found
+        // ```
+        </span><span class="kw">if </span>primary_labels_encountered == <span class="number">0 </span>{
+            renderer.render_header(
                 <span class="prelude-val">None</span>,
-                <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">severity</span>,
-                <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">code</span>.<span class="ident">as_deref</span>(),
-                <span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">message</span>.<span class="ident">as_str</span>(),
+                <span class="self">self</span>.diagnostic.severity,
+                <span class="self">self</span>.diagnostic.code.as_deref(),
+                <span class="self">self</span>.diagnostic.message.as_str(),
             )<span class="question-mark">?</span>;
         }
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">show_notes</span> {
-            <span class="comment">// Additional notes</span>
-            <span class="comment">//</span>
-            <span class="comment">// ```text</span>
-            <span class="comment">// = expected type `Int`</span>
-            <span class="comment">//      found type `String`</span>
-            <span class="comment">// ```</span>
-            <span class="kw">for</span> <span class="ident">note</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">diagnostic</span>.<span class="ident">notes</span> {
-                <span class="ident">renderer</span>.<span class="ident">render_snippet_note</span>(<span class="number">0</span>, <span class="ident">note</span>)<span class="question-mark">?</span>;
+        <span class="kw">if </span><span class="self">self</span>.show_notes {
+            <span class="comment">// Additional notes
+            //
+            // ```text
+            // = expected type `Int`
+            //      found type `String`
+            // ```
+            </span><span class="kw">for </span>note <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.diagnostic.notes {
+                renderer.render_snippet_note(<span class="number">0</span>, note)<span class="question-mark">?</span>;
             }
         }
 
@@ -955,4 +955,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="codespan_reporting" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="codespan_reporting" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

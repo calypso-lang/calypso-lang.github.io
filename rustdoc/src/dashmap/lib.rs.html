@@ -991,998 +991,998 @@
 <span id="991">991</span>
 <span id="992">992</span>
 <span id="993">993</span>
-</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::type_complexity</span>)]</span>
+</pre><pre class="rust"><code><span class="attribute">#![allow(clippy::type_complexity)]
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">iter</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">iter_set</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">lock</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">mapref</span>;
-<span class="kw">mod</span> <span class="ident">read_only</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serde&quot;</span>)]</span>
-<span class="kw">mod</span> <span class="ident">serde</span>;
-<span class="kw">mod</span> <span class="ident">set</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">setref</span>;
-<span class="kw">mod</span> <span class="ident">t</span>;
-<span class="kw">mod</span> <span class="ident">util</span>;
+</span><span class="kw">pub mod </span>iter;
+<span class="kw">pub mod </span>iter_set;
+<span class="kw">pub mod </span>lock;
+<span class="kw">pub mod </span>mapref;
+<span class="kw">mod </span>read_only;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;serde&quot;</span>)]
+</span><span class="kw">mod </span>serde;
+<span class="kw">mod </span>set;
+<span class="kw">pub mod </span>setref;
+<span class="kw">mod </span>t;
+<span class="kw">mod </span>util;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;rayon&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">rayon</span> {
-    <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">map</span>;
-    <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">set</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;rayon&quot;</span>)]
+</span><span class="kw">pub mod </span>rayon {
+    <span class="kw">pub mod </span>map;
+    <span class="kw">pub mod </span>set;
 }
 
-<span class="kw">use</span> <span class="ident">cfg_if::cfg_if</span>;
-<span class="kw">use</span> <span class="ident">core::borrow::Borrow</span>;
-<span class="kw">use</span> <span class="ident">core::fmt</span>;
-<span class="kw">use</span> <span class="ident">core::hash</span>::{<span class="ident">BuildHasher</span>, <span class="ident">Hash</span>, <span class="ident">Hasher</span>};
-<span class="kw">use</span> <span class="ident">core::iter::FromIterator</span>;
-<span class="kw">use</span> <span class="ident">core::ops</span>::{<span class="ident">BitAnd</span>, <span class="ident">BitOr</span>, <span class="ident">Shl</span>, <span class="ident">Shr</span>, <span class="ident">Sub</span>};
-<span class="kw">use</span> <span class="ident">iter</span>::{<span class="ident">Iter</span>, <span class="ident">IterMut</span>, <span class="ident">OwningIter</span>};
-<span class="kw">use</span> <span class="ident">lock</span>::{<span class="ident">RwLock</span>, <span class="ident">RwLockReadGuard</span>, <span class="ident">RwLockWriteGuard</span>};
-<span class="kw">use</span> <span class="ident">mapref::entry</span>::{<span class="ident">Entry</span>, <span class="ident">OccupiedEntry</span>, <span class="ident">VacantEntry</span>};
-<span class="kw">use</span> <span class="ident">mapref::multiple::RefMulti</span>;
-<span class="kw">use</span> <span class="ident">mapref::one</span>::{<span class="ident">Ref</span>, <span class="ident">RefMut</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">read_only::ReadOnlyView</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">set::DashSet</span>;
-<span class="kw">use</span> <span class="ident">std::collections::hash_map::RandomState</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">t::Map</span>;
+<span class="kw">use </span>cfg_if::cfg_if;
+<span class="kw">use </span>core::borrow::Borrow;
+<span class="kw">use </span>core::fmt;
+<span class="kw">use </span>core::hash::{BuildHasher, Hash, Hasher};
+<span class="kw">use </span>core::iter::FromIterator;
+<span class="kw">use </span>core::ops::{BitAnd, BitOr, Shl, Shr, Sub};
+<span class="kw">use </span>iter::{Iter, IterMut, OwningIter};
+<span class="kw">use </span>lock::{RwLock, RwLockReadGuard, RwLockWriteGuard};
+<span class="kw">use </span>mapref::entry::{Entry, OccupiedEntry, VacantEntry};
+<span class="kw">use </span>mapref::multiple::RefMulti;
+<span class="kw">use </span>mapref::one::{Ref, RefMut};
+<span class="kw">pub use </span>read_only::ReadOnlyView;
+<span class="kw">pub use </span>set::DashSet;
+<span class="kw">use </span>std::collections::hash_map::RandomState;
+<span class="kw">pub use </span>t::Map;
 
-<span class="macro">cfg_if!</span> {
-    <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;raw-api&quot;</span>)]</span> {
-        <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">util::SharedValue</span>;
-    } <span class="kw">else</span> {
-        <span class="kw">use</span> <span class="ident">util::SharedValue</span>;
+<span class="macro">cfg_if! </span>{
+    <span class="kw">if </span><span class="attribute">#[cfg(feature = <span class="string">&quot;raw-api&quot;</span>)] </span>{
+        <span class="kw">pub use </span>util::SharedValue;
+    } <span class="kw">else </span>{
+        <span class="kw">use </span>util::SharedValue;
     }
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">type</span> <span class="ident">HashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; = <span class="ident">std::collections::HashMap</span>&lt;<span class="ident">K</span>, <span class="ident">SharedValue</span>&lt;<span class="ident">V</span>&gt;, <span class="ident">S</span>&gt;;
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">type </span>HashMap&lt;K, V, S&gt; = std::collections::HashMap&lt;K, SharedValue&lt;V&gt;, S&gt;;
 
-<span class="kw">fn</span> <span class="ident">shard_amount</span>() -&gt; <span class="ident">usize</span> {
-    (<span class="ident">num_cpus::get</span>() * <span class="number">4</span>).<span class="ident">next_power_of_two</span>()
+<span class="kw">fn </span>shard_amount() -&gt; usize {
+    (num_cpus::get() * <span class="number">4</span>).next_power_of_two()
 }
 
-<span class="kw">fn</span> <span class="ident">ncb</span>(<span class="ident">shard_amount</span>: <span class="ident">usize</span>) -&gt; <span class="ident">usize</span> {
-    <span class="ident">shard_amount</span>.<span class="ident">trailing_zeros</span>() <span class="kw">as</span> <span class="ident">usize</span>
+<span class="kw">fn </span>ncb(shard_amount: usize) -&gt; usize {
+    shard_amount.trailing_zeros() <span class="kw">as </span>usize
 }
 
-<span class="doccomment">/// DashMap is an implementation of a concurrent associative array/hashmap in Rust.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// DashMap tries to implement an easy to use API similar to `std::collections::HashMap`</span>
-<span class="doccomment">/// with some slight changes to handle concurrency.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// DashMap tries to be very simple to use and to be a direct replacement for `RwLock&lt;HashMap&lt;K, V, S&gt;&gt;`.</span>
-<span class="doccomment">/// To accomplish these all methods take `&amp;self` instead modifying methods taking `&amp;mut self`.</span>
-<span class="doccomment">/// This allows you to put a DashMap in an `Arc&lt;T&gt;` and share it between threads while being able to modify it.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Documentation mentioning locking behaviour acts in the reference frame of the calling thread.</span>
-<span class="doccomment">/// This means that it is safe to ignore it across multiple threads.</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span> = <span class="ident">RandomState</span>&gt; {
-    <span class="ident">shift</span>: <span class="ident">usize</span>,
-    <span class="ident">shards</span>: <span class="ident">Box</span>&lt;[<span class="ident">RwLock</span>&lt;<span class="ident">HashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt;]&gt;,
-    <span class="ident">hasher</span>: <span class="ident">S</span>,
+<span class="doccomment">/// DashMap is an implementation of a concurrent associative array/hashmap in Rust.
+///
+/// DashMap tries to implement an easy to use API similar to `std::collections::HashMap`
+/// with some slight changes to handle concurrency.
+///
+/// DashMap tries to be very simple to use and to be a direct replacement for `RwLock&lt;HashMap&lt;K, V, S&gt;&gt;`.
+/// To accomplish these all methods take `&amp;self` instead modifying methods taking `&amp;mut self`.
+/// This allows you to put a DashMap in an `Arc&lt;T&gt;` and share it between threads while being able to modify it.
+///
+/// Documentation mentioning locking behaviour acts in the reference frame of the calling thread.
+/// This means that it is safe to ignore it across multiple threads.
+</span><span class="kw">pub struct </span>DashMap&lt;K, V, S = RandomState&gt; {
+    shift: usize,
+    shards: Box&lt;[RwLock&lt;HashMap&lt;K, V, S&gt;&gt;]&gt;,
+    hasher: S,
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>: <span class="ident">Eq</span> + <span class="ident">Hash</span> + <span class="ident">Clone</span>, <span class="ident">V</span>: <span class="ident">Clone</span>, <span class="ident">S</span>: <span class="ident">Clone</span>&gt; <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inner_shards</span> = <span class="ident">Vec::new</span>();
+<span class="kw">impl</span>&lt;K: Eq + Hash + Clone, V: Clone, S: Clone&gt; Clone <span class="kw">for </span>DashMap&lt;K, V, S&gt; {
+    <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>inner_shards = Vec::new();
 
-        <span class="kw">for</span> <span class="ident">shard</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">iter</span>() {
-            <span class="kw">let</span> <span class="ident">shard</span> = <span class="ident">shard</span>.<span class="ident">read</span>();
+        <span class="kw">for </span>shard <span class="kw">in </span><span class="self">self</span>.shards.iter() {
+            <span class="kw">let </span>shard = shard.read();
 
-            <span class="ident">inner_shards</span>.<span class="ident">push</span>(<span class="ident">RwLock::new</span>((<span class="kw-2">*</span><span class="ident">shard</span>).<span class="ident">clone</span>()));
+            inner_shards.push(RwLock::new((<span class="kw-2">*</span>shard).clone()));
         }
 
-        <span class="self">Self</span> {
-            <span class="ident">shift</span>: <span class="self">self</span>.<span class="ident">shift</span>,
-            <span class="ident">shards</span>: <span class="ident">inner_shards</span>.<span class="ident">into_boxed_slice</span>(),
-            <span class="ident">hasher</span>: <span class="self">self</span>.<span class="ident">hasher</span>.<span class="ident">clone</span>(),
+        <span class="self">Self </span>{
+            shift: <span class="self">self</span>.shift,
+            shards: inner_shards.into_boxed_slice(),
+            hasher: <span class="self">self</span>.hasher.clone(),
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Eq</span> + <span class="ident">Hash</span>,
-    <span class="ident">S</span>: <span class="ident">Default</span> + <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>,
+<span class="kw">impl</span>&lt;K, V, S&gt; Default <span class="kw">for </span>DashMap&lt;K, V, S&gt;
+<span class="kw">where
+    </span>K: Eq + Hash,
+    S: Default + BuildHasher + Clone,
 {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::with_hasher</span>(<span class="ident">Default::default</span>())
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::with_hasher(Default::default())
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span> + <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>&gt; <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">RandomState</span>&gt; {
-    <span class="doccomment">/// Creates a new DashMap with a capacity of 0.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let reviews = DashMap::new();</span>
-    <span class="doccomment">/// reviews.insert(&quot;Veloren&quot;, &quot;What a fantastic game!&quot;);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident">DashMap::with_hasher</span>(<span class="ident">RandomState::default</span>())
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a </span>+ Eq + Hash, V: <span class="lifetime">&#39;a</span>&gt; DashMap&lt;K, V, RandomState&gt; {
+    <span class="doccomment">/// Creates a new DashMap with a capacity of 0.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let reviews = DashMap::new();
+    /// reviews.insert(&quot;Veloren&quot;, &quot;What a fantastic game!&quot;);
+    /// ```
+    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        DashMap::with_hasher(RandomState::default())
     }
 
-    <span class="doccomment">/// Creates a new DashMap with a specified starting capacity.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mappings = DashMap::with_capacity(2);</span>
-    <span class="doccomment">/// mappings.insert(2, 4);</span>
-    <span class="doccomment">/// mappings.insert(8, 16);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_capacity</span>(<span class="ident">capacity</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">DashMap::with_capacity_and_hasher</span>(<span class="ident">capacity</span>, <span class="ident">RandomState::default</span>())
+    <span class="doccomment">/// Creates a new DashMap with a specified starting capacity.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let mappings = DashMap::with_capacity(2);
+    /// mappings.insert(2, 4);
+    /// mappings.insert(8, 16);
+    /// ```
+    </span><span class="kw">pub fn </span>with_capacity(capacity: usize) -&gt; <span class="self">Self </span>{
+        DashMap::with_capacity_and_hasher(capacity, RandomState::default())
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span> + <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>&gt; <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; {
-    <span class="doccomment">/// Wraps this `DashMap` into a read-only view. This view allows to obtain raw references to the stored values.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_read_only</span>(<span class="self">self</span>) -&gt; <span class="ident">ReadOnlyView</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; {
-        <span class="ident">ReadOnlyView::new</span>(<span class="self">self</span>)
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a </span>+ Eq + Hash, V: <span class="lifetime">&#39;a</span>, S: BuildHasher + Clone&gt; DashMap&lt;K, V, S&gt; {
+    <span class="doccomment">/// Wraps this `DashMap` into a read-only view. This view allows to obtain raw references to the stored values.
+    </span><span class="kw">pub fn </span>into_read_only(<span class="self">self</span>) -&gt; ReadOnlyView&lt;K, V, S&gt; {
+        ReadOnlyView::new(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Creates a new DashMap with a capacity of 0 and the provided hasher.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">/// use std::collections::hash_map::RandomState;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let s = RandomState::new();</span>
-    <span class="doccomment">/// let reviews = DashMap::with_hasher(s);</span>
-    <span class="doccomment">/// reviews.insert(&quot;Veloren&quot;, &quot;What a fantastic game!&quot;);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_hasher</span>(<span class="ident">hasher</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::with_capacity_and_hasher</span>(<span class="number">0</span>, <span class="ident">hasher</span>)
+    <span class="doccomment">/// Creates a new DashMap with a capacity of 0 and the provided hasher.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    /// use std::collections::hash_map::RandomState;
+    ///
+    /// let s = RandomState::new();
+    /// let reviews = DashMap::with_hasher(s);
+    /// reviews.insert(&quot;Veloren&quot;, &quot;What a fantastic game!&quot;);
+    /// ```
+    </span><span class="kw">pub fn </span>with_hasher(hasher: S) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::with_capacity_and_hasher(<span class="number">0</span>, hasher)
     }
 
-    <span class="doccomment">/// Creates a new DashMap with a specified starting capacity and hasher.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">/// use std::collections::hash_map::RandomState;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let s = RandomState::new();</span>
-    <span class="doccomment">/// let mappings = DashMap::with_capacity_and_hasher(2, s);</span>
-    <span class="doccomment">/// mappings.insert(2, 4);</span>
-    <span class="doccomment">/// mappings.insert(8, 16);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_capacity_and_hasher</span>(<span class="kw-2">mut</span> <span class="ident">capacity</span>: <span class="ident">usize</span>, <span class="ident">hasher</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">shard_amount</span> = <span class="ident">shard_amount</span>();
-        <span class="kw">let</span> <span class="ident">shift</span> = <span class="ident">util::ptr_size_bits</span>() - <span class="ident">ncb</span>(<span class="ident">shard_amount</span>);
+    <span class="doccomment">/// Creates a new DashMap with a specified starting capacity and hasher.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    /// use std::collections::hash_map::RandomState;
+    ///
+    /// let s = RandomState::new();
+    /// let mappings = DashMap::with_capacity_and_hasher(2, s);
+    /// mappings.insert(2, 4);
+    /// mappings.insert(8, 16);
+    /// ```
+    </span><span class="kw">pub fn </span>with_capacity_and_hasher(<span class="kw-2">mut </span>capacity: usize, hasher: S) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>shard_amount = shard_amount();
+        <span class="kw">let </span>shift = util::ptr_size_bits() - ncb(shard_amount);
 
-        <span class="kw">if</span> <span class="ident">capacity</span> != <span class="number">0</span> {
-            <span class="ident">capacity</span> = (<span class="ident">capacity</span> + (<span class="ident">shard_amount</span> - <span class="number">1</span>)) &amp; !(<span class="ident">shard_amount</span> - <span class="number">1</span>);
+        <span class="kw">if </span>capacity != <span class="number">0 </span>{
+            capacity = (capacity + (shard_amount - <span class="number">1</span>)) &amp; !(shard_amount - <span class="number">1</span>);
         }
 
-        <span class="kw">let</span> <span class="ident">cps</span> = <span class="ident">capacity</span> / <span class="ident">shard_amount</span>;
+        <span class="kw">let </span>cps = capacity / shard_amount;
 
-        <span class="kw">let</span> <span class="ident">shards</span> = (<span class="number">0</span>..<span class="ident">shard_amount</span>)
-            .<span class="ident">map</span>(|<span class="kw">_</span>| <span class="ident">RwLock::new</span>(<span class="ident">HashMap::with_capacity_and_hasher</span>(<span class="ident">cps</span>, <span class="ident">hasher</span>.<span class="ident">clone</span>())))
-            .<span class="ident">collect</span>();
+        <span class="kw">let </span>shards = (<span class="number">0</span>..shard_amount)
+            .map(|<span class="kw">_</span>| RwLock::new(HashMap::with_capacity_and_hasher(cps, hasher.clone())))
+            .collect();
 
-        <span class="self">Self</span> {
-            <span class="ident">shift</span>,
-            <span class="ident">shards</span>,
-            <span class="ident">hasher</span>,
+        <span class="self">Self </span>{
+            shift,
+            shards,
+            hasher,
         }
     }
 
-    <span class="doccomment">/// Hash a given item to produce a usize.</span>
-    <span class="doccomment">/// Uses the provided or default HashBuilder.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">hash_usize</span>&lt;<span class="ident">T</span>: <span class="ident">Hash</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">item</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) -&gt; <span class="ident">usize</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">hasher</span> = <span class="self">self</span>.<span class="ident">hasher</span>.<span class="ident">build_hasher</span>();
+    <span class="doccomment">/// Hash a given item to produce a usize.
+    /// Uses the provided or default HashBuilder.
+    </span><span class="kw">pub fn </span>hash_usize&lt;T: Hash&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, item: <span class="kw-2">&amp;</span>T) -&gt; usize {
+        <span class="kw">let </span><span class="kw-2">mut </span>hasher = <span class="self">self</span>.hasher.build_hasher();
 
-        <span class="ident">item</span>.<span class="ident">hash</span>(<span class="kw-2">&amp;mut</span> <span class="ident">hasher</span>);
+        item.hash(<span class="kw-2">&amp;mut </span>hasher);
 
-        <span class="ident">hasher</span>.<span class="ident">finish</span>() <span class="kw">as</span> <span class="ident">usize</span>
+        hasher.finish() <span class="kw">as </span>usize
     }
 
-    <span class="macro">cfg_if!</span> {
-        <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;raw-api&quot;</span>)]</span> {
-            <span class="doccomment">/// Allows you to peek at the inner shards that store your data.</span>
-            <span class="doccomment">/// You should probably not use this unless you know what you are doing.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// Requires the `raw-api` feature to be enabled.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// # Examples</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// ```</span>
-            <span class="doccomment">/// use dashmap::DashMap;</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// let map = DashMap::&lt;(), ()&gt;::new();</span>
-            <span class="doccomment">/// println!(&quot;Amount of shards: {}&quot;, map.shards().len());</span>
-            <span class="doccomment">/// ```</span>
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">shards</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">RwLock</span>&lt;<span class="ident">HashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt;] {
-                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">shards</span>
+    <span class="macro">cfg_if! </span>{
+        <span class="kw">if </span><span class="attribute">#[cfg(feature = <span class="string">&quot;raw-api&quot;</span>)] </span>{
+            <span class="doccomment">/// Allows you to peek at the inner shards that store your data.
+            /// You should probably not use this unless you know what you are doing.
+            ///
+            /// Requires the `raw-api` feature to be enabled.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// use dashmap::DashMap;
+            ///
+            /// let map = DashMap::&lt;(), ()&gt;::new();
+            /// println!(&quot;Amount of shards: {}&quot;, map.shards().len());
+            /// ```
+            </span><span class="kw">pub fn </span>shards(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[RwLock&lt;HashMap&lt;K, V, S&gt;&gt;] {
+                <span class="kw-2">&amp;</span><span class="self">self</span>.shards
             }
-        } <span class="kw">else</span> {
-            <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
-            <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">shards</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">RwLock</span>&lt;<span class="ident">HashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt;] {
-                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">shards</span>
+        } <span class="kw">else </span>{
+            <span class="attribute">#[allow(dead_code)]
+            </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>shards(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[RwLock&lt;HashMap&lt;K, V, S&gt;&gt;] {
+                <span class="kw-2">&amp;</span><span class="self">self</span>.shards
             }
         }
     }
 
-    <span class="macro">cfg_if!</span> {
-        <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;raw-api&quot;</span>)]</span> {
-            <span class="doccomment">/// Finds which shard a certain key is stored in.</span>
-            <span class="doccomment">/// You should probably not use this unless you know what you are doing.</span>
-            <span class="doccomment">/// Note that shard selection is dependent on the default or provided HashBuilder.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// Requires the `raw-api` feature to be enabled.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// # Examples</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// ```</span>
-            <span class="doccomment">/// use dashmap::DashMap;</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// let map = DashMap::new();</span>
-            <span class="doccomment">/// map.insert(&quot;coca-cola&quot;, 1.4);</span>
-            <span class="doccomment">/// println!(&quot;coca-cola is stored in shard: {}&quot;, map.determine_map(&quot;coca-cola&quot;));</span>
-            <span class="doccomment">/// ```</span>
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">determine_map</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="ident">usize</span>
-            <span class="kw">where</span>
-                <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-                <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="macro">cfg_if! </span>{
+        <span class="kw">if </span><span class="attribute">#[cfg(feature = <span class="string">&quot;raw-api&quot;</span>)] </span>{
+            <span class="doccomment">/// Finds which shard a certain key is stored in.
+            /// You should probably not use this unless you know what you are doing.
+            /// Note that shard selection is dependent on the default or provided HashBuilder.
+            ///
+            /// Requires the `raw-api` feature to be enabled.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// use dashmap::DashMap;
+            ///
+            /// let map = DashMap::new();
+            /// map.insert(&quot;coca-cola&quot;, 1.4);
+            /// println!(&quot;coca-cola is stored in shard: {}&quot;, map.determine_map(&quot;coca-cola&quot;));
+            /// ```
+            </span><span class="kw">pub fn </span>determine_map&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; usize
+            <span class="kw">where
+                </span>K: Borrow&lt;Q&gt;,
+                Q: Hash + Eq + <span class="question-mark">?</span>Sized,
             {
-                <span class="kw">let</span> <span class="ident">hash</span> = <span class="self">self</span>.<span class="ident">hash_usize</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>);
-                <span class="self">self</span>.<span class="ident">determine_shard</span>(<span class="ident">hash</span>)
+                <span class="kw">let </span>hash = <span class="self">self</span>.hash_usize(<span class="kw-2">&amp;</span>key);
+                <span class="self">self</span>.determine_shard(hash)
             }
         }
     }
 
-    <span class="macro">cfg_if!</span> {
-        <span class="kw">if</span> <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;raw-api&quot;</span>)]</span> {
-            <span class="doccomment">/// Finds which shard a certain hash is stored in.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// Requires the `raw-api` feature to be enabled.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// # Examples</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// ```</span>
-            <span class="doccomment">/// use dashmap::DashMap;</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// let map: DashMap&lt;i32, i32&gt; = DashMap::new();</span>
-            <span class="doccomment">/// let key = &quot;key&quot;;</span>
-            <span class="doccomment">/// let hash = map.hash_usize(&amp;key);</span>
-            <span class="doccomment">/// println!(&quot;hash is stored in shard: {}&quot;, map.determine_shard(hash));</span>
-            <span class="doccomment">/// ```</span>
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">determine_shard</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hash</span>: <span class="ident">usize</span>) -&gt; <span class="ident">usize</span> {
-                <span class="comment">// Leave the high 7 bits for the HashBrown SIMD tag.</span>
-                (<span class="ident">hash</span> &lt;&lt; <span class="number">7</span>) &gt;&gt; <span class="self">self</span>.<span class="ident">shift</span>
+    <span class="macro">cfg_if! </span>{
+        <span class="kw">if </span><span class="attribute">#[cfg(feature = <span class="string">&quot;raw-api&quot;</span>)] </span>{
+            <span class="doccomment">/// Finds which shard a certain hash is stored in.
+            ///
+            /// Requires the `raw-api` feature to be enabled.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// use dashmap::DashMap;
+            ///
+            /// let map: DashMap&lt;i32, i32&gt; = DashMap::new();
+            /// let key = &quot;key&quot;;
+            /// let hash = map.hash_usize(&amp;key);
+            /// println!(&quot;hash is stored in shard: {}&quot;, map.determine_shard(hash));
+            /// ```
+            </span><span class="kw">pub fn </span>determine_shard(<span class="kw-2">&amp;</span><span class="self">self</span>, hash: usize) -&gt; usize {
+                <span class="comment">// Leave the high 7 bits for the HashBrown SIMD tag.
+                </span>(hash &lt;&lt; <span class="number">7</span>) &gt;&gt; <span class="self">self</span>.shift
             }
-        } <span class="kw">else</span> {
+        } <span class="kw">else </span>{
 
-            <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">determine_shard</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hash</span>: <span class="ident">usize</span>) -&gt; <span class="ident">usize</span> {
-                <span class="comment">// Leave the high 7 bits for the HashBrown SIMD tag.</span>
-                (<span class="ident">hash</span> &lt;&lt; <span class="number">7</span>) &gt;&gt; <span class="self">self</span>.<span class="ident">shift</span>
+            <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>determine_shard(<span class="kw-2">&amp;</span><span class="self">self</span>, hash: usize) -&gt; usize {
+                <span class="comment">// Leave the high 7 bits for the HashBrown SIMD tag.
+                </span>(hash &lt;&lt; <span class="number">7</span>) &gt;&gt; <span class="self">self</span>.shift
             }
         }
     }
 
-    <span class="doccomment">/// Returns a reference to the map&#39;s [`BuildHasher`].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">/// use std::collections::hash_map::RandomState;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let hasher = RandomState::new();</span>
-    <span class="doccomment">/// let map: DashMap&lt;i32, i32&gt; = DashMap::new();</span>
-    <span class="doccomment">/// let hasher: &amp;RandomState = map.hasher();</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`BuildHasher`]: https://doc.rust-lang.org/std/hash/trait.BuildHasher.html</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">hasher</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">S</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">hasher</span>
+    <span class="doccomment">/// Returns a reference to the map&#39;s [`BuildHasher`].
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use dashmap::DashMap;
+    /// use std::collections::hash_map::RandomState;
+    ///
+    /// let hasher = RandomState::new();
+    /// let map: DashMap&lt;i32, i32&gt; = DashMap::new();
+    /// let hasher: &amp;RandomState = map.hasher();
+    /// ```
+    ///
+    /// [`BuildHasher`]: https://doc.rust-lang.org/std/hash/trait.BuildHasher.html
+    </span><span class="kw">pub fn </span>hasher(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>S {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.hasher
     }
 
-    <span class="doccomment">/// Inserts a key and a value into the map. Returns the old value associated with the key if there was one.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let map = DashMap::new();</span>
-    <span class="doccomment">/// map.insert(&quot;I am the key!&quot;, &quot;And I am the value!&quot;);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>, <span class="ident">value</span>: <span class="ident">V</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">V</span>&gt; {
-        <span class="self">self</span>.<span class="ident">_insert</span>(<span class="ident">key</span>, <span class="ident">value</span>)
+    <span class="doccomment">/// Inserts a key and a value into the map. Returns the old value associated with the key if there was one.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let map = DashMap::new();
+    /// map.insert(&quot;I am the key!&quot;, &quot;And I am the value!&quot;);
+    /// ```
+    </span><span class="kw">pub fn </span>insert(<span class="kw-2">&amp;</span><span class="self">self</span>, key: K, value: V) -&gt; <span class="prelude-ty">Option</span>&lt;V&gt; {
+        <span class="self">self</span>._insert(key, value)
     }
 
-    <span class="doccomment">/// Removes an entry from the map, returning the key and value if they existed in the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let soccer_team = DashMap::new();</span>
-    <span class="doccomment">/// soccer_team.insert(&quot;Jack&quot;, &quot;Goalie&quot;);</span>
-    <span class="doccomment">/// assert_eq!(soccer_team.remove(&quot;Jack&quot;).unwrap().1, &quot;Goalie&quot;);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remove</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">K</span>, <span class="ident">V</span>)&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="doccomment">/// Removes an entry from the map, returning the key and value if they existed in the map.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let soccer_team = DashMap::new();
+    /// soccer_team.insert(&quot;Jack&quot;, &quot;Goalie&quot;);
+    /// assert_eq!(soccer_team.remove(&quot;Jack&quot;).unwrap().1, &quot;Goalie&quot;);
+    /// ```
+    </span><span class="kw">pub fn </span>remove&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="prelude-ty">Option</span>&lt;(K, V)&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: Hash + Eq + <span class="question-mark">?</span>Sized,
     {
-        <span class="self">self</span>.<span class="ident">_remove</span>(<span class="ident">key</span>)
+        <span class="self">self</span>._remove(key)
     }
 
-    <span class="doccomment">/// Removes an entry from the map, returning the key and value</span>
-    <span class="doccomment">/// if the entry existed and the provided conditional function returned true.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let soccer_team = DashMap::new();</span>
-    <span class="doccomment">/// soccer_team.insert(&quot;Sam&quot;, &quot;Forward&quot;);</span>
-    <span class="doccomment">/// soccer_team.remove_if(&quot;Sam&quot;, |_, position| position == &amp;&quot;Goalie&quot;);</span>
-    <span class="doccomment">/// assert!(soccer_team.contains_key(&quot;Sam&quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let soccer_team = DashMap::new();</span>
-    <span class="doccomment">/// soccer_team.insert(&quot;Sam&quot;, &quot;Forward&quot;);</span>
-    <span class="doccomment">/// soccer_team.remove_if(&quot;Sam&quot;, |_, position| position == &amp;&quot;Forward&quot;);</span>
-    <span class="doccomment">/// assert!(!soccer_team.contains_key(&quot;Sam&quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remove_if</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>, <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="ident">V</span>) -&gt; <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">K</span>, <span class="ident">V</span>)&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="doccomment">/// Removes an entry from the map, returning the key and value
+    /// if the entry existed and the provided conditional function returned true.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let soccer_team = DashMap::new();
+    /// soccer_team.insert(&quot;Sam&quot;, &quot;Forward&quot;);
+    /// soccer_team.remove_if(&quot;Sam&quot;, |_, position| position == &amp;&quot;Goalie&quot;);
+    /// assert!(soccer_team.contains_key(&quot;Sam&quot;));
+    /// ```
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let soccer_team = DashMap::new();
+    /// soccer_team.insert(&quot;Sam&quot;, &quot;Forward&quot;);
+    /// soccer_team.remove_if(&quot;Sam&quot;, |_, position| position == &amp;&quot;Forward&quot;);
+    /// assert!(!soccer_team.contains_key(&quot;Sam&quot;));
+    /// ```
+    </span><span class="kw">pub fn </span>remove_if&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q, f: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;</span>K, <span class="kw-2">&amp;</span>V) -&gt; bool) -&gt; <span class="prelude-ty">Option</span>&lt;(K, V)&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: Hash + Eq + <span class="question-mark">?</span>Sized,
     {
-        <span class="self">self</span>.<span class="ident">_remove_if</span>(<span class="ident">key</span>, <span class="ident">f</span>)
+        <span class="self">self</span>._remove_if(key, f)
     }
 
-    <span class="doccomment">/// Creates an iterator over a DashMap yielding immutable references.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let words = DashMap::new();</span>
-    <span class="doccomment">/// words.insert(&quot;hello&quot;, &quot;world&quot;);</span>
-    <span class="doccomment">/// assert_eq!(words.iter().count(), 1);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>, <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt; {
-        <span class="self">self</span>.<span class="ident">_iter</span>()
+    <span class="doccomment">/// Creates an iterator over a DashMap yielding immutable references.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let words = DashMap::new();
+    /// words.insert(&quot;hello&quot;, &quot;world&quot;);
+    /// assert_eq!(words.iter().count(), 1);
+    /// ```
+    </span><span class="kw">pub fn </span>iter(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>) -&gt; Iter&lt;<span class="lifetime">&#39;a</span>, K, V, S, DashMap&lt;K, V, S&gt;&gt; {
+        <span class="self">self</span>._iter()
     }
 
-    <span class="doccomment">/// Iterator over a DashMap yielding mutable references.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let map = DashMap::new();</span>
-    <span class="doccomment">/// map.insert(&quot;Johnny&quot;, 21);</span>
-    <span class="doccomment">/// map.iter_mut().for_each(|mut r| *r += 1);</span>
-    <span class="doccomment">/// assert_eq!(*map.get(&quot;Johnny&quot;).unwrap(), 22);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter_mut</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident">IterMut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>, <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt; {
-        <span class="self">self</span>.<span class="ident">_iter_mut</span>()
+    <span class="doccomment">/// Iterator over a DashMap yielding mutable references.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let map = DashMap::new();
+    /// map.insert(&quot;Johnny&quot;, 21);
+    /// map.iter_mut().for_each(|mut r| *r += 1);
+    /// assert_eq!(*map.get(&quot;Johnny&quot;).unwrap(), 22);
+    /// ```
+    </span><span class="kw">pub fn </span>iter_mut(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>) -&gt; IterMut&lt;<span class="lifetime">&#39;a</span>, K, V, S, DashMap&lt;K, V, S&gt;&gt; {
+        <span class="self">self</span>._iter_mut()
     }
 
-    <span class="doccomment">/// Get a immutable reference to an entry in the map</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let youtubers = DashMap::new();</span>
-    <span class="doccomment">/// youtubers.insert(&quot;Bosnian Bill&quot;, 457000);</span>
-    <span class="doccomment">/// assert_eq!(*youtubers.get(&quot;Bosnian Bill&quot;).unwrap(), 457000);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Ref</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="doccomment">/// Get a immutable reference to an entry in the map
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let youtubers = DashMap::new();
+    /// youtubers.insert(&quot;Bosnian Bill&quot;, 457000);
+    /// assert_eq!(*youtubers.get(&quot;Bosnian Bill&quot;).unwrap(), 457000);
+    /// ```
+    </span><span class="kw">pub fn </span>get&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="prelude-ty">Option</span>&lt;Ref&lt;<span class="lifetime">&#39;a</span>, K, V, S&gt;&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: Hash + Eq + <span class="question-mark">?</span>Sized,
     {
-        <span class="self">self</span>.<span class="ident">_get</span>(<span class="ident">key</span>)
+        <span class="self">self</span>._get(key)
     }
 
-    <span class="doccomment">/// Get a mutable reference to an entry in the map</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let class = DashMap::new();</span>
-    <span class="doccomment">/// class.insert(&quot;Albin&quot;, 15);</span>
-    <span class="doccomment">/// *class.get_mut(&quot;Albin&quot;).unwrap() -= 1;</span>
-    <span class="doccomment">/// assert_eq!(*class.get(&quot;Albin&quot;).unwrap(), 14);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_mut</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">RefMut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="doccomment">/// Get a mutable reference to an entry in the map
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let class = DashMap::new();
+    /// class.insert(&quot;Albin&quot;, 15);
+    /// *class.get_mut(&quot;Albin&quot;).unwrap() -= 1;
+    /// assert_eq!(*class.get(&quot;Albin&quot;).unwrap(), 14);
+    /// ```
+    </span><span class="kw">pub fn </span>get_mut&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="prelude-ty">Option</span>&lt;RefMut&lt;<span class="lifetime">&#39;a</span>, K, V, S&gt;&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: Hash + Eq + <span class="question-mark">?</span>Sized,
     {
-        <span class="self">self</span>.<span class="ident">_get_mut</span>(<span class="ident">key</span>)
+        <span class="self">self</span>._get_mut(key)
     }
 
-    <span class="doccomment">/// Remove excess capacity to reduce memory usage.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">shrink_to_fit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">_shrink_to_fit</span>();
+    <span class="doccomment">/// Remove excess capacity to reduce memory usage.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+    </span><span class="kw">pub fn </span>shrink_to_fit(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="self">self</span>._shrink_to_fit();
     }
 
-    <span class="doccomment">/// Retain elements that whose predicates return true</span>
-    <span class="doccomment">/// and discard elements whose predicates return false.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let people = DashMap::new();</span>
-    <span class="doccomment">/// people.insert(&quot;Albin&quot;, 15);</span>
-    <span class="doccomment">/// people.insert(&quot;Jones&quot;, 22);</span>
-    <span class="doccomment">/// people.insert(&quot;Charlie&quot;, 27);</span>
-    <span class="doccomment">/// people.retain(|_, v| *v &gt; 20);</span>
-    <span class="doccomment">/// assert_eq!(people.len(), 2);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">retain</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">K</span>, <span class="kw-2">&amp;mut</span> <span class="ident">V</span>) -&gt; <span class="ident">bool</span>) {
-        <span class="self">self</span>.<span class="ident">_retain</span>(<span class="ident">f</span>);
+    <span class="doccomment">/// Retain elements that whose predicates return true
+    /// and discard elements whose predicates return false.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let people = DashMap::new();
+    /// people.insert(&quot;Albin&quot;, 15);
+    /// people.insert(&quot;Jones&quot;, 22);
+    /// people.insert(&quot;Charlie&quot;, 27);
+    /// people.retain(|_, v| *v &gt; 20);
+    /// assert_eq!(people.len(), 2);
+    /// ```
+    </span><span class="kw">pub fn </span>retain(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>K, <span class="kw-2">&amp;mut </span>V) -&gt; bool) {
+        <span class="self">self</span>._retain(f);
     }
 
-    <span class="doccomment">/// Fetches the total number of key-value pairs stored in the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let people = DashMap::new();</span>
-    <span class="doccomment">/// people.insert(&quot;Albin&quot;, 15);</span>
-    <span class="doccomment">/// people.insert(&quot;Jones&quot;, 22);</span>
-    <span class="doccomment">/// people.insert(&quot;Charlie&quot;, 27);</span>
-    <span class="doccomment">/// assert_eq!(people.len(), 3);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">_len</span>()
+    <span class="doccomment">/// Fetches the total number of key-value pairs stored in the map.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let people = DashMap::new();
+    /// people.insert(&quot;Albin&quot;, 15);
+    /// people.insert(&quot;Jones&quot;, 22);
+    /// people.insert(&quot;Charlie&quot;, 27);
+    /// assert_eq!(people.len(), 3);
+    /// ```
+    </span><span class="kw">pub fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>._len()
     }
 
-    <span class="doccomment">/// Checks if the map is empty or not.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let map = DashMap::&lt;(), ()&gt;::new();</span>
-    <span class="doccomment">/// assert!(map.is_empty());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">_is_empty</span>()
+    <span class="doccomment">/// Checks if the map is empty or not.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let map = DashMap::&lt;(), ()&gt;::new();
+    /// assert!(map.is_empty());
+    /// ```
+    </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>._is_empty()
     }
 
-    <span class="doccomment">/// Removes all key-value pairs in the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let stats = DashMap::new();</span>
-    <span class="doccomment">/// stats.insert(&quot;Goals&quot;, 4);</span>
-    <span class="doccomment">/// assert!(!stats.is_empty());</span>
-    <span class="doccomment">/// stats.clear();</span>
-    <span class="doccomment">/// assert!(stats.is_empty());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">_clear</span>();
+    <span class="doccomment">/// Removes all key-value pairs in the map.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let stats = DashMap::new();
+    /// stats.insert(&quot;Goals&quot;, 4);
+    /// assert!(!stats.is_empty());
+    /// stats.clear();
+    /// assert!(stats.is_empty());
+    /// ```
+    </span><span class="kw">pub fn </span>clear(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="self">self</span>._clear();
     }
 
-    <span class="doccomment">/// Returns how many key-value pairs the map can store without reallocating.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">capacity</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">_capacity</span>()
+    <span class="doccomment">/// Returns how many key-value pairs the map can store without reallocating.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.
+    </span><span class="kw">pub fn </span>capacity(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>._capacity()
     }
 
-    <span class="doccomment">/// Modify a specific value according to a function.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let stats = DashMap::new();</span>
-    <span class="doccomment">/// stats.insert(&quot;Goals&quot;, 4);</span>
-    <span class="doccomment">/// stats.alter(&quot;Goals&quot;, |_, v| v * 2);</span>
-    <span class="doccomment">/// assert_eq!(*stats.get(&quot;Goals&quot;).unwrap(), 8);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the given closure panics, then `alter` will abort the process</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">alter</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>, <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="ident">K</span>, <span class="ident">V</span>) -&gt; <span class="ident">V</span>)
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="doccomment">/// Modify a specific value according to a function.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let stats = DashMap::new();
+    /// stats.insert(&quot;Goals&quot;, 4);
+    /// stats.alter(&quot;Goals&quot;, |_, v| v * 2);
+    /// assert_eq!(*stats.get(&quot;Goals&quot;).unwrap(), 8);
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// If the given closure panics, then `alter` will abort the process
+    </span><span class="kw">pub fn </span>alter&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q, f: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;</span>K, V) -&gt; V)
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: Hash + Eq + <span class="question-mark">?</span>Sized,
     {
-        <span class="self">self</span>.<span class="ident">_alter</span>(<span class="ident">key</span>, <span class="ident">f</span>);
+        <span class="self">self</span>._alter(key, f);
     }
 
-    <span class="doccomment">/// Modify every value in the map according to a function.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let stats = DashMap::new();</span>
-    <span class="doccomment">/// stats.insert(&quot;Wins&quot;, 4);</span>
-    <span class="doccomment">/// stats.insert(&quot;Losses&quot;, 2);</span>
-    <span class="doccomment">/// stats.alter_all(|_, v| v + 1);</span>
-    <span class="doccomment">/// assert_eq!(*stats.get(&quot;Wins&quot;).unwrap(), 5);</span>
-    <span class="doccomment">/// assert_eq!(*stats.get(&quot;Losses&quot;).unwrap(), 3);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the given closure panics, then `alter_all` will abort the process</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">alter_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">K</span>, <span class="ident">V</span>) -&gt; <span class="ident">V</span>) {
-        <span class="self">self</span>.<span class="ident">_alter_all</span>(<span class="ident">f</span>);
+    <span class="doccomment">/// Modify every value in the map according to a function.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let stats = DashMap::new();
+    /// stats.insert(&quot;Wins&quot;, 4);
+    /// stats.insert(&quot;Losses&quot;, 2);
+    /// stats.alter_all(|_, v| v + 1);
+    /// assert_eq!(*stats.get(&quot;Wins&quot;).unwrap(), 5);
+    /// assert_eq!(*stats.get(&quot;Losses&quot;).unwrap(), 3);
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// If the given closure panics, then `alter_all` will abort the process
+    </span><span class="kw">pub fn </span>alter_all(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>K, V) -&gt; V) {
+        <span class="self">self</span>._alter_all(f);
     }
 
-    <span class="doccomment">/// Checks if the map contains a specific key.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Examples</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use dashmap::DashMap;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let team_sizes = DashMap::new();</span>
-    <span class="doccomment">/// team_sizes.insert(&quot;Dakota Cherries&quot;, 23);</span>
-    <span class="doccomment">/// assert!(team_sizes.contains_key(&quot;Dakota Cherries&quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">contains_key</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="ident">bool</span>
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="doccomment">/// Checks if the map contains a specific key.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding a mutable reference into the map.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use dashmap::DashMap;
+    ///
+    /// let team_sizes = DashMap::new();
+    /// team_sizes.insert(&quot;Dakota Cherries&quot;, 23);
+    /// assert!(team_sizes.contains_key(&quot;Dakota Cherries&quot;));
+    /// ```
+    </span><span class="kw">pub fn </span>contains_key&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; bool
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: Hash + Eq + <span class="question-mark">?</span>Sized,
     {
-        <span class="self">self</span>.<span class="ident">_contains_key</span>(<span class="ident">key</span>)
+        <span class="self">self</span>._contains_key(key)
     }
 
-    <span class="doccomment">/// Advanced entry API that tries to mimic `std::collections::HashMap`.</span>
-    <span class="doccomment">/// See the documentation on `dashmap::mapref::entry` for more details.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">entry</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>) -&gt; <span class="ident">Entry</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; {
-        <span class="self">self</span>.<span class="ident">_entry</span>(<span class="ident">key</span>)
+    <span class="doccomment">/// Advanced entry API that tries to mimic `std::collections::HashMap`.
+    /// See the documentation on `dashmap::mapref::entry` for more details.
+    ///
+    /// **Locking behaviour:** May deadlock if called when holding any sort of reference into the map.
+    </span><span class="kw">pub fn </span>entry(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: K) -&gt; Entry&lt;<span class="lifetime">&#39;a</span>, K, V, S&gt; {
+        <span class="self">self</span>._entry(key)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span> + <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="lifetime">&#39;a</span> + <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>&gt; <span class="ident">Map</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;
-    <span class="kw">for</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a </span>+ Eq + Hash, V: <span class="lifetime">&#39;a</span>, S: <span class="lifetime">&#39;a </span>+ BuildHasher + Clone&gt; Map&lt;<span class="lifetime">&#39;a</span>, K, V, S&gt;
+    <span class="kw">for </span>DashMap&lt;K, V, S&gt;
 {
-    <span class="kw">fn</span> <span class="ident">_shard_count</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">len</span>()
+    <span class="kw">fn </span>_shard_count(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.shards.len()
     }
 
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">_get_read_shard</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">HashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; {
-        <span class="macro">debug_assert!</span>(<span class="ident">i</span> &lt; <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">len</span>());
+    <span class="kw">unsafe fn </span>_get_read_shard(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, i: usize) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>HashMap&lt;K, V, S&gt; {
+        <span class="macro">debug_assert!</span>(i &lt; <span class="self">self</span>.shards.len());
 
-        <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">get_unchecked</span>(<span class="ident">i</span>).<span class="ident">get</span>()
+        <span class="self">self</span>.shards.get_unchecked(i).get()
     }
 
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">_yield_read_shard</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) -&gt; <span class="ident">RwLockReadGuard</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">HashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt; {
-        <span class="macro">debug_assert!</span>(<span class="ident">i</span> &lt; <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">len</span>());
+    <span class="kw">unsafe fn </span>_yield_read_shard(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, i: usize) -&gt; RwLockReadGuard&lt;<span class="lifetime">&#39;a</span>, HashMap&lt;K, V, S&gt;&gt; {
+        <span class="macro">debug_assert!</span>(i &lt; <span class="self">self</span>.shards.len());
 
-        <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">get_unchecked</span>(<span class="ident">i</span>).<span class="ident">read</span>()
+        <span class="self">self</span>.shards.get_unchecked(i).read()
     }
 
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">_yield_write_shard</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) -&gt; <span class="ident">RwLockWriteGuard</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">HashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt; {
-        <span class="macro">debug_assert!</span>(<span class="ident">i</span> &lt; <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">len</span>());
+    <span class="kw">unsafe fn </span>_yield_write_shard(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, i: usize) -&gt; RwLockWriteGuard&lt;<span class="lifetime">&#39;a</span>, HashMap&lt;K, V, S&gt;&gt; {
+        <span class="macro">debug_assert!</span>(i &lt; <span class="self">self</span>.shards.len());
 
-        <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">get_unchecked</span>(<span class="ident">i</span>).<span class="ident">write</span>()
+        <span class="self">self</span>.shards.get_unchecked(i).write()
     }
 
-    <span class="kw">fn</span> <span class="ident">_insert</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>, <span class="ident">value</span>: <span class="ident">V</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">V</span>&gt; {
-        <span class="kw">let</span> <span class="ident">hash</span> = <span class="self">self</span>.<span class="ident">hash_usize</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>);
+    <span class="kw">fn </span>_insert(<span class="kw-2">&amp;</span><span class="self">self</span>, key: K, value: V) -&gt; <span class="prelude-ty">Option</span>&lt;V&gt; {
+        <span class="kw">let </span>hash = <span class="self">self</span>.hash_usize(<span class="kw-2">&amp;</span>key);
 
-        <span class="kw">let</span> <span class="ident">idx</span> = <span class="self">self</span>.<span class="ident">determine_shard</span>(<span class="ident">hash</span>);
+        <span class="kw">let </span>idx = <span class="self">self</span>.determine_shard(hash);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">shard</span> = <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">_yield_write_shard</span>(<span class="ident">idx</span>) };
+        <span class="kw">let </span><span class="kw-2">mut </span>shard = <span class="kw">unsafe </span>{ <span class="self">self</span>._yield_write_shard(idx) };
 
-        <span class="ident">shard</span>
-            .<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">SharedValue::new</span>(<span class="ident">value</span>))
-            .<span class="ident">map</span>(|<span class="ident">v</span>| <span class="ident">v</span>.<span class="ident">into_inner</span>())
+        shard
+            .insert(key, SharedValue::new(value))
+            .map(|v| v.into_inner())
     }
 
-    <span class="kw">fn</span> <span class="ident">_remove</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">K</span>, <span class="ident">V</span>)&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="kw">fn </span>_remove&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="prelude-ty">Option</span>&lt;(K, V)&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: Hash + Eq + <span class="question-mark">?</span>Sized,
     {
-        <span class="kw">let</span> <span class="ident">hash</span> = <span class="self">self</span>.<span class="ident">hash_usize</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>);
+        <span class="kw">let </span>hash = <span class="self">self</span>.hash_usize(<span class="kw-2">&amp;</span>key);
 
-        <span class="kw">let</span> <span class="ident">idx</span> = <span class="self">self</span>.<span class="ident">determine_shard</span>(<span class="ident">hash</span>);
+        <span class="kw">let </span>idx = <span class="self">self</span>.determine_shard(hash);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">shard</span> = <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">_yield_write_shard</span>(<span class="ident">idx</span>) };
+        <span class="kw">let </span><span class="kw-2">mut </span>shard = <span class="kw">unsafe </span>{ <span class="self">self</span>._yield_write_shard(idx) };
 
-        <span class="ident">shard</span>.<span class="ident">remove_entry</span>(<span class="ident">key</span>).<span class="ident">map</span>(|(<span class="ident">k</span>, <span class="ident">v</span>)| (<span class="ident">k</span>, <span class="ident">v</span>.<span class="ident">into_inner</span>()))
+        shard.remove_entry(key).map(|(k, v)| (k, v.into_inner()))
     }
 
-    <span class="kw">fn</span> <span class="ident">_remove_if</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>, <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="ident">K</span>, <span class="kw-2">&amp;</span><span class="ident">V</span>) -&gt; <span class="ident">bool</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">K</span>, <span class="ident">V</span>)&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="kw">fn </span>_remove_if&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q, f: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;</span>K, <span class="kw-2">&amp;</span>V) -&gt; bool) -&gt; <span class="prelude-ty">Option</span>&lt;(K, V)&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: Hash + Eq + <span class="question-mark">?</span>Sized,
     {
-        <span class="kw">let</span> <span class="ident">hash</span> = <span class="self">self</span>.<span class="ident">hash_usize</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>);
+        <span class="kw">let </span>hash = <span class="self">self</span>.hash_usize(<span class="kw-2">&amp;</span>key);
 
-        <span class="kw">let</span> <span class="ident">idx</span> = <span class="self">self</span>.<span class="ident">determine_shard</span>(<span class="ident">hash</span>);
+        <span class="kw">let </span>idx = <span class="self">self</span>.determine_shard(hash);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">shard</span> = <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">_yield_write_shard</span>(<span class="ident">idx</span>) };
+        <span class="kw">let </span><span class="kw-2">mut </span>shard = <span class="kw">unsafe </span>{ <span class="self">self</span>._yield_write_shard(idx) };
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">k</span>, <span class="ident">v</span>)) = <span class="ident">shard</span>.<span class="ident">get_key_value</span>(<span class="ident">key</span>) {
-            <span class="kw">if</span> <span class="ident">f</span>(<span class="ident">k</span>, <span class="ident">v</span>.<span class="ident">get</span>()) {
-                <span class="ident">shard</span>.<span class="ident">remove_entry</span>(<span class="ident">key</span>).<span class="ident">map</span>(|(<span class="ident">k</span>, <span class="ident">v</span>)| (<span class="ident">k</span>, <span class="ident">v</span>.<span class="ident">into_inner</span>()))
-            } <span class="kw">else</span> {
-                <span class="prelude-val">None</span>
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((k, v)) = shard.get_key_value(key) {
+            <span class="kw">if </span>f(k, v.get()) {
+                shard.remove_entry(key).map(|(k, v)| (k, v.into_inner()))
+            } <span class="kw">else </span>{
+                <span class="prelude-val">None
+            </span>}
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
+    }
+
+    <span class="kw">fn </span>_iter(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>) -&gt; Iter&lt;<span class="lifetime">&#39;a</span>, K, V, S, DashMap&lt;K, V, S&gt;&gt; {
+        Iter::new(<span class="self">self</span>)
+    }
+
+    <span class="kw">fn </span>_iter_mut(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>) -&gt; IterMut&lt;<span class="lifetime">&#39;a</span>, K, V, S, DashMap&lt;K, V, S&gt;&gt; {
+        IterMut::new(<span class="self">self</span>)
+    }
+
+    <span class="kw">fn </span>_get&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="prelude-ty">Option</span>&lt;Ref&lt;<span class="lifetime">&#39;a</span>, K, V, S&gt;&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: Hash + Eq + <span class="question-mark">?</span>Sized,
+    {
+        <span class="kw">let </span>hash = <span class="self">self</span>.hash_usize(<span class="kw-2">&amp;</span>key);
+
+        <span class="kw">let </span>idx = <span class="self">self</span>.determine_shard(hash);
+
+        <span class="kw">let </span>shard = <span class="kw">unsafe </span>{ <span class="self">self</span>._yield_read_shard(idx) };
+
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((kptr, vptr)) = shard.get_key_value(key) {
+            <span class="kw">unsafe </span>{
+                <span class="kw">let </span>kptr = util::change_lifetime_const(kptr);
+
+                <span class="kw">let </span>vptr = util::change_lifetime_const(vptr);
+
+                <span class="prelude-val">Some</span>(Ref::new(shard, kptr, vptr.get()))
             }
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 
-    <span class="kw">fn</span> <span class="ident">_iter</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>, <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt; {
-        <span class="ident">Iter::new</span>(<span class="self">self</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">_iter_mut</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>) -&gt; <span class="ident">IterMut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>, <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt; {
-        <span class="ident">IterMut::new</span>(<span class="self">self</span>)
-    }
-
-    <span class="kw">fn</span> <span class="ident">_get</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">Ref</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="kw">fn </span>_get_mut&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="prelude-ty">Option</span>&lt;RefMut&lt;<span class="lifetime">&#39;a</span>, K, V, S&gt;&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: Hash + Eq + <span class="question-mark">?</span>Sized,
     {
-        <span class="kw">let</span> <span class="ident">hash</span> = <span class="self">self</span>.<span class="ident">hash_usize</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>);
+        <span class="kw">let </span>hash = <span class="self">self</span>.hash_usize(<span class="kw-2">&amp;</span>key);
 
-        <span class="kw">let</span> <span class="ident">idx</span> = <span class="self">self</span>.<span class="ident">determine_shard</span>(<span class="ident">hash</span>);
+        <span class="kw">let </span>idx = <span class="self">self</span>.determine_shard(hash);
 
-        <span class="kw">let</span> <span class="ident">shard</span> = <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">_yield_read_shard</span>(<span class="ident">idx</span>) };
+        <span class="kw">let </span>shard = <span class="kw">unsafe </span>{ <span class="self">self</span>._yield_write_shard(idx) };
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">kptr</span>, <span class="ident">vptr</span>)) = <span class="ident">shard</span>.<span class="ident">get_key_value</span>(<span class="ident">key</span>) {
-            <span class="kw">unsafe</span> {
-                <span class="kw">let</span> <span class="ident">kptr</span> = <span class="ident">util::change_lifetime_const</span>(<span class="ident">kptr</span>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((kptr, vptr)) = shard.get_key_value(key) {
+            <span class="kw">unsafe </span>{
+                <span class="kw">let </span>kptr = util::change_lifetime_const(kptr);
 
-                <span class="kw">let</span> <span class="ident">vptr</span> = <span class="ident">util::change_lifetime_const</span>(<span class="ident">vptr</span>);
+                <span class="kw">let </span>vptr = <span class="kw-2">&amp;mut *</span>vptr.as_ptr();
 
-                <span class="prelude-val">Some</span>(<span class="ident">Ref::new</span>(<span class="ident">shard</span>, <span class="ident">kptr</span>, <span class="ident">vptr</span>.<span class="ident">get</span>()))
+                <span class="prelude-val">Some</span>(RefMut::new(shard, kptr, vptr))
             }
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 
-    <span class="kw">fn</span> <span class="ident">_get_mut</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">RefMut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+    <span class="kw">fn </span>_shrink_to_fit(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="self">self</span>.shards.iter().for_each(|s| s.write().shrink_to_fit());
+    }
+
+    <span class="kw">fn </span>_retain(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>f: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>K, <span class="kw-2">&amp;mut </span>V) -&gt; bool) {
+        <span class="self">self</span>.shards
+            .iter()
+            .for_each(|s| s.write().retain(|k, v| f(k, v.get_mut())));
+    }
+
+    <span class="kw">fn </span>_len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.shards.iter().map(|s| s.read().len()).sum()
+    }
+
+    <span class="kw">fn </span>_capacity(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.shards.iter().map(|s| s.read().capacity()).sum()
+    }
+
+    <span class="kw">fn </span>_alter&lt;Q&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q, f: <span class="kw">impl </span>FnOnce(<span class="kw-2">&amp;</span>K, V) -&gt; V)
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: Hash + Eq + <span class="question-mark">?</span>Sized,
     {
-        <span class="kw">let</span> <span class="ident">hash</span> = <span class="self">self</span>.<span class="ident">hash_usize</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>);
-
-        <span class="kw">let</span> <span class="ident">idx</span> = <span class="self">self</span>.<span class="ident">determine_shard</span>(<span class="ident">hash</span>);
-
-        <span class="kw">let</span> <span class="ident">shard</span> = <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">_yield_write_shard</span>(<span class="ident">idx</span>) };
-
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">kptr</span>, <span class="ident">vptr</span>)) = <span class="ident">shard</span>.<span class="ident">get_key_value</span>(<span class="ident">key</span>) {
-            <span class="kw">unsafe</span> {
-                <span class="kw">let</span> <span class="ident">kptr</span> = <span class="ident">util::change_lifetime_const</span>(<span class="ident">kptr</span>);
-
-                <span class="kw">let</span> <span class="ident">vptr</span> = <span class="kw-2">&amp;mut</span> <span class="kw-2">*</span><span class="ident">vptr</span>.<span class="ident">as_ptr</span>();
-
-                <span class="prelude-val">Some</span>(<span class="ident">RefMut::new</span>(<span class="ident">shard</span>, <span class="ident">kptr</span>, <span class="ident">vptr</span>))
-            }
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>r) = <span class="self">self</span>.get_mut(key) {
+            util::map_in_place_2(r.pair_mut(), f);
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">_shrink_to_fit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">iter</span>().<span class="ident">for_each</span>(|<span class="ident">s</span>| <span class="ident">s</span>.<span class="ident">write</span>().<span class="ident">shrink_to_fit</span>());
-    }
-
-    <span class="kw">fn</span> <span class="ident">_retain</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">K</span>, <span class="kw-2">&amp;mut</span> <span class="ident">V</span>) -&gt; <span class="ident">bool</span>) {
-        <span class="self">self</span>.<span class="ident">shards</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">for_each</span>(|<span class="ident">s</span>| <span class="ident">s</span>.<span class="ident">write</span>().<span class="ident">retain</span>(|<span class="ident">k</span>, <span class="ident">v</span>| <span class="ident">f</span>(<span class="ident">k</span>, <span class="ident">v</span>.<span class="ident">get_mut</span>())));
-    }
-
-    <span class="kw">fn</span> <span class="ident">_len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="ident">s</span>| <span class="ident">s</span>.<span class="ident">read</span>().<span class="ident">len</span>()).<span class="ident">sum</span>()
-    }
-
-    <span class="kw">fn</span> <span class="ident">_capacity</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="ident">s</span>| <span class="ident">s</span>.<span class="ident">read</span>().<span class="ident">capacity</span>()).<span class="ident">sum</span>()
-    }
-
-    <span class="kw">fn</span> <span class="ident">_alter</span>&lt;<span class="ident">Q</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>, <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnOnce</span>(<span class="kw-2">&amp;</span><span class="ident">K</span>, <span class="ident">V</span>) -&gt; <span class="ident">V</span>)
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
-    {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">r</span>) = <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="ident">key</span>) {
-            <span class="ident">util::map_in_place_2</span>(<span class="ident">r</span>.<span class="ident">pair_mut</span>(), <span class="ident">f</span>);
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">_alter_all</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">K</span>, <span class="ident">V</span>) -&gt; <span class="ident">V</span>) {
-        <span class="self">self</span>.<span class="ident">shards</span>.<span class="ident">iter</span>().<span class="ident">for_each</span>(|<span class="ident">s</span>| {
-            <span class="ident">s</span>.<span class="ident">write</span>()
-                .<span class="ident">iter_mut</span>()
-                .<span class="ident">for_each</span>(|(<span class="ident">k</span>, <span class="ident">v</span>)| <span class="ident">util::map_in_place_2</span>((<span class="ident">k</span>, <span class="ident">v</span>.<span class="ident">get_mut</span>()), <span class="kw-2">&amp;mut</span> <span class="ident">f</span>));
+    <span class="kw">fn </span>_alter_all(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>f: <span class="kw">impl </span>FnMut(<span class="kw-2">&amp;</span>K, V) -&gt; V) {
+        <span class="self">self</span>.shards.iter().for_each(|s| {
+            s.write()
+                .iter_mut()
+                .for_each(|(k, v)| util::map_in_place_2((k, v.get_mut()), <span class="kw-2">&amp;mut </span>f));
         });
     }
 
-    <span class="kw">fn</span> <span class="ident">_entry</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>) -&gt; <span class="ident">Entry</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; {
-        <span class="kw">let</span> <span class="ident">hash</span> = <span class="self">self</span>.<span class="ident">hash_usize</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>);
+    <span class="kw">fn </span>_entry(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: K) -&gt; Entry&lt;<span class="lifetime">&#39;a</span>, K, V, S&gt; {
+        <span class="kw">let </span>hash = <span class="self">self</span>.hash_usize(<span class="kw-2">&amp;</span>key);
 
-        <span class="kw">let</span> <span class="ident">idx</span> = <span class="self">self</span>.<span class="ident">determine_shard</span>(<span class="ident">hash</span>);
+        <span class="kw">let </span>idx = <span class="self">self</span>.determine_shard(hash);
 
-        <span class="kw">let</span> <span class="ident">shard</span> = <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">_yield_write_shard</span>(<span class="ident">idx</span>) };
+        <span class="kw">let </span>shard = <span class="kw">unsafe </span>{ <span class="self">self</span>._yield_write_shard(idx) };
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">kptr</span>, <span class="ident">vptr</span>)) = <span class="ident">shard</span>.<span class="ident">get_key_value</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>) {
-            <span class="kw">unsafe</span> {
-                <span class="kw">let</span> <span class="ident">kptr</span> = <span class="ident">util::change_lifetime_const</span>(<span class="ident">kptr</span>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((kptr, vptr)) = shard.get_key_value(<span class="kw-2">&amp;</span>key) {
+            <span class="kw">unsafe </span>{
+                <span class="kw">let </span>kptr = util::change_lifetime_const(kptr);
 
-                <span class="kw">let</span> <span class="ident">vptr</span> = <span class="kw-2">&amp;mut</span> <span class="kw-2">*</span><span class="ident">vptr</span>.<span class="ident">as_ptr</span>();
+                <span class="kw">let </span>vptr = <span class="kw-2">&amp;mut *</span>vptr.as_ptr();
 
-                <span class="ident">Entry::Occupied</span>(<span class="ident">OccupiedEntry::new</span>(<span class="ident">shard</span>, <span class="ident">key</span>, (<span class="ident">kptr</span>, <span class="ident">vptr</span>)))
+                Entry::Occupied(OccupiedEntry::new(shard, key, (kptr, vptr)))
             }
-        } <span class="kw">else</span> {
-            <span class="ident">Entry::Vacant</span>(<span class="ident">VacantEntry::new</span>(<span class="ident">shard</span>, <span class="ident">key</span>))
+        } <span class="kw">else </span>{
+            Entry::Vacant(VacantEntry::new(shard, key))
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">_hasher</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">S</span> {
-        <span class="self">self</span>.<span class="ident">hasher</span>.<span class="ident">clone</span>()
+    <span class="kw">fn </span>_hasher(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; S {
+        <span class="self">self</span>.hasher.clone()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>: <span class="ident">Eq</span> + <span class="ident">Hash</span> + <span class="ident">fmt::Debug</span>, <span class="ident">V</span>: <span class="ident">fmt::Debug</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>&gt; <span class="ident">fmt::Debug</span>
-    <span class="kw">for</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;
+<span class="kw">impl</span>&lt;K: Eq + Hash + fmt::Debug, V: fmt::Debug, S: BuildHasher + Clone&gt; fmt::Debug
+    <span class="kw">for </span>DashMap&lt;K, V, S&gt;
 {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pmap</span> = <span class="ident">f</span>.<span class="ident">debug_map</span>();
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">let </span><span class="kw-2">mut </span>pmap = f.debug_map();
 
-        <span class="kw">for</span> <span class="ident">r</span> <span class="kw">in</span> <span class="self">self</span> {
-            <span class="kw">let</span> (<span class="ident">k</span>, <span class="ident">v</span>) = <span class="ident">r</span>.<span class="ident">pair</span>();
+        <span class="kw">for </span>r <span class="kw">in </span><span class="self">self </span>{
+            <span class="kw">let </span>(k, v) = r.pair();
 
-            <span class="ident">pmap</span>.<span class="ident">entry</span>(<span class="ident">k</span>, <span class="ident">v</span>);
+            pmap.entry(k, v);
         }
 
-        <span class="ident">pmap</span>.<span class="ident">finish</span>()
+        pmap.finish()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span> + <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>&gt; <span class="ident">Shl</span>&lt;(<span class="ident">K</span>, <span class="ident">V</span>)&gt; <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Output</span> = <span class="prelude-ty">Option</span>&lt;<span class="ident">V</span>&gt;;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a </span>+ Eq + Hash, V: <span class="lifetime">&#39;a</span>, S: BuildHasher + Clone&gt; Shl&lt;(K, V)&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>DashMap&lt;K, V, S&gt; {
+    <span class="kw">type </span>Output = <span class="prelude-ty">Option</span>&lt;V&gt;;
 
-    <span class="kw">fn</span> <span class="ident">shl</span>(<span class="self">self</span>, <span class="ident">pair</span>: (<span class="ident">K</span>, <span class="ident">V</span>)) -&gt; <span class="ident"><span class="self">Self</span>::Output</span> {
-        <span class="self">self</span>.<span class="ident">insert</span>(<span class="ident">pair</span>.<span class="number">0</span>, <span class="ident">pair</span>.<span class="number">1</span>)
+    <span class="kw">fn </span>shl(<span class="self">self</span>, pair: (K, V)) -&gt; <span class="self">Self</span>::Output {
+        <span class="self">self</span>.insert(pair.<span class="number">0</span>, pair.<span class="number">1</span>)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span> + <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>, <span class="ident">Q</span>&gt; <span class="ident">Shr</span>&lt;<span class="kw-2">&amp;</span><span class="ident">Q</span>&gt; <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-    <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a </span>+ Eq + Hash, V: <span class="lifetime">&#39;a</span>, S: BuildHasher + Clone, Q&gt; Shr&lt;<span class="kw-2">&amp;</span>Q&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>DashMap&lt;K, V, S&gt;
+<span class="kw">where
+    </span>K: Borrow&lt;Q&gt;,
+    Q: Hash + Eq + <span class="question-mark">?</span>Sized,
 {
-    <span class="kw">type</span> <span class="ident">Output</span> = <span class="ident">Ref</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;;
+    <span class="kw">type </span>Output = Ref&lt;<span class="lifetime">&#39;a</span>, K, V, S&gt;;
 
-    <span class="kw">fn</span> <span class="ident">shr</span>(<span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="ident"><span class="self">Self</span>::Output</span> {
-        <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">key</span>).<span class="ident">unwrap</span>()
+    <span class="kw">fn </span>shr(<span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="self">Self</span>::Output {
+        <span class="self">self</span>.get(key).unwrap()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span> + <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>, <span class="ident">Q</span>&gt; <span class="ident">BitOr</span>&lt;<span class="kw-2">&amp;</span><span class="ident">Q</span>&gt; <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-    <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a </span>+ Eq + Hash, V: <span class="lifetime">&#39;a</span>, S: BuildHasher + Clone, Q&gt; BitOr&lt;<span class="kw-2">&amp;</span>Q&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>DashMap&lt;K, V, S&gt;
+<span class="kw">where
+    </span>K: Borrow&lt;Q&gt;,
+    Q: Hash + Eq + <span class="question-mark">?</span>Sized,
 {
-    <span class="kw">type</span> <span class="ident">Output</span> = <span class="ident">RefMut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;;
+    <span class="kw">type </span>Output = RefMut&lt;<span class="lifetime">&#39;a</span>, K, V, S&gt;;
 
-    <span class="kw">fn</span> <span class="ident">bitor</span>(<span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="ident"><span class="self">Self</span>::Output</span> {
-        <span class="self">self</span>.<span class="ident">get_mut</span>(<span class="ident">key</span>).<span class="ident">unwrap</span>()
+    <span class="kw">fn </span>bitor(<span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="self">Self</span>::Output {
+        <span class="self">self</span>.get_mut(key).unwrap()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span> + <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>, <span class="ident">Q</span>&gt; <span class="ident">Sub</span>&lt;<span class="kw-2">&amp;</span><span class="ident">Q</span>&gt; <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-    <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a </span>+ Eq + Hash, V: <span class="lifetime">&#39;a</span>, S: BuildHasher + Clone, Q&gt; Sub&lt;<span class="kw-2">&amp;</span>Q&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>DashMap&lt;K, V, S&gt;
+<span class="kw">where
+    </span>K: Borrow&lt;Q&gt;,
+    Q: Hash + Eq + <span class="question-mark">?</span>Sized,
 {
-    <span class="kw">type</span> <span class="ident">Output</span> = <span class="prelude-ty">Option</span>&lt;(<span class="ident">K</span>, <span class="ident">V</span>)&gt;;
+    <span class="kw">type </span>Output = <span class="prelude-ty">Option</span>&lt;(K, V)&gt;;
 
-    <span class="kw">fn</span> <span class="ident">sub</span>(<span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="ident"><span class="self">Self</span>::Output</span> {
-        <span class="self">self</span>.<span class="ident">remove</span>(<span class="ident">key</span>)
+    <span class="kw">fn </span>sub(<span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="self">Self</span>::Output {
+        <span class="self">self</span>.remove(key)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="lifetime">&#39;a</span> + <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>: <span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>, <span class="ident">Q</span>&gt; <span class="ident">BitAnd</span>&lt;<span class="kw-2">&amp;</span><span class="ident">Q</span>&gt; <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-    <span class="ident">Q</span>: <span class="ident">Hash</span> + <span class="ident">Eq</span> + <span class="question-mark">?</span><span class="ident">Sized</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: <span class="lifetime">&#39;a </span>+ Eq + Hash, V: <span class="lifetime">&#39;a</span>, S: BuildHasher + Clone, Q&gt; BitAnd&lt;<span class="kw-2">&amp;</span>Q&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>DashMap&lt;K, V, S&gt;
+<span class="kw">where
+    </span>K: Borrow&lt;Q&gt;,
+    Q: Hash + Eq + <span class="question-mark">?</span>Sized,
 {
-    <span class="kw">type</span> <span class="ident">Output</span> = <span class="ident">bool</span>;
+    <span class="kw">type </span>Output = bool;
 
-    <span class="kw">fn</span> <span class="ident">bitand</span>(<span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="ident"><span class="self">Self</span>::Output</span> {
-        <span class="self">self</span>.<span class="ident">contains_key</span>(<span class="ident">key</span>)
+    <span class="kw">fn </span>bitand(<span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; <span class="self">Self</span>::Output {
+        <span class="self">self</span>.contains_key(key)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>&gt; <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Item</span> = (<span class="ident">K</span>, <span class="ident">V</span>);
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: Eq + Hash, V, S: BuildHasher + Clone&gt; IntoIterator <span class="kw">for </span>DashMap&lt;K, V, S&gt; {
+    <span class="kw">type </span>Item = (K, V);
 
-    <span class="kw">type</span> <span class="ident">IntoIter</span> = <span class="ident">OwningIter</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;;
+    <span class="kw">type </span>IntoIter = OwningIter&lt;K, V, S&gt;;
 
-    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::IntoIter</span> {
-        <span class="ident">OwningIter::new</span>(<span class="self">self</span>)
+    <span class="kw">fn </span>into_iter(<span class="self">self</span>) -&gt; <span class="self">Self</span>::IntoIter {
+        OwningIter::new(<span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>: <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>&gt; <span class="ident">IntoIterator</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">RefMulti</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K: Eq + Hash, V, S: BuildHasher + Clone&gt; IntoIterator <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>DashMap&lt;K, V, S&gt; {
+    <span class="kw">type </span>Item = RefMulti&lt;<span class="lifetime">&#39;a</span>, K, V, S&gt;;
 
-    <span class="kw">type</span> <span class="ident">IntoIter</span> = <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>, <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt;&gt;;
+    <span class="kw">type </span>IntoIter = Iter&lt;<span class="lifetime">&#39;a</span>, K, V, S, DashMap&lt;K, V, S&gt;&gt;;
 
-    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::IntoIter</span> {
-        <span class="self">self</span>.<span class="ident">iter</span>()
+    <span class="kw">fn </span>into_iter(<span class="self">self</span>) -&gt; <span class="self">Self</span>::IntoIter {
+        <span class="self">self</span>.iter()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>: <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>, <span class="ident">S</span>: <span class="ident">BuildHasher</span> + <span class="ident">Clone</span>&gt; <span class="ident">Extend</span>&lt;(<span class="ident">K</span>, <span class="ident">V</span>)&gt; <span class="kw">for</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">S</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">extend</span>&lt;<span class="ident">I</span>: <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = (<span class="ident">K</span>, <span class="ident">V</span>)&gt;&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">intoiter</span>: <span class="ident">I</span>) {
-        <span class="kw">for</span> <span class="ident">pair</span> <span class="kw">in</span> <span class="ident">intoiter</span>.<span class="ident">into_iter</span>() {
-            <span class="self">self</span>.<span class="ident">insert</span>(<span class="ident">pair</span>.<span class="number">0</span>, <span class="ident">pair</span>.<span class="number">1</span>);
+<span class="kw">impl</span>&lt;K: Eq + Hash, V, S: BuildHasher + Clone&gt; Extend&lt;(K, V)&gt; <span class="kw">for </span>DashMap&lt;K, V, S&gt; {
+    <span class="kw">fn </span>extend&lt;I: IntoIterator&lt;Item = (K, V)&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, intoiter: I) {
+        <span class="kw">for </span>pair <span class="kw">in </span>intoiter.into_iter() {
+            <span class="self">self</span>.insert(pair.<span class="number">0</span>, pair.<span class="number">1</span>);
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">K</span>: <span class="ident">Eq</span> + <span class="ident">Hash</span>, <span class="ident">V</span>&gt; <span class="ident">FromIterator</span>&lt;(<span class="ident">K</span>, <span class="ident">V</span>)&gt; <span class="kw">for</span> <span class="ident">DashMap</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>, <span class="ident">RandomState</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">from_iter</span>&lt;<span class="ident">I</span>: <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = (<span class="ident">K</span>, <span class="ident">V</span>)&gt;&gt;(<span class="ident">intoiter</span>: <span class="ident">I</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> = <span class="ident">DashMap::new</span>();
+<span class="kw">impl</span>&lt;K: Eq + Hash, V&gt; FromIterator&lt;(K, V)&gt; <span class="kw">for </span>DashMap&lt;K, V, RandomState&gt; {
+    <span class="kw">fn </span>from_iter&lt;I: IntoIterator&lt;Item = (K, V)&gt;&gt;(intoiter: I) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>map = DashMap::new();
 
-        <span class="ident">map</span>.<span class="ident">extend</span>(<span class="ident">intoiter</span>);
+        map.extend(intoiter);
 
-        <span class="ident">map</span>
+        map
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::DashMap</span>;
-    <span class="kw">use</span> <span class="ident">std::collections::hash_map::RandomState</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use </span><span class="kw">crate</span>::DashMap;
+    <span class="kw">use </span>std::collections::hash_map::RandomState;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_basic</span>() {
-        <span class="kw">let</span> <span class="ident">dm</span> = <span class="ident">DashMap::new</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_basic() {
+        <span class="kw">let </span>dm = DashMap::new();
 
-        <span class="ident">dm</span>.<span class="ident">insert</span>(<span class="number">0</span>, <span class="number">0</span>);
+        dm.insert(<span class="number">0</span>, <span class="number">0</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">dm</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="number">0</span>).<span class="ident">unwrap</span>().<span class="ident">value</span>(), <span class="kw-2">&amp;</span><span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(dm.get(<span class="kw-2">&amp;</span><span class="number">0</span>).unwrap().value(), <span class="kw-2">&amp;</span><span class="number">0</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_default</span>() {
-        <span class="kw">let</span> <span class="ident">dm</span>: <span class="ident">DashMap</span>&lt;<span class="ident">u32</span>, <span class="ident">u32</span>&gt; = <span class="ident">DashMap::default</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_default() {
+        <span class="kw">let </span>dm: DashMap&lt;u32, u32&gt; = DashMap::default();
 
-        <span class="ident">dm</span>.<span class="ident">insert</span>(<span class="number">0</span>, <span class="number">0</span>);
+        dm.insert(<span class="number">0</span>, <span class="number">0</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">dm</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="number">0</span>).<span class="ident">unwrap</span>().<span class="ident">value</span>(), <span class="kw-2">&amp;</span><span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(dm.get(<span class="kw-2">&amp;</span><span class="number">0</span>).unwrap().value(), <span class="kw-2">&amp;</span><span class="number">0</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_multiple_hashes</span>() {
-        <span class="kw">let</span> <span class="ident">dm</span>: <span class="ident">DashMap</span>&lt;<span class="ident">u32</span>, <span class="ident">u32</span>&gt; = <span class="ident">DashMap::default</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_multiple_hashes() {
+        <span class="kw">let </span>dm: DashMap&lt;u32, u32&gt; = DashMap::default();
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">100</span> {
-            <span class="ident">dm</span>.<span class="ident">insert</span>(<span class="number">0</span>, <span class="ident">i</span>);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">100 </span>{
+            dm.insert(<span class="number">0</span>, i);
 
-            <span class="ident">dm</span>.<span class="ident">insert</span>(<span class="ident">i</span>, <span class="ident">i</span>);
+            dm.insert(i, i);
         }
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="number">100</span> {
-            <span class="kw">let</span> <span class="ident">r</span> = <span class="ident">dm</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">i</span>).<span class="ident">unwrap</span>();
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">1</span>..<span class="number">100 </span>{
+            <span class="kw">let </span>r = dm.get(<span class="kw-2">&amp;</span>i).unwrap();
 
-            <span class="macro">assert_eq!</span>(<span class="ident">i</span>, <span class="kw-2">*</span><span class="ident">r</span>.<span class="ident">value</span>());
+            <span class="macro">assert_eq!</span>(i, <span class="kw-2">*</span>r.value());
 
-            <span class="macro">assert_eq!</span>(<span class="ident">i</span>, <span class="kw-2">*</span><span class="ident">r</span>.<span class="ident">key</span>());
+            <span class="macro">assert_eq!</span>(i, <span class="kw-2">*</span>r.key());
         }
 
-        <span class="kw">let</span> <span class="ident">r</span> = <span class="ident">dm</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="number">0</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>r = dm.get(<span class="kw-2">&amp;</span><span class="number">0</span>).unwrap();
 
-        <span class="macro">assert_eq!</span>(<span class="number">99</span>, <span class="kw-2">*</span><span class="ident">r</span>.<span class="ident">value</span>());
+        <span class="macro">assert_eq!</span>(<span class="number">99</span>, <span class="kw-2">*</span>r.value());
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_more_complex_values</span>() {
-        <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Hash</span>, <span class="ident">PartialEq</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_more_complex_values() {
+        <span class="attribute">#[derive(Hash, PartialEq, Debug, Clone)]
 
-        <span class="kw">struct</span> <span class="ident">T0</span> {
-            <span class="ident">s</span>: <span class="ident">String</span>,
-            <span class="ident">u</span>: <span class="ident">u8</span>,
+        </span><span class="kw">struct </span>T0 {
+            s: String,
+            u: u8,
         }
 
-        <span class="kw">let</span> <span class="ident">dm</span> = <span class="ident">DashMap::new</span>();
+        <span class="kw">let </span>dm = DashMap::new();
 
-        <span class="kw">let</span> <span class="ident">range</span> = <span class="number">0</span>..<span class="number">10</span>;
+        <span class="kw">let </span>range = <span class="number">0</span>..<span class="number">10</span>;
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">range</span> {
-            <span class="kw">let</span> <span class="ident">t</span> = <span class="ident">T0</span> {
-                <span class="ident">s</span>: <span class="ident">i</span>.<span class="ident">to_string</span>(),
-                <span class="ident">u</span>: <span class="ident">i</span> <span class="kw">as</span> <span class="ident">u8</span>,
+        <span class="kw">for </span>i <span class="kw">in </span>range {
+            <span class="kw">let </span>t = T0 {
+                s: i.to_string(),
+                u: i <span class="kw">as </span>u8,
             };
 
-            <span class="ident">dm</span>.<span class="ident">insert</span>(<span class="ident">i</span>, <span class="ident">t</span>.<span class="ident">clone</span>());
+            dm.insert(i, t.clone());
 
-            <span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span><span class="ident">t</span>, <span class="ident">dm</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">i</span>).<span class="ident">unwrap</span>().<span class="ident">value</span>());
+            <span class="macro">assert_eq!</span>(<span class="kw-2">&amp;</span>t, dm.get(<span class="kw-2">&amp;</span>i).unwrap().value());
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_different_hashers_randomstate</span>() {
-        <span class="kw">let</span> <span class="ident">dm_hm_default</span>: <span class="ident">DashMap</span>&lt;<span class="ident">u32</span>, <span class="ident">u32</span>, <span class="ident">RandomState</span>&gt; =
-            <span class="ident">DashMap::with_hasher</span>(<span class="ident">RandomState::new</span>());
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_different_hashers_randomstate() {
+        <span class="kw">let </span>dm_hm_default: DashMap&lt;u32, u32, RandomState&gt; =
+            DashMap::with_hasher(RandomState::new());
 
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">10</span> {
-            <span class="ident">dm_hm_default</span>.<span class="ident">insert</span>(<span class="ident">i</span>, <span class="ident">i</span>);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">10 </span>{
+            dm_hm_default.insert(i, i);
 
-            <span class="macro">assert_eq!</span>(<span class="ident">i</span>, <span class="kw-2">*</span><span class="ident">dm_hm_default</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">i</span>).<span class="ident">unwrap</span>().<span class="ident">value</span>());
+            <span class="macro">assert_eq!</span>(i, <span class="kw-2">*</span>dm_hm_default.get(<span class="kw-2">&amp;</span>i).unwrap().value());
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="dashmap" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="dashmap" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

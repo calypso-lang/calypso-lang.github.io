@@ -98,105 +98,105 @@
 <span id="98">98</span>
 <span id="99">99</span>
 <span id="100">100</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::iter</span>::{<span class="ident">Fuse</span>,<span class="ident">Peekable</span>, <span class="ident">FusedIterator</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>std::iter::{Fuse,Peekable, FusedIterator};
 
-<span class="doccomment">/// An iterator adaptor that wraps each element in an [`Position`].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `Position&lt;I::Item&gt;`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.with_position()`](crate::Itertools::with_position) for more information.</span>
-<span class="attribute">#[<span class="ident">must_use</span> = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">WithPosition</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>,
+<span class="doccomment">/// An iterator adaptor that wraps each element in an [`Position`].
+///
+/// Iterator element type is `Position&lt;I::Item&gt;`.
+///
+/// See [`.with_position()`](crate::Itertools::with_position) for more information.
+</span><span class="attribute">#[must_use = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]
+</span><span class="kw">pub struct </span>WithPosition&lt;I&gt;
+    <span class="kw">where </span>I: Iterator,
 {
-    <span class="ident">handled_first</span>: <span class="ident">bool</span>,
-    <span class="ident">peekable</span>: <span class="ident">Peekable</span>&lt;<span class="ident">Fuse</span>&lt;<span class="ident">I</span>&gt;&gt;,
+    handled_first: bool,
+    peekable: Peekable&lt;Fuse&lt;I&gt;&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">WithPosition</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Clone</span> + <span class="ident">Iterator</span>,
-          <span class="ident">I::Item</span>: <span class="ident">Clone</span>,
+<span class="kw">impl</span>&lt;I&gt; Clone <span class="kw">for </span>WithPosition&lt;I&gt;
+    <span class="kw">where </span>I: Clone + Iterator,
+          I::Item: Clone,
 {
-    <span class="macro">clone_fields!</span>(<span class="ident">handled_first</span>, <span class="ident">peekable</span>);
+    <span class="macro">clone_fields!</span>(handled_first, peekable);
 }
 
-<span class="doccomment">/// Create a new `WithPosition` iterator.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_position</span>&lt;<span class="ident">I</span>&gt;(<span class="ident">iter</span>: <span class="ident">I</span>) -&gt; <span class="ident">WithPosition</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>,
+<span class="doccomment">/// Create a new `WithPosition` iterator.
+</span><span class="kw">pub fn </span>with_position&lt;I&gt;(iter: I) -&gt; WithPosition&lt;I&gt;
+    <span class="kw">where </span>I: Iterator,
 {
-    <span class="ident">WithPosition</span> {
-        <span class="ident">handled_first</span>: <span class="bool-val">false</span>,
-        <span class="ident">peekable</span>: <span class="ident">iter</span>.<span class="ident">fuse</span>().<span class="ident">peekable</span>(),
+    WithPosition {
+        handled_first: <span class="bool-val">false</span>,
+        peekable: iter.fuse().peekable(),
     }
 }
 
-<span class="doccomment">/// A value yielded by `WithPosition`.</span>
-<span class="doccomment">/// Indicates the position of this element in the iterator results.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.with_position()`](crate::Itertools::with_position) for more information.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Position</span>&lt;<span class="ident">T</span>&gt; {
-    <span class="doccomment">/// This is the first element.</span>
-    <span class="ident">First</span>(<span class="ident">T</span>),
-    <span class="doccomment">/// This is neither the first nor the last element.</span>
-    <span class="ident">Middle</span>(<span class="ident">T</span>),
-    <span class="doccomment">/// This is the last element.</span>
-    <span class="ident">Last</span>(<span class="ident">T</span>),
-    <span class="doccomment">/// This is the only element.</span>
-    <span class="ident">Only</span>(<span class="ident">T</span>),
+<span class="doccomment">/// A value yielded by `WithPosition`.
+/// Indicates the position of this element in the iterator results.
+///
+/// See [`.with_position()`](crate::Itertools::with_position) for more information.
+</span><span class="attribute">#[derive(Copy, Clone, Debug, PartialEq)]
+</span><span class="kw">pub enum </span>Position&lt;T&gt; {
+    <span class="doccomment">/// This is the first element.
+    </span>First(T),
+    <span class="doccomment">/// This is neither the first nor the last element.
+    </span>Middle(T),
+    <span class="doccomment">/// This is the last element.
+    </span>Last(T),
+    <span class="doccomment">/// This is the only element.
+    </span>Only(T),
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">Position</span>&lt;<span class="ident">T</span>&gt; {
-    <span class="doccomment">/// Return the inner value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_inner</span>(<span class="self">self</span>) -&gt; <span class="ident">T</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Position::First</span>(<span class="ident">x</span>) |
-            <span class="ident">Position::Middle</span>(<span class="ident">x</span>) |
-            <span class="ident">Position::Last</span>(<span class="ident">x</span>) |
-            <span class="ident">Position::Only</span>(<span class="ident">x</span>) =&gt; <span class="ident">x</span>,
+<span class="kw">impl</span>&lt;T&gt; Position&lt;T&gt; {
+    <span class="doccomment">/// Return the inner value.
+    </span><span class="kw">pub fn </span>into_inner(<span class="self">self</span>) -&gt; T {
+        <span class="kw">match </span><span class="self">self </span>{
+            Position::First(x) |
+            Position::Middle(x) |
+            Position::Last(x) |
+            Position::Only(x) =&gt; x,
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>: <span class="ident">Iterator</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">WithPosition</span>&lt;<span class="ident">I</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">Position</span>&lt;<span class="ident">I::Item</span>&gt;;
+<span class="kw">impl</span>&lt;I: Iterator&gt; Iterator <span class="kw">for </span>WithPosition&lt;I&gt; {
+    <span class="kw">type </span>Item = Position&lt;I::Item&gt;;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">peekable</span>.<span class="ident">next</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">item</span>) =&gt; {
-                <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">handled_first</span> {
-                    <span class="comment">// Haven&#39;t seen the first item yet, and there is one to give.</span>
-                    <span class="self">self</span>.<span class="ident">handled_first</span> = <span class="bool-val">true</span>;
-                    <span class="comment">// Peek to see if this is also the last item,</span>
-                    <span class="comment">// in which case tag it as `Only`.</span>
-                    <span class="kw">match</span> <span class="self">self</span>.<span class="ident">peekable</span>.<span class="ident">peek</span>() {
-                        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">Position::First</span>(<span class="ident">item</span>)),
-                        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">Position::Only</span>(<span class="ident">item</span>)),
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">match </span><span class="self">self</span>.peekable.next() {
+            <span class="prelude-val">Some</span>(item) =&gt; {
+                <span class="kw">if </span>!<span class="self">self</span>.handled_first {
+                    <span class="comment">// Haven&#39;t seen the first item yet, and there is one to give.
+                    </span><span class="self">self</span>.handled_first = <span class="bool-val">true</span>;
+                    <span class="comment">// Peek to see if this is also the last item,
+                    // in which case tag it as `Only`.
+                    </span><span class="kw">match </span><span class="self">self</span>.peekable.peek() {
+                        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Some</span>(Position::First(item)),
+                        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Some</span>(Position::Only(item)),
                     }
-                } <span class="kw">else</span> {
-                    <span class="comment">// Have seen the first item, and there&#39;s something left.</span>
-                    <span class="comment">// Peek to see if this is the last item.</span>
-                    <span class="kw">match</span> <span class="self">self</span>.<span class="ident">peekable</span>.<span class="ident">peek</span>() {
-                        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">Position::Middle</span>(<span class="ident">item</span>)),
-                        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Some</span>(<span class="ident">Position::Last</span>(<span class="ident">item</span>)),
+                } <span class="kw">else </span>{
+                    <span class="comment">// Have seen the first item, and there&#39;s something left.
+                    // Peek to see if this is the last item.
+                    </span><span class="kw">match </span><span class="self">self</span>.peekable.peek() {
+                        <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Some</span>(Position::Middle(item)),
+                        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Some</span>(Position::Last(item)),
                     }
                 }
             }
-            <span class="comment">// Iterator is finished.</span>
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
+            <span class="comment">// Iterator is finished.
+            </span><span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
-        <span class="self">self</span>.<span class="ident">peekable</span>.<span class="ident">size_hint</span>()
+    <span class="kw">fn </span>size_hint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (usize, <span class="prelude-ty">Option</span>&lt;usize&gt;) {
+        <span class="self">self</span>.peekable.size_hint()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">ExactSizeIterator</span> <span class="kw">for</span> <span class="ident">WithPosition</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">ExactSizeIterator</span>,
+<span class="kw">impl</span>&lt;I&gt; ExactSizeIterator <span class="kw">for </span>WithPosition&lt;I&gt;
+    <span class="kw">where </span>I: ExactSizeIterator,
 { }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>: <span class="ident">Iterator</span>&gt; <span class="ident">FusedIterator</span> <span class="kw">for</span> <span class="ident">WithPosition</span>&lt;<span class="ident">I</span>&gt; 
+<span class="kw">impl</span>&lt;I: Iterator&gt; FusedIterator <span class="kw">for </span>WithPosition&lt;I&gt; 
 {}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -572,579 +572,579 @@
 <span id="572">572</span>
 <span id="573">573</span>
 <span id="574">574</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Customize line editor</span>
-<span class="kw">use</span> <span class="ident">std::default::Default</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! Customize line editor
+</span><span class="kw">use </span>std::default::Default;
 
-<span class="doccomment">/// User preferences</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Config</span> {
-    <span class="doccomment">/// Maximum number of entries in History.</span>
-    <span class="ident">max_history_size</span>: <span class="ident">usize</span>, <span class="comment">// history_max_entries</span>
-    <span class="ident">history_duplicates</span>: <span class="ident">HistoryDuplicates</span>,
-    <span class="ident">history_ignore_space</span>: <span class="ident">bool</span>,
-    <span class="ident">completion_type</span>: <span class="ident">CompletionType</span>,
-    <span class="doccomment">/// When listing completion alternatives, only display</span>
-    <span class="doccomment">/// one screen of possibilities at a time.</span>
-    <span class="ident">completion_prompt_limit</span>: <span class="ident">usize</span>,
-    <span class="doccomment">/// Duration (milliseconds) Rustyline will wait for a character when</span>
-    <span class="doccomment">/// reading an ambiguous key sequence.</span>
-    <span class="ident">keyseq_timeout</span>: <span class="ident">i32</span>,
-    <span class="doccomment">/// Emacs or Vi mode</span>
-    <span class="ident">edit_mode</span>: <span class="ident">EditMode</span>,
-    <span class="doccomment">/// If true, each nonblank line returned by `readline` will be</span>
-    <span class="doccomment">/// automatically added to the history.</span>
-    <span class="ident">auto_add_history</span>: <span class="ident">bool</span>,
-    <span class="doccomment">/// Beep or Flash or nothing</span>
-    <span class="ident">bell_style</span>: <span class="ident">BellStyle</span>,
-    <span class="doccomment">/// if colors should be enabled.</span>
-    <span class="ident">color_mode</span>: <span class="ident">ColorMode</span>,
-    <span class="doccomment">/// Whether to use stdio or not</span>
-    <span class="ident">behavior</span>: <span class="ident">Behavior</span>,
-    <span class="doccomment">/// Horizontal space taken by a tab.</span>
-    <span class="ident">tab_stop</span>: <span class="ident">usize</span>,
-    <span class="doccomment">/// Indentation size for indent/dedent commands</span>
-    <span class="ident">indent_size</span>: <span class="ident">usize</span>,
-    <span class="doccomment">/// Check if cursor position is at leftmost before displaying prompt</span>
-    <span class="ident">check_cursor_position</span>: <span class="ident">bool</span>,
-    <span class="doccomment">/// Bracketed paste on unix platform</span>
-    <span class="ident">enable_bracketed_paste</span>: <span class="ident">bool</span>,
+<span class="doccomment">/// User preferences
+</span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>Config {
+    <span class="doccomment">/// Maximum number of entries in History.
+    </span>max_history_size: usize, <span class="comment">// history_max_entries
+    </span>history_duplicates: HistoryDuplicates,
+    history_ignore_space: bool,
+    completion_type: CompletionType,
+    <span class="doccomment">/// When listing completion alternatives, only display
+    /// one screen of possibilities at a time.
+    </span>completion_prompt_limit: usize,
+    <span class="doccomment">/// Duration (milliseconds) Rustyline will wait for a character when
+    /// reading an ambiguous key sequence.
+    </span>keyseq_timeout: i32,
+    <span class="doccomment">/// Emacs or Vi mode
+    </span>edit_mode: EditMode,
+    <span class="doccomment">/// If true, each nonblank line returned by `readline` will be
+    /// automatically added to the history.
+    </span>auto_add_history: bool,
+    <span class="doccomment">/// Beep or Flash or nothing
+    </span>bell_style: BellStyle,
+    <span class="doccomment">/// if colors should be enabled.
+    </span>color_mode: ColorMode,
+    <span class="doccomment">/// Whether to use stdio or not
+    </span>behavior: Behavior,
+    <span class="doccomment">/// Horizontal space taken by a tab.
+    </span>tab_stop: usize,
+    <span class="doccomment">/// Indentation size for indent/dedent commands
+    </span>indent_size: usize,
+    <span class="doccomment">/// Check if cursor position is at leftmost before displaying prompt
+    </span>check_cursor_position: bool,
+    <span class="doccomment">/// Bracketed paste on unix platform
+    </span>enable_bracketed_paste: bool,
 }
 
-<span class="kw">impl</span> <span class="ident">Config</span> {
-    <span class="doccomment">/// Returns a `Config` builder.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">builder</span>() -&gt; <span class="ident">Builder</span> {
-        <span class="ident">Builder::new</span>()
+<span class="kw">impl </span>Config {
+    <span class="doccomment">/// Returns a `Config` builder.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>builder() -&gt; Builder {
+        Builder::new()
     }
 
-    <span class="doccomment">/// Tell the maximum length (i.e. number of entries) for the history.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">max_history_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">max_history_size</span>
+    <span class="doccomment">/// Tell the maximum length (i.e. number of entries) for the history.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>max_history_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.max_history_size
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">set_max_history_size</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) {
-        <span class="self">self</span>.<span class="ident">max_history_size</span> = <span class="ident">max_size</span>;
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set_max_history_size(<span class="kw-2">&amp;mut </span><span class="self">self</span>, max_size: usize) {
+        <span class="self">self</span>.max_history_size = max_size;
     }
 
-    <span class="doccomment">/// Tell if lines which match the previous history entry are saved or not</span>
-    <span class="doccomment">/// in the history list.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, they are ignored.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">history_duplicates</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">HistoryDuplicates</span> {
-        <span class="self">self</span>.<span class="ident">history_duplicates</span>
+    <span class="doccomment">/// Tell if lines which match the previous history entry are saved or not
+    /// in the history list.
+    ///
+    /// By default, they are ignored.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>history_duplicates(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; HistoryDuplicates {
+        <span class="self">self</span>.history_duplicates
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">set_history_ignore_dups</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) {
-        <span class="self">self</span>.<span class="ident">history_duplicates</span> = <span class="kw">if</span> <span class="ident">yes</span> {
-            <span class="ident">HistoryDuplicates::IgnoreConsecutive</span>
-        } <span class="kw">else</span> {
-            <span class="ident">HistoryDuplicates::AlwaysAdd</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set_history_ignore_dups(<span class="kw-2">&amp;mut </span><span class="self">self</span>, yes: bool) {
+        <span class="self">self</span>.history_duplicates = <span class="kw">if </span>yes {
+            HistoryDuplicates::IgnoreConsecutive
+        } <span class="kw">else </span>{
+            HistoryDuplicates::AlwaysAdd
         };
     }
 
-    <span class="doccomment">/// Tell if lines which begin with a space character are saved or not in</span>
-    <span class="doccomment">/// the history list.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, they are saved.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">history_ignore_space</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">history_ignore_space</span>
+    <span class="doccomment">/// Tell if lines which begin with a space character are saved or not in
+    /// the history list.
+    ///
+    /// By default, they are saved.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>history_ignore_space(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.history_ignore_space
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">set_history_ignore_space</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) {
-        <span class="self">self</span>.<span class="ident">history_ignore_space</span> = <span class="ident">yes</span>;
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set_history_ignore_space(<span class="kw-2">&amp;mut </span><span class="self">self</span>, yes: bool) {
+        <span class="self">self</span>.history_ignore_space = yes;
     }
 
-    <span class="doccomment">/// Completion behaviour.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, `CompletionType::Circular`.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">completion_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">CompletionType</span> {
-        <span class="self">self</span>.<span class="ident">completion_type</span>
+    <span class="doccomment">/// Completion behaviour.
+    ///
+    /// By default, `CompletionType::Circular`.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>completion_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; CompletionType {
+        <span class="self">self</span>.completion_type
     }
 
-    <span class="doccomment">/// When listing completion alternatives, only display</span>
-    <span class="doccomment">/// one screen of possibilities at a time (used for `CompletionType::List`</span>
-    <span class="doccomment">/// mode).</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">completion_prompt_limit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">completion_prompt_limit</span>
+    <span class="doccomment">/// When listing completion alternatives, only display
+    /// one screen of possibilities at a time (used for `CompletionType::List`
+    /// mode).
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>completion_prompt_limit(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.completion_prompt_limit
     }
 
-    <span class="doccomment">/// Duration (milliseconds) Rustyline will wait for a character when</span>
-    <span class="doccomment">/// reading an ambiguous key sequence (used for `EditMode::Vi` mode on unix</span>
-    <span class="doccomment">/// platform).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, no timeout (-1) or 500ms if `EditMode::Vi` is activated.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">keyseq_timeout</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">i32</span> {
-        <span class="self">self</span>.<span class="ident">keyseq_timeout</span>
+    <span class="doccomment">/// Duration (milliseconds) Rustyline will wait for a character when
+    /// reading an ambiguous key sequence (used for `EditMode::Vi` mode on unix
+    /// platform).
+    ///
+    /// By default, no timeout (-1) or 500ms if `EditMode::Vi` is activated.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>keyseq_timeout(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; i32 {
+        <span class="self">self</span>.keyseq_timeout
     }
 
-    <span class="doccomment">/// Emacs or Vi mode</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">EditMode</span> {
-        <span class="self">self</span>.<span class="ident">edit_mode</span>
+    <span class="doccomment">/// Emacs or Vi mode
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>edit_mode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; EditMode {
+        <span class="self">self</span>.edit_mode
     }
 
-    <span class="doccomment">/// Tell if lines are automatically added to the history.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, they are not.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">auto_add_history</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">auto_add_history</span>
+    <span class="doccomment">/// Tell if lines are automatically added to the history.
+    ///
+    /// By default, they are not.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>auto_add_history(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.auto_add_history
     }
 
-    <span class="doccomment">/// Bell style: beep, flash or nothing.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bell_style</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">BellStyle</span> {
-        <span class="self">self</span>.<span class="ident">bell_style</span>
+    <span class="doccomment">/// Bell style: beep, flash or nothing.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>bell_style(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; BellStyle {
+        <span class="self">self</span>.bell_style
     }
 
-    <span class="doccomment">/// Tell if colors should be enabled.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, they are except if stdout is not a TTY.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">color_mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">ColorMode</span> {
-        <span class="self">self</span>.<span class="ident">color_mode</span>
+    <span class="doccomment">/// Tell if colors should be enabled.
+    ///
+    /// By default, they are except if stdout is not a TTY.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>color_mode(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ColorMode {
+        <span class="self">self</span>.color_mode
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">set_color_mode</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">color_mode</span>: <span class="ident">ColorMode</span>) {
-        <span class="self">self</span>.<span class="ident">color_mode</span> = <span class="ident">color_mode</span>;
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set_color_mode(<span class="kw-2">&amp;mut </span><span class="self">self</span>, color_mode: ColorMode) {
+        <span class="self">self</span>.color_mode = color_mode;
     }
 
-    <span class="doccomment">/// Whether to use stdio or not</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, stdio is used.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">behavior</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Behavior</span> {
-        <span class="self">self</span>.<span class="ident">behavior</span>
+    <span class="doccomment">/// Whether to use stdio or not
+    ///
+    /// By default, stdio is used.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>behavior(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Behavior {
+        <span class="self">self</span>.behavior
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">set_behavior</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">behavior</span>: <span class="ident">Behavior</span>) {
-        <span class="self">self</span>.<span class="ident">behavior</span> = <span class="ident">behavior</span>;
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set_behavior(<span class="kw-2">&amp;mut </span><span class="self">self</span>, behavior: Behavior) {
+        <span class="self">self</span>.behavior = behavior;
     }
 
-    <span class="doccomment">/// Horizontal space taken by a tab.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, 8.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">tab_stop</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">tab_stop</span>
+    <span class="doccomment">/// Horizontal space taken by a tab.
+    ///
+    /// By default, 8.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>tab_stop(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.tab_stop
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">set_tab_stop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">tab_stop</span>: <span class="ident">usize</span>) {
-        <span class="self">self</span>.<span class="ident">tab_stop</span> = <span class="ident">tab_stop</span>;
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set_tab_stop(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tab_stop: usize) {
+        <span class="self">self</span>.tab_stop = tab_stop;
     }
 
-    <span class="doccomment">/// Check if cursor position is at leftmost before displaying prompt.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, we don&#39;t check.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_cursor_position</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">check_cursor_position</span>
+    <span class="doccomment">/// Check if cursor position is at leftmost before displaying prompt.
+    ///
+    /// By default, we don&#39;t check.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>check_cursor_position(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.check_cursor_position
     }
 
-    <span class="doccomment">/// Indentation size used by indentation commands</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, 2.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indent_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">indent_size</span>
+    <span class="doccomment">/// Indentation size used by indentation commands
+    ///
+    /// By default, 2.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>indent_size(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.indent_size
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">set_indent_size</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">indent_size</span>: <span class="ident">usize</span>) {
-        <span class="self">self</span>.<span class="ident">indent_size</span> = <span class="ident">indent_size</span>;
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set_indent_size(<span class="kw-2">&amp;mut </span><span class="self">self</span>, indent_size: usize) {
+        <span class="self">self</span>.indent_size = indent_size;
     }
 
-    <span class="doccomment">/// Bracketed paste on unix platform</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, it&#39;s enabled.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_bracketed_paste</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">enable_bracketed_paste</span>
+    <span class="doccomment">/// Bracketed paste on unix platform
+    ///
+    /// By default, it&#39;s enabled.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>enable_bracketed_paste(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.enable_bracketed_paste
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Config</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">max_history_size</span>: <span class="number">100</span>,
-            <span class="ident">history_duplicates</span>: <span class="ident">HistoryDuplicates::IgnoreConsecutive</span>,
-            <span class="ident">history_ignore_space</span>: <span class="bool-val">false</span>,
-            <span class="ident">completion_type</span>: <span class="ident">CompletionType::Circular</span>, <span class="comment">// TODO Validate</span>
-            <span class="ident">completion_prompt_limit</span>: <span class="number">100</span>,
-            <span class="ident">keyseq_timeout</span>: -<span class="number">1</span>,
-            <span class="ident">edit_mode</span>: <span class="ident">EditMode::Emacs</span>,
-            <span class="ident">auto_add_history</span>: <span class="bool-val">false</span>,
-            <span class="ident">bell_style</span>: <span class="ident">BellStyle::default</span>(),
-            <span class="ident">color_mode</span>: <span class="ident">ColorMode::Enabled</span>,
-            <span class="ident">behavior</span>: <span class="ident">Behavior::default</span>(),
-            <span class="ident">tab_stop</span>: <span class="number">8</span>,
-            <span class="ident">indent_size</span>: <span class="number">2</span>,
-            <span class="ident">check_cursor_position</span>: <span class="bool-val">false</span>,
-            <span class="ident">enable_bracketed_paste</span>: <span class="bool-val">true</span>,
+<span class="kw">impl </span>Default <span class="kw">for </span>Config {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            max_history_size: <span class="number">100</span>,
+            history_duplicates: HistoryDuplicates::IgnoreConsecutive,
+            history_ignore_space: <span class="bool-val">false</span>,
+            completion_type: CompletionType::Circular, <span class="comment">// TODO Validate
+            </span>completion_prompt_limit: <span class="number">100</span>,
+            keyseq_timeout: -<span class="number">1</span>,
+            edit_mode: EditMode::Emacs,
+            auto_add_history: <span class="bool-val">false</span>,
+            bell_style: BellStyle::default(),
+            color_mode: ColorMode::Enabled,
+            behavior: Behavior::default(),
+            tab_stop: <span class="number">8</span>,
+            indent_size: <span class="number">2</span>,
+            check_cursor_position: <span class="bool-val">false</span>,
+            enable_bracketed_paste: <span class="bool-val">true</span>,
         }
     }
 }
 
-<span class="doccomment">/// Beep or flash or nothing</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">BellStyle</span> {
-    <span class="doccomment">/// Beep</span>
-    <span class="ident">Audible</span>,
-    <span class="doccomment">/// Silent</span>
-    <span class="prelude-val">None</span>,
-    <span class="doccomment">/// Flash screen (not supported)</span>
-    <span class="ident">Visible</span>,
+<span class="doccomment">/// Beep or flash or nothing
+</span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>BellStyle {
+    <span class="doccomment">/// Beep
+    </span>Audible,
+    <span class="doccomment">/// Silent
+    </span><span class="prelude-val">None</span>,
+    <span class="doccomment">/// Flash screen (not supported)
+    </span>Visible,
 }
 
-<span class="doccomment">/// `Audible` by default on unix (overridden by current Terminal settings).</span>
-<span class="doccomment">/// `None` on windows.</span>
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">BellStyle</span> {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">windows</span>, <span class="ident">target_arch</span> = <span class="string">&quot;wasm32&quot;</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident">BellStyle::None</span>
+<span class="doccomment">/// `Audible` by default on unix (overridden by current Terminal settings).
+/// `None` on windows.
+</span><span class="kw">impl </span>Default <span class="kw">for </span>BellStyle {
+    <span class="attribute">#[cfg(any(windows, target_arch = <span class="string">&quot;wasm32&quot;</span>))]
+    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        BellStyle::None
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident">BellStyle::Audible</span>
-    }
-}
-
-<span class="doccomment">/// History filter</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">HistoryDuplicates</span> {
-    <span class="doccomment">/// No filter</span>
-    <span class="ident">AlwaysAdd</span>,
-    <span class="doccomment">/// a line will not be added to the history if it matches the previous entry</span>
-    <span class="ident">IgnoreConsecutive</span>,
-}
-
-<span class="doccomment">/// Tab completion style</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">CompletionType</span> {
-    <span class="doccomment">/// Complete the next full match (like in Vim by default)</span>
-    <span class="ident">Circular</span>,
-    <span class="doccomment">/// Complete till longest match.</span>
-    <span class="doccomment">/// When more than one match, list all matches</span>
-    <span class="doccomment">/// (like in Bash/Readline).</span>
-    <span class="ident">List</span>,
-
-    <span class="doccomment">/// Complete the match using fuzzy search and selection</span>
-    <span class="doccomment">/// (like fzf and plugins)</span>
-    <span class="doccomment">/// Currently only available for unix platforms as dependency on</span>
-    <span class="doccomment">/// skim-&gt;tuikit Compile with `--features=fuzzy` to enable</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">unix</span>, <span class="ident">feature</span> = <span class="string">&quot;with-fuzzy&quot;</span>))]</span>
-    <span class="ident">Fuzzy</span>,
-}
-
-<span class="doccomment">/// Style of editing / Standard keymaps</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EditMode</span> {
-    <span class="doccomment">/// Emacs keymap</span>
-    <span class="ident">Emacs</span>,
-    <span class="doccomment">/// Vi keymap</span>
-    <span class="ident">Vi</span>,
-}
-
-<span class="doccomment">/// Colorization mode</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ColorMode</span> {
-    <span class="doccomment">/// Activate highlighting if platform/terminal is supported.</span>
-    <span class="ident">Enabled</span>,
-    <span class="doccomment">/// Activate highlighting even if platform is not supported (windows &lt; 10).</span>
-    <span class="ident">Forced</span>,
-    <span class="doccomment">/// Deactivate highlighting even if platform/terminal is supported.</span>
-    <span class="ident">Disabled</span>,
-}
-
-<span class="doccomment">/// Should the editor use stdio</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Behavior</span> {
-    <span class="doccomment">/// Use stdin / stdout</span>
-    <span class="ident">Stdio</span>,
-    <span class="doccomment">/// Use terminal-style interaction whenever possible, even if &#39;stdin&#39; and/or</span>
-    <span class="doccomment">/// &#39;stdout&#39; are not terminals.</span>
-    <span class="ident">PreferTerm</span>,
-    <span class="comment">// TODO</span>
-    <span class="comment">// Use file-style interaction, reading input from the given file.</span>
-    <span class="comment">// useFile</span>
-}
-
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Behavior</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident">Behavior::Stdio</span>
+    <span class="attribute">#[cfg(unix)]
+    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        BellStyle::Audible
     }
 }
 
-<span class="doccomment">/// Configuration builder</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Builder</span> {
-    <span class="ident">p</span>: <span class="ident">Config</span>,
+<span class="doccomment">/// History filter
+</span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>HistoryDuplicates {
+    <span class="doccomment">/// No filter
+    </span>AlwaysAdd,
+    <span class="doccomment">/// a line will not be added to the history if it matches the previous entry
+    </span>IgnoreConsecutive,
 }
 
-<span class="kw">impl</span> <span class="ident">Builder</span> {
-    <span class="doccomment">/// Returns a `Config` builder.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">p</span>: <span class="ident">Config::default</span>(),
+<span class="doccomment">/// Tab completion style
+</span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+</span><span class="kw">pub enum </span>CompletionType {
+    <span class="doccomment">/// Complete the next full match (like in Vim by default)
+    </span>Circular,
+    <span class="doccomment">/// Complete till longest match.
+    /// When more than one match, list all matches
+    /// (like in Bash/Readline).
+    </span>List,
+
+    <span class="doccomment">/// Complete the match using fuzzy search and selection
+    /// (like fzf and plugins)
+    /// Currently only available for unix platforms as dependency on
+    /// skim-&gt;tuikit Compile with `--features=fuzzy` to enable
+    </span><span class="attribute">#[cfg(all(unix, feature = <span class="string">&quot;with-fuzzy&quot;</span>))]
+    </span>Fuzzy,
+}
+
+<span class="doccomment">/// Style of editing / Standard keymaps
+</span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+</span><span class="kw">pub enum </span>EditMode {
+    <span class="doccomment">/// Emacs keymap
+    </span>Emacs,
+    <span class="doccomment">/// Vi keymap
+    </span>Vi,
+}
+
+<span class="doccomment">/// Colorization mode
+</span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+</span><span class="kw">pub enum </span>ColorMode {
+    <span class="doccomment">/// Activate highlighting if platform/terminal is supported.
+    </span>Enabled,
+    <span class="doccomment">/// Activate highlighting even if platform is not supported (windows &lt; 10).
+    </span>Forced,
+    <span class="doccomment">/// Deactivate highlighting even if platform/terminal is supported.
+    </span>Disabled,
+}
+
+<span class="doccomment">/// Should the editor use stdio
+</span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[non_exhaustive]
+</span><span class="kw">pub enum </span>Behavior {
+    <span class="doccomment">/// Use stdin / stdout
+    </span>Stdio,
+    <span class="doccomment">/// Use terminal-style interaction whenever possible, even if &#39;stdin&#39; and/or
+    /// &#39;stdout&#39; are not terminals.
+    </span>PreferTerm,
+    <span class="comment">// TODO
+    // Use file-style interaction, reading input from the given file.
+    // useFile
+</span>}
+
+<span class="kw">impl </span>Default <span class="kw">for </span>Behavior {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        Behavior::Stdio
+    }
+}
+
+<span class="doccomment">/// Configuration builder
+</span><span class="attribute">#[derive(Clone, Debug, Default)]
+</span><span class="kw">pub struct </span>Builder {
+    p: Config,
+}
+
+<span class="kw">impl </span>Builder {
+    <span class="doccomment">/// Returns a `Config` builder.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            p: Config::default(),
         }
     }
 
-    <span class="doccomment">/// Set the maximum length for the history.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">max_history_size</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_max_history_size</span>(<span class="ident">max_size</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Set the maximum length for the history.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>max_history_size(<span class="kw-2">mut </span><span class="self">self</span>, max_size: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_max_history_size(max_size);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Tell if lines which match the previous history entry are saved or not</span>
-    <span class="doccomment">/// in the history list.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, they are ignored.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">history_ignore_dups</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_history_ignore_dups</span>(<span class="ident">yes</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Tell if lines which match the previous history entry are saved or not
+    /// in the history list.
+    ///
+    /// By default, they are ignored.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>history_ignore_dups(<span class="kw-2">mut </span><span class="self">self</span>, yes: bool) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_history_ignore_dups(yes);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Tell if lines which begin with a space character are saved or not in</span>
-    <span class="doccomment">/// the history list.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, they are saved.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">history_ignore_space</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_history_ignore_space</span>(<span class="ident">yes</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Tell if lines which begin with a space character are saved or not in
+    /// the history list.
+    ///
+    /// By default, they are saved.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>history_ignore_space(<span class="kw-2">mut </span><span class="self">self</span>, yes: bool) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_history_ignore_space(yes);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Set `completion_type`.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">completion_type</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">completion_type</span>: <span class="ident">CompletionType</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_completion_type</span>(<span class="ident">completion_type</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Set `completion_type`.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>completion_type(<span class="kw-2">mut </span><span class="self">self</span>, completion_type: CompletionType) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_completion_type(completion_type);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// The number of possible completions that determines when the user is</span>
-    <span class="doccomment">/// asked whether the list of possibilities should be displayed.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">completion_prompt_limit</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">completion_prompt_limit</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_completion_prompt_limit</span>(<span class="ident">completion_prompt_limit</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// The number of possible completions that determines when the user is
+    /// asked whether the list of possibilities should be displayed.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>completion_prompt_limit(<span class="kw-2">mut </span><span class="self">self</span>, completion_prompt_limit: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_completion_prompt_limit(completion_prompt_limit);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Timeout for ambiguous key sequences in milliseconds.</span>
-    <span class="doccomment">/// Currently, it is used only to distinguish a single ESC from an ESC</span>
-    <span class="doccomment">/// sequence.</span>
-    <span class="doccomment">/// After seeing an ESC key, wait at most `keyseq_timeout_ms` for another</span>
-    <span class="doccomment">/// byte.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">keyseq_timeout</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">keyseq_timeout_ms</span>: <span class="ident">i32</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_keyseq_timeout</span>(<span class="ident">keyseq_timeout_ms</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Timeout for ambiguous key sequences in milliseconds.
+    /// Currently, it is used only to distinguish a single ESC from an ESC
+    /// sequence.
+    /// After seeing an ESC key, wait at most `keyseq_timeout_ms` for another
+    /// byte.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>keyseq_timeout(<span class="kw-2">mut </span><span class="self">self</span>, keyseq_timeout_ms: i32) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_keyseq_timeout(keyseq_timeout_ms);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Choose between Emacs or Vi mode.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">edit_mode</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">edit_mode</span>: <span class="ident">EditMode</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_edit_mode</span>(<span class="ident">edit_mode</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Choose between Emacs or Vi mode.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>edit_mode(<span class="kw-2">mut </span><span class="self">self</span>, edit_mode: EditMode) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_edit_mode(edit_mode);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Tell if lines are automatically added to the history.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, they are not.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">auto_add_history</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_auto_add_history</span>(<span class="ident">yes</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Tell if lines are automatically added to the history.
+    ///
+    /// By default, they are not.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>auto_add_history(<span class="kw-2">mut </span><span class="self">self</span>, yes: bool) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_auto_add_history(yes);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Set bell style: beep, flash or nothing.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bell_style</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bell_style</span>: <span class="ident">BellStyle</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_bell_style</span>(<span class="ident">bell_style</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Set bell style: beep, flash or nothing.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>bell_style(<span class="kw-2">mut </span><span class="self">self</span>, bell_style: BellStyle) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_bell_style(bell_style);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Forces colorization on or off.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, colorization is on except if stdout is not a TTY.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">color_mode</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">color_mode</span>: <span class="ident">ColorMode</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_color_mode</span>(<span class="ident">color_mode</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Forces colorization on or off.
+    ///
+    /// By default, colorization is on except if stdout is not a TTY.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>color_mode(<span class="kw-2">mut </span><span class="self">self</span>, color_mode: ColorMode) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_color_mode(color_mode);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Whether to use stdio or not</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, stdio is used.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">behavior</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">behavior</span>: <span class="ident">Behavior</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_behavior</span>(<span class="ident">behavior</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Whether to use stdio or not
+    ///
+    /// By default, stdio is used.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>behavior(<span class="kw-2">mut </span><span class="self">self</span>, behavior: Behavior) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_behavior(behavior);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Horizontal space taken by a tab.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, `8`</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">tab_stop</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tab_stop</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_tab_stop</span>(<span class="ident">tab_stop</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Horizontal space taken by a tab.
+    ///
+    /// By default, `8`
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>tab_stop(<span class="kw-2">mut </span><span class="self">self</span>, tab_stop: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_tab_stop(tab_stop);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Check if cursor position is at leftmost before displaying prompt.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, we don&#39;t check.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_cursor_position</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_check_cursor_position</span>(<span class="ident">yes</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Check if cursor position is at leftmost before displaying prompt.
+    ///
+    /// By default, we don&#39;t check.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>check_cursor_position(<span class="kw-2">mut </span><span class="self">self</span>, yes: bool) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_check_cursor_position(yes);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Indentation size</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, `2`</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indent_size</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">indent_size</span>: <span class="ident">usize</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">set_indent_size</span>(<span class="ident">indent_size</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Indentation size
+    ///
+    /// By default, `2`
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>indent_size(<span class="kw-2">mut </span><span class="self">self</span>, indent_size: usize) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.set_indent_size(indent_size);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Enable or disable bracketed paste on unix platform</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, it&#39;s enabled.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bracketed_paste</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">enabled</span>: <span class="ident">bool</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">enable_bracketed_paste</span>(<span class="ident">enabled</span>);
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Enable or disable bracketed paste on unix platform
+    ///
+    /// By default, it&#39;s enabled.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>bracketed_paste(<span class="kw-2">mut </span><span class="self">self</span>, enabled: bool) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.enable_bracketed_paste(enabled);
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Builds a `Config` with the settings specified so far.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="ident">Config</span> {
-        <span class="self">self</span>.<span class="ident">p</span>
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">Configurer</span> <span class="kw">for</span> <span class="ident">Builder</span> {
-    <span class="kw">fn</span> <span class="ident">config_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Config</span> {
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">p</span>
+    <span class="doccomment">/// Builds a `Config` with the settings specified so far.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>build(<span class="self">self</span>) -&gt; Config {
+        <span class="self">self</span>.p
     }
 }
 
-<span class="doccomment">/// Trait for component that holds a `Config`.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Configurer</span> {
-    <span class="doccomment">/// `Config` accessor.</span>
-    <span class="kw">fn</span> <span class="ident">config_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Config</span>;
+<span class="kw">impl </span>Configurer <span class="kw">for </span>Builder {
+    <span class="kw">fn </span>config_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>Config {
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>.p
+    }
+}
 
-    <span class="doccomment">/// Set the maximum length for the history.</span>
-    <span class="kw">fn</span> <span class="ident">set_max_history_size</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">set_max_history_size</span>(<span class="ident">max_size</span>);
+<span class="doccomment">/// Trait for component that holds a `Config`.
+</span><span class="kw">pub trait </span>Configurer {
+    <span class="doccomment">/// `Config` accessor.
+    </span><span class="kw">fn </span>config_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>Config;
+
+    <span class="doccomment">/// Set the maximum length for the history.
+    </span><span class="kw">fn </span>set_max_history_size(<span class="kw-2">&amp;mut </span><span class="self">self</span>, max_size: usize) {
+        <span class="self">self</span>.config_mut().set_max_history_size(max_size);
     }
 
-    <span class="doccomment">/// Tell if lines which match the previous history entry are saved or not</span>
-    <span class="doccomment">/// in the history list.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, they are ignored.</span>
-    <span class="kw">fn</span> <span class="ident">set_history_ignore_dups</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">set_history_ignore_dups</span>(<span class="ident">yes</span>);
+    <span class="doccomment">/// Tell if lines which match the previous history entry are saved or not
+    /// in the history list.
+    ///
+    /// By default, they are ignored.
+    </span><span class="kw">fn </span>set_history_ignore_dups(<span class="kw-2">&amp;mut </span><span class="self">self</span>, yes: bool) {
+        <span class="self">self</span>.config_mut().set_history_ignore_dups(yes);
     }
 
-    <span class="doccomment">/// Tell if lines which begin with a space character are saved or not in</span>
-    <span class="doccomment">/// the history list.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, they are saved.</span>
-    <span class="kw">fn</span> <span class="ident">set_history_ignore_space</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">set_history_ignore_space</span>(<span class="ident">yes</span>);
+    <span class="doccomment">/// Tell if lines which begin with a space character are saved or not in
+    /// the history list.
+    ///
+    /// By default, they are saved.
+    </span><span class="kw">fn </span>set_history_ignore_space(<span class="kw-2">&amp;mut </span><span class="self">self</span>, yes: bool) {
+        <span class="self">self</span>.config_mut().set_history_ignore_space(yes);
     }
-    <span class="doccomment">/// Set `completion_type`.</span>
-    <span class="kw">fn</span> <span class="ident">set_completion_type</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">completion_type</span>: <span class="ident">CompletionType</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">completion_type</span> = <span class="ident">completion_type</span>;
-    }
-
-    <span class="doccomment">/// The number of possible completions that determines when the user is</span>
-    <span class="doccomment">/// asked whether the list of possibilities should be displayed.</span>
-    <span class="kw">fn</span> <span class="ident">set_completion_prompt_limit</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">completion_prompt_limit</span>: <span class="ident">usize</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">completion_prompt_limit</span> = <span class="ident">completion_prompt_limit</span>;
+    <span class="doccomment">/// Set `completion_type`.
+    </span><span class="kw">fn </span>set_completion_type(<span class="kw-2">&amp;mut </span><span class="self">self</span>, completion_type: CompletionType) {
+        <span class="self">self</span>.config_mut().completion_type = completion_type;
     }
 
-    <span class="doccomment">/// Timeout for ambiguous key sequences in milliseconds.</span>
-    <span class="kw">fn</span> <span class="ident">set_keyseq_timeout</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">keyseq_timeout_ms</span>: <span class="ident">i32</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">keyseq_timeout</span> = <span class="ident">keyseq_timeout_ms</span>;
+    <span class="doccomment">/// The number of possible completions that determines when the user is
+    /// asked whether the list of possibilities should be displayed.
+    </span><span class="kw">fn </span>set_completion_prompt_limit(<span class="kw-2">&amp;mut </span><span class="self">self</span>, completion_prompt_limit: usize) {
+        <span class="self">self</span>.config_mut().completion_prompt_limit = completion_prompt_limit;
     }
 
-    <span class="doccomment">/// Choose between Emacs or Vi mode.</span>
-    <span class="kw">fn</span> <span class="ident">set_edit_mode</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">edit_mode</span>: <span class="ident">EditMode</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">edit_mode</span> = <span class="ident">edit_mode</span>;
-        <span class="kw">match</span> <span class="ident">edit_mode</span> {
-            <span class="ident">EditMode::Emacs</span> =&gt; <span class="self">self</span>.<span class="ident">set_keyseq_timeout</span>(-<span class="number">1</span>), <span class="comment">// no timeout</span>
-            <span class="ident">EditMode::Vi</span> =&gt; <span class="self">self</span>.<span class="ident">set_keyseq_timeout</span>(<span class="number">500</span>),
+    <span class="doccomment">/// Timeout for ambiguous key sequences in milliseconds.
+    </span><span class="kw">fn </span>set_keyseq_timeout(<span class="kw-2">&amp;mut </span><span class="self">self</span>, keyseq_timeout_ms: i32) {
+        <span class="self">self</span>.config_mut().keyseq_timeout = keyseq_timeout_ms;
+    }
+
+    <span class="doccomment">/// Choose between Emacs or Vi mode.
+    </span><span class="kw">fn </span>set_edit_mode(<span class="kw-2">&amp;mut </span><span class="self">self</span>, edit_mode: EditMode) {
+        <span class="self">self</span>.config_mut().edit_mode = edit_mode;
+        <span class="kw">match </span>edit_mode {
+            EditMode::Emacs =&gt; <span class="self">self</span>.set_keyseq_timeout(-<span class="number">1</span>), <span class="comment">// no timeout
+            </span>EditMode::Vi =&gt; <span class="self">self</span>.set_keyseq_timeout(<span class="number">500</span>),
         }
     }
 
-    <span class="doccomment">/// Tell if lines are automatically added to the history.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, they are not.</span>
-    <span class="kw">fn</span> <span class="ident">set_auto_add_history</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">auto_add_history</span> = <span class="ident">yes</span>;
+    <span class="doccomment">/// Tell if lines are automatically added to the history.
+    ///
+    /// By default, they are not.
+    </span><span class="kw">fn </span>set_auto_add_history(<span class="kw-2">&amp;mut </span><span class="self">self</span>, yes: bool) {
+        <span class="self">self</span>.config_mut().auto_add_history = yes;
     }
 
-    <span class="doccomment">/// Set bell style: beep, flash or nothing.</span>
-    <span class="kw">fn</span> <span class="ident">set_bell_style</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">bell_style</span>: <span class="ident">BellStyle</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">bell_style</span> = <span class="ident">bell_style</span>;
+    <span class="doccomment">/// Set bell style: beep, flash or nothing.
+    </span><span class="kw">fn </span>set_bell_style(<span class="kw-2">&amp;mut </span><span class="self">self</span>, bell_style: BellStyle) {
+        <span class="self">self</span>.config_mut().bell_style = bell_style;
     }
 
-    <span class="doccomment">/// Forces colorization on or off.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, colorization is on except if stdout is not a TTY.</span>
-    <span class="kw">fn</span> <span class="ident">set_color_mode</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">color_mode</span>: <span class="ident">ColorMode</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">set_color_mode</span>(<span class="ident">color_mode</span>);
+    <span class="doccomment">/// Forces colorization on or off.
+    ///
+    /// By default, colorization is on except if stdout is not a TTY.
+    </span><span class="kw">fn </span>set_color_mode(<span class="kw-2">&amp;mut </span><span class="self">self</span>, color_mode: ColorMode) {
+        <span class="self">self</span>.config_mut().set_color_mode(color_mode);
     }
 
-    <span class="doccomment">/// Whether to use stdio or not</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, stdio is used.</span>
-    <span class="kw">fn</span> <span class="ident">set_behavior</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">behavior</span>: <span class="ident">Behavior</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">set_behavior</span>(<span class="ident">behavior</span>);
+    <span class="doccomment">/// Whether to use stdio or not
+    ///
+    /// By default, stdio is used.
+    </span><span class="kw">fn </span>set_behavior(<span class="kw-2">&amp;mut </span><span class="self">self</span>, behavior: Behavior) {
+        <span class="self">self</span>.config_mut().set_behavior(behavior);
     }
 
-    <span class="doccomment">/// Horizontal space taken by a tab.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, `8`</span>
-    <span class="kw">fn</span> <span class="ident">set_tab_stop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">tab_stop</span>: <span class="ident">usize</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">set_tab_stop</span>(<span class="ident">tab_stop</span>);
+    <span class="doccomment">/// Horizontal space taken by a tab.
+    ///
+    /// By default, `8`
+    </span><span class="kw">fn </span>set_tab_stop(<span class="kw-2">&amp;mut </span><span class="self">self</span>, tab_stop: usize) {
+        <span class="self">self</span>.config_mut().set_tab_stop(tab_stop);
     }
 
-    <span class="doccomment">/// Check if cursor position is at leftmost before displaying prompt.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, we don&#39;t check.</span>
-    <span class="kw">fn</span> <span class="ident">set_check_cursor_position</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">check_cursor_position</span> = <span class="ident">yes</span>;
+    <span class="doccomment">/// Check if cursor position is at leftmost before displaying prompt.
+    ///
+    /// By default, we don&#39;t check.
+    </span><span class="kw">fn </span>set_check_cursor_position(<span class="kw-2">&amp;mut </span><span class="self">self</span>, yes: bool) {
+        <span class="self">self</span>.config_mut().check_cursor_position = yes;
     }
-    <span class="doccomment">/// Indentation size for indent/dedent commands</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, `2`</span>
-    <span class="kw">fn</span> <span class="ident">set_indent_size</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">size</span>: <span class="ident">usize</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">set_indent_size</span>(<span class="ident">size</span>);
+    <span class="doccomment">/// Indentation size for indent/dedent commands
+    ///
+    /// By default, `2`
+    </span><span class="kw">fn </span>set_indent_size(<span class="kw-2">&amp;mut </span><span class="self">self</span>, size: usize) {
+        <span class="self">self</span>.config_mut().set_indent_size(size);
     }
 
-    <span class="doccomment">/// Enable or disable bracketed paste on unix platform</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// By default, it&#39;s enabled.</span>
-    <span class="kw">fn</span> <span class="ident">enable_bracketed_paste</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">enabled</span>: <span class="ident">bool</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">enable_bracketed_paste</span> = <span class="ident">enabled</span>;
+    <span class="doccomment">/// Enable or disable bracketed paste on unix platform
+    ///
+    /// By default, it&#39;s enabled.
+    </span><span class="kw">fn </span>enable_bracketed_paste(<span class="kw-2">&amp;mut </span><span class="self">self</span>, enabled: bool) {
+        <span class="self">self</span>.config_mut().enable_bracketed_paste = enabled;
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

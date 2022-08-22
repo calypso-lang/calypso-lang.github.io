@@ -291,298 +291,298 @@
 <span id="291">291</span>
 <span id="292">292</span>
 <span id="293">293</span>
-</pre><pre class="rust"><code><span class="doccomment">//! x86-64 Linux system calls.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! x86-64 Linux system calls.
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend::reg</span>::{
-    <span class="ident">ArgReg</span>, <span class="ident">FromAsm</span>, <span class="ident">RetReg</span>, <span class="ident">SyscallNumber</span>, <span class="ident">ToAsm</span>, <span class="ident">A0</span>, <span class="ident">A1</span>, <span class="ident">A2</span>, <span class="ident">A3</span>, <span class="ident">A4</span>, <span class="ident">A5</span>, <span class="ident">R0</span>,
+</span><span class="kw">use </span><span class="kw">crate</span>::backend::reg::{
+    ArgReg, FromAsm, RetReg, SyscallNumber, ToAsm, A0, A1, A2, A3, A4, A5, R0,
 };
-<span class="kw">use</span> <span class="ident">core::arch::asm</span>;
+<span class="kw">use </span>core::arch::asm;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> = <span class="string">&quot;32&quot;</span>)]</span>
-<span class="macro">compile_error!</span>(<span class="string">&quot;x32 is not yet supported&quot;</span>);
+<span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
+</span><span class="macro">compile_error!</span>(<span class="string">&quot;x32 is not yet supported&quot;</span>);
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall0_readonly</span>(<span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall0_readonly(nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>, <span class="ident">readonly</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags, readonly)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall1</span>(<span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;, <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall1(nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;, a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall1_readonly</span>(
-    <span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
-    <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;,
-) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall1_readonly(
+    nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;,
+    a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;,
+) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>, <span class="ident">readonly</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags, readonly)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall1_noreturn</span>(<span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;, <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;) -&gt; ! {
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall1_noreturn(nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;, a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;) -&gt; ! {
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">options</span>(<span class="ident">noreturn</span>)
+        <span class="kw">in</span>(<span class="string">&quot;rax&quot;</span>) nr.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        options(noreturn)
     )
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall2</span>(
-    <span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
-    <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;,
-    <span class="ident">a1</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A1</span>&gt;,
-) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall2(
+    nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;,
+    a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;,
+    a1: ArgReg&lt;<span class="lifetime">&#39;_</span>, A1&gt;,
+) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) <span class="ident">a1</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) a1.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall2_readonly</span>(
-    <span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
-    <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;,
-    <span class="ident">a1</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A1</span>&gt;,
-) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall2_readonly(
+    nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;,
+    a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;,
+    a1: ArgReg&lt;<span class="lifetime">&#39;_</span>, A1&gt;,
+) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) <span class="ident">a1</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>, <span class="ident">readonly</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) a1.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags, readonly)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall3</span>(
-    <span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
-    <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;,
-    <span class="ident">a1</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A1</span>&gt;,
-    <span class="ident">a2</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A2</span>&gt;,
-) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall3(
+    nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;,
+    a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;,
+    a1: ArgReg&lt;<span class="lifetime">&#39;_</span>, A1&gt;,
+    a2: ArgReg&lt;<span class="lifetime">&#39;_</span>, A2&gt;,
+) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) <span class="ident">a1</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) <span class="ident">a2</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) a1.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) a2.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall3_readonly</span>(
-    <span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
-    <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;,
-    <span class="ident">a1</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A1</span>&gt;,
-    <span class="ident">a2</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A2</span>&gt;,
-) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall3_readonly(
+    nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;,
+    a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;,
+    a1: ArgReg&lt;<span class="lifetime">&#39;_</span>, A1&gt;,
+    a2: ArgReg&lt;<span class="lifetime">&#39;_</span>, A2&gt;,
+) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) <span class="ident">a1</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) <span class="ident">a2</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>, <span class="ident">readonly</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) a1.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) a2.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags, readonly)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall4</span>(
-    <span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
-    <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;,
-    <span class="ident">a1</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A1</span>&gt;,
-    <span class="ident">a2</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A2</span>&gt;,
-    <span class="ident">a3</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A3</span>&gt;,
-) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall4(
+    nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;,
+    a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;,
+    a1: ArgReg&lt;<span class="lifetime">&#39;_</span>, A1&gt;,
+    a2: ArgReg&lt;<span class="lifetime">&#39;_</span>, A2&gt;,
+    a3: ArgReg&lt;<span class="lifetime">&#39;_</span>, A3&gt;,
+) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) <span class="ident">a1</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) <span class="ident">a2</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) <span class="ident">a3</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) a1.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) a2.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) a3.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall4_readonly</span>(
-    <span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
-    <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;,
-    <span class="ident">a1</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A1</span>&gt;,
-    <span class="ident">a2</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A2</span>&gt;,
-    <span class="ident">a3</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A3</span>&gt;,
-) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall4_readonly(
+    nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;,
+    a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;,
+    a1: ArgReg&lt;<span class="lifetime">&#39;_</span>, A1&gt;,
+    a2: ArgReg&lt;<span class="lifetime">&#39;_</span>, A2&gt;,
+    a3: ArgReg&lt;<span class="lifetime">&#39;_</span>, A3&gt;,
+) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) <span class="ident">a1</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) <span class="ident">a2</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) <span class="ident">a3</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>, <span class="ident">readonly</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) a1.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) a2.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) a3.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags, readonly)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall5</span>(
-    <span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
-    <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;,
-    <span class="ident">a1</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A1</span>&gt;,
-    <span class="ident">a2</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A2</span>&gt;,
-    <span class="ident">a3</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A3</span>&gt;,
-    <span class="ident">a4</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A4</span>&gt;,
-) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall5(
+    nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;,
+    a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;,
+    a1: ArgReg&lt;<span class="lifetime">&#39;_</span>, A1&gt;,
+    a2: ArgReg&lt;<span class="lifetime">&#39;_</span>, A2&gt;,
+    a3: ArgReg&lt;<span class="lifetime">&#39;_</span>, A3&gt;,
+    a4: ArgReg&lt;<span class="lifetime">&#39;_</span>, A4&gt;,
+) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) <span class="ident">a1</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) <span class="ident">a2</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) <span class="ident">a3</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r8&quot;</span>) <span class="ident">a4</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) a1.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) a2.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) a3.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r8&quot;</span>) a4.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall5_readonly</span>(
-    <span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
-    <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;,
-    <span class="ident">a1</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A1</span>&gt;,
-    <span class="ident">a2</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A2</span>&gt;,
-    <span class="ident">a3</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A3</span>&gt;,
-    <span class="ident">a4</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A4</span>&gt;,
-) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall5_readonly(
+    nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;,
+    a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;,
+    a1: ArgReg&lt;<span class="lifetime">&#39;_</span>, A1&gt;,
+    a2: ArgReg&lt;<span class="lifetime">&#39;_</span>, A2&gt;,
+    a3: ArgReg&lt;<span class="lifetime">&#39;_</span>, A3&gt;,
+    a4: ArgReg&lt;<span class="lifetime">&#39;_</span>, A4&gt;,
+) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) <span class="ident">a1</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) <span class="ident">a2</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) <span class="ident">a3</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r8&quot;</span>) <span class="ident">a4</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>, <span class="ident">readonly</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) a1.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) a2.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) a3.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r8&quot;</span>) a4.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags, readonly)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall6</span>(
-    <span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
-    <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;,
-    <span class="ident">a1</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A1</span>&gt;,
-    <span class="ident">a2</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A2</span>&gt;,
-    <span class="ident">a3</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A3</span>&gt;,
-    <span class="ident">a4</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A4</span>&gt;,
-    <span class="ident">a5</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A5</span>&gt;,
-) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall6(
+    nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;,
+    a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;,
+    a1: ArgReg&lt;<span class="lifetime">&#39;_</span>, A1&gt;,
+    a2: ArgReg&lt;<span class="lifetime">&#39;_</span>, A2&gt;,
+    a3: ArgReg&lt;<span class="lifetime">&#39;_</span>, A3&gt;,
+    a4: ArgReg&lt;<span class="lifetime">&#39;_</span>, A4&gt;,
+    a5: ArgReg&lt;<span class="lifetime">&#39;_</span>, A5&gt;,
+) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) <span class="ident">a1</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) <span class="ident">a2</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) <span class="ident">a3</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r8&quot;</span>) <span class="ident">a4</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r9&quot;</span>) <span class="ident">a5</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) a1.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) a2.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) a3.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r8&quot;</span>) a4.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r9&quot;</span>) a5.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">in</span> <span class="ident"><span class="kw">crate</span>::backend</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">syscall6_readonly</span>(
-    <span class="ident">nr</span>: <span class="ident">SyscallNumber</span>&lt;<span class="lifetime">&#39;_</span>&gt;,
-    <span class="ident">a0</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A0</span>&gt;,
-    <span class="ident">a1</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A1</span>&gt;,
-    <span class="ident">a2</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A2</span>&gt;,
-    <span class="ident">a3</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A3</span>&gt;,
-    <span class="ident">a4</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A4</span>&gt;,
-    <span class="ident">a5</span>: <span class="ident">ArgReg</span>&lt;<span class="lifetime">&#39;_</span>, <span class="ident">A5</span>&gt;,
-) -&gt; <span class="ident">RetReg</span>&lt;<span class="ident">R0</span>&gt; {
-    <span class="kw">let</span> <span class="ident">r0</span>;
+<span class="attribute">#[inline]
+</span><span class="kw">pub</span>(<span class="kw">in </span><span class="kw">crate</span>::backend) <span class="kw">unsafe fn </span>syscall6_readonly(
+    nr: SyscallNumber&lt;<span class="lifetime">&#39;_</span>&gt;,
+    a0: ArgReg&lt;<span class="lifetime">&#39;_</span>, A0&gt;,
+    a1: ArgReg&lt;<span class="lifetime">&#39;_</span>, A1&gt;,
+    a2: ArgReg&lt;<span class="lifetime">&#39;_</span>, A2&gt;,
+    a3: ArgReg&lt;<span class="lifetime">&#39;_</span>, A3&gt;,
+    a4: ArgReg&lt;<span class="lifetime">&#39;_</span>, A4&gt;,
+    a5: ArgReg&lt;<span class="lifetime">&#39;_</span>, A5&gt;,
+) -&gt; RetReg&lt;R0&gt; {
+    <span class="kw">let </span>r0;
     <span class="macro">asm!</span>(
         <span class="string">&quot;syscall&quot;</span>,
-        <span class="ident">inlateout</span>(<span class="string">&quot;rax&quot;</span>) <span class="ident">nr</span>.<span class="ident">to_asm</span>() =&gt; <span class="ident">r0</span>,
-        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) <span class="ident">a0</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) <span class="ident">a1</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) <span class="ident">a2</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) <span class="ident">a3</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r8&quot;</span>) <span class="ident">a4</span>.<span class="ident">to_asm</span>(),
-        <span class="kw">in</span>(<span class="string">&quot;r9&quot;</span>) <span class="ident">a5</span>.<span class="ident">to_asm</span>(),
-        <span class="ident">lateout</span>(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">lateout</span>(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
-        <span class="ident">options</span>(<span class="ident">nostack</span>, <span class="ident">preserves_flags</span>, <span class="ident">readonly</span>)
+        inlateout(<span class="string">&quot;rax&quot;</span>) nr.to_asm() =&gt; r0,
+        <span class="kw">in</span>(<span class="string">&quot;rdi&quot;</span>) a0.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rsi&quot;</span>) a1.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;rdx&quot;</span>) a2.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r10&quot;</span>) a3.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r8&quot;</span>) a4.to_asm(),
+        <span class="kw">in</span>(<span class="string">&quot;r9&quot;</span>) a5.to_asm(),
+        lateout(<span class="string">&quot;rcx&quot;</span>) <span class="kw">_</span>,
+        lateout(<span class="string">&quot;r11&quot;</span>) <span class="kw">_</span>,
+        options(nostack, preserves_flags, readonly)
     );
-    <span class="ident">FromAsm::from_asm</span>(<span class="ident">r0</span>)
+    FromAsm::from_asm(r0)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

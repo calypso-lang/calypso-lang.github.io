@@ -55,60 +55,60 @@
 <span id="53">53</span>
 <span id="54">54</span>
 <span id="55">55</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Support for serializing fields as `serde` structs or maps.</span>
-<span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! Support for serializing fields as `serde` structs or maps.
+</span><span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SerializeFieldMap</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">T</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span>);
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>SerializeFieldMap&lt;<span class="lifetime">&#39;a</span>, T&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>T);
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">AsMap</span>: <span class="ident">Sized</span> + <span class="ident">sealed::Sealed</span> {
-    <span class="kw">fn</span> <span class="ident">field_map</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">SerializeFieldMap</span>&lt;<span class="lifetime">&#39;_</span>, <span class="self">Self</span>&gt; {
-        <span class="ident">SerializeFieldMap</span>(<span class="self">self</span>)
+<span class="kw">pub trait </span>AsMap: Sized + sealed::Sealed {
+    <span class="kw">fn </span>field_map(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; SerializeFieldMap&lt;<span class="lifetime">&#39;_</span>, <span class="self">Self</span>&gt; {
+        SerializeFieldMap(<span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">AsMap</span> <span class="kw">for</span> <span class="ident">Event</span>&lt;<span class="lifetime">&#39;a</span>&gt; {}
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">AsMap</span> <span class="kw">for</span> <span class="ident">Attributes</span>&lt;<span class="lifetime">&#39;a</span>&gt; {}
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">AsMap</span> <span class="kw">for</span> <span class="ident">Record</span>&lt;<span class="lifetime">&#39;a</span>&gt; {}
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; AsMap <span class="kw">for </span>Event&lt;<span class="lifetime">&#39;a</span>&gt; {}
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; AsMap <span class="kw">for </span>Attributes&lt;<span class="lifetime">&#39;a</span>&gt; {}
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; AsMap <span class="kw">for </span>Record&lt;<span class="lifetime">&#39;a</span>&gt; {}
 
-<span class="comment">// === impl SerializeFieldMap ===</span>
+<span class="comment">// === impl SerializeFieldMap ===
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">SerializeFieldMap</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">Event</span>&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
-    <span class="kw">fn</span> <span class="ident">serialize</span>&lt;<span class="ident">S</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S::Ok</span>, <span class="ident">S::Error</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">Serializer</span>,
+</span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Serialize <span class="kw">for </span>SerializeFieldMap&lt;<span class="lifetime">&#39;a</span>, Event&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+    <span class="kw">where
+        </span>S: Serializer,
     {
-        <span class="kw">let</span> <span class="ident">len</span> = <span class="self">self</span>.<span class="number">0</span>.<span class="ident">fields</span>().<span class="ident">count</span>();
-        <span class="kw">let</span> <span class="ident">serializer</span> = <span class="ident">serializer</span>.<span class="ident">serialize_map</span>(<span class="prelude-val">Some</span>(<span class="ident">len</span>))<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visitor</span> = <span class="ident">SerdeMapVisitor::new</span>(<span class="ident">serializer</span>);
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">record</span>(<span class="kw-2">&amp;mut</span> <span class="ident">visitor</span>);
-        <span class="ident">visitor</span>.<span class="ident">finish</span>()
+        <span class="kw">let </span>len = <span class="self">self</span>.<span class="number">0</span>.fields().count();
+        <span class="kw">let </span>serializer = serializer.serialize_map(<span class="prelude-val">Some</span>(len))<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>visitor = SerdeMapVisitor::new(serializer);
+        <span class="self">self</span>.<span class="number">0</span>.record(<span class="kw-2">&amp;mut </span>visitor);
+        visitor.finish()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">SerializeFieldMap</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">Attributes</span>&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
-    <span class="kw">fn</span> <span class="ident">serialize</span>&lt;<span class="ident">S</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S::Ok</span>, <span class="ident">S::Error</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">Serializer</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Serialize <span class="kw">for </span>SerializeFieldMap&lt;<span class="lifetime">&#39;a</span>, Attributes&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+    <span class="kw">where
+        </span>S: Serializer,
     {
-        <span class="kw">let</span> <span class="ident">len</span> = <span class="self">self</span>.<span class="number">0</span>.<span class="ident">metadata</span>().<span class="ident">fields</span>().<span class="ident">len</span>();
-        <span class="kw">let</span> <span class="ident">serializer</span> = <span class="ident">serializer</span>.<span class="ident">serialize_map</span>(<span class="prelude-val">Some</span>(<span class="ident">len</span>))<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visitor</span> = <span class="ident">SerdeMapVisitor::new</span>(<span class="ident">serializer</span>);
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">record</span>(<span class="kw-2">&amp;mut</span> <span class="ident">visitor</span>);
-        <span class="ident">visitor</span>.<span class="ident">finish</span>()
+        <span class="kw">let </span>len = <span class="self">self</span>.<span class="number">0</span>.metadata().fields().len();
+        <span class="kw">let </span>serializer = serializer.serialize_map(<span class="prelude-val">Some</span>(len))<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>visitor = SerdeMapVisitor::new(serializer);
+        <span class="self">self</span>.<span class="number">0</span>.record(<span class="kw-2">&amp;mut </span>visitor);
+        visitor.finish()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">SerializeFieldMap</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">Record</span>&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
-    <span class="kw">fn</span> <span class="ident">serialize</span>&lt;<span class="ident">S</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S::Ok</span>, <span class="ident">S::Error</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">Serializer</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Serialize <span class="kw">for </span>SerializeFieldMap&lt;<span class="lifetime">&#39;a</span>, Record&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+    <span class="kw">where
+        </span>S: Serializer,
     {
-        <span class="kw">let</span> <span class="ident">serializer</span> = <span class="ident">serializer</span>.<span class="ident">serialize_map</span>(<span class="prelude-val">None</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">visitor</span> = <span class="ident">SerdeMapVisitor::new</span>(<span class="ident">serializer</span>);
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">record</span>(<span class="kw-2">&amp;mut</span> <span class="ident">visitor</span>);
-        <span class="ident">visitor</span>.<span class="ident">finish</span>()
+        <span class="kw">let </span>serializer = serializer.serialize_map(<span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>visitor = SerdeMapVisitor::new(serializer);
+        <span class="self">self</span>.<span class="number">0</span>.record(<span class="kw-2">&amp;mut </span>visitor);
+        visitor.finish()
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="tracing_serde" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="tracing_serde" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

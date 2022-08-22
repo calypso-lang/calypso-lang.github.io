@@ -97,104 +97,104 @@
 <span id="97">97</span>
 <span id="98">98</span>
 <span id="99">99</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Diagnostics and builders to create them.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Diagnostics and builders to create them.
 
-<span class="kw">use</span> <span class="ident">std::io::prelude</span>::<span class="kw-2">*</span>;
+</span><span class="kw">use </span>std::io::prelude::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="ident">calypso_base::ui::termcolor::Buffer</span>;
-<span class="kw">use</span> <span class="ident">calypso_error::CalResult</span>;
+<span class="kw">use </span>calypso_base::ui::termcolor::Buffer;
+<span class="kw">use </span>calypso_error::CalResult;
 
-<span class="kw">use</span> <span class="ident">codespan_reporting::files::SimpleFiles</span>;
-<span class="kw">use</span> <span class="ident">codespan_reporting</span>::{
-    <span class="ident">diagnostic::Diagnostic</span> <span class="kw">as</span> <span class="ident">CodespanDiag</span>,
-    <span class="ident">term</span>::{<span class="self">self</span>, <span class="ident">Config</span>},
+<span class="kw">use </span>codespan_reporting::files::SimpleFiles;
+<span class="kw">use </span>codespan_reporting::{
+    diagnostic::Diagnostic <span class="kw">as </span>CodespanDiag,
+    term::{<span class="self">self</span>, Config},
 };
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::error::DiagnosticError</span>;
+<span class="kw">use </span><span class="kw">super</span>::error::DiagnosticError;
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">builder</span>;
+<span class="kw">pub mod </span>builder;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">builder</span>::{<span class="ident">Builder</span>, <span class="ident">EnsembleBuilder</span>};
+<span class="kw">pub use </span>builder::{Builder, EnsembleBuilder};
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">codespan_reporting::diagnostic</span>::{<span class="ident">LabelStyle</span>, <span class="ident">Severity</span>};
+<span class="kw">pub use </span>codespan_reporting::diagnostic::{LabelStyle, Severity};
 
-<span class="doccomment">/// The structure used for managing source file names, IDs, and contents.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">SourceMgr</span> = <span class="ident">SimpleFiles</span>&lt;<span class="ident">String</span>, <span class="ident">String</span>&gt;;
+<span class="doccomment">/// The structure used for managing source file names, IDs, and contents.
+</span><span class="kw">pub type </span>SourceMgr = SimpleFiles&lt;String, String&gt;;
 
-<span class="doccomment">/// A diagnostic.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Diagnostic</span>(<span class="ident">CodespanDiag</span>&lt;<span class="ident">usize</span>&gt;);
+<span class="doccomment">/// A diagnostic.
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>Diagnostic(CodespanDiag&lt;usize&gt;);
 
-<span class="kw">impl</span> <span class="ident">Diagnostic</span> {
-    <span class="doccomment">/// Render the diagnostic to the provided buffer. This will add a newline</span>
-    <span class="doccomment">/// at the end.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function will error if rendering the diagnostic or writing to the</span>
-    <span class="doccomment">/// buffer failed.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">render</span>&lt;<span class="lifetime">&#39;gcx</span>&gt;(
+<span class="kw">impl </span>Diagnostic {
+    <span class="doccomment">/// Render the diagnostic to the provided buffer. This will add a newline
+    /// at the end.
+    ///
+    /// # Errors
+    ///
+    /// This function will error if rendering the diagnostic or writing to the
+    /// buffer failed.
+    </span><span class="kw">pub fn </span>render&lt;<span class="lifetime">&#39;gcx</span>&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Buffer</span>,
-        <span class="ident">sourcemgr</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;gcx</span> <span class="ident">SourceMgr</span>,
-        <span class="ident">config</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">Config</span>&gt;,
-    ) -&gt; <span class="ident">CalResult</span>&lt;()&gt; {
-        <span class="kw">let</span> <span class="ident">def_config</span> = <span class="ident">Config::default</span>();
-        <span class="kw">let</span> <span class="ident">config</span> = <span class="ident">config</span>.<span class="ident">unwrap_or</span>(<span class="kw-2">&amp;</span><span class="ident">def_config</span>);
+        buf: <span class="kw-2">&amp;mut </span>Buffer,
+        sourcemgr: <span class="kw-2">&amp;</span><span class="lifetime">&#39;gcx </span>SourceMgr,
+        config: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Config&gt;,
+    ) -&gt; CalResult&lt;()&gt; {
+        <span class="kw">let </span>def_config = Config::default();
+        <span class="kw">let </span>config = config.unwrap_or(<span class="kw-2">&amp;</span>def_config);
 
-        <span class="ident">term::emit</span>(<span class="ident">buf</span>, <span class="ident">config</span>, <span class="ident">sourcemgr</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>).<span class="ident">map_err</span>(<span class="ident">DiagnosticError::from</span>)<span class="question-mark">?</span>;
-        <span class="macro">writeln!</span>(<span class="ident">buf</span>)<span class="question-mark">?</span>;
+        term::emit(buf, config, sourcemgr, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>).map_err(DiagnosticError::from)<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(buf)<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="doccomment">/// One or more diagnostics in a specific order, in order to form an &quot;ensemble</span>
-<span class="doccomment">/// diagnostic&quot; which is emitted all at once.</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::module_name_repetitions</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">EnsembleDiagnostic</span> {
-    <span class="doccomment">/// One diagnostic</span>
-    <span class="ident">One</span>(<span class="ident">Diagnostic</span>),
-    <span class="doccomment">/// Many diagnostics</span>
-    <span class="ident">Many</span>(<span class="ident">Vec</span>&lt;<span class="ident">Diagnostic</span>&gt;),
+<span class="doccomment">/// One or more diagnostics in a specific order, in order to form an &quot;ensemble
+/// diagnostic&quot; which is emitted all at once.
+</span><span class="attribute">#[allow(clippy::module_name_repetitions)]
+#[derive(Debug)]
+</span><span class="kw">pub enum </span>EnsembleDiagnostic {
+    <span class="doccomment">/// One diagnostic
+    </span>One(Diagnostic),
+    <span class="doccomment">/// Many diagnostics
+    </span>Many(Vec&lt;Diagnostic&gt;),
 }
 
-<span class="kw">impl</span> <span class="ident">EnsembleDiagnostic</span> {
-    <span class="doccomment">/// Render the ensemble diagnostic to the provided buffer. This will add a</span>
-    <span class="doccomment">/// newline at the end.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Errors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This function will error if rendering the diagnostic or writing to the</span>
-    <span class="doccomment">/// buffer failed.</span>
-    <span class="comment">// TODO(@ThePuzzlemaker: diag|cli): use compact displaystyle for syntax</span>
-    <span class="comment">//   errors, add &quot;force rich error&quot; CLI arg for syntax errors</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">render</span>&lt;<span class="lifetime">&#39;gcx</span>&gt;(
+<span class="kw">impl </span>EnsembleDiagnostic {
+    <span class="doccomment">/// Render the ensemble diagnostic to the provided buffer. This will add a
+    /// newline at the end.
+    ///
+    /// # Errors
+    ///
+    /// This function will error if rendering the diagnostic or writing to the
+    /// buffer failed.
+    </span><span class="comment">// TODO(@ThePuzzlemaker: diag|cli): use compact displaystyle for syntax
+    //   errors, add &quot;force rich error&quot; CLI arg for syntax errors
+    </span><span class="kw">pub fn </span>render&lt;<span class="lifetime">&#39;gcx</span>&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">buf</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Buffer</span>,
-        <span class="ident">sourcemgr</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;gcx</span> <span class="ident">SourceMgr</span>,
-        <span class="ident">config</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">Config</span>&gt;,
-    ) -&gt; <span class="ident">CalResult</span>&lt;()&gt; {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::One</span>(<span class="ident">diag</span>) =&gt; <span class="ident">diag</span>.<span class="ident">render</span>(<span class="ident">buf</span>, <span class="ident">sourcemgr</span>, <span class="ident">config</span>),
-            <span class="ident"><span class="self">Self</span>::Many</span>(<span class="ident">diags</span>) =&gt; <span class="ident">diags</span>
-                .<span class="ident">iter</span>()
-                .<span class="ident">try_for_each</span>(|<span class="ident">diag</span>| <span class="ident">diag</span>.<span class="ident">render</span>(<span class="ident">buf</span>, <span class="ident">sourcemgr</span>, <span class="ident">config</span>)),
+        buf: <span class="kw-2">&amp;mut </span>Buffer,
+        sourcemgr: <span class="kw-2">&amp;</span><span class="lifetime">&#39;gcx </span>SourceMgr,
+        config: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Config&gt;,
+    ) -&gt; CalResult&lt;()&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::One(diag) =&gt; diag.render(buf, sourcemgr, config),
+            <span class="self">Self</span>::Many(diags) =&gt; diags
+                .iter()
+                .try_for_each(|diag| diag.render(buf, sourcemgr, config)),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">Diagnostic</span>&gt; <span class="kw">for</span> <span class="ident">EnsembleDiagnostic</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">diag</span>: <span class="ident">Diagnostic</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::One</span>(<span class="ident">diag</span>)
+<span class="kw">impl </span>From&lt;Diagnostic&gt; <span class="kw">for </span>EnsembleDiagnostic {
+    <span class="kw">fn </span>from(diag: Diagnostic) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::One(diag)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">Vec</span>&lt;<span class="ident">Diagnostic</span>&gt;&gt; <span class="kw">for</span> <span class="ident">EnsembleDiagnostic</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">diags</span>: <span class="ident">Vec</span>&lt;<span class="ident">Diagnostic</span>&gt;) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::Many</span>(<span class="ident">diags</span>)
+<span class="kw">impl </span>From&lt;Vec&lt;Diagnostic&gt;&gt; <span class="kw">for </span>EnsembleDiagnostic {
+    <span class="kw">fn </span>from(diags: Vec&lt;Diagnostic&gt;) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::Many(diags)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_diagnostic" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_diagnostic" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

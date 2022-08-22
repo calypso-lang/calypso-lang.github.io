@@ -461,366 +461,366 @@
 <span id="461">461</span>
 <span id="462">462</span>
 <span id="463">463</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::fmt</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>std::fmt;
 
-<span class="kw">use</span> <span class="ident">style</span>::{<span class="ident">Style</span>, <span class="ident">Property</span>};
-<span class="kw">use</span> <span class="ident">color::Color</span>;
+<span class="kw">use </span>style::{Style, Property};
+<span class="kw">use </span>color::Color;
 
-<span class="doccomment">/// A structure encapsulating an item and styling.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See the [crate level documentation](./) for usage information.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Method Glossary</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The `Paint` structure exposes many methods for convenience.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ### Unstyled Constructors</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Return a new `Paint` structure with no or default styling applied.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///   * [`Paint::new(item: T)`](Paint::new())</span>
-<span class="doccomment">///   * [`Paint::default(item: T)`](Paint::default())</span>
-<span class="doccomment">///   * [`Paint::masked(item: T)`](Paint::masked())</span>
-<span class="doccomment">///   * [`Paint::wrapping(item: T)`](Paint::wrapping())</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ### Foreground Color Constructors</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Return a new `Paint` structure with a foreground color applied.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///   * [`Paint::rgb(r: u8, g: u8, b: u8, item: T)`](Paint::rgb())</span>
-<span class="doccomment">///   * [`Paint::fixed(color: u8, item: T)`](Paint::fixed())</span>
-<span class="doccomment">///   * [`Paint::black(item: T)`](Paint::black())</span>
-<span class="doccomment">///   * [`Paint::red(item: T)`](Paint::red())</span>
-<span class="doccomment">///   * [`Paint::green(item: T)`](Paint::green())</span>
-<span class="doccomment">///   * [`Paint::yellow(item: T)`](Paint::yellow())</span>
-<span class="doccomment">///   * [`Paint::blue(item: T)`](Paint::blue())</span>
-<span class="doccomment">///   * [`Paint::magenta(item: T)`](Paint::magenta())</span>
-<span class="doccomment">///   * [`Paint::cyan(item: T)`](Paint::cyan())</span>
-<span class="doccomment">///   * [`Paint::white(item: T)`](Paint::white())</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ### Getters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Return information about the `Paint` structure.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///   * [`paint.style()`](Paint::style())</span>
-<span class="doccomment">///   * [`paint.inner()`](Paint::inner())</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ### Setters</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Set a style property on a given `Paint` structure.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///   * [`paint.with_style(style: Style)`](Paint::with_style())</span>
-<span class="doccomment">///   * [`paint.mask()`](Paint::mask())</span>
-<span class="doccomment">///   * [`paint.wrap()`](Paint::wrap())</span>
-<span class="doccomment">///   * [`paint.fg(color: Color)`](Paint::fg())</span>
-<span class="doccomment">///   * [`paint.bg(color: Color)`](Paint::bg())</span>
-<span class="doccomment">///   * [`paint.bold()`](Paint::bold())</span>
-<span class="doccomment">///   * [`paint.dimmed()`](Paint::dimmed())</span>
-<span class="doccomment">///   * [`paint.italic()`](Paint::italic())</span>
-<span class="doccomment">///   * [`paint.underline()`](Paint::underline())</span>
-<span class="doccomment">///   * [`paint.blink()`](Paint::blink())</span>
-<span class="doccomment">///   * [`paint.invert()`](Paint::invert())</span>
-<span class="doccomment">///   * [`paint.hidden()`](Paint::hidden())</span>
-<span class="doccomment">///   * [`paint.strikethrough()`](Paint::strikethrough())</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// These methods can be chained:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust</span>
-<span class="doccomment">/// use yansi::Paint;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Paint::new(&quot;hi&quot;).underline().invert().italic().dimmed().bold();</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ### Global Methods</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Modify or observe the global behavior of painting.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///   * [`Paint::enable()`](Paint::enable())</span>
-<span class="doccomment">///   * [`Paint::disable()`](Paint::disable())</span>
-<span class="doccomment">///   * [`Paint::is_enabled()`](Paint::is_enabled())</span>
-<span class="doccomment">///   * [`Paint::enable_windows_ascii()`](Paint::enable_windows_ascii())</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>, <span class="ident">Ord</span>, <span class="ident">PartialOrd</span>, <span class="ident">Hash</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-    <span class="ident">item</span>: <span class="ident">T</span>,
-    <span class="ident">style</span>: <span class="ident">Style</span>,
+<span class="doccomment">/// A structure encapsulating an item and styling.
+///
+/// See the [crate level documentation](./) for usage information.
+///
+/// # Method Glossary
+///
+/// The `Paint` structure exposes many methods for convenience.
+///
+/// ### Unstyled Constructors
+///
+/// Return a new `Paint` structure with no or default styling applied.
+///
+///   * [`Paint::new(item: T)`](Paint::new())
+///   * [`Paint::default(item: T)`](Paint::default())
+///   * [`Paint::masked(item: T)`](Paint::masked())
+///   * [`Paint::wrapping(item: T)`](Paint::wrapping())
+///
+/// ### Foreground Color Constructors
+///
+/// Return a new `Paint` structure with a foreground color applied.
+///
+///   * [`Paint::rgb(r: u8, g: u8, b: u8, item: T)`](Paint::rgb())
+///   * [`Paint::fixed(color: u8, item: T)`](Paint::fixed())
+///   * [`Paint::black(item: T)`](Paint::black())
+///   * [`Paint::red(item: T)`](Paint::red())
+///   * [`Paint::green(item: T)`](Paint::green())
+///   * [`Paint::yellow(item: T)`](Paint::yellow())
+///   * [`Paint::blue(item: T)`](Paint::blue())
+///   * [`Paint::magenta(item: T)`](Paint::magenta())
+///   * [`Paint::cyan(item: T)`](Paint::cyan())
+///   * [`Paint::white(item: T)`](Paint::white())
+///
+/// ### Getters
+///
+/// Return information about the `Paint` structure.
+///
+///   * [`paint.style()`](Paint::style())
+///   * [`paint.inner()`](Paint::inner())
+///
+/// ### Setters
+///
+/// Set a style property on a given `Paint` structure.
+///
+///   * [`paint.with_style(style: Style)`](Paint::with_style())
+///   * [`paint.mask()`](Paint::mask())
+///   * [`paint.wrap()`](Paint::wrap())
+///   * [`paint.fg(color: Color)`](Paint::fg())
+///   * [`paint.bg(color: Color)`](Paint::bg())
+///   * [`paint.bold()`](Paint::bold())
+///   * [`paint.dimmed()`](Paint::dimmed())
+///   * [`paint.italic()`](Paint::italic())
+///   * [`paint.underline()`](Paint::underline())
+///   * [`paint.blink()`](Paint::blink())
+///   * [`paint.invert()`](Paint::invert())
+///   * [`paint.hidden()`](Paint::hidden())
+///   * [`paint.strikethrough()`](Paint::strikethrough())
+///
+/// These methods can be chained:
+///
+/// ```rust
+/// use yansi::Paint;
+///
+/// Paint::new(&quot;hi&quot;).underline().invert().italic().dimmed().bold();
+/// ```
+///
+/// ### Global Methods
+///
+/// Modify or observe the global behavior of painting.
+///
+///   * [`Paint::enable()`](Paint::enable())
+///   * [`Paint::disable()`](Paint::disable())
+///   * [`Paint::is_enabled()`](Paint::is_enabled())
+///   * [`Paint::enable_windows_ascii()`](Paint::enable_windows_ascii())
+</span><span class="attribute">#[derive(Default, Eq, PartialEq, Ord, PartialOrd, Hash, Copy, Clone)]
+</span><span class="kw">pub struct </span>Paint&lt;T&gt; {
+    item: T,
+    style: Style,
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">constructors_for</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">color</span>:<span class="ident">ident</span>),<span class="kw-2">*</span>) =&gt; ($(
-        <span class="attribute">#[<span class="ident">doc</span> = <span class="macro">concat!</span>(
+<span class="macro">macro_rules! </span>constructors_for {
+    (<span class="macro-nonterminal">$T</span>:ty, $(<span class="macro-nonterminal">$name</span>:ident: <span class="macro-nonterminal">$color</span>:ident),<span class="kw-2">*</span>) =&gt; ($(
+        <span class="attribute">#[doc = <span class="macro">concat!</span>(
             <span class="string">&quot;Constructs a new `Paint` structure encapsulating `item` with the foreground color\n&quot;</span>,
-            <span class="string">&quot;set to &quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>), <span class="string">&quot;.\n&quot;</span>,
+            <span class="string">&quot;set to &quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$name</span>), <span class="string">&quot;.\n&quot;</span>,
             <span class="string">&quot;```rust\n&quot;</span>,
             <span class="string">&quot;use yansi::Paint;\n&quot;</span>,
             <span class="string">&quot;\n&quot;</span>,
-            <span class="string">&quot;println!(\&quot;This is going to be &quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>),
-                <span class="string">&quot;: {}\&quot;, Paint::&quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>), <span class="string">&quot;(\&quot;yay!\&quot;));\n&quot;</span>,
-            <span class="string">&quot;```\n&quot;</span>
-        )]</span>
-        <span class="attribute">#[<span class="ident">inline</span>]</span>
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>(<span class="ident">item</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>&gt; {
-            <span class="ident">Paint::new</span>(<span class="ident">item</span>).<span class="ident">fg</span>(<span class="ident">Color</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">color</span>)
+            <span class="string">&quot;println!(\&quot;This is going to be &quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$name</span>),
+                <span class="string">&quot;: {}\&quot;, Paint::&quot;</span>, <span class="macro">stringify!</span>(<span class="macro-nonterminal">$name</span>), <span class="string">&quot;(\&quot;yay!\&quot;));\n&quot;</span>,
+            <span class="string">&quot;```\n&quot;
+        </span>)]
+        #[inline]
+        </span><span class="kw">pub fn </span><span class="macro-nonterminal">$name</span>(item: <span class="macro-nonterminal">$T</span>) -&gt; Paint&lt;<span class="macro-nonterminal">$T</span>&gt; {
+            Paint::new(item).fg(Color::<span class="macro-nonterminal">$color</span>)
         }
     )<span class="kw-2">*</span>)
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">T</span>&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-    <span class="doccomment">/// Constructs a new `Paint` structure encapsulating `item` with no set</span>
-    <span class="doccomment">/// styling.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(Paint::new(&quot;hello!&quot;).to_string(), &quot;hello!&quot;.to_string());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">item</span>: <span class="ident">T</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="ident">Paint</span> { <span class="ident">item</span>, <span class="ident">style</span>: <span class="ident">Style::default</span>() }
+<span class="kw">impl</span>&lt;T&gt; Paint&lt;T&gt; {
+    <span class="doccomment">/// Constructs a new `Paint` structure encapsulating `item` with no set
+    /// styling.
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    ///
+    /// assert_eq!(Paint::new(&quot;hello!&quot;).to_string(), &quot;hello!&quot;.to_string());
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>new(item: T) -&gt; Paint&lt;T&gt; {
+        Paint { item, style: Style::default() }
     }
 
-    <span class="doccomment">/// Constructs a new `Paint` structure encapsulating `item` with the active</span>
-    <span class="doccomment">/// terminal&#39;s default foreground and background.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// println!(&quot;This is going to use {}!&quot;, Paint::default(&quot;default colors&quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default</span>(<span class="ident">item</span>: <span class="ident">T</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="ident">Paint::new</span>(<span class="ident">item</span>).<span class="ident">fg</span>(<span class="ident">Color::Default</span>).<span class="ident">bg</span>(<span class="ident">Color::Default</span>)
+    <span class="doccomment">/// Constructs a new `Paint` structure encapsulating `item` with the active
+    /// terminal&#39;s default foreground and background.
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    ///
+    /// println!(&quot;This is going to use {}!&quot;, Paint::default(&quot;default colors&quot;));
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>default(item: T) -&gt; Paint&lt;T&gt; {
+        Paint::new(item).fg(Color::Default).bg(Color::Default)
     }
 
-    <span class="doccomment">/// Constructs a new _masked_ `Paint` structure encapsulating `item` with</span>
-    <span class="doccomment">/// no set styling.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// A masked `Paint` is not written out when painting is disabled during</span>
-    <span class="doccomment">/// `Display` or `Debug` invocations. When painting is enabled, masking has</span>
-    <span class="doccomment">/// no effect.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // The emoji won&#39;t be printed when coloring is disabled.</span>
-    <span class="doccomment">/// println!(&quot;{}Sprout!&quot;, Paint::masked(&quot;🌱 &quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">masked</span>(<span class="ident">item</span>: <span class="ident">T</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="ident">Paint::new</span>(<span class="ident">item</span>).<span class="ident">mask</span>()
+    <span class="doccomment">/// Constructs a new _masked_ `Paint` structure encapsulating `item` with
+    /// no set styling.
+    ///
+    /// A masked `Paint` is not written out when painting is disabled during
+    /// `Display` or `Debug` invocations. When painting is enabled, masking has
+    /// no effect.
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    ///
+    /// // The emoji won&#39;t be printed when coloring is disabled.
+    /// println!(&quot;{}Sprout!&quot;, Paint::masked(&quot;🌱 &quot;));
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>masked(item: T) -&gt; Paint&lt;T&gt; {
+        Paint::new(item).mask()
     }
 
-    <span class="doccomment">/// Constructs a new _wrapping_ `Paint` structure encapsulating `item` with</span>
-    <span class="doccomment">/// default styling.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// A wrapping `Paint` converts all color resets written out by the internal</span>
-    <span class="doccomment">/// value to the styling of itself. This allows for seamless color wrapping</span>
-    <span class="doccomment">/// of other colored text.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Performance</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// In order to wrap an internal value, the internal value must first be</span>
-    <span class="doccomment">/// written out to a local buffer and examined. As a result, displaying a</span>
-    <span class="doccomment">/// wrapped value is likely to result in a heap allocation and copy.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::{Paint, Color};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let inner = format!(&quot;{} and {}&quot;, Paint::red(&quot;Stop&quot;), Paint::green(&quot;Go&quot;));</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // &#39;Hey!&#39; will be unstyled, &quot;Stop&quot; will be red, &quot;and&quot; will be blue, and</span>
-    <span class="doccomment">/// // &quot;Go&quot; will be green. Without a wrapping `Paint`, &quot;and&quot; would be</span>
-    <span class="doccomment">/// // unstyled.</span>
-    <span class="doccomment">/// println!(&quot;Hey! {}&quot;, Paint::wrapping(inner).fg(Color::Blue));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrapping</span>(<span class="ident">item</span>: <span class="ident">T</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="ident">Paint::new</span>(<span class="ident">item</span>).<span class="ident">wrap</span>()
+    <span class="doccomment">/// Constructs a new _wrapping_ `Paint` structure encapsulating `item` with
+    /// default styling.
+    ///
+    /// A wrapping `Paint` converts all color resets written out by the internal
+    /// value to the styling of itself. This allows for seamless color wrapping
+    /// of other colored text.
+    ///
+    /// # Performance
+    ///
+    /// In order to wrap an internal value, the internal value must first be
+    /// written out to a local buffer and examined. As a result, displaying a
+    /// wrapped value is likely to result in a heap allocation and copy.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use yansi::{Paint, Color};
+    ///
+    /// let inner = format!(&quot;{} and {}&quot;, Paint::red(&quot;Stop&quot;), Paint::green(&quot;Go&quot;));
+    ///
+    /// // &#39;Hey!&#39; will be unstyled, &quot;Stop&quot; will be red, &quot;and&quot; will be blue, and
+    /// // &quot;Go&quot; will be green. Without a wrapping `Paint`, &quot;and&quot; would be
+    /// // unstyled.
+    /// println!(&quot;Hey! {}&quot;, Paint::wrapping(inner).fg(Color::Blue));
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>wrapping(item: T) -&gt; Paint&lt;T&gt; {
+        Paint::new(item).wrap()
     }
 
-    <span class="doccomment">/// Constructs a new `Paint` structure encapsulating `item` with the</span>
-    <span class="doccomment">/// foreground color set to the RGB color `r`, `g`, `b`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// println!(&quot;This is going to be funky: {}&quot;, Paint::rgb(70, 130, 122, &quot;hi!&quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rgb</span>(<span class="ident">r</span>: <span class="ident">u8</span>, <span class="ident">g</span>: <span class="ident">u8</span>, <span class="ident">b</span>: <span class="ident">u8</span>, <span class="ident">item</span>: <span class="ident">T</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="ident">Paint::new</span>(<span class="ident">item</span>).<span class="ident">fg</span>(<span class="ident">Color::RGB</span>(<span class="ident">r</span>, <span class="ident">g</span>, <span class="ident">b</span>))
+    <span class="doccomment">/// Constructs a new `Paint` structure encapsulating `item` with the
+    /// foreground color set to the RGB color `r`, `g`, `b`.
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    ///
+    /// println!(&quot;This is going to be funky: {}&quot;, Paint::rgb(70, 130, 122, &quot;hi!&quot;));
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>rgb(r: u8, g: u8, b: u8, item: T) -&gt; Paint&lt;T&gt; {
+        Paint::new(item).fg(Color::RGB(r, g, b))
     }
 
-    <span class="doccomment">/// Constructs a new `Paint` structure encapsulating `item` with the</span>
-    <span class="doccomment">/// foreground color set to the fixed 8-bit color `color`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// println!(&quot;This is going to be funky: {}&quot;, Paint::fixed(100, &quot;hi!&quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fixed</span>(<span class="ident">color</span>: <span class="ident">u8</span>, <span class="ident">item</span>: <span class="ident">T</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="ident">Paint::new</span>(<span class="ident">item</span>).<span class="ident">fg</span>(<span class="ident">Color::Fixed</span>(<span class="ident">color</span>))
+    <span class="doccomment">/// Constructs a new `Paint` structure encapsulating `item` with the
+    /// foreground color set to the fixed 8-bit color `color`.
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    ///
+    /// println!(&quot;This is going to be funky: {}&quot;, Paint::fixed(100, &quot;hi!&quot;));
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>fixed(color: u8, item: T) -&gt; Paint&lt;T&gt; {
+        Paint::new(item).fg(Color::Fixed(color))
     }
 
-    <span class="macro">constructors_for!</span>(<span class="ident">T</span>, <span class="ident">black</span>: <span class="ident">Black</span>, <span class="ident">red</span>: <span class="ident">Red</span>, <span class="ident">green</span>: <span class="ident">Green</span>, <span class="ident">yellow</span>: <span class="ident">Yellow</span>,
-        <span class="ident">blue</span>: <span class="ident">Blue</span>, <span class="ident">magenta</span>: <span class="ident">Magenta</span>, <span class="ident">cyan</span>: <span class="ident">Cyan</span>, <span class="ident">white</span>: <span class="ident">White</span>);
+    <span class="macro">constructors_for!</span>(T, black: Black, red: Red, green: Green, yellow: Yellow,
+        blue: Blue, magenta: Magenta, cyan: Cyan, white: White);
 
-    <span class="doccomment">/// Retrieves the style currently set on `self`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::{Style, Color, Paint};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let alert = Style::new(Color::Red).bold().underline();</span>
-    <span class="doccomment">/// let painted = Paint::red(&quot;hi&quot;).bold().underline();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert_eq!(alert, painted.style());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">style</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Style</span> {
-        <span class="self">self</span>.<span class="ident">style</span>
+    <span class="doccomment">/// Retrieves the style currently set on `self`.
+    ///
+    /// ```rust
+    /// use yansi::{Style, Color, Paint};
+    ///
+    /// let alert = Style::new(Color::Red).bold().underline();
+    /// let painted = Paint::red(&quot;hi&quot;).bold().underline();
+    ///
+    /// assert_eq!(alert, painted.style());
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>style(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Style {
+        <span class="self">self</span>.style
     }
 
-    <span class="doccomment">/// Retrieves a borrow to the inner item.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let x = Paint::red(&quot;Hello, world!&quot;);</span>
-    <span class="doccomment">/// assert_eq!(*x.inner(), &quot;Hello, world!&quot;);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">T</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">item</span>
+    <span class="doccomment">/// Retrieves a borrow to the inner item.
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    ///
+    /// let x = Paint::red(&quot;Hello, world!&quot;);
+    /// assert_eq!(*x.inner(), &quot;Hello, world!&quot;);
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>inner(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>T {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.item
     }
 
-    <span class="doccomment">/// Sets the style of `self` to `style`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Any styling currently set on `self` is lost. Prefer to use the</span>
-    <span class="doccomment">/// [`style.paint()`](Style::paint()) method to create a `Paint` struct from</span>
-    <span class="doccomment">/// `Style`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::{Paint, Color, Style};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let s = Style::new(Color::Red).bold().underline();</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // Using this method.</span>
-    <span class="doccomment">/// println!(&quot;Alert: {}&quot;, Paint::new(&quot;This thing happened!&quot;).with_style(s));</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // Using the `style.paint()` method.</span>
-    <span class="doccomment">/// println!(&quot;Alert: {}&quot;, s.paint(&quot;This thing happened!&quot;));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_style</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">style</span>: <span class="ident">Style</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="self">self</span>.<span class="ident">style</span> = <span class="ident">style</span>;
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Sets the style of `self` to `style`.
+    ///
+    /// Any styling currently set on `self` is lost. Prefer to use the
+    /// [`style.paint()`](Style::paint()) method to create a `Paint` struct from
+    /// `Style`.
+    ///
+    /// ```rust
+    /// use yansi::{Paint, Color, Style};
+    ///
+    /// let s = Style::new(Color::Red).bold().underline();
+    ///
+    /// // Using this method.
+    /// println!(&quot;Alert: {}&quot;, Paint::new(&quot;This thing happened!&quot;).with_style(s));
+    ///
+    /// // Using the `style.paint()` method.
+    /// println!(&quot;Alert: {}&quot;, s.paint(&quot;This thing happened!&quot;));
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>with_style(<span class="kw-2">mut </span><span class="self">self</span>, style: Style) -&gt; Paint&lt;T&gt; {
+        <span class="self">self</span>.style = style;
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Masks `self`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// A masked `Paint` is not written out when painting is disabled during</span>
-    <span class="doccomment">/// `Display` or `Debug` invocations. When painting is enabled, masking has</span>
-    <span class="doccomment">/// no effect.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // &quot;Whoops! &quot; will only print when coloring is enabled.</span>
-    <span class="doccomment">/// println!(&quot;{}Something happened.&quot;, Paint::red(&quot;Whoops! &quot;).mask());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mask</span>(<span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="self">self</span>.<span class="ident">style</span>.<span class="ident">masked</span> = <span class="bool-val">true</span>;
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Masks `self`.
+    ///
+    /// A masked `Paint` is not written out when painting is disabled during
+    /// `Display` or `Debug` invocations. When painting is enabled, masking has
+    /// no effect.
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    ///
+    /// // &quot;Whoops! &quot; will only print when coloring is enabled.
+    /// println!(&quot;{}Something happened.&quot;, Paint::red(&quot;Whoops! &quot;).mask());
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>mask(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; Paint&lt;T&gt; {
+        <span class="self">self</span>.style.masked = <span class="bool-val">true</span>;
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Makes `self` a _wrapping_ `Paint`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// A wrapping `Paint` converts all color resets written out by the internal</span>
-    <span class="doccomment">/// value to the styling of itself. This allows for seamless color wrapping</span>
-    <span class="doccomment">/// of other colored text.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Performance</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// In order to wrap an internal value, the internal value must first be</span>
-    <span class="doccomment">/// written out to a local buffer and examined. As a result, displaying a</span>
-    <span class="doccomment">/// wrapped value is likely to result in a heap allocation and copy.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::{Paint, Color};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let inner = format!(&quot;{} and {}&quot;, Paint::red(&quot;Stop&quot;), Paint::green(&quot;Go&quot;));</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // &#39;Hey!&#39; will be unstyled, &quot;Stop&quot; will be red, &quot;and&quot; will be blue, and</span>
-    <span class="doccomment">/// // &quot;Go&quot; will be green. Without a wrapping `Paint`, &quot;and&quot; would be</span>
-    <span class="doccomment">/// // unstyled.</span>
-    <span class="doccomment">/// println!(&quot;Hey! {}&quot;, Paint::blue(inner).wrap());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap</span>(<span class="kw-2">mut</span> <span class="self">self</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="self">self</span>.<span class="ident">style</span>.<span class="ident">wrap</span> = <span class="bool-val">true</span>;
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Makes `self` a _wrapping_ `Paint`.
+    ///
+    /// A wrapping `Paint` converts all color resets written out by the internal
+    /// value to the styling of itself. This allows for seamless color wrapping
+    /// of other colored text.
+    ///
+    /// # Performance
+    ///
+    /// In order to wrap an internal value, the internal value must first be
+    /// written out to a local buffer and examined. As a result, displaying a
+    /// wrapped value is likely to result in a heap allocation and copy.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use yansi::{Paint, Color};
+    ///
+    /// let inner = format!(&quot;{} and {}&quot;, Paint::red(&quot;Stop&quot;), Paint::green(&quot;Go&quot;));
+    ///
+    /// // &#39;Hey!&#39; will be unstyled, &quot;Stop&quot; will be red, &quot;and&quot; will be blue, and
+    /// // &quot;Go&quot; will be green. Without a wrapping `Paint`, &quot;and&quot; would be
+    /// // unstyled.
+    /// println!(&quot;Hey! {}&quot;, Paint::blue(inner).wrap());
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>wrap(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; Paint&lt;T&gt; {
+        <span class="self">self</span>.style.wrap = <span class="bool-val">true</span>;
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Sets the foreground to `color`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">/// use yansi::Color::Red;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// println!(&quot;Red foreground: {}&quot;, Paint::new(&quot;hi!&quot;).fg(Red));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fg</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">color</span>: <span class="ident">Color</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="self">self</span>.<span class="ident">style</span>.<span class="ident">foreground</span> = <span class="ident">color</span>;
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Sets the foreground to `color`.
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    /// use yansi::Color::Red;
+    ///
+    /// println!(&quot;Red foreground: {}&quot;, Paint::new(&quot;hi!&quot;).fg(Red));
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>fg(<span class="kw-2">mut </span><span class="self">self</span>, color: Color) -&gt; Paint&lt;T&gt; {
+        <span class="self">self</span>.style.foreground = color;
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Sets the background to `color`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">/// use yansi::Color::Yellow;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// println!(&quot;Yellow background: {}&quot;, Paint::new(&quot;hi!&quot;).bg(Yellow));</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bg</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">color</span>: <span class="ident">Color</span>) -&gt; <span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt; {
-        <span class="self">self</span>.<span class="ident">style</span>.<span class="ident">background</span> = <span class="ident">color</span>;
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Sets the background to `color`.
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    /// use yansi::Color::Yellow;
+    ///
+    /// println!(&quot;Yellow background: {}&quot;, Paint::new(&quot;hi!&quot;).bg(Yellow));
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>bg(<span class="kw-2">mut </span><span class="self">self</span>, color: Color) -&gt; Paint&lt;T&gt; {
+        <span class="self">self</span>.style.background = color;
+        <span class="self">self
+    </span>}
 
-    <span class="macro">style_builder_for!</span>(<span class="ident">Paint</span>&lt;<span class="ident">T</span>&gt;, |<span class="ident">paint</span>| <span class="ident">paint</span>.<span class="ident">style</span>.<span class="ident">properties</span>,
-                       <span class="ident">bold</span>: <span class="ident">BOLD</span>, <span class="ident">dimmed</span>: <span class="ident">DIMMED</span>, <span class="ident">italic</span>: <span class="ident">ITALIC</span>,
-                       <span class="ident">underline</span>: <span class="ident">UNDERLINE</span>, <span class="ident">blink</span>: <span class="ident">BLINK</span>, <span class="ident">invert</span>: <span class="ident">INVERT</span>,
-                       <span class="ident">hidden</span>: <span class="ident">HIDDEN</span>, <span class="ident">strikethrough</span>: <span class="ident">STRIKETHROUGH</span>);
+    <span class="macro">style_builder_for!</span>(Paint&lt;T&gt;, |paint| paint.style.properties,
+                       bold: BOLD, dimmed: DIMMED, italic: ITALIC,
+                       underline: UNDERLINE, blink: BLINK, invert: INVERT,
+                       hidden: HIDDEN, strikethrough: STRIKETHROUGH);
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">impl_fmt_trait</span> {
-    (<span class="macro-nonterminal">$</span><span class="kw">trait</span>:<span class="macro-nonterminal">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fmt</span>:<span class="ident">expr</span>) =&gt; (
-        <span class="kw">impl</span>&lt;<span class="ident">T</span>: <span class="ident">fmt</span>::<span class="macro-nonterminal">$</span><span class="kw">trait</span>&gt; <span class="macro-nonterminal">fmt</span>::<span class="macro-nonterminal">$</span><span class="kw">trait</span> <span class="kw">for</span> <span class="macro-nonterminal">Paint</span>&lt;<span class="ident">T</span>&gt; {
-            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-                <span class="kw">if</span> <span class="ident">Paint::is_enabled</span>() &amp;&amp; <span class="self">self</span>.<span class="ident">style</span>.<span class="ident">wrap</span> {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prefix</span> = <span class="ident">String::new</span>();
-                    <span class="ident">prefix</span>.<span class="ident">push_str</span>(<span class="string">&quot;\x1B[0m&quot;</span>);
-                    <span class="self">self</span>.<span class="ident">style</span>.<span class="ident">fmt_prefix</span>(<span class="kw-2">&amp;mut</span> <span class="ident">prefix</span>)<span class="question-mark">?</span>;
+<span class="macro">macro_rules! </span>impl_fmt_trait {
+    (<span class="macro-nonterminal">$</span><span class="kw">trait</span>:<span class="macro-nonterminal">ident</span>, <span class="macro-nonterminal">$fmt</span>:expr) =&gt; (
+        <span class="kw">impl</span>&lt;T: fmt::<span class="macro-nonterminal">$</span><span class="kw">trait</span>&gt; <span class="macro-nonterminal">fmt</span>::<span class="macro-nonterminal">$</span><span class="kw">trait for </span><span class="macro-nonterminal">Paint</span>&lt;T&gt; {
+            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
+                <span class="kw">if </span>Paint::is_enabled() &amp;&amp; <span class="self">self</span>.style.wrap {
+                    <span class="kw">let </span><span class="kw-2">mut </span>prefix = String::new();
+                    prefix.push_str(<span class="string">&quot;\x1B[0m&quot;</span>);
+                    <span class="self">self</span>.style.fmt_prefix(<span class="kw-2">&amp;mut </span>prefix)<span class="question-mark">?</span>;
 
-                    <span class="self">self</span>.<span class="ident">style</span>.<span class="ident">fmt_prefix</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
-                    <span class="kw">let</span> <span class="ident">item</span> = <span class="macro">format!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">fmt</span>, <span class="self">self</span>.<span class="ident">item</span>).<span class="ident">replace</span>(<span class="string">&quot;\x1B[0m&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">prefix</span>);
-                    <span class="ident">fmt</span>::<span class="macro-nonterminal">$</span><span class="kw">trait</span><span class="macro-nonterminal">::fmt</span>(<span class="kw-2">&amp;</span><span class="ident">item</span>, <span class="ident">f</span>)<span class="question-mark">?</span>;
-                    <span class="self">self</span>.<span class="ident">style</span>.<span class="ident">fmt_suffix</span>(<span class="ident">f</span>)
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">Paint::is_enabled</span>() {
-                    <span class="self">self</span>.<span class="ident">style</span>.<span class="ident">fmt_prefix</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
-                    <span class="ident">fmt</span>::<span class="macro-nonterminal">$</span><span class="kw">trait</span><span class="macro-nonterminal">::fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">item</span>, <span class="ident">f</span>)<span class="question-mark">?</span>;
-                    <span class="self">self</span>.<span class="ident">style</span>.<span class="ident">fmt_suffix</span>(<span class="ident">f</span>)
-                } <span class="kw">else</span> <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">style</span>.<span class="ident">masked</span> {
-                    <span class="ident">fmt</span>::<span class="macro-nonterminal">$</span><span class="kw">trait</span><span class="macro-nonterminal">::fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">item</span>, <span class="ident">f</span>)
-                } <span class="kw">else</span> {
+                    <span class="self">self</span>.style.fmt_prefix(f)<span class="question-mark">?</span>;
+                    <span class="kw">let </span>item = <span class="macro">format!</span>(<span class="macro-nonterminal">$fmt</span>, <span class="self">self</span>.item).replace(<span class="string">&quot;\x1B[0m&quot;</span>, <span class="kw-2">&amp;</span>prefix);
+                    fmt::<span class="macro-nonterminal">$</span><span class="kw">trait</span><span class="macro-nonterminal">::fmt</span>(<span class="kw-2">&amp;</span>item, f)<span class="question-mark">?</span>;
+                    <span class="self">self</span>.style.fmt_suffix(f)
+                } <span class="kw">else if </span>Paint::is_enabled() {
+                    <span class="self">self</span>.style.fmt_prefix(f)<span class="question-mark">?</span>;
+                    fmt::<span class="macro-nonterminal">$</span><span class="kw">trait</span><span class="macro-nonterminal">::fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.item, f)<span class="question-mark">?</span>;
+                    <span class="self">self</span>.style.fmt_suffix(f)
+                } <span class="kw">else if </span>!<span class="self">self</span>.style.masked {
+                    fmt::<span class="macro-nonterminal">$</span><span class="kw">trait</span><span class="macro-nonterminal">::fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.item, f)
+                } <span class="kw">else </span>{
                     <span class="prelude-val">Ok</span>(())
                 }
             }
@@ -828,101 +828,101 @@
     )
 }
 
-<span class="macro">impl_fmt_trait!</span>(<span class="ident">Display</span>, <span class="string">&quot;{}&quot;</span>);
-<span class="macro">impl_fmt_trait!</span>(<span class="ident">Debug</span>, <span class="string">&quot;{:?}&quot;</span>);
+<span class="macro">impl_fmt_trait!</span>(Display, <span class="string">&quot;{}&quot;</span>);
+<span class="macro">impl_fmt_trait!</span>(Debug, <span class="string">&quot;{:?}&quot;</span>);
 
-<span class="kw">use</span> <span class="ident">std::sync::atomic::AtomicBool</span>;
-<span class="kw">use</span> <span class="ident">std::sync::atomic::Ordering</span>;
+<span class="kw">use </span>std::sync::atomic::AtomicBool;
+<span class="kw">use </span>std::sync::atomic::Ordering;
 
-<span class="kw">static</span> <span class="ident">ENABLED</span>: <span class="ident">AtomicBool</span> = <span class="ident">AtomicBool::new</span>(<span class="bool-val">true</span>);
+<span class="kw">static </span>ENABLED: AtomicBool = AtomicBool::new(<span class="bool-val">true</span>);
 
-<span class="kw">impl</span> <span class="ident">Paint</span>&lt;()&gt; {
-    <span class="doccomment">/// Disables coloring globally.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // With coloring enabled, ANSI color codes are emitted.</span>
-    <span class="doccomment">/// assert_ne!(Paint::green(&quot;go&quot;).to_string(), &quot;go&quot;.to_string());</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // With coloring disabled, ANSI color codes are _not_ emitted.</span>
-    <span class="doccomment">/// Paint::disable();</span>
-    <span class="doccomment">/// assert_eq!(Paint::green(&quot;go&quot;).to_string(), &quot;go&quot;.to_string());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">disable</span>() {
-        <span class="ident">ENABLED</span>.<span class="ident">store</span>(<span class="bool-val">false</span>, <span class="ident">Ordering::Release</span>);
+<span class="kw">impl </span>Paint&lt;()&gt; {
+    <span class="doccomment">/// Disables coloring globally.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    ///
+    /// // With coloring enabled, ANSI color codes are emitted.
+    /// assert_ne!(Paint::green(&quot;go&quot;).to_string(), &quot;go&quot;.to_string());
+    ///
+    /// // With coloring disabled, ANSI color codes are _not_ emitted.
+    /// Paint::disable();
+    /// assert_eq!(Paint::green(&quot;go&quot;).to_string(), &quot;go&quot;.to_string());
+    /// ```
+    </span><span class="kw">pub fn </span>disable() {
+        ENABLED.store(<span class="bool-val">false</span>, Ordering::Release);
     }
 
-    <span class="doccomment">/// Enables coloring globally. Coloring is enabled by default, so this</span>
-    <span class="doccomment">/// method should only be called to _re_ enable coloring.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // With coloring disabled, ANSI color codes are _not_ emitted.</span>
-    <span class="doccomment">/// Paint::disable();</span>
-    <span class="doccomment">/// assert_eq!(Paint::green(&quot;go&quot;).to_string(), &quot;go&quot;.to_string());</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // Reenabling causes color code to be emitted.</span>
-    <span class="doccomment">/// Paint::enable();</span>
-    <span class="doccomment">/// assert_ne!(Paint::green(&quot;go&quot;).to_string(), &quot;go&quot;.to_string());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable</span>() {
-        <span class="ident">ENABLED</span>.<span class="ident">store</span>(<span class="bool-val">true</span>, <span class="ident">Ordering::Release</span>);
+    <span class="doccomment">/// Enables coloring globally. Coloring is enabled by default, so this
+    /// method should only be called to _re_ enable coloring.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    ///
+    /// // With coloring disabled, ANSI color codes are _not_ emitted.
+    /// Paint::disable();
+    /// assert_eq!(Paint::green(&quot;go&quot;).to_string(), &quot;go&quot;.to_string());
+    ///
+    /// // Reenabling causes color code to be emitted.
+    /// Paint::enable();
+    /// assert_ne!(Paint::green(&quot;go&quot;).to_string(), &quot;go&quot;.to_string());
+    /// ```
+    </span><span class="kw">pub fn </span>enable() {
+        ENABLED.store(<span class="bool-val">true</span>, Ordering::Release);
     }
 
-    <span class="doccomment">/// Returns `true` if coloring is enabled and `false` otherwise. Coloring is</span>
-    <span class="doccomment">/// enabled by default but can be enabled and disabled on-the-fly with the</span>
-    <span class="doccomment">/// [`Paint::enable()`] and [`Paint::disable()`] methods.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`Paint::disable()`]: struct.Paint.html#method.disable</span>
-    <span class="doccomment">/// [`Paint::enable()`]: struct.Paint.html#method.disable</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // Coloring is enabled by default.</span>
-    <span class="doccomment">/// assert!(Paint::is_enabled());</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // Disable it with `Paint::disable()`.</span>
-    <span class="doccomment">/// Paint::disable();</span>
-    <span class="doccomment">/// assert!(!Paint::is_enabled());</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // Reenable with `Paint::enable()`.</span>
-    <span class="doccomment">/// Paint::enable();</span>
-    <span class="doccomment">/// assert!(Paint::is_enabled());</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_enabled</span>() -&gt; <span class="ident">bool</span> {
-        <span class="ident">ENABLED</span>.<span class="ident">load</span>(<span class="ident">Ordering::Acquire</span>)
+    <span class="doccomment">/// Returns `true` if coloring is enabled and `false` otherwise. Coloring is
+    /// enabled by default but can be enabled and disabled on-the-fly with the
+    /// [`Paint::enable()`] and [`Paint::disable()`] methods.
+    ///
+    /// [`Paint::disable()`]: struct.Paint.html#method.disable
+    /// [`Paint::enable()`]: struct.Paint.html#method.disable
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    ///
+    /// // Coloring is enabled by default.
+    /// assert!(Paint::is_enabled());
+    ///
+    /// // Disable it with `Paint::disable()`.
+    /// Paint::disable();
+    /// assert!(!Paint::is_enabled());
+    ///
+    /// // Reenable with `Paint::enable()`.
+    /// Paint::enable();
+    /// assert!(Paint::is_enabled());
+    /// ```
+    </span><span class="kw">pub fn </span>is_enabled() -&gt; bool {
+        ENABLED.load(Ordering::Acquire)
     }
 
-    <span class="doccomment">/// Enables ASCII terminal escape sequences on Windows consoles when</span>
-    <span class="doccomment">/// possible. Returns `true` if escape sequence support was successfully</span>
-    <span class="doccomment">/// enabled and `false` otherwise. On non-Windows targets, this method</span>
-    <span class="doccomment">/// always returns `true`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Support for escape sequences in Windows consoles was added in the</span>
-    <span class="doccomment">/// Windows 10 anniversary update. For targets with older Windows</span>
-    <span class="doccomment">/// installations, this method is expected to return `false`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Example</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use yansi::Paint;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // A best-effort Windows ASCII terminal support enabling.</span>
-    <span class="doccomment">/// Paint::enable_windows_ascii();</span>
-    <span class="doccomment">/// ```</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable_windows_ascii</span>() -&gt; <span class="ident">bool</span> {
-        <span class="ident">::windows::enable_ascii_colors</span>()
+    <span class="doccomment">/// Enables ASCII terminal escape sequences on Windows consoles when
+    /// possible. Returns `true` if escape sequence support was successfully
+    /// enabled and `false` otherwise. On non-Windows targets, this method
+    /// always returns `true`.
+    ///
+    /// Support for escape sequences in Windows consoles was added in the
+    /// Windows 10 anniversary update. For targets with older Windows
+    /// installations, this method is expected to return `false`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use yansi::Paint;
+    ///
+    /// // A best-effort Windows ASCII terminal support enabling.
+    /// Paint::enable_windows_ascii();
+    /// ```
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>enable_windows_ascii() -&gt; bool {
+        ::windows::enable_ascii_colors()
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="yansi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="yansi" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

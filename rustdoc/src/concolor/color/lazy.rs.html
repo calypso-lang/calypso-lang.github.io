@@ -46,53 +46,53 @@
 <span id="46">46</span>
 <span id="47">47</span>
 <span id="48">48</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::sync::atomic</span>::{<span class="ident">AtomicUsize</span>, <span class="ident">Ordering</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>std::sync::atomic::{AtomicUsize, Ordering};
 
-<span class="doccomment">/// Specialized once_cell::race::OnceNonZeroUsize</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Use MAX instead of MIN for uninit case to make it easier to work with for bitflags</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Lazy</span>(<span class="ident">AtomicUsize</span>);
+<span class="doccomment">/// Specialized once_cell::race::OnceNonZeroUsize
+///
+/// Use MAX instead of MIN for uninit case to make it easier to work with for bitflags
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Lazy(AtomicUsize);
 
-<span class="kw">impl</span> <span class="ident">Lazy</span> {
-    <span class="kw">const</span> <span class="ident">UNINIT</span>: <span class="ident">usize</span> = <span class="ident">usize::MAX</span>;
+<span class="kw">impl </span>Lazy {
+    <span class="kw">const </span>UNINIT: usize = usize::MAX;
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">AtomicUsize::new</span>(<span class="ident"><span class="self">Self</span>::UNINIT</span>))
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>(AtomicUsize::new(<span class="self">Self</span>::UNINIT))
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">get_or_init</span>&lt;<span class="ident">F</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="ident">usize</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>() -&gt; <span class="ident">usize</span>,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>get_or_init&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: F) -&gt; usize
+    <span class="kw">where
+        </span>F: FnOnce() -&gt; usize,
     {
-        <span class="self">self</span>.<span class="ident">get</span>().<span class="ident">unwrap_or_else</span>(|| {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">val</span> = <span class="ident">f</span>();
-            <span class="macro">assert_ne!</span>(<span class="ident">val</span>, <span class="ident"><span class="self">Self</span>::UNINIT</span>);
-            <span class="kw">let</span> <span class="ident">exchange</span> =
-                <span class="self">self</span>.<span class="number">0</span>
-                    .<span class="ident">compare_exchange</span>(<span class="ident"><span class="self">Self</span>::UNINIT</span>, <span class="ident">val</span>, <span class="ident">Ordering::AcqRel</span>, <span class="ident">Ordering::Acquire</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">old</span>) = <span class="ident">exchange</span> {
-                <span class="ident">val</span> = <span class="ident">old</span>;
+        <span class="self">self</span>.get().unwrap_or_else(|| {
+            <span class="kw">let </span><span class="kw-2">mut </span>val = f();
+            <span class="macro">assert_ne!</span>(val, <span class="self">Self</span>::UNINIT);
+            <span class="kw">let </span>exchange =
+                <span class="self">self</span>.<span class="number">0
+                    </span>.compare_exchange(<span class="self">Self</span>::UNINIT, val, Ordering::AcqRel, Ordering::Acquire);
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(old) = exchange {
+                val = old;
             }
-            <span class="macro">debug_assert_ne!</span>(<span class="ident">val</span>, <span class="ident"><span class="self">Self</span>::UNINIT</span>);
-            <span class="ident">val</span>
+            <span class="macro">debug_assert_ne!</span>(val, <span class="self">Self</span>::UNINIT);
+            val
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt; {
-        <span class="kw">let</span> <span class="ident">val</span> = <span class="self">self</span>.<span class="number">0</span>.<span class="ident">load</span>(<span class="ident">Ordering::Acquire</span>);
-        <span class="kw">if</span> <span class="ident">val</span> == <span class="ident"><span class="self">Self</span>::UNINIT</span> {
-            <span class="prelude-val">None</span>
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">val</span>)
+    <span class="kw">fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;usize&gt; {
+        <span class="kw">let </span>val = <span class="self">self</span>.<span class="number">0</span>.load(Ordering::Acquire);
+        <span class="kw">if </span>val == <span class="self">Self</span>::UNINIT {
+            <span class="prelude-val">None
+        </span>} <span class="kw">else </span>{
+            <span class="prelude-val">Some</span>(val)
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Lazy</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident">Lazy::new</span>()
+<span class="kw">impl </span>Default <span class="kw">for </span>Lazy {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        Lazy::new()
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="concolor" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="concolor" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

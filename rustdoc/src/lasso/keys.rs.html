@@ -507,292 +507,292 @@
 <span id="507">507</span>
 <span id="508">508</span>
 <span id="509">509</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">core</span>::{
-    <span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Debug</span>, <span class="ident">Write</span>},
-    <span class="ident">num</span>::{<span class="ident">NonZeroU16</span>, <span class="ident">NonZeroU32</span>, <span class="ident">NonZeroU8</span>, <span class="ident">NonZeroUsize</span>},
+</pre><pre class="rust"><code><span class="kw">use </span>core::{
+    fmt::{<span class="self">self</span>, Debug, Write},
+    num::{NonZeroU16, NonZeroU32, NonZeroU8, NonZeroUsize},
 };
 
-<span class="doccomment">/// Types implementing this trait can be used as keys for all Rodeos</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Safety</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// into/from must be perfectly symmetrical, any key that goes on must be perfectly reproduced with the other</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ReadOnlyLasso`]: crate::ReadOnlyLasso</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">Key</span>: <span class="ident">Copy</span> + <span class="ident">Eq</span> {
-    <span class="doccomment">/// Returns the `usize` that represents the current key</span>
-    <span class="kw">fn</span> <span class="ident">into_usize</span>(<span class="self">self</span>) -&gt; <span class="ident">usize</span>;
+<span class="doccomment">/// Types implementing this trait can be used as keys for all Rodeos
+///
+/// # Safety
+///
+/// into/from must be perfectly symmetrical, any key that goes on must be perfectly reproduced with the other
+///
+/// [`ReadOnlyLasso`]: crate::ReadOnlyLasso
+</span><span class="kw">pub unsafe trait </span>Key: Copy + Eq {
+    <span class="doccomment">/// Returns the `usize` that represents the current key
+    </span><span class="kw">fn </span>into_usize(<span class="self">self</span>) -&gt; usize;
 
-    <span class="doccomment">/// Attempts to create a key from a `usize`, returning `None` if it fails</span>
-    <span class="kw">fn</span> <span class="ident">try_from_usize</span>(<span class="ident">int</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;;
+    <span class="doccomment">/// Attempts to create a key from a `usize`, returning `None` if it fails
+    </span><span class="kw">fn </span>try_from_usize(int: usize) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt;;
 }
 
-<span class="doccomment">/// A key type taking up `size_of::&lt;usize&gt;()` bytes of space (generally 4 or 8 bytes)</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Internally is a `NonZeroUsize` to allow for space optimizations when stored inside of an [`Option`]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ReadOnlyLasso`]: crate::ReadOnlyLasso</span>
-<span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LargeSpur</span> {
-    <span class="ident">key</span>: <span class="ident">NonZeroUsize</span>,
+<span class="doccomment">/// A key type taking up `size_of::&lt;usize&gt;()` bytes of space (generally 4 or 8 bytes)
+///
+/// Internally is a `NonZeroUsize` to allow for space optimizations when stored inside of an [`Option`]
+///
+/// [`ReadOnlyLasso`]: crate::ReadOnlyLasso
+/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
+</span><span class="attribute">#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(transparent)]
+</span><span class="kw">pub struct </span>LargeSpur {
+    key: NonZeroUsize,
 }
 
-<span class="kw">impl</span> <span class="ident">LargeSpur</span> {
-    <span class="doccomment">/// Returns the [`NonZeroUsize`] backing the current `LargeSpur`</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">into_inner</span>(<span class="self">self</span>) -&gt; <span class="ident">NonZeroUsize</span> {
-        <span class="self">self</span>.<span class="ident">key</span>
+<span class="kw">impl </span>LargeSpur {
+    <span class="doccomment">/// Returns the [`NonZeroUsize`] backing the current `LargeSpur`
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub const fn </span>into_inner(<span class="self">self</span>) -&gt; NonZeroUsize {
+        <span class="self">self</span>.key
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Key</span> <span class="kw">for</span> <span class="ident">LargeSpur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">into_usize</span>(<span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">key</span>.<span class="ident">get</span>() - <span class="number">1</span>
-    }
+<span class="kw">unsafe impl </span>Key <span class="kw">for </span>LargeSpur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>into_usize(<span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.key.get() - <span class="number">1
+    </span>}
 
-    <span class="doccomment">/// Returns `None` if `int` is greater than `usize::MAX - 1`</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">try_from_usize</span>(<span class="ident">int</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">if</span> <span class="ident">int</span> &lt; <span class="ident">usize::max_value</span>() {
-            <span class="comment">// Safety: The integer is less than the max value and then incremented by one, meaning that</span>
-            <span class="comment">// is is impossible for a zero to inhabit the NonZeroUsize</span>
-            <span class="kw">unsafe</span> {
-                <span class="prelude-val">Some</span>(<span class="self">Self</span> {
-                    <span class="ident">key</span>: <span class="ident">NonZeroUsize::new_unchecked</span>(<span class="ident">int</span> + <span class="number">1</span>),
+    <span class="doccomment">/// Returns `None` if `int` is greater than `usize::MAX - 1`
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>try_from_usize(int: usize) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">if </span>int &lt; usize::max_value() {
+            <span class="comment">// Safety: The integer is less than the max value and then incremented by one, meaning that
+            // is is impossible for a zero to inhabit the NonZeroUsize
+            </span><span class="kw">unsafe </span>{
+                <span class="prelude-val">Some</span>(<span class="self">Self </span>{
+                    key: NonZeroUsize::new_unchecked(int + <span class="number">1</span>),
                 })
             }
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">LargeSpur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>()
+<span class="kw">impl </span>Default <span class="kw">for </span>LargeSpur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::try_from_usize(<span class="number">0</span>).unwrap()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">LargeSpur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;LargeSpur(&quot;</span>)<span class="question-mark">?</span>;
-        <span class="ident">Debug::fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">key</span>, <span class="ident">f</span>)<span class="question-mark">?</span>;
-        <span class="ident">f</span>.<span class="ident">write_char</span>(<span class="string">&#39;)&#39;</span>)
+<span class="kw">impl </span>Debug <span class="kw">for </span>LargeSpur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        f.write_str(<span class="string">&quot;LargeSpur(&quot;</span>)<span class="question-mark">?</span>;
+        Debug::fmt(<span class="kw-2">&amp;</span><span class="self">self</span>.key, f)<span class="question-mark">?</span>;
+        f.write_char(<span class="string">&#39;)&#39;</span>)
     }
 }
 
-<span class="doccomment">/// The default key for every Rodeo, uses only 32 bits of space</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Internally is a `NonZeroU32` to allow for space optimizations when stored inside of an [`Option`]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ReadOnlyLasso`]: crate::ReadOnlyLasso</span>
-<span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Spur</span> {
-    <span class="ident">key</span>: <span class="ident">NonZeroU32</span>,
+<span class="doccomment">/// The default key for every Rodeo, uses only 32 bits of space
+///
+/// Internally is a `NonZeroU32` to allow for space optimizations when stored inside of an [`Option`]
+///
+/// [`ReadOnlyLasso`]: crate::ReadOnlyLasso
+/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
+</span><span class="attribute">#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(transparent)]
+</span><span class="kw">pub struct </span>Spur {
+    key: NonZeroU32,
 }
 
-<span class="kw">impl</span> <span class="ident">Spur</span> {
-    <span class="doccomment">/// Returns the [`NonZeroU32`] backing the current `Spur`</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">into_inner</span>(<span class="self">self</span>) -&gt; <span class="ident">NonZeroU32</span> {
-        <span class="self">self</span>.<span class="ident">key</span>
+<span class="kw">impl </span>Spur {
+    <span class="doccomment">/// Returns the [`NonZeroU32`] backing the current `Spur`
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub const fn </span>into_inner(<span class="self">self</span>) -&gt; NonZeroU32 {
+        <span class="self">self</span>.key
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Key</span> <span class="kw">for</span> <span class="ident">Spur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">into_usize</span>(<span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">key</span>.<span class="ident">get</span>() <span class="kw">as</span> <span class="ident">usize</span> - <span class="number">1</span>
-    }
+<span class="kw">unsafe impl </span>Key <span class="kw">for </span>Spur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>into_usize(<span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.key.get() <span class="kw">as </span>usize - <span class="number">1
+    </span>}
 
-    <span class="doccomment">/// Returns `None` if `int` is greater than `u32::MAX - 1`</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">try_from_usize</span>(<span class="ident">int</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">if</span> <span class="ident">int</span> &lt; <span class="ident">u32::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> {
-            <span class="comment">// Safety: The integer is less than the max value and then incremented by one, meaning that</span>
-            <span class="comment">// is is impossible for a zero to inhabit the NonZeroU32</span>
-            <span class="kw">unsafe</span> {
-                <span class="prelude-val">Some</span>(<span class="self">Self</span> {
-                    <span class="ident">key</span>: <span class="ident">NonZeroU32::new_unchecked</span>(<span class="ident">int</span> <span class="kw">as</span> <span class="ident">u32</span> + <span class="number">1</span>),
+    <span class="doccomment">/// Returns `None` if `int` is greater than `u32::MAX - 1`
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>try_from_usize(int: usize) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">if </span>int &lt; u32::max_value() <span class="kw">as </span>usize {
+            <span class="comment">// Safety: The integer is less than the max value and then incremented by one, meaning that
+            // is is impossible for a zero to inhabit the NonZeroU32
+            </span><span class="kw">unsafe </span>{
+                <span class="prelude-val">Some</span>(<span class="self">Self </span>{
+                    key: NonZeroU32::new_unchecked(int <span class="kw">as </span>u32 + <span class="number">1</span>),
                 })
             }
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Spur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>()
+<span class="kw">impl </span>Default <span class="kw">for </span>Spur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::try_from_usize(<span class="number">0</span>).unwrap()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">Spur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Spur(&quot;</span>)<span class="question-mark">?</span>;
-        <span class="ident">Debug::fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">key</span>, <span class="ident">f</span>)<span class="question-mark">?</span>;
-        <span class="ident">f</span>.<span class="ident">write_char</span>(<span class="string">&#39;)&#39;</span>)
+<span class="kw">impl </span>Debug <span class="kw">for </span>Spur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        f.write_str(<span class="string">&quot;Spur(&quot;</span>)<span class="question-mark">?</span>;
+        Debug::fmt(<span class="kw-2">&amp;</span><span class="self">self</span>.key, f)<span class="question-mark">?</span>;
+        f.write_char(<span class="string">&#39;)&#39;</span>)
     }
 }
 
-<span class="doccomment">/// A miniature Key utilizing only 16 bits of space</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Internally is a `NonZeroU16` to allow for space optimizations when stored inside of an [`Option`]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ReadOnlyLasso`]: crate::ReadOnlyLasso</span>
-<span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MiniSpur</span> {
-    <span class="ident">key</span>: <span class="ident">NonZeroU16</span>,
+<span class="doccomment">/// A miniature Key utilizing only 16 bits of space
+///
+/// Internally is a `NonZeroU16` to allow for space optimizations when stored inside of an [`Option`]
+///
+/// [`ReadOnlyLasso`]: crate::ReadOnlyLasso
+/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
+</span><span class="attribute">#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(transparent)]
+</span><span class="kw">pub struct </span>MiniSpur {
+    key: NonZeroU16,
 }
 
-<span class="kw">impl</span> <span class="ident">MiniSpur</span> {
-    <span class="doccomment">/// Returns the [`NonZeroU16`] backing the current `MiniSpur`</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">into_inner</span>(<span class="self">self</span>) -&gt; <span class="ident">NonZeroU16</span> {
-        <span class="self">self</span>.<span class="ident">key</span>
+<span class="kw">impl </span>MiniSpur {
+    <span class="doccomment">/// Returns the [`NonZeroU16`] backing the current `MiniSpur`
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub const fn </span>into_inner(<span class="self">self</span>) -&gt; NonZeroU16 {
+        <span class="self">self</span>.key
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Key</span> <span class="kw">for</span> <span class="ident">MiniSpur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">into_usize</span>(<span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">key</span>.<span class="ident">get</span>() <span class="kw">as</span> <span class="ident">usize</span> - <span class="number">1</span>
-    }
+<span class="kw">unsafe impl </span>Key <span class="kw">for </span>MiniSpur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>into_usize(<span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.key.get() <span class="kw">as </span>usize - <span class="number">1
+    </span>}
 
-    <span class="doccomment">/// Returns `None` if `int` is greater than `u16::MAX - 1`</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">try_from_usize</span>(<span class="ident">int</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">if</span> <span class="ident">int</span> &lt; <span class="ident">u16::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> {
-            <span class="comment">// Safety: The integer is less than the max value and then incremented by one, meaning that</span>
-            <span class="comment">// is is impossible for a zero to inhabit the NonZeroU16</span>
-            <span class="kw">unsafe</span> {
-                <span class="prelude-val">Some</span>(<span class="self">Self</span> {
-                    <span class="ident">key</span>: <span class="ident">NonZeroU16::new_unchecked</span>(<span class="ident">int</span> <span class="kw">as</span> <span class="ident">u16</span> + <span class="number">1</span>),
+    <span class="doccomment">/// Returns `None` if `int` is greater than `u16::MAX - 1`
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>try_from_usize(int: usize) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">if </span>int &lt; u16::max_value() <span class="kw">as </span>usize {
+            <span class="comment">// Safety: The integer is less than the max value and then incremented by one, meaning that
+            // is is impossible for a zero to inhabit the NonZeroU16
+            </span><span class="kw">unsafe </span>{
+                <span class="prelude-val">Some</span>(<span class="self">Self </span>{
+                    key: NonZeroU16::new_unchecked(int <span class="kw">as </span>u16 + <span class="number">1</span>),
                 })
             }
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">MiniSpur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>()
+<span class="kw">impl </span>Default <span class="kw">for </span>MiniSpur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::try_from_usize(<span class="number">0</span>).unwrap()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">MiniSpur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;MiniSpur(&quot;</span>)<span class="question-mark">?</span>;
-        <span class="ident">Debug::fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">key</span>, <span class="ident">f</span>)<span class="question-mark">?</span>;
-        <span class="ident">f</span>.<span class="ident">write_char</span>(<span class="string">&#39;)&#39;</span>)
+<span class="kw">impl </span>Debug <span class="kw">for </span>MiniSpur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        f.write_str(<span class="string">&quot;MiniSpur(&quot;</span>)<span class="question-mark">?</span>;
+        Debug::fmt(<span class="kw-2">&amp;</span><span class="self">self</span>.key, f)<span class="question-mark">?</span>;
+        f.write_char(<span class="string">&#39;)&#39;</span>)
     }
 }
 
-<span class="doccomment">/// A miniature Key utilizing only 8 bits of space</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Internally is a `NonZeroU8` to allow for space optimizations when stored inside of an [`Option`]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ReadOnlyLasso`]: crate::ReadOnlyLasso</span>
-<span class="doccomment">/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Hash</span>)]</span>
-<span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MicroSpur</span> {
-    <span class="ident">key</span>: <span class="ident">NonZeroU8</span>,
+<span class="doccomment">/// A miniature Key utilizing only 8 bits of space
+///
+/// Internally is a `NonZeroU8` to allow for space optimizations when stored inside of an [`Option`]
+///
+/// [`ReadOnlyLasso`]: crate::ReadOnlyLasso
+/// [`Option`]: https://doc.rust-lang.org/std/option/enum.Option.html
+</span><span class="attribute">#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[repr(transparent)]
+</span><span class="kw">pub struct </span>MicroSpur {
+    key: NonZeroU8,
 }
 
-<span class="kw">impl</span> <span class="ident">MicroSpur</span> {
-    <span class="doccomment">/// Returns the [`NonZeroU8`] backing the current `MicroSpur`</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">into_inner</span>(<span class="self">self</span>) -&gt; <span class="ident">NonZeroU8</span> {
-        <span class="self">self</span>.<span class="ident">key</span>
+<span class="kw">impl </span>MicroSpur {
+    <span class="doccomment">/// Returns the [`NonZeroU8`] backing the current `MicroSpur`
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">pub const fn </span>into_inner(<span class="self">self</span>) -&gt; NonZeroU8 {
+        <span class="self">self</span>.key
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">Key</span> <span class="kw">for</span> <span class="ident">MicroSpur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">into_usize</span>(<span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">key</span>.<span class="ident">get</span>() <span class="kw">as</span> <span class="ident">usize</span> - <span class="number">1</span>
-    }
+<span class="kw">unsafe impl </span>Key <span class="kw">for </span>MicroSpur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>into_usize(<span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.key.get() <span class="kw">as </span>usize - <span class="number">1
+    </span>}
 
-    <span class="doccomment">/// Returns `None` if `int` is greater than `u8::MAX - 1`</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">try_from_usize</span>(<span class="ident">int</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">if</span> <span class="ident">int</span> &lt; <span class="ident">u8::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> {
-            <span class="comment">// Safety: The integer is less than the max value and then incremented by one, meaning that</span>
-            <span class="comment">// is is impossible for a zero to inhabit the NonZeroU8</span>
-            <span class="kw">unsafe</span> {
-                <span class="prelude-val">Some</span>(<span class="self">Self</span> {
-                    <span class="ident">key</span>: <span class="ident">NonZeroU8::new_unchecked</span>(<span class="ident">int</span> <span class="kw">as</span> <span class="ident">u8</span> + <span class="number">1</span>),
+    <span class="doccomment">/// Returns `None` if `int` is greater than `u8::MAX - 1`
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>try_from_usize(int: usize) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">if </span>int &lt; u8::max_value() <span class="kw">as </span>usize {
+            <span class="comment">// Safety: The integer is less than the max value and then incremented by one, meaning that
+            // is is impossible for a zero to inhabit the NonZeroU8
+            </span><span class="kw">unsafe </span>{
+                <span class="prelude-val">Some</span>(<span class="self">Self </span>{
+                    key: NonZeroU8::new_unchecked(int <span class="kw">as </span>u8 + <span class="number">1</span>),
                 })
             }
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">MicroSpur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>()
+<span class="kw">impl </span>Default <span class="kw">for </span>MicroSpur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::try_from_usize(<span class="number">0</span>).unwrap()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">MicroSpur</span> {
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;MicroSpur(&quot;</span>)<span class="question-mark">?</span>;
-        <span class="ident">Debug::fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">key</span>, <span class="ident">f</span>)<span class="question-mark">?</span>;
-        <span class="ident">f</span>.<span class="ident">write_char</span>(<span class="string">&#39;)&#39;</span>)
+<span class="kw">impl </span>Debug <span class="kw">for </span>MicroSpur {
+    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        f.write_str(<span class="string">&quot;MicroSpur(&quot;</span>)<span class="question-mark">?</span>;
+        Debug::fmt(<span class="kw-2">&amp;</span><span class="self">self</span>.key, f)<span class="question-mark">?</span>;
+        f.write_char(<span class="string">&#39;)&#39;</span>)
     }
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">impl_serde</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>:<span class="ident">ident</span> =&gt; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ident</span>),* $(,)<span class="question-mark">?</span>) =&gt; {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serialize&quot;</span>)]</span>
-        <span class="kw">mod</span> <span class="ident">__serde</span> {
-            <span class="kw">use</span> <span class="kw">super</span>::{$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span>),<span class="kw-2">*</span>};
-            <span class="kw">use</span> <span class="ident">serde</span>::{
-                <span class="ident">de</span>::{<span class="ident">Deserialize</span>, <span class="ident">Deserializer</span>},
-                <span class="ident">ser</span>::{<span class="ident">Serialize</span>, <span class="ident">Serializer</span>},
+<span class="macro">macro_rules! </span>impl_serde {
+    ($(<span class="macro-nonterminal">$key</span>:ident =&gt; <span class="macro-nonterminal">$ty</span>:ident),* $(,)<span class="question-mark">?</span>) =&gt; {
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+        </span><span class="kw">mod </span>__serde {
+            <span class="kw">use super</span>::{$(<span class="macro-nonterminal">$key</span>),<span class="kw-2">*</span>};
+            <span class="kw">use </span>serde::{
+                de::{Deserialize, Deserializer},
+                ser::{Serialize, Serializer},
             };
-            <span class="kw">use</span> <span class="ident">core::num</span>::{$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>),<span class="kw-2">*</span>};
+            <span class="kw">use </span>core::num::{$(<span class="macro-nonterminal">$ty</span>),<span class="kw-2">*</span>};
 
             $(
-                <span class="kw">impl</span> <span class="ident">Serialize</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span> {
-                    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-                    <span class="kw">fn</span> <span class="ident">serialize</span>&lt;<span class="ident">S</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S::Ok</span>, <span class="ident">S::Error</span>&gt;
-                    <span class="kw">where</span>
-                        <span class="ident">S</span>: <span class="ident">Serializer</span>,
+                <span class="kw">impl </span>Serialize <span class="kw">for </span><span class="macro-nonterminal">$key </span>{
+                    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+                    </span><span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+                    <span class="kw">where
+                        </span>S: Serializer,
                     {
-                        <span class="self">self</span>.<span class="ident">key</span>.<span class="ident">serialize</span>(<span class="ident">serializer</span>)
+                        <span class="self">self</span>.key.serialize(serializer)
                     }
                 }
 
-                <span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; <span class="ident">Deserialize</span>&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">key</span> {
-                    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-                    <span class="kw">fn</span> <span class="ident">deserialize</span>&lt;<span class="ident">D</span>&gt;(<span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident">D::Error</span>&gt;
-                    <span class="kw">where</span>
-                        <span class="ident">D</span>: <span class="ident">Deserializer</span>&lt;<span class="lifetime">&#39;de</span>&gt;,
+                <span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span><span class="macro-nonterminal">$key </span>{
+                    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+                    </span><span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
+                    <span class="kw">where
+                        </span>D: Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
                     {
-                        <span class="kw">let</span> <span class="ident">key</span> = &lt;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>&gt;<span class="ident">::deserialize</span>(<span class="ident">deserializer</span>)<span class="question-mark">?</span>;
-                        <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">key</span> })
+                        <span class="kw">let </span>key = &lt;<span class="macro-nonterminal">$ty</span>&gt;::deserialize(deserializer)<span class="question-mark">?</span>;
+                        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ key })
                     }
                 }
             )*
@@ -800,42 +800,42 @@
     };
 }
 
-<span class="comment">// Implement `Serialize` and `Deserialize` when the `serde` feature is enabled</span>
-<span class="macro">impl_serde!</span> {
-    <span class="ident">Spur</span> =&gt; <span class="ident">NonZeroU32</span>,
-    <span class="ident">MiniSpur</span> =&gt; <span class="ident">NonZeroU16</span>,
-    <span class="ident">MicroSpur</span> =&gt; <span class="ident">NonZeroU8</span>,
-    <span class="ident">LargeSpur</span> =&gt; <span class="ident">NonZeroUsize</span>,
+<span class="comment">// Implement `Serialize` and `Deserialize` when the `serde` feature is enabled
+</span><span class="macro">impl_serde! </span>{
+    Spur =&gt; NonZeroU32,
+    MiniSpur =&gt; NonZeroU16,
+    MicroSpur =&gt; NonZeroU8,
+    LargeSpur =&gt; NonZeroUsize,
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">impl_deepsize</span> {
+<span class="macro">macro_rules! </span>impl_deepsize {
     ($(<span class="macro-nonterminal">$</span><span class="kw">type</span>:<span class="macro-nonterminal">ident</span>),* $(,)<span class="question-mark">?</span>) =&gt; {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;deepsize&quot;</span>)]</span>
-        <span class="kw">mod</span> <span class="ident">__deepsize</span> {
-            <span class="kw">use</span> <span class="kw">super</span>::{$(<span class="macro-nonterminal">$</span><span class="kw">type</span>),<span class="kw-2">*</span>};
-            <span class="attribute">#[<span class="macro-nonterminal">cfg</span>(<span class="ident">test</span>)]</span>
-            <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::Key</span>;
-            <span class="kw">use</span> <span class="ident">deepsize</span>::{<span class="ident">DeepSizeOf</span>, <span class="ident">Context</span>};
-            <span class="kw">use</span> <span class="ident">core::mem</span>;
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;deepsize&quot;</span>)]
+        </span><span class="kw">mod </span>__deepsize {
+            <span class="kw">use super</span>::{$(<span class="macro-nonterminal">$</span><span class="kw">type</span>),<span class="kw-2">*</span>};
+            <span class="attribute">#[<span class="macro-nonterminal">cfg</span>(test)]
+            </span><span class="kw">use </span><span class="kw">super</span>::Key;
+            <span class="kw">use </span>deepsize::{DeepSizeOf, Context};
+            <span class="kw">use </span>core::mem;
 
             $(
-                <span class="kw">impl</span> <span class="ident">DeepSizeOf</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="kw">type</span> {
-                    <span class="kw">fn</span> <span class="macro-nonterminal">deep_size_of_children</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_context</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Context</span>) -&gt; <span class="ident">usize</span> {
-                        <span class="number">0</span>
-                    }
+                <span class="kw">impl </span>DeepSizeOf <span class="kw">for </span><span class="macro-nonterminal">$</span><span class="kw">type </span>{
+                    <span class="kw">fn </span><span class="macro-nonterminal">deep_size_of_children</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, _context: <span class="kw-2">&amp;mut </span>Context) -&gt; usize {
+                        <span class="number">0
+                    </span>}
 
-                    <span class="kw">fn</span> <span class="ident">deep_size_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-                        <span class="ident">mem::size_of</span>::&lt;<span class="macro-nonterminal">$</span><span class="kw">type</span>&gt;()
+                    <span class="kw">fn </span>deep_size_of(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+                        mem::size_of::&lt;<span class="macro-nonterminal">$</span><span class="kw">type</span>&gt;()
                     }
                 }
             )*
 
-            <span class="attribute">#[<span class="macro-nonterminal">test</span>]</span>
-            <span class="kw">fn</span> <span class="ident">deepsize_implementations</span>() {
+            <span class="attribute">#[<span class="macro-nonterminal">test</span>]
+            </span><span class="kw">fn </span>deepsize_implementations() {
                 $(
                     <span class="macro">assert_eq!</span>(
-                        <span class="ident">mem::size_of</span>::&lt;<span class="macro-nonterminal">$</span><span class="kw">type</span>&gt;(),
-                        <span class="macro-nonterminal">$</span><span class="kw">type</span><span class="macro-nonterminal">::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>().<span class="ident">deep_size_of</span>(),
+                        mem::size_of::&lt;<span class="macro-nonterminal">$</span><span class="kw">type</span>&gt;(),
+                        <span class="macro-nonterminal">$</span><span class="kw">type</span><span class="macro-nonterminal">::try_from_usize</span>(<span class="number">0</span>).unwrap().deep_size_of(),
                     );
                 )*
             }
@@ -843,178 +843,178 @@
     };
 }
 
-<span class="comment">// Implement `DeepSizeOf` when the `deepsize` feature is enabled</span>
-<span class="macro">impl_deepsize!</span> {
-    <span class="ident">Spur</span>,
-    <span class="ident">MiniSpur</span>,
-    <span class="ident">MicroSpur</span>,
-    <span class="ident">LargeSpur</span>,
+<span class="comment">// Implement `DeepSizeOf` when the `deepsize` feature is enabled
+</span><span class="macro">impl_deepsize! </span>{
+    Spur,
+    MiniSpur,
+    MicroSpur,
+    LargeSpur,
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">impl_abomonation</span> {
+<span class="macro">macro_rules! </span>impl_abomonation {
     ($(<span class="macro-nonterminal">$</span><span class="kw">type</span>:<span class="macro-nonterminal">ident</span>),* $(,)<span class="question-mark">?</span>) =&gt; {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;abomonation&quot;</span>, <span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>)))]</span>
-        <span class="kw">mod</span> <span class="ident">__abomonation</span> {
-            <span class="kw">use</span> <span class="kw">super</span>::{$(<span class="macro-nonterminal">$</span><span class="kw">type</span>),<span class="kw-2">*</span>};
-            <span class="attribute">#[<span class="macro-nonterminal">cfg</span>(<span class="ident">test</span>)]</span>
-            <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::Key</span>;
-            <span class="kw">use</span> <span class="ident">abomonation::Abomonation</span>;
-            <span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">Write</span>};
+        <span class="attribute">#[cfg(all(feature = <span class="string">&quot;abomonation&quot;</span>, not(feature = <span class="string">&quot;no-std&quot;</span>)))]
+        </span><span class="kw">mod </span>__abomonation {
+            <span class="kw">use super</span>::{$(<span class="macro-nonterminal">$</span><span class="kw">type</span>),<span class="kw-2">*</span>};
+            <span class="attribute">#[<span class="macro-nonterminal">cfg</span>(test)]
+            </span><span class="kw">use </span><span class="kw">super</span>::Key;
+            <span class="kw">use </span>abomonation::Abomonation;
+            <span class="kw">use </span>std::io::{<span class="self">self</span>, Write};
 
             $(
-                <span class="kw">impl</span> <span class="ident">Abomonation</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="kw">type</span> {
-                    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="macro-nonterminal">entomb</span>&lt;<span class="ident">W</span>: <span class="ident">Write</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">write</span>: <span class="kw-2">&amp;mut</span> <span class="ident">W</span>) -&gt; <span class="ident">io::Result</span>&lt;()&gt; {
-                        <span class="self">self</span>.<span class="ident">key</span>.<span class="ident">entomb</span>(<span class="ident">write</span>)
+                <span class="kw">impl </span>Abomonation <span class="kw">for </span><span class="macro-nonterminal">$</span><span class="kw">type </span>{
+                    <span class="kw">unsafe fn </span><span class="macro-nonterminal">entomb</span>&lt;W: Write&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, write: <span class="kw-2">&amp;mut </span>W) -&gt; io::Result&lt;()&gt; {
+                        <span class="self">self</span>.key.entomb(write)
                     }
 
-                    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">exhume</span>&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bytes</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="kw-2">mut</span> [<span class="ident">u8</span>]) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="kw-2">mut</span> [<span class="ident">u8</span>]&gt; {
-                        <span class="self">self</span>.<span class="ident">key</span>.<span class="ident">exhume</span>(<span class="ident">bytes</span>)
+                    <span class="kw">unsafe fn </span>exhume&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span><span class="self">self</span>, bytes: <span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span><span class="kw-2">mut </span>[u8]) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;b </span><span class="kw-2">mut </span>[u8]&gt; {
+                        <span class="self">self</span>.key.exhume(bytes)
                     }
 
-                    <span class="kw">fn</span> <span class="ident">extent</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-                        <span class="self">self</span>.<span class="ident">key</span>.<span class="ident">extent</span>()
+                    <span class="kw">fn </span>extent(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+                        <span class="self">self</span>.key.extent()
                     }
                 }
             )*
 
-            <span class="attribute">#[<span class="ident">test</span>]</span>
-            <span class="kw">fn</span> <span class="ident">abomonation_implementations</span>() {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> = <span class="ident">Vec::new</span>();
+            <span class="attribute">#[test]
+            </span><span class="kw">fn </span>abomonation_implementations() {
+                <span class="kw">let </span><span class="kw-2">mut </span>buf = Vec::new();
 
                 $(
-                    <span class="kw">unsafe</span> {
-                        <span class="kw">let</span> <span class="ident">base</span> = <span class="macro-nonterminal">$</span><span class="kw">type</span><span class="macro-nonterminal">::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
+                    <span class="kw">unsafe </span>{
+                        <span class="kw">let </span>base = <span class="macro-nonterminal">$</span><span class="kw">type</span><span class="macro-nonterminal">::try_from_usize</span>(<span class="number">0</span>).unwrap();
 
-                        <span class="ident">abomonation::encode</span>(<span class="kw-2">&amp;</span><span class="ident">base</span>, <span class="kw-2">&amp;mut</span> <span class="ident">buf</span>).<span class="ident">unwrap</span>();
-                        <span class="macro">assert_eq!</span>(<span class="ident">base</span>, <span class="kw-2">*</span><span class="ident">abomonation::decode</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buf</span> [..]).<span class="ident">unwrap</span>().<span class="number">0</span>);
+                        abomonation::encode(<span class="kw-2">&amp;</span>base, <span class="kw-2">&amp;mut </span>buf).unwrap();
+                        <span class="macro">assert_eq!</span>(base, <span class="kw-2">*</span>abomonation::decode(<span class="kw-2">&amp;mut </span>buf [..]).unwrap().<span class="number">0</span>);
                     }
 
-                    <span class="ident">buf</span>.<span class="ident">clear</span>();
+                    buf.clear();
                 )*
             }
         }
     };
 }
 
-<span class="comment">// Implement `Abomonation` when the `abomonation` feature is enabled</span>
-<span class="macro">impl_abomonation!</span> {
-    <span class="ident">Spur</span>,
-    <span class="ident">MiniSpur</span>,
-    <span class="ident">MicroSpur</span>,
-    <span class="ident">LargeSpur</span>,
+<span class="comment">// Implement `Abomonation` when the `abomonation` feature is enabled
+</span><span class="macro">impl_abomonation! </span>{
+    Spur,
+    MiniSpur,
+    MicroSpur,
+    LargeSpur,
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">large</span>() {
-        <span class="kw">let</span> <span class="ident">zero</span> = <span class="ident">LargeSpur::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">max</span> = <span class="ident">LargeSpur::try_from_usize</span>(<span class="ident">usize::max_value</span>() - <span class="number">1</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">default</span> = <span class="ident">LargeSpur::default</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>large() {
+        <span class="kw">let </span>zero = LargeSpur::try_from_usize(<span class="number">0</span>).unwrap();
+        <span class="kw">let </span>max = LargeSpur::try_from_usize(usize::max_value() - <span class="number">1</span>).unwrap();
+        <span class="kw">let </span>default = LargeSpur::default();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">zero</span>.<span class="ident">into_usize</span>(), <span class="number">0</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">max</span>.<span class="ident">into_usize</span>(), <span class="ident">usize::max_value</span>() - <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">default</span>.<span class="ident">into_usize</span>(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(zero.into_usize(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(max.into_usize(), usize::max_value() - <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(default.into_usize(), <span class="number">0</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">large_max_returns_none</span>() {
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">LargeSpur::try_from_usize</span>(<span class="ident">usize::max_value</span>()));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>large_max_returns_none() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, LargeSpur::try_from_usize(usize::max_value()));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">miri</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">large_max_panics</span>() {
-        <span class="ident">LargeSpur::try_from_usize</span>(<span class="ident">usize::max_value</span>()).<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    #[should_panic]
+    #[cfg(not(miri))]
+    </span><span class="kw">fn </span>large_max_panics() {
+        LargeSpur::try_from_usize(usize::max_value()).unwrap();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">spur</span>() {
-        <span class="kw">let</span> <span class="ident">zero</span> = <span class="ident">Spur::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">max</span> = <span class="ident">Spur::try_from_usize</span>(<span class="ident">u32::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> - <span class="number">1</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">default</span> = <span class="ident">Spur::default</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>spur() {
+        <span class="kw">let </span>zero = Spur::try_from_usize(<span class="number">0</span>).unwrap();
+        <span class="kw">let </span>max = Spur::try_from_usize(u32::max_value() <span class="kw">as </span>usize - <span class="number">1</span>).unwrap();
+        <span class="kw">let </span>default = Spur::default();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">zero</span>.<span class="ident">into_usize</span>(), <span class="number">0</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">max</span>.<span class="ident">into_usize</span>(), <span class="ident">u32::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> - <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">default</span>.<span class="ident">into_usize</span>(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(zero.into_usize(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(max.into_usize(), u32::max_value() <span class="kw">as </span>usize - <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(default.into_usize(), <span class="number">0</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">spur_returns_none</span>() {
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">Spur::try_from_usize</span>(<span class="ident">u32::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>spur_returns_none() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, Spur::try_from_usize(u32::max_value() <span class="kw">as </span>usize));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">miri</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">spur_panics</span>() {
-        <span class="ident">Spur::try_from_usize</span>(<span class="ident">u32::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span>).<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    #[should_panic]
+    #[cfg(not(miri))]
+    </span><span class="kw">fn </span>spur_panics() {
+        Spur::try_from_usize(u32::max_value() <span class="kw">as </span>usize).unwrap();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">mini</span>() {
-        <span class="kw">let</span> <span class="ident">zero</span> = <span class="ident">MiniSpur::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">max</span> = <span class="ident">MiniSpur::try_from_usize</span>(<span class="ident">u16::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> - <span class="number">1</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">default</span> = <span class="ident">MiniSpur::default</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>mini() {
+        <span class="kw">let </span>zero = MiniSpur::try_from_usize(<span class="number">0</span>).unwrap();
+        <span class="kw">let </span>max = MiniSpur::try_from_usize(u16::max_value() <span class="kw">as </span>usize - <span class="number">1</span>).unwrap();
+        <span class="kw">let </span>default = MiniSpur::default();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">zero</span>.<span class="ident">into_usize</span>(), <span class="number">0</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">max</span>.<span class="ident">into_usize</span>(), <span class="ident">u16::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> - <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">default</span>.<span class="ident">into_usize</span>(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(zero.into_usize(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(max.into_usize(), u16::max_value() <span class="kw">as </span>usize - <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(default.into_usize(), <span class="number">0</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">mini_returns_none</span>() {
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">MiniSpur::try_from_usize</span>(<span class="ident">u16::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>mini_returns_none() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, MiniSpur::try_from_usize(u16::max_value() <span class="kw">as </span>usize));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">miri</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">mini_panics</span>() {
-        <span class="ident">MiniSpur::try_from_usize</span>(<span class="ident">u16::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span>).<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    #[should_panic]
+    #[cfg(not(miri))]
+    </span><span class="kw">fn </span>mini_panics() {
+        MiniSpur::try_from_usize(u16::max_value() <span class="kw">as </span>usize).unwrap();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">micro</span>() {
-        <span class="kw">let</span> <span class="ident">zero</span> = <span class="ident">MicroSpur::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">max</span> = <span class="ident">MicroSpur::try_from_usize</span>(<span class="ident">u8::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> - <span class="number">1</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">default</span> = <span class="ident">MicroSpur::default</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>micro() {
+        <span class="kw">let </span>zero = MicroSpur::try_from_usize(<span class="number">0</span>).unwrap();
+        <span class="kw">let </span>max = MicroSpur::try_from_usize(u8::max_value() <span class="kw">as </span>usize - <span class="number">1</span>).unwrap();
+        <span class="kw">let </span>default = MicroSpur::default();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">zero</span>.<span class="ident">into_usize</span>(), <span class="number">0</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">max</span>.<span class="ident">into_usize</span>(), <span class="ident">u8::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> - <span class="number">1</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">default</span>.<span class="ident">into_usize</span>(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(zero.into_usize(), <span class="number">0</span>);
+        <span class="macro">assert_eq!</span>(max.into_usize(), u8::max_value() <span class="kw">as </span>usize - <span class="number">1</span>);
+        <span class="macro">assert_eq!</span>(default.into_usize(), <span class="number">0</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">micro_returns_none</span>() {
-        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="ident">MicroSpur::try_from_usize</span>(<span class="ident">u8::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>micro_returns_none() {
+        <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, MicroSpur::try_from_usize(u8::max_value() <span class="kw">as </span>usize));
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">should_panic</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">miri</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">micro_panics</span>() {
-        <span class="ident">MicroSpur::try_from_usize</span>(<span class="ident">u8::max_value</span>() <span class="kw">as</span> <span class="ident">usize</span>).<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    #[should_panic]
+    #[cfg(not(miri))]
+    </span><span class="kw">fn </span>micro_panics() {
+        MicroSpur::try_from_usize(u8::max_value() <span class="kw">as </span>usize).unwrap();
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;serialize&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">all_serialize</span>() {
-        <span class="kw">let</span> <span class="ident">large</span> = <span class="ident">LargeSpur::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">large</span>).<span class="ident">unwrap</span>();
+    <span class="attribute">#[test]
+    #[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+    </span><span class="kw">fn </span>all_serialize() {
+        <span class="kw">let </span>large = LargeSpur::try_from_usize(<span class="number">0</span>).unwrap();
+        <span class="kw">let _ </span>= serde_json::to_string(<span class="kw-2">&amp;</span>large).unwrap();
 
-        <span class="kw">let</span> <span class="ident">normal</span> = <span class="ident">Spur::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">normal</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>normal = Spur::try_from_usize(<span class="number">0</span>).unwrap();
+        <span class="kw">let _ </span>= serde_json::to_string(<span class="kw-2">&amp;</span>normal).unwrap();
 
-        <span class="kw">let</span> <span class="ident">mini</span> = <span class="ident">MiniSpur::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">mini</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>mini = MiniSpur::try_from_usize(<span class="number">0</span>).unwrap();
+        <span class="kw">let _ </span>= serde_json::to_string(<span class="kw-2">&amp;</span>mini).unwrap();
 
-        <span class="kw">let</span> <span class="ident">micro</span> = <span class="ident">MicroSpur::try_from_usize</span>(<span class="number">0</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="ident">micro</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>micro = MicroSpur::try_from_usize(<span class="number">0</span>).unwrap();
+        <span class="kw">let _ </span>= serde_json::to_string(<span class="kw-2">&amp;</span>micro).unwrap();
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

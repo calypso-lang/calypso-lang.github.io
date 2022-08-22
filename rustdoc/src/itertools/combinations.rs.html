@@ -126,133 +126,133 @@
 <span id="126">126</span>
 <span id="127">127</span>
 <span id="128">128</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::fmt</span>;
-<span class="kw">use</span> <span class="ident">std::iter::FusedIterator</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::iter::FusedIterator;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::lazy_buffer::LazyBuffer</span>;
-<span class="kw">use</span> <span class="ident">alloc::vec::Vec</span>;
+<span class="kw">use </span><span class="kw">super</span>::lazy_buffer::LazyBuffer;
+<span class="kw">use </span>alloc::vec::Vec;
 
-<span class="doccomment">/// An iterator to iterate through all the `k`-length combinations in an iterator.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.combinations()`](crate::Itertools::combinations) for more information.</span>
-<span class="attribute">#[<span class="ident">must_use</span> = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Combinations</span>&lt;<span class="ident">I</span>: <span class="ident">Iterator</span>&gt; {
-    <span class="ident">indices</span>: <span class="ident">Vec</span>&lt;<span class="ident">usize</span>&gt;,
-    <span class="ident">pool</span>: <span class="ident">LazyBuffer</span>&lt;<span class="ident">I</span>&gt;,
-    <span class="ident">first</span>: <span class="ident">bool</span>,
+<span class="doccomment">/// An iterator to iterate through all the `k`-length combinations in an iterator.
+///
+/// See [`.combinations()`](crate::Itertools::combinations) for more information.
+</span><span class="attribute">#[must_use = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]
+</span><span class="kw">pub struct </span>Combinations&lt;I: Iterator&gt; {
+    indices: Vec&lt;usize&gt;,
+    pool: LazyBuffer&lt;I&gt;,
+    first: bool,
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Combinations</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Clone</span> + <span class="ident">Iterator</span>,
-          <span class="ident">I::Item</span>: <span class="ident">Clone</span>,
+<span class="kw">impl</span>&lt;I&gt; Clone <span class="kw">for </span>Combinations&lt;I&gt;
+    <span class="kw">where </span>I: Clone + Iterator,
+          I::Item: Clone,
 {
-    <span class="macro">clone_fields!</span>(<span class="ident">indices</span>, <span class="ident">pool</span>, <span class="ident">first</span>);
+    <span class="macro">clone_fields!</span>(indices, pool, first);
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Combinations</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span> + <span class="ident">fmt::Debug</span>,
-          <span class="ident">I::Item</span>: <span class="ident">fmt::Debug</span>,
+<span class="kw">impl</span>&lt;I&gt; fmt::Debug <span class="kw">for </span>Combinations&lt;I&gt;
+    <span class="kw">where </span>I: Iterator + fmt::Debug,
+          I::Item: fmt::Debug,
 {
-    <span class="macro">debug_fmt_fields!</span>(<span class="ident">Combinations</span>, <span class="ident">indices</span>, <span class="ident">pool</span>, <span class="ident">first</span>);
+    <span class="macro">debug_fmt_fields!</span>(Combinations, indices, pool, first);
 }
 
-<span class="doccomment">/// Create a new `Combinations` from a clonable iterator.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">combinations</span>&lt;<span class="ident">I</span>&gt;(<span class="ident">iter</span>: <span class="ident">I</span>, <span class="ident">k</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Combinations</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>
+<span class="doccomment">/// Create a new `Combinations` from a clonable iterator.
+</span><span class="kw">pub fn </span>combinations&lt;I&gt;(iter: I, k: usize) -&gt; Combinations&lt;I&gt;
+    <span class="kw">where </span>I: Iterator
 {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pool</span> = <span class="ident">LazyBuffer::new</span>(<span class="ident">iter</span>);
-    <span class="ident">pool</span>.<span class="ident">prefill</span>(<span class="ident">k</span>);
+    <span class="kw">let </span><span class="kw-2">mut </span>pool = LazyBuffer::new(iter);
+    pool.prefill(k);
 
-    <span class="ident">Combinations</span> {
-        <span class="ident">indices</span>: (<span class="number">0</span>..<span class="ident">k</span>).<span class="ident">collect</span>(),
-        <span class="ident">pool</span>,
-        <span class="ident">first</span>: <span class="bool-val">true</span>,
+    Combinations {
+        indices: (<span class="number">0</span>..k).collect(),
+        pool,
+        first: <span class="bool-val">true</span>,
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>: <span class="ident">Iterator</span>&gt; <span class="ident">Combinations</span>&lt;<span class="ident">I</span>&gt; {
-    <span class="doccomment">/// Returns the length of a combination produced by this iterator.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">k</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> { <span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">len</span>() }
+<span class="kw">impl</span>&lt;I: Iterator&gt; Combinations&lt;I&gt; {
+    <span class="doccomment">/// Returns the length of a combination produced by this iterator.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>k(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize { <span class="self">self</span>.indices.len() }
 
-    <span class="doccomment">/// Returns the (current) length of the pool from which combination elements are</span>
-    <span class="doccomment">/// selected. This value can change between invocations of [`next`](Combinations::next).</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">n</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> { <span class="self">self</span>.<span class="ident">pool</span>.<span class="ident">len</span>() }
+    <span class="doccomment">/// Returns the (current) length of the pool from which combination elements are
+    /// selected. This value can change between invocations of [`next`](Combinations::next).
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>n(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize { <span class="self">self</span>.pool.len() }
 
-    <span class="doccomment">/// Returns a reference to the source iterator.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">src</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">I</span> { <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pool</span>.<span class="ident">it</span> }
+    <span class="doccomment">/// Returns a reference to the source iterator.
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>src(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>I { <span class="kw-2">&amp;</span><span class="self">self</span>.pool.it }
 
-    <span class="doccomment">/// Resets this `Combinations` back to an initial state for combinations of length</span>
-    <span class="doccomment">/// `k` over the same pool data source. If `k` is larger than the current length</span>
-    <span class="doccomment">/// of the data pool an attempt is made to prefill the pool so that it holds `k`</span>
-    <span class="doccomment">/// elements.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">reset</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">k</span>: <span class="ident">usize</span>) {
-        <span class="self">self</span>.<span class="ident">first</span> = <span class="bool-val">true</span>;
+    <span class="doccomment">/// Resets this `Combinations` back to an initial state for combinations of length
+    /// `k` over the same pool data source. If `k` is larger than the current length
+    /// of the data pool an attempt is made to prefill the pool so that it holds `k`
+    /// elements.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>reset(<span class="kw-2">&amp;mut </span><span class="self">self</span>, k: usize) {
+        <span class="self">self</span>.first = <span class="bool-val">true</span>;
 
-        <span class="kw">if</span> <span class="ident">k</span> &lt; <span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">len</span>() {
-            <span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">truncate</span>(<span class="ident">k</span>);
-            <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">k</span> {
-                <span class="self">self</span>.<span class="ident">indices</span>[<span class="ident">i</span>] = <span class="ident">i</span>;
+        <span class="kw">if </span>k &lt; <span class="self">self</span>.indices.len() {
+            <span class="self">self</span>.indices.truncate(k);
+            <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..k {
+                <span class="self">self</span>.indices[i] = i;
             }
 
-        } <span class="kw">else</span> {
-            <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">len</span>() {
-                <span class="self">self</span>.<span class="ident">indices</span>[<span class="ident">i</span>] = <span class="ident">i</span>;
+        } <span class="kw">else </span>{
+            <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="self">self</span>.indices.len() {
+                <span class="self">self</span>.indices[i] = i;
             }
-            <span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">extend</span>(<span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">len</span>()..<span class="ident">k</span>);
-            <span class="self">self</span>.<span class="ident">pool</span>.<span class="ident">prefill</span>(<span class="ident">k</span>);
+            <span class="self">self</span>.indices.extend(<span class="self">self</span>.indices.len()..k);
+            <span class="self">self</span>.pool.prefill(k);
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Combinations</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>,
-          <span class="ident">I::Item</span>: <span class="ident">Clone</span>
+<span class="kw">impl</span>&lt;I&gt; Iterator <span class="kw">for </span>Combinations&lt;I&gt;
+    <span class="kw">where </span>I: Iterator,
+          I::Item: Clone
 {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">Vec</span>&lt;<span class="ident">I::Item</span>&gt;;
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">first</span> {
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">k</span>() &gt; <span class="self">self</span>.<span class="ident">n</span>() {
-                <span class="kw">return</span> <span class="prelude-val">None</span>;
+    <span class="kw">type </span>Item = Vec&lt;I::Item&gt;;
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">if </span><span class="self">self</span>.first {
+            <span class="kw">if </span><span class="self">self</span>.k() &gt; <span class="self">self</span>.n() {
+                <span class="kw">return </span><span class="prelude-val">None</span>;
             }
-            <span class="self">self</span>.<span class="ident">first</span> = <span class="bool-val">false</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">is_empty</span>() {
-            <span class="kw">return</span> <span class="prelude-val">None</span>;
-        } <span class="kw">else</span> {
-            <span class="comment">// Scan from the end, looking for an index to increment</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span>: <span class="ident">usize</span> = <span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">len</span>() - <span class="number">1</span>;
+            <span class="self">self</span>.first = <span class="bool-val">false</span>;
+        } <span class="kw">else if </span><span class="self">self</span>.indices.is_empty() {
+            <span class="kw">return </span><span class="prelude-val">None</span>;
+        } <span class="kw">else </span>{
+            <span class="comment">// Scan from the end, looking for an index to increment
+            </span><span class="kw">let </span><span class="kw-2">mut </span>i: usize = <span class="self">self</span>.indices.len() - <span class="number">1</span>;
 
-            <span class="comment">// Check if we need to consume more from the iterator</span>
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">indices</span>[<span class="ident">i</span>] == <span class="self">self</span>.<span class="ident">pool</span>.<span class="ident">len</span>() - <span class="number">1</span> {
-                <span class="self">self</span>.<span class="ident">pool</span>.<span class="ident">get_next</span>(); <span class="comment">// may change pool size</span>
-            }
+            <span class="comment">// Check if we need to consume more from the iterator
+            </span><span class="kw">if </span><span class="self">self</span>.indices[i] == <span class="self">self</span>.pool.len() - <span class="number">1 </span>{
+                <span class="self">self</span>.pool.get_next(); <span class="comment">// may change pool size
+            </span>}
 
-            <span class="kw">while</span> <span class="self">self</span>.<span class="ident">indices</span>[<span class="ident">i</span>] == <span class="ident">i</span> + <span class="self">self</span>.<span class="ident">pool</span>.<span class="ident">len</span>() - <span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">len</span>() {
-                <span class="kw">if</span> <span class="ident">i</span> &gt; <span class="number">0</span> {
-                    <span class="ident">i</span> -= <span class="number">1</span>;
-                } <span class="kw">else</span> {
-                    <span class="comment">// Reached the last combination</span>
-                    <span class="kw">return</span> <span class="prelude-val">None</span>;
+            <span class="kw">while </span><span class="self">self</span>.indices[i] == i + <span class="self">self</span>.pool.len() - <span class="self">self</span>.indices.len() {
+                <span class="kw">if </span>i &gt; <span class="number">0 </span>{
+                    i -= <span class="number">1</span>;
+                } <span class="kw">else </span>{
+                    <span class="comment">// Reached the last combination
+                    </span><span class="kw">return </span><span class="prelude-val">None</span>;
                 }
             }
 
-            <span class="comment">// Increment index, and reset the ones to its right</span>
-            <span class="self">self</span>.<span class="ident">indices</span>[<span class="ident">i</span>] += <span class="number">1</span>;
-            <span class="kw">for</span> <span class="ident">j</span> <span class="kw">in</span> <span class="ident">i</span>+<span class="number">1</span>..<span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">len</span>() {
-                <span class="self">self</span>.<span class="ident">indices</span>[<span class="ident">j</span>] = <span class="self">self</span>.<span class="ident">indices</span>[<span class="ident">j</span> - <span class="number">1</span>] + <span class="number">1</span>;
+            <span class="comment">// Increment index, and reset the ones to its right
+            </span><span class="self">self</span>.indices[i] += <span class="number">1</span>;
+            <span class="kw">for </span>j <span class="kw">in </span>i+<span class="number">1</span>..<span class="self">self</span>.indices.len() {
+                <span class="self">self</span>.indices[j] = <span class="self">self</span>.indices[j - <span class="number">1</span>] + <span class="number">1</span>;
             }
         }
 
-        <span class="comment">// Create result vector based on the indices</span>
-        <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="ident">i</span>| <span class="self">self</span>.<span class="ident">pool</span>[<span class="kw-2">*</span><span class="ident">i</span>].<span class="ident">clone</span>()).<span class="ident">collect</span>())
+        <span class="comment">// Create result vector based on the indices
+        </span><span class="prelude-val">Some</span>(<span class="self">self</span>.indices.iter().map(|i| <span class="self">self</span>.pool[<span class="kw-2">*</span>i].clone()).collect())
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">FusedIterator</span> <span class="kw">for</span> <span class="ident">Combinations</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>,
-          <span class="ident">I::Item</span>: <span class="ident">Clone</span>
+<span class="kw">impl</span>&lt;I&gt; FusedIterator <span class="kw">for </span>Combinations&lt;I&gt;
+    <span class="kw">where </span>I: Iterator,
+          I::Item: Clone
 {}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -382,150 +382,150 @@
 <span id="382">382</span>
 <span id="383">383</span>
 <span id="384">384</span>
-</pre><pre class="rust"><code><span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write_diff</span>(
-    <span class="ident">writer</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">std::fmt::Write</span>,
-    <span class="ident">expected</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::Data</span>,
-    <span class="ident">actual</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::Data</span>,
-    <span class="ident">expected_name</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">std::fmt::Display</span>&gt;,
-    <span class="ident">actual_name</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">std::fmt::Display</span>&gt;,
-    <span class="ident">palette</span>: <span class="ident"><span class="kw">crate</span>::report::Palette</span>,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">std::fmt::Error</span>&gt; {
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_mut</span>)]</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rendered</span> = <span class="bool-val">false</span>;
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;diff&quot;</span>)]</span>
-    <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">expected</span>), <span class="prelude-val">Some</span>(<span class="ident">actual</span>)) = (<span class="ident">expected</span>.<span class="ident">as_str</span>(), <span class="ident">actual</span>.<span class="ident">as_str</span>()) {
-        <span class="ident">write_diff_inner</span>(
-            <span class="ident">writer</span>,
-            <span class="ident">expected</span>,
-            <span class="ident">actual</span>,
-            <span class="ident">expected_name</span>,
-            <span class="ident">actual_name</span>,
-            <span class="ident">palette</span>,
+</pre><pre class="rust"><code><span class="kw">pub fn </span>write_diff(
+    writer: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>std::fmt::Write,
+    expected: <span class="kw-2">&amp;</span><span class="kw">crate</span>::Data,
+    actual: <span class="kw-2">&amp;</span><span class="kw">crate</span>::Data,
+    expected_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn </span>std::fmt::Display&gt;,
+    actual_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn </span>std::fmt::Display&gt;,
+    palette: <span class="kw">crate</span>::report::Palette,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::fmt::Error&gt; {
+    <span class="attribute">#[allow(unused_mut)]
+    </span><span class="kw">let </span><span class="kw-2">mut </span>rendered = <span class="bool-val">false</span>;
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;diff&quot;</span>)]
+    </span><span class="kw">if let </span>(<span class="prelude-val">Some</span>(expected), <span class="prelude-val">Some</span>(actual)) = (expected.as_str(), actual.as_str()) {
+        write_diff_inner(
+            writer,
+            expected,
+            actual,
+            expected_name,
+            actual_name,
+            palette,
         )<span class="question-mark">?</span>;
-        <span class="ident">rendered</span> = <span class="bool-val">true</span>;
+        rendered = <span class="bool-val">true</span>;
     }
 
-    <span class="kw">if</span> !<span class="ident">rendered</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">expected_name</span>) = <span class="ident">expected_name</span> {
-            <span class="macro">writeln!</span>(<span class="ident">writer</span>, <span class="string">&quot;{} {}:&quot;</span>, <span class="ident">expected_name</span>, <span class="ident">palette</span>.<span class="ident">info</span>(<span class="string">&quot;(expected)&quot;</span>))<span class="question-mark">?</span>;
-        } <span class="kw">else</span> {
-            <span class="macro">writeln!</span>(<span class="ident">writer</span>, <span class="string">&quot;{}:&quot;</span>, <span class="ident">palette</span>.<span class="ident">info</span>(<span class="string">&quot;Expected&quot;</span>))<span class="question-mark">?</span>;
+    <span class="kw">if </span>!rendered {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(expected_name) = expected_name {
+            <span class="macro">writeln!</span>(writer, <span class="string">&quot;{} {}:&quot;</span>, expected_name, palette.info(<span class="string">&quot;(expected)&quot;</span>))<span class="question-mark">?</span>;
+        } <span class="kw">else </span>{
+            <span class="macro">writeln!</span>(writer, <span class="string">&quot;{}:&quot;</span>, palette.info(<span class="string">&quot;Expected&quot;</span>))<span class="question-mark">?</span>;
         }
-        <span class="macro">writeln!</span>(<span class="ident">writer</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">palette</span>.<span class="ident">info</span>(<span class="kw-2">&amp;</span><span class="ident">expected</span>))<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">actual_name</span>) = <span class="ident">actual_name</span> {
-            <span class="macro">writeln!</span>(<span class="ident">writer</span>, <span class="string">&quot;{} {}:&quot;</span>, <span class="ident">actual_name</span>, <span class="ident">palette</span>.<span class="ident">error</span>(<span class="string">&quot;(actual)&quot;</span>))<span class="question-mark">?</span>;
-        } <span class="kw">else</span> {
-            <span class="macro">writeln!</span>(<span class="ident">writer</span>, <span class="string">&quot;{}:&quot;</span>, <span class="ident">palette</span>.<span class="ident">error</span>(<span class="string">&quot;Actual&quot;</span>))<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(writer, <span class="string">&quot;{}&quot;</span>, palette.info(<span class="kw-2">&amp;</span>expected))<span class="question-mark">?</span>;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(actual_name) = actual_name {
+            <span class="macro">writeln!</span>(writer, <span class="string">&quot;{} {}:&quot;</span>, actual_name, palette.error(<span class="string">&quot;(actual)&quot;</span>))<span class="question-mark">?</span>;
+        } <span class="kw">else </span>{
+            <span class="macro">writeln!</span>(writer, <span class="string">&quot;{}:&quot;</span>, palette.error(<span class="string">&quot;Actual&quot;</span>))<span class="question-mark">?</span>;
         }
-        <span class="macro">writeln!</span>(<span class="ident">writer</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">palette</span>.<span class="ident">error</span>(<span class="kw-2">&amp;</span><span class="ident">actual</span>))<span class="question-mark">?</span>;
+        <span class="macro">writeln!</span>(writer, <span class="string">&quot;{}&quot;</span>, palette.error(<span class="kw-2">&amp;</span>actual))<span class="question-mark">?</span>;
     }
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;diff&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">write_diff_inner</span>(
-    <span class="ident">writer</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">std::fmt::Write</span>,
-    <span class="ident">expected</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">actual</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">expected_name</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">std::fmt::Display</span>&gt;,
-    <span class="ident">actual_name</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">std::fmt::Display</span>&gt;,
-    <span class="ident">palette</span>: <span class="ident"><span class="kw">crate</span>::report::Palette</span>,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">std::fmt::Error</span>&gt; {
-    <span class="kw">let</span> <span class="ident">timeout</span> = <span class="ident">std::time::Duration::from_millis</span>(<span class="number">500</span>);
-    <span class="kw">let</span> <span class="ident">min_elide</span> = <span class="number">20</span>;
-    <span class="kw">let</span> <span class="ident">context</span> = <span class="number">5</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;diff&quot;</span>)]
+</span><span class="kw">fn </span>write_diff_inner(
+    writer: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>std::fmt::Write,
+    expected: <span class="kw-2">&amp;</span>str,
+    actual: <span class="kw-2">&amp;</span>str,
+    expected_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn </span>std::fmt::Display&gt;,
+    actual_name: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">dyn </span>std::fmt::Display&gt;,
+    palette: <span class="kw">crate</span>::report::Palette,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::fmt::Error&gt; {
+    <span class="kw">let </span>timeout = std::time::Duration::from_millis(<span class="number">500</span>);
+    <span class="kw">let </span>min_elide = <span class="number">20</span>;
+    <span class="kw">let </span>context = <span class="number">5</span>;
 
-    <span class="kw">let</span> <span class="ident">changes</span> = <span class="ident">similar::TextDiff::configure</span>()
-        .<span class="ident">algorithm</span>(<span class="ident">similar::Algorithm::Patience</span>)
-        .<span class="ident">timeout</span>(<span class="ident">timeout</span>)
-        .<span class="ident">newline_terminated</span>(<span class="bool-val">false</span>)
-        .<span class="ident">diff_lines</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="kw">let </span>changes = similar::TextDiff::configure()
+        .algorithm(similar::Algorithm::Patience)
+        .timeout(timeout)
+        .newline_terminated(<span class="bool-val">false</span>)
+        .diff_lines(expected, actual);
 
-    <span class="macro">writeln!</span>(<span class="ident">writer</span>)<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">expected_name</span>) = <span class="ident">expected_name</span> {
+    <span class="macro">writeln!</span>(writer)<span class="question-mark">?</span>;
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(expected_name) = expected_name {
         <span class="macro">writeln!</span>(
-            <span class="ident">writer</span>,
+            writer,
             <span class="string">&quot;{}&quot;</span>,
-            <span class="ident">palette</span>.<span class="ident">info</span>(<span class="macro">format_args!</span>(<span class="string">&quot;{:-&gt;4} expected: {}&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="ident">expected_name</span>))
+            palette.info(<span class="macro">format_args!</span>(<span class="string">&quot;{:-&gt;4} expected: {}&quot;</span>, <span class="string">&quot;&quot;</span>, expected_name))
         )<span class="question-mark">?</span>;
-    } <span class="kw">else</span> {
-        <span class="macro">writeln!</span>(<span class="ident">writer</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">palette</span>.<span class="ident">info</span>(<span class="macro">format_args!</span>(<span class="string">&quot;--- Expected&quot;</span>)))<span class="question-mark">?</span>;
+    } <span class="kw">else </span>{
+        <span class="macro">writeln!</span>(writer, <span class="string">&quot;{}&quot;</span>, palette.info(<span class="macro">format_args!</span>(<span class="string">&quot;--- Expected&quot;</span>)))<span class="question-mark">?</span>;
     }
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">actual_name</span>) = <span class="ident">actual_name</span> {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(actual_name) = actual_name {
         <span class="macro">writeln!</span>(
-            <span class="ident">writer</span>,
+            writer,
             <span class="string">&quot;{}&quot;</span>,
-            <span class="ident">palette</span>.<span class="ident">error</span>(<span class="macro">format_args!</span>(<span class="string">&quot;{:+&gt;4} actual:   {}&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="ident">actual_name</span>))
+            palette.error(<span class="macro">format_args!</span>(<span class="string">&quot;{:+&gt;4} actual:   {}&quot;</span>, <span class="string">&quot;&quot;</span>, actual_name))
         )<span class="question-mark">?</span>;
-    } <span class="kw">else</span> {
-        <span class="macro">writeln!</span>(<span class="ident">writer</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">palette</span>.<span class="ident">error</span>(<span class="macro">format_args!</span>(<span class="string">&quot;+++ Actual&quot;</span>)))<span class="question-mark">?</span>;
+    } <span class="kw">else </span>{
+        <span class="macro">writeln!</span>(writer, <span class="string">&quot;{}&quot;</span>, palette.error(<span class="macro">format_args!</span>(<span class="string">&quot;+++ Actual&quot;</span>)))<span class="question-mark">?</span>;
     }
-    <span class="kw">let</span> <span class="ident">changes</span> = <span class="ident">changes</span>
-        .<span class="ident">ops</span>()
-        .<span class="ident">iter</span>()
-        .<span class="ident">flat_map</span>(|<span class="ident">op</span>| <span class="ident">changes</span>.<span class="ident">iter_inline_changes</span>(<span class="ident">op</span>))
-        .<span class="ident">collect</span>::&lt;<span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt;&gt;();
-    <span class="kw">let</span> <span class="ident">tombstones</span> = <span class="kw">if</span> <span class="ident">min_elide</span> &lt; <span class="ident">changes</span>.<span class="ident">len</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tombstones</span> = <span class="macro">vec!</span>[<span class="bool-val">true</span>; <span class="ident">changes</span>.<span class="ident">len</span>()];
+    <span class="kw">let </span>changes = changes
+        .ops()
+        .iter()
+        .flat_map(|op| changes.iter_inline_changes(op))
+        .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+    <span class="kw">let </span>tombstones = <span class="kw">if </span>min_elide &lt; changes.len() {
+        <span class="kw">let </span><span class="kw-2">mut </span>tombstones = <span class="macro">vec!</span>[<span class="bool-val">true</span>; changes.len()];
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span> = <span class="ident">context</span>;
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">change</span>) <span class="kw">in</span> <span class="ident">changes</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
-            <span class="kw">match</span> <span class="ident">change</span>.<span class="ident">tag</span>() {
-                <span class="ident">similar::ChangeTag::Insert</span> | <span class="ident">similar::ChangeTag::Delete</span> =&gt; {
-                    <span class="ident">counter</span> = <span class="ident">context</span>;
-                    <span class="ident">tombstones</span>[<span class="ident">i</span>] = <span class="bool-val">false</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>counter = context;
+        <span class="kw">for </span>(i, change) <span class="kw">in </span>changes.iter().enumerate() {
+            <span class="kw">match </span>change.tag() {
+                similar::ChangeTag::Insert | similar::ChangeTag::Delete =&gt; {
+                    counter = context;
+                    tombstones[i] = <span class="bool-val">false</span>;
                 }
-                <span class="ident">similar::ChangeTag::Equal</span> =&gt; {
-                    <span class="kw">if</span> <span class="ident">counter</span> != <span class="number">0</span> {
-                        <span class="ident">tombstones</span>[<span class="ident">i</span>] = <span class="bool-val">false</span>;
-                        <span class="ident">counter</span> -= <span class="number">1</span>;
+                similar::ChangeTag::Equal =&gt; {
+                    <span class="kw">if </span>counter != <span class="number">0 </span>{
+                        tombstones[i] = <span class="bool-val">false</span>;
+                        counter -= <span class="number">1</span>;
                     }
                 }
             }
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counter</span> = <span class="ident">context</span>;
-        <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">change</span>) <span class="kw">in</span> <span class="ident">changes</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>().<span class="ident">rev</span>() {
-            <span class="kw">match</span> <span class="ident">change</span>.<span class="ident">tag</span>() {
-                <span class="ident">similar::ChangeTag::Insert</span> | <span class="ident">similar::ChangeTag::Delete</span> =&gt; {
-                    <span class="ident">counter</span> = <span class="ident">context</span>;
-                    <span class="ident">tombstones</span>[<span class="ident">i</span>] = <span class="bool-val">false</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>counter = context;
+        <span class="kw">for </span>(i, change) <span class="kw">in </span>changes.iter().enumerate().rev() {
+            <span class="kw">match </span>change.tag() {
+                similar::ChangeTag::Insert | similar::ChangeTag::Delete =&gt; {
+                    counter = context;
+                    tombstones[i] = <span class="bool-val">false</span>;
                 }
-                <span class="ident">similar::ChangeTag::Equal</span> =&gt; {
-                    <span class="kw">if</span> <span class="ident">counter</span> != <span class="number">0</span> {
-                        <span class="ident">tombstones</span>[<span class="ident">i</span>] = <span class="bool-val">false</span>;
-                        <span class="ident">counter</span> -= <span class="number">1</span>;
+                similar::ChangeTag::Equal =&gt; {
+                    <span class="kw">if </span>counter != <span class="number">0 </span>{
+                        tombstones[i] = <span class="bool-val">false</span>;
+                        counter -= <span class="number">1</span>;
                     }
                 }
             }
         }
-        <span class="ident">tombstones</span>
-    } <span class="kw">else</span> {
-        <span class="ident">Vec::new</span>()
+        tombstones
+    } <span class="kw">else </span>{
+        Vec::new()
     };
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">elided</span> = <span class="bool-val">false</span>;
-    <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">change</span>) <span class="kw">in</span> <span class="ident">changes</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-        <span class="kw">if</span> <span class="ident">tombstones</span>.<span class="ident">get</span>(<span class="ident">i</span>).<span class="ident">copied</span>().<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>) {
-            <span class="kw">if</span> !<span class="ident">elided</span> {
-                <span class="kw">let</span> <span class="ident">sign</span> = <span class="string">&quot;⋮&quot;</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>elided = <span class="bool-val">false</span>;
+    <span class="kw">for </span>(i, change) <span class="kw">in </span>changes.into_iter().enumerate() {
+        <span class="kw">if </span>tombstones.get(i).copied().unwrap_or(<span class="bool-val">false</span>) {
+            <span class="kw">if </span>!elided {
+                <span class="kw">let </span>sign = <span class="string">&quot;⋮&quot;</span>;
 
-                <span class="macro">write!</span>(<span class="ident">writer</span>, <span class="string">&quot;{:&gt;4} &quot;</span>, <span class="string">&quot; &quot;</span>,)<span class="question-mark">?</span>;
-                <span class="macro">write!</span>(<span class="ident">writer</span>, <span class="string">&quot;{:&gt;4} &quot;</span>, <span class="string">&quot; &quot;</span>,)<span class="question-mark">?</span>;
-                <span class="macro">writeln!</span>(<span class="ident">writer</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">palette</span>.<span class="ident">hint</span>(<span class="ident">sign</span>))<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(writer, <span class="string">&quot;{:&gt;4} &quot;</span>, <span class="string">&quot; &quot;</span>,)<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(writer, <span class="string">&quot;{:&gt;4} &quot;</span>, <span class="string">&quot; &quot;</span>,)<span class="question-mark">?</span>;
+                <span class="macro">writeln!</span>(writer, <span class="string">&quot;{}&quot;</span>, palette.hint(sign))<span class="question-mark">?</span>;
             }
-            <span class="ident">elided</span> = <span class="bool-val">true</span>;
-        } <span class="kw">else</span> {
-            <span class="ident">elided</span> = <span class="bool-val">false</span>;
-            <span class="kw">match</span> <span class="ident">change</span>.<span class="ident">tag</span>() {
-                <span class="ident">similar::ChangeTag::Insert</span> =&gt; {
-                    <span class="ident">write_change</span>(<span class="ident">writer</span>, <span class="ident">change</span>, <span class="string">&quot;+&quot;</span>, <span class="ident">palette</span>.<span class="ident">actual</span>, <span class="ident">palette</span>.<span class="ident">error</span>, <span class="ident">palette</span>)<span class="question-mark">?</span>;
+            elided = <span class="bool-val">true</span>;
+        } <span class="kw">else </span>{
+            elided = <span class="bool-val">false</span>;
+            <span class="kw">match </span>change.tag() {
+                similar::ChangeTag::Insert =&gt; {
+                    write_change(writer, change, <span class="string">&quot;+&quot;</span>, palette.actual, palette.error, palette)<span class="question-mark">?</span>;
                 }
-                <span class="ident">similar::ChangeTag::Delete</span> =&gt; {
-                    <span class="ident">write_change</span>(<span class="ident">writer</span>, <span class="ident">change</span>, <span class="string">&quot;-&quot;</span>, <span class="ident">palette</span>.<span class="ident">expected</span>, <span class="ident">palette</span>.<span class="ident">info</span>, <span class="ident">palette</span>)<span class="question-mark">?</span>;
+                similar::ChangeTag::Delete =&gt; {
+                    write_change(writer, change, <span class="string">&quot;-&quot;</span>, palette.expected, palette.info, palette)<span class="question-mark">?</span>;
                 }
-                <span class="ident">similar::ChangeTag::Equal</span> =&gt; {
-                    <span class="ident">write_change</span>(<span class="ident">writer</span>, <span class="ident">change</span>, <span class="string">&quot;|&quot;</span>, <span class="ident">palette</span>.<span class="ident">hint</span>, <span class="ident">palette</span>.<span class="ident">hint</span>, <span class="ident">palette</span>)<span class="question-mark">?</span>;
+                similar::ChangeTag::Equal =&gt; {
+                    write_change(writer, change, <span class="string">&quot;|&quot;</span>, palette.hint, palette.hint, palette)<span class="question-mark">?</span>;
                 }
             }
         }
@@ -534,119 +534,119 @@
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;diff&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">write_change</span>(
-    <span class="ident">writer</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">std::fmt::Write</span>,
-    <span class="ident">change</span>: <span class="ident">similar::InlineChange</span>&lt;<span class="ident">str</span>&gt;,
-    <span class="ident">sign</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">em_style</span>: <span class="ident"><span class="kw">crate</span>::report::Style</span>,
-    <span class="ident">style</span>: <span class="ident"><span class="kw">crate</span>::report::Style</span>,
-    <span class="ident">palette</span>: <span class="ident"><span class="kw">crate</span>::report::Palette</span>,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">std::fmt::Error</span>&gt; {
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">index</span>) = <span class="ident">change</span>.<span class="ident">old_index</span>() {
-        <span class="macro">write!</span>(<span class="ident">writer</span>, <span class="string">&quot;{:&gt;4} &quot;</span>, <span class="ident">palette</span>.<span class="ident">hint</span>(<span class="ident">index</span> + <span class="number">1</span>),)<span class="question-mark">?</span>;
-    } <span class="kw">else</span> {
-        <span class="macro">write!</span>(<span class="ident">writer</span>, <span class="string">&quot;{:&gt;4} &quot;</span>, <span class="string">&quot; &quot;</span>,)<span class="question-mark">?</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;diff&quot;</span>)]
+</span><span class="kw">fn </span>write_change(
+    writer: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>std::fmt::Write,
+    change: similar::InlineChange&lt;str&gt;,
+    sign: <span class="kw-2">&amp;</span>str,
+    em_style: <span class="kw">crate</span>::report::Style,
+    style: <span class="kw">crate</span>::report::Style,
+    palette: <span class="kw">crate</span>::report::Palette,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::fmt::Error&gt; {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(index) = change.old_index() {
+        <span class="macro">write!</span>(writer, <span class="string">&quot;{:&gt;4} &quot;</span>, palette.hint(index + <span class="number">1</span>),)<span class="question-mark">?</span>;
+    } <span class="kw">else </span>{
+        <span class="macro">write!</span>(writer, <span class="string">&quot;{:&gt;4} &quot;</span>, <span class="string">&quot; &quot;</span>,)<span class="question-mark">?</span>;
     }
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">index</span>) = <span class="ident">change</span>.<span class="ident">new_index</span>() {
-        <span class="macro">write!</span>(<span class="ident">writer</span>, <span class="string">&quot;{:&gt;4} &quot;</span>, <span class="ident">palette</span>.<span class="ident">hint</span>(<span class="ident">index</span> + <span class="number">1</span>),)<span class="question-mark">?</span>;
-    } <span class="kw">else</span> {
-        <span class="macro">write!</span>(<span class="ident">writer</span>, <span class="string">&quot;{:&gt;4} &quot;</span>, <span class="string">&quot; &quot;</span>,)<span class="question-mark">?</span>;
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(index) = change.new_index() {
+        <span class="macro">write!</span>(writer, <span class="string">&quot;{:&gt;4} &quot;</span>, palette.hint(index + <span class="number">1</span>),)<span class="question-mark">?</span>;
+    } <span class="kw">else </span>{
+        <span class="macro">write!</span>(writer, <span class="string">&quot;{:&gt;4} &quot;</span>, <span class="string">&quot; &quot;</span>,)<span class="question-mark">?</span>;
     }
-    <span class="macro">write!</span>(<span class="ident">writer</span>, <span class="string">&quot;{} &quot;</span>, <span class="ident">style</span>.<span class="ident">paint</span>(<span class="ident">sign</span>))<span class="question-mark">?</span>;
-    <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">emphasized</span>, <span class="ident">change</span>) <span class="kw">in</span> <span class="ident">change</span>.<span class="ident">values</span>() {
-        <span class="kw">let</span> <span class="ident">cur_style</span> = <span class="kw">if</span> <span class="ident">emphasized</span> { <span class="ident">em_style</span> } <span class="kw">else</span> { <span class="ident">style</span> };
-        <span class="macro">write!</span>(<span class="ident">writer</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">cur_style</span>.<span class="ident">paint</span>(<span class="ident">change</span>))<span class="question-mark">?</span>;
+    <span class="macro">write!</span>(writer, <span class="string">&quot;{} &quot;</span>, style.paint(sign))<span class="question-mark">?</span>;
+    <span class="kw">for </span><span class="kw-2">&amp;</span>(emphasized, change) <span class="kw">in </span>change.values() {
+        <span class="kw">let </span>cur_style = <span class="kw">if </span>emphasized { em_style } <span class="kw">else </span>{ style };
+        <span class="macro">write!</span>(writer, <span class="string">&quot;{}&quot;</span>, cur_style.paint(change))<span class="question-mark">?</span>;
     }
-    <span class="kw">if</span> <span class="ident">change</span>.<span class="ident">missing_newline</span>() {
-        <span class="macro">writeln!</span>(<span class="ident">writer</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">em_style</span>.<span class="ident">paint</span>(<span class="string">&quot;∅&quot;</span>))<span class="question-mark">?</span>;
+    <span class="kw">if </span>change.missing_newline() {
+        <span class="macro">writeln!</span>(writer, <span class="string">&quot;{}&quot;</span>, em_style.paint(<span class="string">&quot;∅&quot;</span>))<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;diff&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">diff_eq</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\nWorld\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected_name</span> = <span class="string">&quot;A&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="string">&quot;Hello\nWorld\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual_name</span> = <span class="string">&quot;B&quot;</span>;
-        <span class="kw">let</span> <span class="ident">palette</span> = <span class="ident"><span class="kw">crate</span>::report::Palette::never</span>();
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;diff&quot;</span>)]
+    #[test]
+    </span><span class="kw">fn </span>diff_eq() {
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\nWorld\n&quot;</span>;
+        <span class="kw">let </span>expected_name = <span class="string">&quot;A&quot;</span>;
+        <span class="kw">let </span>actual = <span class="string">&quot;Hello\nWorld\n&quot;</span>;
+        <span class="kw">let </span>actual_name = <span class="string">&quot;B&quot;</span>;
+        <span class="kw">let </span>palette = <span class="kw">crate</span>::report::Palette::never();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual_diff</span> = <span class="ident">String::new</span>();
-        <span class="ident">write_diff_inner</span>(
-            <span class="kw-2">&amp;mut</span> <span class="ident">actual_diff</span>,
-            <span class="ident">expected</span>,
-            <span class="ident">actual</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">expected_name</span>),
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">actual_name</span>),
-            <span class="ident">palette</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>actual_diff = String::new();
+        write_diff_inner(
+            <span class="kw-2">&amp;mut </span>actual_diff,
+            expected,
+            actual,
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>expected_name),
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>actual_name),
+            palette,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">expected_diff</span> = <span class="string">&quot;
+        .unwrap();
+        <span class="kw">let </span>expected_diff = <span class="string">&quot;
 ---- expected: A
 ++++ actual:   B
    1    1 | Hello
    2    2 | World
 &quot;</span>;
 
-        <span class="macro">assert_eq!</span>(<span class="ident">expected_diff</span>, <span class="ident">actual_diff</span>);
+        <span class="macro">assert_eq!</span>(expected_diff, actual_diff);
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;diff&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">diff_ne_line_missing</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\nWorld\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected_name</span> = <span class="string">&quot;A&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="string">&quot;Hello\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual_name</span> = <span class="string">&quot;B&quot;</span>;
-        <span class="kw">let</span> <span class="ident">palette</span> = <span class="ident"><span class="kw">crate</span>::report::Palette::never</span>();
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;diff&quot;</span>)]
+    #[test]
+    </span><span class="kw">fn </span>diff_ne_line_missing() {
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\nWorld\n&quot;</span>;
+        <span class="kw">let </span>expected_name = <span class="string">&quot;A&quot;</span>;
+        <span class="kw">let </span>actual = <span class="string">&quot;Hello\n&quot;</span>;
+        <span class="kw">let </span>actual_name = <span class="string">&quot;B&quot;</span>;
+        <span class="kw">let </span>palette = <span class="kw">crate</span>::report::Palette::never();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual_diff</span> = <span class="ident">String::new</span>();
-        <span class="ident">write_diff_inner</span>(
-            <span class="kw-2">&amp;mut</span> <span class="ident">actual_diff</span>,
-            <span class="ident">expected</span>,
-            <span class="ident">actual</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">expected_name</span>),
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">actual_name</span>),
-            <span class="ident">palette</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>actual_diff = String::new();
+        write_diff_inner(
+            <span class="kw-2">&amp;mut </span>actual_diff,
+            expected,
+            actual,
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>expected_name),
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>actual_name),
+            palette,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">expected_diff</span> = <span class="string">&quot;
+        .unwrap();
+        <span class="kw">let </span>expected_diff = <span class="string">&quot;
 ---- expected: A
 ++++ actual:   B
    1    1 | Hello
    2      - World
 &quot;</span>;
 
-        <span class="macro">assert_eq!</span>(<span class="ident">expected_diff</span>, <span class="ident">actual_diff</span>);
+        <span class="macro">assert_eq!</span>(expected_diff, actual_diff);
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;diff&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">diff_eq_trailing_extra_newline</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected_name</span> = <span class="string">&quot;A&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="string">&quot;Hello\nWorld\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual_name</span> = <span class="string">&quot;B&quot;</span>;
-        <span class="kw">let</span> <span class="ident">palette</span> = <span class="ident"><span class="kw">crate</span>::report::Palette::never</span>();
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;diff&quot;</span>)]
+    #[test]
+    </span><span class="kw">fn </span>diff_eq_trailing_extra_newline() {
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\nWorld&quot;</span>;
+        <span class="kw">let </span>expected_name = <span class="string">&quot;A&quot;</span>;
+        <span class="kw">let </span>actual = <span class="string">&quot;Hello\nWorld\n&quot;</span>;
+        <span class="kw">let </span>actual_name = <span class="string">&quot;B&quot;</span>;
+        <span class="kw">let </span>palette = <span class="kw">crate</span>::report::Palette::never();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual_diff</span> = <span class="ident">String::new</span>();
-        <span class="ident">write_diff_inner</span>(
-            <span class="kw-2">&amp;mut</span> <span class="ident">actual_diff</span>,
-            <span class="ident">expected</span>,
-            <span class="ident">actual</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">expected_name</span>),
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">actual_name</span>),
-            <span class="ident">palette</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>actual_diff = String::new();
+        write_diff_inner(
+            <span class="kw-2">&amp;mut </span>actual_diff,
+            expected,
+            actual,
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>expected_name),
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>actual_name),
+            palette,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">expected_diff</span> = <span class="string">&quot;
+        .unwrap();
+        <span class="kw">let </span>expected_diff = <span class="string">&quot;
 ---- expected: A
 ++++ actual:   B
    1    1 | Hello
@@ -654,29 +654,29 @@
         2 + World
 &quot;</span>;
 
-        <span class="macro">assert_eq!</span>(<span class="ident">expected_diff</span>, <span class="ident">actual_diff</span>);
+        <span class="macro">assert_eq!</span>(expected_diff, actual_diff);
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;diff&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">diff_eq_trailing_newline_missing</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\nWorld\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected_name</span> = <span class="string">&quot;A&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="string">&quot;Hello\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual_name</span> = <span class="string">&quot;B&quot;</span>;
-        <span class="kw">let</span> <span class="ident">palette</span> = <span class="ident"><span class="kw">crate</span>::report::Palette::never</span>();
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;diff&quot;</span>)]
+    #[test]
+    </span><span class="kw">fn </span>diff_eq_trailing_newline_missing() {
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\nWorld\n&quot;</span>;
+        <span class="kw">let </span>expected_name = <span class="string">&quot;A&quot;</span>;
+        <span class="kw">let </span>actual = <span class="string">&quot;Hello\nWorld&quot;</span>;
+        <span class="kw">let </span>actual_name = <span class="string">&quot;B&quot;</span>;
+        <span class="kw">let </span>palette = <span class="kw">crate</span>::report::Palette::never();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual_diff</span> = <span class="ident">String::new</span>();
-        <span class="ident">write_diff_inner</span>(
-            <span class="kw-2">&amp;mut</span> <span class="ident">actual_diff</span>,
-            <span class="ident">expected</span>,
-            <span class="ident">actual</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">expected_name</span>),
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">actual_name</span>),
-            <span class="ident">palette</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>actual_diff = String::new();
+        write_diff_inner(
+            <span class="kw-2">&amp;mut </span>actual_diff,
+            expected,
+            actual,
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>expected_name),
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>actual_name),
+            palette,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">expected_diff</span> = <span class="string">&quot;
+        .unwrap();
+        <span class="kw">let </span>expected_diff = <span class="string">&quot;
 ---- expected: A
 ++++ actual:   B
    1    1 | Hello
@@ -684,53 +684,53 @@
         2 + World∅
 &quot;</span>;
 
-        <span class="macro">assert_eq!</span>(<span class="ident">expected_diff</span>, <span class="ident">actual_diff</span>);
+        <span class="macro">assert_eq!</span>(expected_diff, actual_diff);
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;diff&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">diff_eq_elided</span>() {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expected</span> = <span class="ident">String::new</span>();
-        <span class="ident">expected</span>.<span class="ident">push_str</span>(<span class="string">&quot;Hello\n&quot;</span>);
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">20</span> {
-            <span class="ident">expected</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">i</span>.<span class="ident">to_string</span>());
-            <span class="ident">expected</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;diff&quot;</span>)]
+    #[test]
+    </span><span class="kw">fn </span>diff_eq_elided() {
+        <span class="kw">let </span><span class="kw-2">mut </span>expected = String::new();
+        expected.push_str(<span class="string">&quot;Hello\n&quot;</span>);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">20 </span>{
+            expected.push_str(<span class="kw-2">&amp;</span>i.to_string());
+            expected.push(<span class="string">&#39;\n&#39;</span>);
         }
-        <span class="ident">expected</span>.<span class="ident">push_str</span>(<span class="string">&quot;World\n&quot;</span>);
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">20</span> {
-            <span class="ident">expected</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">i</span>.<span class="ident">to_string</span>());
-            <span class="ident">expected</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
+        expected.push_str(<span class="string">&quot;World\n&quot;</span>);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">20 </span>{
+            expected.push_str(<span class="kw-2">&amp;</span>i.to_string());
+            expected.push(<span class="string">&#39;\n&#39;</span>);
         }
-        <span class="ident">expected</span>.<span class="ident">push_str</span>(<span class="string">&quot;!\n&quot;</span>);
-        <span class="kw">let</span> <span class="ident">expected_name</span> = <span class="string">&quot;A&quot;</span>;
+        expected.push_str(<span class="string">&quot;!\n&quot;</span>);
+        <span class="kw">let </span>expected_name = <span class="string">&quot;A&quot;</span>;
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual</span> = <span class="ident">String::new</span>();
-        <span class="ident">actual</span>.<span class="ident">push_str</span>(<span class="string">&quot;Goodbye\n&quot;</span>);
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">20</span> {
-            <span class="ident">actual</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">i</span>.<span class="ident">to_string</span>());
-            <span class="ident">actual</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>actual = String::new();
+        actual.push_str(<span class="string">&quot;Goodbye\n&quot;</span>);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">20 </span>{
+            actual.push_str(<span class="kw-2">&amp;</span>i.to_string());
+            actual.push(<span class="string">&#39;\n&#39;</span>);
         }
-        <span class="ident">actual</span>.<span class="ident">push_str</span>(<span class="string">&quot;Moon\n&quot;</span>);
-        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">20</span> {
-            <span class="ident">actual</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">i</span>.<span class="ident">to_string</span>());
-            <span class="ident">actual</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
+        actual.push_str(<span class="string">&quot;Moon\n&quot;</span>);
+        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..<span class="number">20 </span>{
+            actual.push_str(<span class="kw-2">&amp;</span>i.to_string());
+            actual.push(<span class="string">&#39;\n&#39;</span>);
         }
-        <span class="ident">actual</span>.<span class="ident">push_str</span>(<span class="string">&quot;?\n&quot;</span>);
-        <span class="kw">let</span> <span class="ident">actual_name</span> = <span class="string">&quot;B&quot;</span>;
+        actual.push_str(<span class="string">&quot;?\n&quot;</span>);
+        <span class="kw">let </span>actual_name = <span class="string">&quot;B&quot;</span>;
 
-        <span class="kw">let</span> <span class="ident">palette</span> = <span class="ident"><span class="kw">crate</span>::report::Palette::never</span>();
+        <span class="kw">let </span>palette = <span class="kw">crate</span>::report::Palette::never();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual_diff</span> = <span class="ident">String::new</span>();
-        <span class="ident">write_diff_inner</span>(
-            <span class="kw-2">&amp;mut</span> <span class="ident">actual_diff</span>,
-            <span class="kw-2">&amp;</span><span class="ident">expected</span>,
-            <span class="kw-2">&amp;</span><span class="ident">actual</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">expected_name</span>),
-            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">actual_name</span>),
-            <span class="ident">palette</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>actual_diff = String::new();
+        write_diff_inner(
+            <span class="kw-2">&amp;mut </span>actual_diff,
+            <span class="kw-2">&amp;</span>expected,
+            <span class="kw-2">&amp;</span>actual,
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>expected_name),
+            <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>actual_name),
+            palette,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">expected_diff</span> = <span class="string">&quot;
+        .unwrap();
+        <span class="kw">let </span>expected_diff = <span class="string">&quot;
 ---- expected: A
 ++++ actual:   B
    1      - Hello
@@ -763,8 +763,8 @@
        43 + ?
 &quot;</span>;
 
-        <span class="macro">assert_eq!</span>(<span class="ident">expected_diff</span>, <span class="ident">actual_diff</span>);
+        <span class="macro">assert_eq!</span>(expected_diff, actual_diff);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

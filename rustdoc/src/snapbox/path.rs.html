@@ -684,367 +684,367 @@
 <span id="684">684</span>
 <span id="685">685</span>
 <span id="686">686</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Initialize working directories and assert on how they&#39;ve changed</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Initialize working directories and assert on how they&#39;ve changed
 
-<span class="doccomment">/// Working directory for tests</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PathFixture</span>(<span class="ident">PathFixtureInner</span>);
+/// Working directory for tests
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>PathFixture(PathFixtureInner);
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">enum</span> <span class="ident">PathFixtureInner</span> {
+<span class="attribute">#[derive(Debug)]
+</span><span class="kw">enum </span>PathFixtureInner {
     <span class="prelude-val">None</span>,
-    <span class="ident">Immutable</span>(<span class="ident">std::path::PathBuf</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-    <span class="ident">MutablePath</span>(<span class="ident">std::path::PathBuf</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-    <span class="ident">MutableTemp</span> {
-        <span class="ident">temp</span>: <span class="ident">tempfile::TempDir</span>,
-        <span class="ident">path</span>: <span class="ident">std::path::PathBuf</span>,
+    Immutable(std::path::PathBuf),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+    </span>MutablePath(std::path::PathBuf),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+    </span>MutableTemp {
+        temp: tempfile::TempDir,
+        path: std::path::PathBuf,
     },
 }
 
-<span class="kw">impl</span> <span class="ident">PathFixture</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">none</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">PathFixtureInner::None</span>)
+<span class="kw">impl </span>PathFixture {
+    <span class="kw">pub fn </span>none() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>(PathFixtureInner::None)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">immutable</span>(<span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span>(<span class="ident">PathFixtureInner::Immutable</span>(<span class="ident">target</span>.<span class="ident">to_owned</span>()))
+    <span class="kw">pub fn </span>immutable(target: <span class="kw-2">&amp;</span>std::path::Path) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>(PathFixtureInner::Immutable(target.to_owned()))
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mutable_temp</span>() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="kw">let</span> <span class="ident">temp</span> = <span class="ident">tempfile::tempdir</span>().<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident">e</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
-        <span class="comment">// We need to get the `/private` prefix on Mac so variable substitutions work</span>
-        <span class="comment">// correctly</span>
-        <span class="kw">let</span> <span class="ident">path</span> = <span class="ident">canonicalize</span>(<span class="ident">temp</span>.<span class="ident">path</span>())
-            .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to canonicalize {}: {}&quot;</span>, <span class="ident">temp</span>.<span class="ident">path</span>().<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">PathFixtureInner::MutableTemp</span> { <span class="ident">temp</span>, <span class="ident">path</span> }))
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+    </span><span class="kw">pub fn </span>mutable_temp() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="kw">crate</span>::Error&gt; {
+        <span class="kw">let </span>temp = tempfile::tempdir().map_err(|e| e.to_string())<span class="question-mark">?</span>;
+        <span class="comment">// We need to get the `/private` prefix on Mac so variable substitutions work
+        // correctly
+        </span><span class="kw">let </span>path = canonicalize(temp.path())
+            .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to canonicalize {}: {}&quot;</span>, temp.path().display(), e))<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(PathFixtureInner::MutableTemp { temp, path }))
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mutable_at</span>(<span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">std::fs::remove_dir_all</span>(<span class="kw-2">&amp;</span><span class="ident">target</span>);
-        <span class="ident">std::fs::create_dir_all</span>(<span class="kw-2">&amp;</span><span class="ident">target</span>)
-            .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to create {}: {}&quot;</span>, <span class="ident">target</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(<span class="ident">PathFixtureInner::MutablePath</span>(<span class="ident">target</span>.<span class="ident">to_owned</span>())))
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+    </span><span class="kw">pub fn </span>mutable_at(target: <span class="kw-2">&amp;</span>std::path::Path) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="kw">crate</span>::Error&gt; {
+        <span class="kw">let _ </span>= std::fs::remove_dir_all(<span class="kw-2">&amp;</span>target);
+        std::fs::create_dir_all(<span class="kw-2">&amp;</span>target)
+            .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to create {}: {}&quot;</span>, target.display(), e))<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span>(PathFixtureInner::MutablePath(target.to_owned())))
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_template</span>(<span class="self">self</span>, <span class="ident">template_root</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span> {
-            <span class="ident">PathFixtureInner::None</span> | <span class="ident">PathFixtureInner::Immutable</span>(<span class="kw">_</span>) =&gt; {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Sandboxing is disabled&quot;</span>.<span class="ident">into</span>());
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+    </span><span class="kw">pub fn </span>with_template(<span class="self">self</span>, template_root: <span class="kw-2">&amp;</span>std::path::Path) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="kw">crate</span>::Error&gt; {
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0 </span>{
+            PathFixtureInner::None | PathFixtureInner::Immutable(<span class="kw">_</span>) =&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">&quot;Sandboxing is disabled&quot;</span>.into());
             }
-            <span class="ident">PathFixtureInner::MutablePath</span>(<span class="ident">path</span>) | <span class="ident">PathFixtureInner::MutableTemp</span> { <span class="ident">path</span>, .. } =&gt; {
+            PathFixtureInner::MutablePath(path) | PathFixtureInner::MutableTemp { path, .. } =&gt; {
                 <span class="macro">crate::debug!</span>(
                     <span class="string">&quot;Initializing {} from {}&quot;</span>,
-                    <span class="ident">path</span>.<span class="ident">display</span>(),
-                    <span class="ident">template_root</span>.<span class="ident">display</span>()
+                    path.display(),
+                    template_root.display()
                 );
-                <span class="ident">copy_template</span>(<span class="ident">template_root</span>, <span class="ident">path</span>)<span class="question-mark">?</span>;
+                copy_template(template_root, path)<span class="question-mark">?</span>;
             }
         }
 
         <span class="prelude-val">Ok</span>(<span class="self">self</span>)
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_mutable</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span> {
-            <span class="ident">PathFixtureInner::None</span> | <span class="ident">PathFixtureInner::Immutable</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">false</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-            <span class="ident">PathFixtureInner::MutablePath</span>(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-            <span class="ident">PathFixtureInner::MutableTemp</span> { .. } =&gt; <span class="bool-val">true</span>,
+    <span class="kw">pub fn </span>is_mutable(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0 </span>{
+            PathFixtureInner::None | PathFixtureInner::Immutable(<span class="kw">_</span>) =&gt; <span class="bool-val">false</span>,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+            </span>PathFixtureInner::MutablePath(<span class="kw">_</span>) =&gt; <span class="bool-val">true</span>,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+            </span>PathFixtureInner::MutableTemp { .. } =&gt; <span class="bool-val">true</span>,
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>&gt; {
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span> {
-            <span class="ident">PathFixtureInner::None</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="ident">PathFixtureInner::Immutable</span>(<span class="ident">path</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">path</span>.<span class="ident">as_path</span>()),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-            <span class="ident">PathFixtureInner::MutablePath</span>(<span class="ident">path</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">path</span>.<span class="ident">as_path</span>()),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-            <span class="ident">PathFixtureInner::MutableTemp</span> { <span class="ident">path</span>, .. } =&gt; <span class="prelude-val">Some</span>(<span class="ident">path</span>.<span class="ident">as_path</span>()),
+    <span class="kw">pub fn </span>path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>std::path::Path&gt; {
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0 </span>{
+            PathFixtureInner::None =&gt; <span class="prelude-val">None</span>,
+            PathFixtureInner::Immutable(path) =&gt; <span class="prelude-val">Some</span>(path.as_path()),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+            </span>PathFixtureInner::MutablePath(path) =&gt; <span class="prelude-val">Some</span>(path.as_path()),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+            </span>PathFixtureInner::MutableTemp { path, .. } =&gt; <span class="prelude-val">Some</span>(path.as_path()),
         }
     }
 
-    <span class="doccomment">/// Explicitly close to report errors</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">close</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">std::io::Error</span>&gt; {
-        <span class="kw">match</span> <span class="self">self</span>.<span class="number">0</span> {
-            <span class="ident">PathFixtureInner::None</span> | <span class="ident">PathFixtureInner::Immutable</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-            <span class="ident">PathFixtureInner::MutablePath</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-            <span class="ident">PathFixtureInner::MutableTemp</span> { <span class="ident">temp</span>, .. } =&gt; <span class="ident">temp</span>.<span class="ident">close</span>(),
+    <span class="doccomment">/// Explicitly close to report errors
+    </span><span class="kw">pub fn </span>close(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::io::Error&gt; {
+        <span class="kw">match </span><span class="self">self</span>.<span class="number">0 </span>{
+            PathFixtureInner::None | PathFixtureInner::Immutable(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+            </span>PathFixtureInner::MutablePath(<span class="kw">_</span>) =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+            </span>PathFixtureInner::MutableTemp { temp, .. } =&gt; temp.close(),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">PathFixture</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::none</span>()
+<span class="kw">impl </span>Default <span class="kw">for </span>PathFixture {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::none()
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PathDiff</span> {
-    <span class="ident">Failure</span>(<span class="ident"><span class="kw">crate</span>::Error</span>),
-    <span class="ident">TypeMismatch</span> {
-        <span class="ident">expected_path</span>: <span class="ident">std::path::PathBuf</span>,
-        <span class="ident">actual_path</span>: <span class="ident">std::path::PathBuf</span>,
-        <span class="ident">expected_type</span>: <span class="ident">FileType</span>,
-        <span class="ident">actual_type</span>: <span class="ident">FileType</span>,
+<span class="attribute">#[derive(Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>PathDiff {
+    Failure(<span class="kw">crate</span>::Error),
+    TypeMismatch {
+        expected_path: std::path::PathBuf,
+        actual_path: std::path::PathBuf,
+        expected_type: FileType,
+        actual_type: FileType,
     },
-    <span class="ident">LinkMismatch</span> {
-        <span class="ident">expected_path</span>: <span class="ident">std::path::PathBuf</span>,
-        <span class="ident">actual_path</span>: <span class="ident">std::path::PathBuf</span>,
-        <span class="ident">expected_target</span>: <span class="ident">std::path::PathBuf</span>,
-        <span class="ident">actual_target</span>: <span class="ident">std::path::PathBuf</span>,
+    LinkMismatch {
+        expected_path: std::path::PathBuf,
+        actual_path: std::path::PathBuf,
+        expected_target: std::path::PathBuf,
+        actual_target: std::path::PathBuf,
     },
-    <span class="ident">ContentMismatch</span> {
-        <span class="ident">expected_path</span>: <span class="ident">std::path::PathBuf</span>,
-        <span class="ident">actual_path</span>: <span class="ident">std::path::PathBuf</span>,
-        <span class="ident">expected_content</span>: <span class="ident"><span class="kw">crate</span>::Data</span>,
-        <span class="ident">actual_content</span>: <span class="ident"><span class="kw">crate</span>::Data</span>,
+    ContentMismatch {
+        expected_path: std::path::PathBuf,
+        actual_path: std::path::PathBuf,
+        expected_content: <span class="kw">crate</span>::Data,
+        actual_content: <span class="kw">crate</span>::Data,
     },
 }
 
-<span class="kw">impl</span> <span class="ident">PathDiff</span> {
-    <span class="doccomment">/// Report differences between `actual_root` and `pattern_root`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Note: Requires feature flag `path`</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">subset_eq_iter</span>(
-        <span class="ident">pattern_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
-        <span class="ident">actual_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
-    ) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;(<span class="ident">std::path::PathBuf</span>, <span class="ident">std::path::PathBuf</span>), <span class="self">Self</span>&gt;&gt; {
-        <span class="kw">let</span> <span class="ident">pattern_root</span> = <span class="ident">pattern_root</span>.<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">actual_root</span> = <span class="ident">actual_root</span>.<span class="ident">into</span>();
-        <span class="ident"><span class="self">Self</span>::subset_eq_iter_inner</span>(<span class="ident">pattern_root</span>, <span class="ident">actual_root</span>)
+<span class="kw">impl </span>PathDiff {
+    <span class="doccomment">/// Report differences between `actual_root` and `pattern_root`
+    ///
+    /// Note: Requires feature flag `path`
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+    </span><span class="kw">pub fn </span>subset_eq_iter(
+        pattern_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
+        actual_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;(std::path::PathBuf, std::path::PathBuf), <span class="self">Self</span>&gt;&gt; {
+        <span class="kw">let </span>pattern_root = pattern_root.into();
+        <span class="kw">let </span>actual_root = actual_root.into();
+        <span class="self">Self</span>::subset_eq_iter_inner(pattern_root, actual_root)
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">subset_eq_iter_inner</span>(
-        <span class="ident">expected_root</span>: <span class="ident">std::path::PathBuf</span>,
-        <span class="ident">actual_root</span>: <span class="ident">std::path::PathBuf</span>,
-    ) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;(<span class="ident">std::path::PathBuf</span>, <span class="ident">std::path::PathBuf</span>), <span class="self">Self</span>&gt;&gt; {
-        <span class="kw">let</span> <span class="ident">walker</span> = <span class="ident">Walk::new</span>(<span class="kw-2">&amp;</span><span class="ident">expected_root</span>);
-        <span class="ident">walker</span>.<span class="ident">map</span>(<span class="kw">move</span> |<span class="ident">r</span>| {
-            <span class="kw">let</span> <span class="ident">expected_path</span> = <span class="ident">r</span>.<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident"><span class="self">Self</span>::Failure</span>(<span class="ident">e</span>.<span class="ident">to_string</span>().<span class="ident">into</span>()))<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">rel</span> = <span class="ident">expected_path</span>.<span class="ident">strip_prefix</span>(<span class="kw-2">&amp;</span><span class="ident">expected_root</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">actual_path</span> = <span class="ident">actual_root</span>.<span class="ident">join</span>(<span class="ident">rel</span>);
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>subset_eq_iter_inner(
+        expected_root: std::path::PathBuf,
+        actual_root: std::path::PathBuf,
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;(std::path::PathBuf, std::path::PathBuf), <span class="self">Self</span>&gt;&gt; {
+        <span class="kw">let </span>walker = Walk::new(<span class="kw-2">&amp;</span>expected_root);
+        walker.map(<span class="kw">move </span>|r| {
+            <span class="kw">let </span>expected_path = r.map_err(|e| <span class="self">Self</span>::Failure(e.to_string().into()))<span class="question-mark">?</span>;
+            <span class="kw">let </span>rel = expected_path.strip_prefix(<span class="kw-2">&amp;</span>expected_root).unwrap();
+            <span class="kw">let </span>actual_path = actual_root.join(rel);
 
-            <span class="kw">let</span> <span class="ident">expected_type</span> = <span class="ident">FileType::from_path</span>(<span class="kw-2">&amp;</span><span class="ident">expected_path</span>);
-            <span class="kw">let</span> <span class="ident">actual_type</span> = <span class="ident">FileType::from_path</span>(<span class="kw-2">&amp;</span><span class="ident">actual_path</span>);
-            <span class="kw">if</span> <span class="ident">expected_type</span> != <span class="ident">actual_type</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident"><span class="self">Self</span>::TypeMismatch</span> {
-                    <span class="ident">expected_path</span>,
-                    <span class="ident">actual_path</span>,
-                    <span class="ident">expected_type</span>,
-                    <span class="ident">actual_type</span>,
+            <span class="kw">let </span>expected_type = FileType::from_path(<span class="kw-2">&amp;</span>expected_path);
+            <span class="kw">let </span>actual_type = FileType::from_path(<span class="kw-2">&amp;</span>actual_path);
+            <span class="kw">if </span>expected_type != actual_type {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="self">Self</span>::TypeMismatch {
+                    expected_path,
+                    actual_path,
+                    expected_type,
+                    actual_type,
                 });
             }
 
-            <span class="kw">match</span> <span class="ident">expected_type</span> {
-                <span class="ident">FileType::Symlink</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">expected_target</span> = <span class="ident">std::fs::read_link</span>(<span class="kw-2">&amp;</span><span class="ident">expected_path</span>).<span class="ident">ok</span>();
-                    <span class="kw">let</span> <span class="ident">actual_target</span> = <span class="ident">std::fs::read_link</span>(<span class="kw-2">&amp;</span><span class="ident">actual_path</span>).<span class="ident">ok</span>();
-                    <span class="kw">if</span> <span class="ident">expected_target</span> != <span class="ident">actual_target</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident"><span class="self">Self</span>::LinkMismatch</span> {
-                            <span class="ident">expected_path</span>,
-                            <span class="ident">actual_path</span>,
-                            <span class="ident">expected_target</span>: <span class="ident">expected_target</span>.<span class="ident">unwrap</span>(),
-                            <span class="ident">actual_target</span>: <span class="ident">actual_target</span>.<span class="ident">unwrap</span>(),
+            <span class="kw">match </span>expected_type {
+                FileType::Symlink =&gt; {
+                    <span class="kw">let </span>expected_target = std::fs::read_link(<span class="kw-2">&amp;</span>expected_path).ok();
+                    <span class="kw">let </span>actual_target = std::fs::read_link(<span class="kw-2">&amp;</span>actual_path).ok();
+                    <span class="kw">if </span>expected_target != actual_target {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="self">Self</span>::LinkMismatch {
+                            expected_path,
+                            actual_path,
+                            expected_target: expected_target.unwrap(),
+                            actual_target: actual_target.unwrap(),
                         });
                     }
                 }
-                <span class="ident">FileType::File</span> =&gt; {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual</span> =
-                        <span class="ident"><span class="kw">crate</span>::Data::read_from</span>(<span class="kw-2">&amp;</span><span class="ident">actual_path</span>, <span class="prelude-val">None</span>).<span class="ident">map_err</span>(<span class="ident"><span class="self">Self</span>::Failure</span>)<span class="question-mark">?</span>;
+                FileType::File =&gt; {
+                    <span class="kw">let </span><span class="kw-2">mut </span>actual =
+                        <span class="kw">crate</span>::Data::read_from(<span class="kw-2">&amp;</span>actual_path, <span class="prelude-val">None</span>).map_err(<span class="self">Self</span>::Failure)<span class="question-mark">?</span>;
 
-                    <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident"><span class="kw">crate</span>::Data::read_from</span>(<span class="kw-2">&amp;</span><span class="ident">expected_path</span>, <span class="prelude-val">None</span>)
-                        .<span class="ident">map</span>(|<span class="ident">d</span>| <span class="ident">d</span>.<span class="ident">map_text</span>(<span class="ident"><span class="kw">crate</span>::utils::normalize_lines</span>))
-                        .<span class="ident">map_err</span>(<span class="ident"><span class="self">Self</span>::Failure</span>)<span class="question-mark">?</span>;
+                    <span class="kw">let </span>expected = <span class="kw">crate</span>::Data::read_from(<span class="kw-2">&amp;</span>expected_path, <span class="prelude-val">None</span>)
+                        .map(|d| d.map_text(<span class="kw">crate</span>::utils::normalize_lines))
+                        .map_err(<span class="self">Self</span>::Failure)<span class="question-mark">?</span>;
 
-                    <span class="ident">actual</span> = <span class="ident">actual</span>
-                        .<span class="ident">try_coerce</span>(<span class="ident">expected</span>.<span class="ident">format</span>())
-                        .<span class="ident">map_text</span>(<span class="ident"><span class="kw">crate</span>::utils::normalize_lines</span>);
+                    actual = actual
+                        .try_coerce(expected.format())
+                        .map_text(<span class="kw">crate</span>::utils::normalize_lines);
 
-                    <span class="kw">if</span> <span class="ident">expected</span> != <span class="ident">actual</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident"><span class="self">Self</span>::ContentMismatch</span> {
-                            <span class="ident">expected_path</span>,
-                            <span class="ident">actual_path</span>,
-                            <span class="ident">expected_content</span>: <span class="ident">expected</span>,
-                            <span class="ident">actual_content</span>: <span class="ident">actual</span>,
+                    <span class="kw">if </span>expected != actual {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="self">Self</span>::ContentMismatch {
+                            expected_path,
+                            actual_path,
+                            expected_content: expected,
+                            actual_content: actual,
                         });
                     }
                 }
-                <span class="ident">FileType::Dir</span> | <span class="ident">FileType::Unknown</span> | <span class="ident">FileType::Missing</span> =&gt; {}
+                FileType::Dir | FileType::Unknown | FileType::Missing =&gt; {}
             }
 
-            <span class="prelude-val">Ok</span>((<span class="ident">expected_path</span>, <span class="ident">actual_path</span>))
+            <span class="prelude-val">Ok</span>((expected_path, actual_path))
         })
     }
 
-    <span class="doccomment">/// Report differences between `actual_root` and `pattern_root`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Note: Requires feature flag `path`</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">subset_matches_iter</span>(
-        <span class="ident">pattern_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
-        <span class="ident">actual_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
-        <span class="ident">substitutions</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::Substitutions</span>,
-    ) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;(<span class="ident">std::path::PathBuf</span>, <span class="ident">std::path::PathBuf</span>), <span class="self">Self</span>&gt;&gt; + <span class="lifetime">&#39;_</span> {
-        <span class="kw">let</span> <span class="ident">pattern_root</span> = <span class="ident">pattern_root</span>.<span class="ident">into</span>();
-        <span class="kw">let</span> <span class="ident">actual_root</span> = <span class="ident">actual_root</span>.<span class="ident">into</span>();
-        <span class="ident"><span class="self">Self</span>::subset_matches_iter_inner</span>(<span class="ident">pattern_root</span>, <span class="ident">actual_root</span>, <span class="ident">substitutions</span>)
+    <span class="doccomment">/// Report differences between `actual_root` and `pattern_root`
+    ///
+    /// Note: Requires feature flag `path`
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+    </span><span class="kw">pub fn </span>subset_matches_iter(
+        pattern_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
+        actual_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
+        substitutions: <span class="kw-2">&amp;</span><span class="kw">crate</span>::Substitutions,
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;(std::path::PathBuf, std::path::PathBuf), <span class="self">Self</span>&gt;&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="kw">let </span>pattern_root = pattern_root.into();
+        <span class="kw">let </span>actual_root = actual_root.into();
+        <span class="self">Self</span>::subset_matches_iter_inner(pattern_root, actual_root, substitutions)
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">subset_matches_iter_inner</span>(
-        <span class="ident">expected_root</span>: <span class="ident">std::path::PathBuf</span>,
-        <span class="ident">actual_root</span>: <span class="ident">std::path::PathBuf</span>,
-        <span class="ident">substitutions</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::Substitutions</span>,
-    ) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;(<span class="ident">std::path::PathBuf</span>, <span class="ident">std::path::PathBuf</span>), <span class="self">Self</span>&gt;&gt; + <span class="lifetime">&#39;_</span> {
-        <span class="kw">let</span> <span class="ident">walker</span> = <span class="ident">Walk::new</span>(<span class="kw-2">&amp;</span><span class="ident">expected_root</span>);
-        <span class="ident">walker</span>.<span class="ident">map</span>(<span class="kw">move</span> |<span class="ident">r</span>| {
-            <span class="kw">let</span> <span class="ident">expected_path</span> = <span class="ident">r</span>.<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident"><span class="self">Self</span>::Failure</span>(<span class="ident">e</span>.<span class="ident">to_string</span>().<span class="ident">into</span>()))<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">rel</span> = <span class="ident">expected_path</span>.<span class="ident">strip_prefix</span>(<span class="kw-2">&amp;</span><span class="ident">expected_root</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">actual_path</span> = <span class="ident">actual_root</span>.<span class="ident">join</span>(<span class="ident">rel</span>);
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>subset_matches_iter_inner(
+        expected_root: std::path::PathBuf,
+        actual_root: std::path::PathBuf,
+        substitutions: <span class="kw-2">&amp;</span><span class="kw">crate</span>::Substitutions,
+    ) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;(std::path::PathBuf, std::path::PathBuf), <span class="self">Self</span>&gt;&gt; + <span class="lifetime">&#39;_ </span>{
+        <span class="kw">let </span>walker = Walk::new(<span class="kw-2">&amp;</span>expected_root);
+        walker.map(<span class="kw">move </span>|r| {
+            <span class="kw">let </span>expected_path = r.map_err(|e| <span class="self">Self</span>::Failure(e.to_string().into()))<span class="question-mark">?</span>;
+            <span class="kw">let </span>rel = expected_path.strip_prefix(<span class="kw-2">&amp;</span>expected_root).unwrap();
+            <span class="kw">let </span>actual_path = actual_root.join(rel);
 
-            <span class="kw">let</span> <span class="ident">expected_type</span> = <span class="ident">FileType::from_path</span>(<span class="kw-2">&amp;</span><span class="ident">expected_path</span>);
-            <span class="kw">let</span> <span class="ident">actual_type</span> = <span class="ident">FileType::from_path</span>(<span class="kw-2">&amp;</span><span class="ident">actual_path</span>);
-            <span class="kw">if</span> <span class="ident">expected_type</span> != <span class="ident">actual_type</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident"><span class="self">Self</span>::TypeMismatch</span> {
-                    <span class="ident">expected_path</span>,
-                    <span class="ident">actual_path</span>,
-                    <span class="ident">expected_type</span>,
-                    <span class="ident">actual_type</span>,
+            <span class="kw">let </span>expected_type = FileType::from_path(<span class="kw-2">&amp;</span>expected_path);
+            <span class="kw">let </span>actual_type = FileType::from_path(<span class="kw-2">&amp;</span>actual_path);
+            <span class="kw">if </span>expected_type != actual_type {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="self">Self</span>::TypeMismatch {
+                    expected_path,
+                    actual_path,
+                    expected_type,
+                    actual_type,
                 });
             }
 
-            <span class="kw">match</span> <span class="ident">expected_type</span> {
-                <span class="ident">FileType::Symlink</span> =&gt; {
-                    <span class="kw">let</span> <span class="ident">expected_target</span> = <span class="ident">std::fs::read_link</span>(<span class="kw-2">&amp;</span><span class="ident">expected_path</span>).<span class="ident">ok</span>();
-                    <span class="kw">let</span> <span class="ident">actual_target</span> = <span class="ident">std::fs::read_link</span>(<span class="kw-2">&amp;</span><span class="ident">actual_path</span>).<span class="ident">ok</span>();
-                    <span class="kw">if</span> <span class="ident">expected_target</span> != <span class="ident">actual_target</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident"><span class="self">Self</span>::LinkMismatch</span> {
-                            <span class="ident">expected_path</span>,
-                            <span class="ident">actual_path</span>,
-                            <span class="ident">expected_target</span>: <span class="ident">expected_target</span>.<span class="ident">unwrap</span>(),
-                            <span class="ident">actual_target</span>: <span class="ident">actual_target</span>.<span class="ident">unwrap</span>(),
+            <span class="kw">match </span>expected_type {
+                FileType::Symlink =&gt; {
+                    <span class="kw">let </span>expected_target = std::fs::read_link(<span class="kw-2">&amp;</span>expected_path).ok();
+                    <span class="kw">let </span>actual_target = std::fs::read_link(<span class="kw-2">&amp;</span>actual_path).ok();
+                    <span class="kw">if </span>expected_target != actual_target {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="self">Self</span>::LinkMismatch {
+                            expected_path,
+                            actual_path,
+                            expected_target: expected_target.unwrap(),
+                            actual_target: actual_target.unwrap(),
                         });
                     }
                 }
-                <span class="ident">FileType::File</span> =&gt; {
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual</span> =
-                        <span class="ident"><span class="kw">crate</span>::Data::read_from</span>(<span class="kw-2">&amp;</span><span class="ident">actual_path</span>, <span class="prelude-val">None</span>).<span class="ident">map_err</span>(<span class="ident"><span class="self">Self</span>::Failure</span>)<span class="question-mark">?</span>;
+                FileType::File =&gt; {
+                    <span class="kw">let </span><span class="kw-2">mut </span>actual =
+                        <span class="kw">crate</span>::Data::read_from(<span class="kw-2">&amp;</span>actual_path, <span class="prelude-val">None</span>).map_err(<span class="self">Self</span>::Failure)<span class="question-mark">?</span>;
 
-                    <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident"><span class="kw">crate</span>::Data::read_from</span>(<span class="kw-2">&amp;</span><span class="ident">expected_path</span>, <span class="prelude-val">None</span>)
-                        .<span class="ident">map</span>(|<span class="ident">d</span>| <span class="ident">d</span>.<span class="ident">map_text</span>(<span class="ident"><span class="kw">crate</span>::utils::normalize_lines</span>))
-                        .<span class="ident">map_err</span>(<span class="ident"><span class="self">Self</span>::Failure</span>)<span class="question-mark">?</span>;
+                    <span class="kw">let </span>expected = <span class="kw">crate</span>::Data::read_from(<span class="kw-2">&amp;</span>expected_path, <span class="prelude-val">None</span>)
+                        .map(|d| d.map_text(<span class="kw">crate</span>::utils::normalize_lines))
+                        .map_err(<span class="self">Self</span>::Failure)<span class="question-mark">?</span>;
 
-                    <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">expected</span>), <span class="ident">format</span>) = (<span class="ident">expected</span>.<span class="ident">as_str</span>(), <span class="ident">expected</span>.<span class="ident">format</span>()) {
-                        <span class="ident">actual</span> = <span class="ident">actual</span>
-                            .<span class="ident">try_coerce</span>(<span class="ident">format</span>)
-                            .<span class="ident">map_text</span>(<span class="ident"><span class="kw">crate</span>::utils::normalize_text</span>)
-                            .<span class="ident">map_text</span>(|<span class="ident">t</span>| <span class="ident">substitutions</span>.<span class="ident">normalize</span>(<span class="ident">t</span>, <span class="ident">expected</span>));
+                    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(expected), format) = (expected.as_str(), expected.format()) {
+                        actual = actual
+                            .try_coerce(format)
+                            .map_text(<span class="kw">crate</span>::utils::normalize_text)
+                            .map_text(|t| substitutions.normalize(t, expected));
                     }
 
-                    <span class="kw">if</span> <span class="ident">expected</span> != <span class="ident">actual</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident"><span class="self">Self</span>::ContentMismatch</span> {
-                            <span class="ident">expected_path</span>,
-                            <span class="ident">actual_path</span>,
-                            <span class="ident">expected_content</span>: <span class="ident">expected</span>,
-                            <span class="ident">actual_content</span>: <span class="ident">actual</span>,
+                    <span class="kw">if </span>expected != actual {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="self">Self</span>::ContentMismatch {
+                            expected_path,
+                            actual_path,
+                            expected_content: expected,
+                            actual_content: actual,
                         });
                     }
                 }
-                <span class="ident">FileType::Dir</span> | <span class="ident">FileType::Unknown</span> | <span class="ident">FileType::Missing</span> =&gt; {}
+                FileType::Dir | FileType::Unknown | FileType::Missing =&gt; {}
             }
 
-            <span class="prelude-val">Ok</span>((<span class="ident">expected_path</span>, <span class="ident">actual_path</span>))
+            <span class="prelude-val">Ok</span>((expected_path, actual_path))
         })
     }
 }
 
-<span class="kw">impl</span> <span class="ident">PathDiff</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">expected_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>&gt; {
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::Failure</span>(<span class="ident">_msg</span>) =&gt; <span class="prelude-val">None</span>,
-            <span class="ident"><span class="self">Self</span>::TypeMismatch</span> {
-                <span class="ident">expected_path</span>,
-                <span class="ident">actual_path</span>: <span class="kw">_</span>,
-                <span class="ident">expected_type</span>: <span class="kw">_</span>,
-                <span class="ident">actual_type</span>: <span class="kw">_</span>,
-            } =&gt; <span class="prelude-val">Some</span>(<span class="ident">expected_path</span>),
-            <span class="ident"><span class="self">Self</span>::LinkMismatch</span> {
-                <span class="ident">expected_path</span>,
-                <span class="ident">actual_path</span>: <span class="kw">_</span>,
-                <span class="ident">expected_target</span>: <span class="kw">_</span>,
-                <span class="ident">actual_target</span>: <span class="kw">_</span>,
-            } =&gt; <span class="prelude-val">Some</span>(<span class="ident">expected_path</span>),
-            <span class="ident"><span class="self">Self</span>::ContentMismatch</span> {
-                <span class="ident">expected_path</span>,
-                <span class="ident">actual_path</span>: <span class="kw">_</span>,
-                <span class="ident">expected_content</span>: <span class="kw">_</span>,
-                <span class="ident">actual_content</span>: <span class="kw">_</span>,
-            } =&gt; <span class="prelude-val">Some</span>(<span class="ident">expected_path</span>),
+<span class="kw">impl </span>PathDiff {
+    <span class="kw">pub fn </span>expected_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>std::path::Path&gt; {
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self </span>{
+            <span class="self">Self</span>::Failure(_msg) =&gt; <span class="prelude-val">None</span>,
+            <span class="self">Self</span>::TypeMismatch {
+                expected_path,
+                actual_path: <span class="kw">_</span>,
+                expected_type: <span class="kw">_</span>,
+                actual_type: <span class="kw">_</span>,
+            } =&gt; <span class="prelude-val">Some</span>(expected_path),
+            <span class="self">Self</span>::LinkMismatch {
+                expected_path,
+                actual_path: <span class="kw">_</span>,
+                expected_target: <span class="kw">_</span>,
+                actual_target: <span class="kw">_</span>,
+            } =&gt; <span class="prelude-val">Some</span>(expected_path),
+            <span class="self">Self</span>::ContentMismatch {
+                expected_path,
+                actual_path: <span class="kw">_</span>,
+                expected_content: <span class="kw">_</span>,
+                actual_content: <span class="kw">_</span>,
+            } =&gt; <span class="prelude-val">Some</span>(expected_path),
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">write</span>(
+    <span class="kw">pub fn </span>write(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="kw">dyn</span> <span class="ident">std::fmt::Write</span>,
-        <span class="ident">palette</span>: <span class="ident"><span class="kw">crate</span>::report::Palette</span>,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">std::fmt::Error</span>&gt; {
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::Failure</span>(<span class="ident">msg</span>) =&gt; {
-                <span class="macro">writeln!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">palette</span>.<span class="ident">error</span>(<span class="ident">msg</span>))<span class="question-mark">?</span>;
+        f: <span class="kw-2">&amp;mut </span><span class="kw">dyn </span>std::fmt::Write,
+        palette: <span class="kw">crate</span>::report::Palette,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::fmt::Error&gt; {
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self </span>{
+            <span class="self">Self</span>::Failure(msg) =&gt; {
+                <span class="macro">writeln!</span>(f, <span class="string">&quot;{}&quot;</span>, palette.error(msg))<span class="question-mark">?</span>;
             }
-            <span class="ident"><span class="self">Self</span>::TypeMismatch</span> {
-                <span class="ident">expected_path</span>,
-                <span class="ident">actual_path</span>: <span class="ident">_actual_path</span>,
-                <span class="ident">expected_type</span>,
-                <span class="ident">actual_type</span>,
+            <span class="self">Self</span>::TypeMismatch {
+                expected_path,
+                actual_path: _actual_path,
+                expected_type,
+                actual_type,
             } =&gt; {
                 <span class="macro">writeln!</span>(
-                    <span class="ident">f</span>,
+                    f,
                     <span class="string">&quot;{}: Expected {}, was {}&quot;</span>,
-                    <span class="ident">expected_path</span>.<span class="ident">display</span>(),
-                    <span class="ident">palette</span>.<span class="ident">info</span>(<span class="ident">expected_type</span>),
-                    <span class="ident">palette</span>.<span class="ident">error</span>(<span class="ident">actual_type</span>)
+                    expected_path.display(),
+                    palette.info(expected_type),
+                    palette.error(actual_type)
                 )<span class="question-mark">?</span>;
             }
-            <span class="ident"><span class="self">Self</span>::LinkMismatch</span> {
-                <span class="ident">expected_path</span>,
-                <span class="ident">actual_path</span>: <span class="ident">_actual_path</span>,
-                <span class="ident">expected_target</span>,
-                <span class="ident">actual_target</span>,
+            <span class="self">Self</span>::LinkMismatch {
+                expected_path,
+                actual_path: _actual_path,
+                expected_target,
+                actual_target,
             } =&gt; {
                 <span class="macro">writeln!</span>(
-                    <span class="ident">f</span>,
+                    f,
                     <span class="string">&quot;{}: Expected {}, was {}&quot;</span>,
-                    <span class="ident">expected_path</span>.<span class="ident">display</span>(),
-                    <span class="ident">palette</span>.<span class="ident">info</span>(<span class="ident">expected_target</span>.<span class="ident">display</span>()),
-                    <span class="ident">palette</span>.<span class="ident">error</span>(<span class="ident">actual_target</span>.<span class="ident">display</span>())
+                    expected_path.display(),
+                    palette.info(expected_target.display()),
+                    palette.error(actual_target.display())
                 )<span class="question-mark">?</span>;
             }
-            <span class="ident"><span class="self">Self</span>::ContentMismatch</span> {
-                <span class="ident">expected_path</span>,
-                <span class="ident">actual_path</span>,
-                <span class="ident">expected_content</span>,
-                <span class="ident">actual_content</span>,
+            <span class="self">Self</span>::ContentMismatch {
+                expected_path,
+                actual_path,
+                expected_content,
+                actual_content,
             } =&gt; {
-                <span class="ident"><span class="kw">crate</span>::report::write_diff</span>(
-                    <span class="ident">f</span>,
-                    <span class="ident">expected_content</span>,
-                    <span class="ident">actual_content</span>,
-                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">expected_path</span>.<span class="ident">display</span>()),
-                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">actual_path</span>.<span class="ident">display</span>()),
-                    <span class="ident">palette</span>,
+                <span class="kw">crate</span>::report::write_diff(
+                    f,
+                    expected_content,
+                    actual_content,
+                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>expected_path.display()),
+                    <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>actual_path.display()),
+                    palette,
                 )<span class="question-mark">?</span>;
             }
         }
@@ -1052,323 +1052,323 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">overwrite</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="comment">// Not passing the error up because users most likely want to treat a processing error</span>
-            <span class="comment">// differently than an overwrite error</span>
-            <span class="ident"><span class="self">Self</span>::Failure</span>(<span class="ident">_err</span>) =&gt; <span class="prelude-val">Ok</span>(()),
-            <span class="ident"><span class="self">Self</span>::TypeMismatch</span> {
-                <span class="ident">expected_path</span>,
-                <span class="ident">actual_path</span>,
-                <span class="ident">expected_type</span>: <span class="kw">_</span>,
-                <span class="ident">actual_type</span>,
+    <span class="kw">pub fn </span>overwrite(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw">crate</span>::Error&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="comment">// Not passing the error up because users most likely want to treat a processing error
+            // differently than an overwrite error
+            </span><span class="self">Self</span>::Failure(_err) =&gt; <span class="prelude-val">Ok</span>(()),
+            <span class="self">Self</span>::TypeMismatch {
+                expected_path,
+                actual_path,
+                expected_type: <span class="kw">_</span>,
+                actual_type,
             } =&gt; {
-                <span class="kw">match</span> <span class="ident">actual_type</span> {
-                    <span class="ident">FileType::Dir</span> =&gt; {
-                        <span class="ident">std::fs::remove_dir_all</span>(<span class="ident">expected_path</span>).<span class="ident">map_err</span>(|<span class="ident">e</span>| {
-                            <span class="macro">format!</span>(<span class="string">&quot;Failed to remove {}: {}&quot;</span>, <span class="ident">expected_path</span>.<span class="ident">display</span>(), <span class="ident">e</span>)
+                <span class="kw">match </span>actual_type {
+                    FileType::Dir =&gt; {
+                        std::fs::remove_dir_all(expected_path).map_err(|e| {
+                            <span class="macro">format!</span>(<span class="string">&quot;Failed to remove {}: {}&quot;</span>, expected_path.display(), e)
                         })<span class="question-mark">?</span>;
                     }
-                    <span class="ident">FileType::File</span> | <span class="ident">FileType::Symlink</span> =&gt; {
-                        <span class="ident">std::fs::remove_file</span>(<span class="ident">expected_path</span>).<span class="ident">map_err</span>(|<span class="ident">e</span>| {
-                            <span class="macro">format!</span>(<span class="string">&quot;Failed to remove {}: {}&quot;</span>, <span class="ident">expected_path</span>.<span class="ident">display</span>(), <span class="ident">e</span>)
+                    FileType::File | FileType::Symlink =&gt; {
+                        std::fs::remove_file(expected_path).map_err(|e| {
+                            <span class="macro">format!</span>(<span class="string">&quot;Failed to remove {}: {}&quot;</span>, expected_path.display(), e)
                         })<span class="question-mark">?</span>;
                     }
-                    <span class="ident">FileType::Unknown</span> | <span class="ident">FileType::Missing</span> =&gt; {}
+                    FileType::Unknown | FileType::Missing =&gt; {}
                 }
-                <span class="ident">shallow_copy</span>(<span class="ident">expected_path</span>, <span class="ident">actual_path</span>)
+                shallow_copy(expected_path, actual_path)
             }
-            <span class="ident"><span class="self">Self</span>::LinkMismatch</span> {
-                <span class="ident">expected_path</span>,
-                <span class="ident">actual_path</span>,
-                <span class="ident">expected_target</span>: <span class="kw">_</span>,
-                <span class="ident">actual_target</span>: <span class="kw">_</span>,
-            } =&gt; <span class="ident">shallow_copy</span>(<span class="ident">expected_path</span>, <span class="ident">actual_path</span>),
-            <span class="ident"><span class="self">Self</span>::ContentMismatch</span> {
-                <span class="ident">expected_path</span>,
-                <span class="ident">actual_path</span>: <span class="kw">_</span>,
-                <span class="ident">expected_content</span>: <span class="kw">_</span>,
-                <span class="ident">actual_content</span>,
-            } =&gt; <span class="ident">actual_content</span>.<span class="ident">write_to</span>(<span class="ident">expected_path</span>),
+            <span class="self">Self</span>::LinkMismatch {
+                expected_path,
+                actual_path,
+                expected_target: <span class="kw">_</span>,
+                actual_target: <span class="kw">_</span>,
+            } =&gt; shallow_copy(expected_path, actual_path),
+            <span class="self">Self</span>::ContentMismatch {
+                expected_path,
+                actual_path: <span class="kw">_</span>,
+                expected_content: <span class="kw">_</span>,
+                actual_content,
+            } =&gt; actual_content.write_to(expected_path),
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">FileType</span> {
-    <span class="ident">Dir</span>,
-    <span class="ident">File</span>,
-    <span class="ident">Symlink</span>,
-    <span class="ident">Unknown</span>,
-    <span class="ident">Missing</span>,
+<span class="attribute">#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>FileType {
+    Dir,
+    File,
+    Symlink,
+    Unknown,
+    Missing,
 }
 
-<span class="kw">impl</span> <span class="ident">FileType</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_path</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">meta</span> = <span class="ident">path</span>.<span class="ident">symlink_metadata</span>();
-        <span class="kw">match</span> <span class="ident">meta</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">meta</span>) =&gt; {
-                <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">is_dir</span>() {
-                    <span class="ident"><span class="self">Self</span>::Dir</span>
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">is_file</span>() {
-                    <span class="ident"><span class="self">Self</span>::File</span>
-                } <span class="kw">else</span> {
-                    <span class="kw">let</span> <span class="ident">target</span> = <span class="ident">std::fs::read_link</span>(<span class="ident">path</span>).<span class="ident">ok</span>();
-                    <span class="kw">if</span> <span class="ident">target</span>.<span class="ident">is_some</span>() {
-                        <span class="ident"><span class="self">Self</span>::Symlink</span>
-                    } <span class="kw">else</span> {
-                        <span class="ident"><span class="self">Self</span>::Unknown</span>
+<span class="kw">impl </span>FileType {
+    <span class="kw">pub fn </span>from_path(path: <span class="kw-2">&amp;</span>std::path::Path) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>meta = path.symlink_metadata();
+        <span class="kw">match </span>meta {
+            <span class="prelude-val">Ok</span>(meta) =&gt; {
+                <span class="kw">if </span>meta.is_dir() {
+                    <span class="self">Self</span>::Dir
+                } <span class="kw">else if </span>meta.is_file() {
+                    <span class="self">Self</span>::File
+                } <span class="kw">else </span>{
+                    <span class="kw">let </span>target = std::fs::read_link(path).ok();
+                    <span class="kw">if </span>target.is_some() {
+                        <span class="self">Self</span>::Symlink
+                    } <span class="kw">else </span>{
+                        <span class="self">Self</span>::Unknown
                     }
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; <span class="kw">match</span> <span class="ident">err</span>.<span class="ident">kind</span>() {
-                <span class="ident">std::io::ErrorKind::NotFound</span> =&gt; <span class="ident"><span class="self">Self</span>::Missing</span>,
-                <span class="kw">_</span> =&gt; <span class="ident"><span class="self">Self</span>::Unknown</span>,
+            <span class="prelude-val">Err</span>(err) =&gt; <span class="kw">match </span>err.kind() {
+                std::io::ErrorKind::NotFound =&gt; <span class="self">Self</span>::Missing,
+                <span class="kw">_ </span>=&gt; <span class="self">Self</span>::Unknown,
             },
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">FileType</span> {
-    <span class="kw">fn</span> <span class="ident">as_str</span>(<span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::Dir</span> =&gt; <span class="string">&quot;dir&quot;</span>,
-            <span class="ident"><span class="self">Self</span>::File</span> =&gt; <span class="string">&quot;file&quot;</span>,
-            <span class="ident"><span class="self">Self</span>::Symlink</span> =&gt; <span class="string">&quot;symlink&quot;</span>,
-            <span class="ident"><span class="self">Self</span>::Unknown</span> =&gt; <span class="string">&quot;unknown&quot;</span>,
-            <span class="ident"><span class="self">Self</span>::Missing</span> =&gt; <span class="string">&quot;missing&quot;</span>,
+<span class="kw">impl </span>FileType {
+    <span class="kw">fn </span>as_str(<span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Dir =&gt; <span class="string">&quot;dir&quot;</span>,
+            <span class="self">Self</span>::File =&gt; <span class="string">&quot;file&quot;</span>,
+            <span class="self">Self</span>::Symlink =&gt; <span class="string">&quot;symlink&quot;</span>,
+            <span class="self">Self</span>::Unknown =&gt; <span class="string">&quot;unknown&quot;</span>,
+            <span class="self">Self</span>::Missing =&gt; <span class="string">&quot;missing&quot;</span>,
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::fmt::Display</span> <span class="kw">for</span> <span class="ident">FileType</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">std::fmt::Result</span> {
-        <span class="self">self</span>.<span class="ident">as_str</span>().<span class="ident">fmt</span>(<span class="ident">f</span>)
+<span class="kw">impl </span>std::fmt::Display <span class="kw">for </span>FileType {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        <span class="self">self</span>.as_str().fmt(f)
     }
 }
 
-<span class="doccomment">/// Recursively walk a path</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Note: Ignores `.keep` files</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Walk</span> {
-    <span class="ident">inner</span>: <span class="ident">walkdir::IntoIter</span>,
+<span class="doccomment">/// Recursively walk a path
+///
+/// Note: Ignores `.keep` files
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+</span><span class="kw">pub struct </span>Walk {
+    inner: walkdir::IntoIter,
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Walk</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">inner</span>: <span class="ident">walkdir::WalkDir::new</span>(<span class="ident">path</span>).<span class="ident">into_iter</span>(),
+<span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+</span><span class="kw">impl </span>Walk {
+    <span class="kw">pub fn </span>new(path: <span class="kw-2">&amp;</span>std::path::Path) -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            inner: walkdir::WalkDir::new(path).into_iter(),
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Walk</span> {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;<span class="ident">std::path::PathBuf</span>, <span class="ident">std::io::Error</span>&gt;;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+</span><span class="kw">impl </span>Iterator <span class="kw">for </span>Walk {
+    <span class="kw">type </span>Item = <span class="prelude-ty">Result</span>&lt;std::path::PathBuf, std::io::Error&gt;;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">entry</span>) = <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">next</span>().<span class="ident">map</span>(|<span class="ident">e</span>| {
-            <span class="ident">e</span>.<span class="ident">map</span>(<span class="ident">walkdir::DirEntry::into_path</span>)
-                .<span class="ident">map_err</span>(<span class="ident">std::io::Error::from</span>)
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="kw">while let </span><span class="prelude-val">Some</span>(entry) = <span class="self">self</span>.inner.next().map(|e| {
+            e.map(walkdir::DirEntry::into_path)
+                .map_err(std::io::Error::from)
         }) {
-            <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">as_ref</span>().<span class="ident">ok</span>().<span class="ident">and_then</span>(|<span class="ident">e</span>| <span class="ident">e</span>.<span class="ident">file_name</span>())
-                != <span class="prelude-val">Some</span>(<span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;.keep&quot;</span>))
+            <span class="kw">if </span>entry.as_ref().ok().and_then(|e| e.file_name())
+                != <span class="prelude-val">Some</span>(std::ffi::OsStr::new(<span class="string">&quot;.keep&quot;</span>))
             {
-                <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">entry</span>);
+                <span class="kw">return </span><span class="prelude-val">Some</span>(entry);
             }
         }
-        <span class="prelude-val">None</span>
-    }
+        <span class="prelude-val">None
+    </span>}
 }
 
-<span class="doccomment">/// Copy a template into a [`PathFixture`]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Note: Generally you&#39;ll use [`PathFixture::with_template`] instead.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Note: Ignores `.keep` files</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">copy_template</span>(
-    <span class="ident">source</span>: <span class="kw">impl</span> <span class="ident">AsRef</span>&lt;<span class="ident">std::path::Path</span>&gt;,
-    <span class="ident">dest</span>: <span class="kw">impl</span> <span class="ident">AsRef</span>&lt;<span class="ident">std::path::Path</span>&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-    <span class="kw">let</span> <span class="ident">source</span> = <span class="ident">source</span>.<span class="ident">as_ref</span>();
-    <span class="kw">let</span> <span class="ident">dest</span> = <span class="ident">dest</span>.<span class="ident">as_ref</span>();
-    <span class="kw">let</span> <span class="ident">source</span> = <span class="ident">canonicalize</span>(<span class="ident">source</span>)
-        .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to canonicalize {}: {}&quot;</span>, <span class="ident">source</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-    <span class="ident">std::fs::create_dir_all</span>(<span class="ident">dest</span>)
-        .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to create {}: {}&quot;</span>, <span class="ident">dest</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">dest</span> = <span class="ident">canonicalize</span>(<span class="ident">dest</span>)
-        .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to canonicalize {}: {}&quot;</span>, <span class="ident">dest</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
+<span class="doccomment">/// Copy a template into a [`PathFixture`]
+///
+/// Note: Generally you&#39;ll use [`PathFixture::with_template`] instead.
+///
+/// Note: Ignores `.keep` files
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+</span><span class="kw">pub fn </span>copy_template(
+    source: <span class="kw">impl </span>AsRef&lt;std::path::Path&gt;,
+    dest: <span class="kw">impl </span>AsRef&lt;std::path::Path&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw">crate</span>::Error&gt; {
+    <span class="kw">let </span>source = source.as_ref();
+    <span class="kw">let </span>dest = dest.as_ref();
+    <span class="kw">let </span>source = canonicalize(source)
+        .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to canonicalize {}: {}&quot;</span>, source.display(), e))<span class="question-mark">?</span>;
+    std::fs::create_dir_all(dest)
+        .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to create {}: {}&quot;</span>, dest.display(), e))<span class="question-mark">?</span>;
+    <span class="kw">let </span>dest = canonicalize(dest)
+        .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to canonicalize {}: {}&quot;</span>, dest.display(), e))<span class="question-mark">?</span>;
 
-    <span class="kw">for</span> <span class="ident">current</span> <span class="kw">in</span> <span class="ident">Walk::new</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>) {
-        <span class="kw">let</span> <span class="ident">current</span> = <span class="ident">current</span>.<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident">e</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">rel</span> = <span class="ident">current</span>.<span class="ident">strip_prefix</span>(<span class="kw-2">&amp;</span><span class="ident">source</span>).<span class="ident">unwrap</span>();
-        <span class="kw">let</span> <span class="ident">target</span> = <span class="ident">dest</span>.<span class="ident">join</span>(<span class="ident">rel</span>);
+    <span class="kw">for </span>current <span class="kw">in </span>Walk::new(<span class="kw-2">&amp;</span>source) {
+        <span class="kw">let </span>current = current.map_err(|e| e.to_string())<span class="question-mark">?</span>;
+        <span class="kw">let </span>rel = current.strip_prefix(<span class="kw-2">&amp;</span>source).unwrap();
+        <span class="kw">let </span>target = dest.join(rel);
 
-        <span class="ident">shallow_copy</span>(<span class="kw-2">&amp;</span><span class="ident">current</span>, <span class="kw-2">&amp;</span><span class="ident">target</span>)<span class="question-mark">?</span>;
+        shallow_copy(<span class="kw-2">&amp;</span>current, <span class="kw-2">&amp;</span>target)<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="doccomment">/// Copy a file system entry, without recursing</span>
-<span class="kw">fn</span> <span class="ident">shallow_copy</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>, <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-    <span class="kw">let</span> <span class="ident">meta</span> = <span class="ident">source</span>
-        .<span class="ident">symlink_metadata</span>()
-        .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to read metadata from {}: {}&quot;</span>, <span class="ident">source</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">is_dir</span>() {
-        <span class="ident">std::fs::create_dir_all</span>(<span class="ident">dest</span>)
-            .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to create {}: {}&quot;</span>, <span class="ident">dest</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">is_file</span>() {
-        <span class="ident">std::fs::copy</span>(<span class="ident">source</span>, <span class="ident">dest</span>).<span class="ident">map_err</span>(|<span class="ident">e</span>| {
+<span class="doccomment">/// Copy a file system entry, without recursing
+</span><span class="kw">fn </span>shallow_copy(source: <span class="kw-2">&amp;</span>std::path::Path, dest: <span class="kw-2">&amp;</span>std::path::Path) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw">crate</span>::Error&gt; {
+    <span class="kw">let </span>meta = source
+        .symlink_metadata()
+        .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to read metadata from {}: {}&quot;</span>, source.display(), e))<span class="question-mark">?</span>;
+    <span class="kw">if </span>meta.is_dir() {
+        std::fs::create_dir_all(dest)
+            .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to create {}: {}&quot;</span>, dest.display(), e))<span class="question-mark">?</span>;
+    } <span class="kw">else if </span>meta.is_file() {
+        std::fs::copy(source, dest).map_err(|e| {
             <span class="macro">format!</span>(
                 <span class="string">&quot;Failed to copy {} to {}: {}&quot;</span>,
-                <span class="ident">source</span>.<span class="ident">display</span>(),
-                <span class="ident">dest</span>.<span class="ident">display</span>(),
-                <span class="ident">e</span>
+                source.display(),
+                dest.display(),
+                e
             )
         })<span class="question-mark">?</span>;
-        <span class="comment">// Avoid a mtime check race where:</span>
-        <span class="comment">// - Copy files</span>
-        <span class="comment">// - Test checks mtime</span>
-        <span class="comment">// - Test writes</span>
-        <span class="comment">// - Test checks mtime</span>
-        <span class="comment">//</span>
-        <span class="comment">// If all of this happens too close to each other, then the second mtime check will think</span>
-        <span class="comment">// nothing was written by the test.</span>
-        <span class="comment">//</span>
-        <span class="comment">// Instead of just setting 1s in the past, we&#39;ll just respect the existing mtime.</span>
-        <span class="ident">copy_stats</span>(<span class="kw-2">&amp;</span><span class="ident">meta</span>, <span class="ident">dest</span>).<span class="ident">map_err</span>(|<span class="ident">e</span>| {
+        <span class="comment">// Avoid a mtime check race where:
+        // - Copy files
+        // - Test checks mtime
+        // - Test writes
+        // - Test checks mtime
+        //
+        // If all of this happens too close to each other, then the second mtime check will think
+        // nothing was written by the test.
+        //
+        // Instead of just setting 1s in the past, we&#39;ll just respect the existing mtime.
+        </span>copy_stats(<span class="kw-2">&amp;</span>meta, dest).map_err(|e| {
             <span class="macro">format!</span>(
                 <span class="string">&quot;Failed to copy {} metadata to {}: {}&quot;</span>,
-                <span class="ident">source</span>.<span class="ident">display</span>(),
-                <span class="ident">dest</span>.<span class="ident">display</span>(),
-                <span class="ident">e</span>
+                source.display(),
+                dest.display(),
+                e
             )
         })<span class="question-mark">?</span>;
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">target</span>) = <span class="ident">std::fs::read_link</span>(<span class="ident">source</span>) {
-        <span class="ident">symlink_to_file</span>(<span class="ident">dest</span>, <span class="kw-2">&amp;</span><span class="ident">target</span>)
-            .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to create symlink {}: {}&quot;</span>, <span class="ident">dest</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
+    } <span class="kw">else if let </span><span class="prelude-val">Ok</span>(target) = std::fs::read_link(source) {
+        symlink_to_file(dest, <span class="kw-2">&amp;</span>target)
+            .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to create symlink {}: {}&quot;</span>, dest.display(), e))<span class="question-mark">?</span>;
     }
 
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">copy_stats</span>(
-    <span class="ident">source_meta</span>: <span class="kw-2">&amp;</span><span class="ident">std::fs::Metadata</span>,
-    <span class="ident">dest</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">std::io::Error</span>&gt; {
-    <span class="kw">let</span> <span class="ident">src_mtime</span> = <span class="ident">filetime::FileTime::from_last_modification_time</span>(<span class="ident">source_meta</span>);
-    <span class="ident">filetime::set_file_mtime</span>(<span class="kw-2">&amp;</span><span class="ident">dest</span>, <span class="ident">src_mtime</span>)<span class="question-mark">?</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+</span><span class="kw">fn </span>copy_stats(
+    source_meta: <span class="kw-2">&amp;</span>std::fs::Metadata,
+    dest: <span class="kw-2">&amp;</span>std::path::Path,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::io::Error&gt; {
+    <span class="kw">let </span>src_mtime = filetime::FileTime::from_last_modification_time(source_meta);
+    filetime::set_file_mtime(<span class="kw-2">&amp;</span>dest, src_mtime)<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>))]</span>
-<span class="kw">fn</span> <span class="ident">copy_stats</span>(
-    <span class="ident">_source_meta</span>: <span class="kw-2">&amp;</span><span class="ident">std::fs::Metadata</span>,
-    <span class="ident">_dest</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">std::io::Error</span>&gt; {
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;path&quot;</span>))]
+</span><span class="kw">fn </span>copy_stats(
+    _source_meta: <span class="kw-2">&amp;</span>std::fs::Metadata,
+    _dest: <span class="kw-2">&amp;</span>std::path::Path,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::io::Error&gt; {
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">fn</span> <span class="ident">symlink_to_file</span>(<span class="ident">link</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>, <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">std::io::Error</span>&gt; {
-    <span class="ident">std::os::windows::fs::symlink_file</span>(<span class="ident">target</span>, <span class="ident">link</span>)
+<span class="attribute">#[cfg(windows)]
+</span><span class="kw">fn </span>symlink_to_file(link: <span class="kw-2">&amp;</span>std::path::Path, target: <span class="kw-2">&amp;</span>std::path::Path) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::io::Error&gt; {
+    std::os::windows::fs::symlink_file(target, link)
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-<span class="kw">fn</span> <span class="ident">symlink_to_file</span>(<span class="ident">link</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>, <span class="ident">target</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident">std::io::Error</span>&gt; {
-    <span class="ident">std::os::unix::fs::symlink</span>(<span class="ident">target</span>, <span class="ident">link</span>)
+<span class="attribute">#[cfg(not(windows))]
+</span><span class="kw">fn </span>symlink_to_file(link: <span class="kw-2">&amp;</span>std::path::Path, target: <span class="kw-2">&amp;</span>std::path::Path) -&gt; <span class="prelude-ty">Result</span>&lt;(), std::io::Error&gt; {
+    std::os::unix::fs::symlink(target, link)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">resolve_dir</span>(
-    <span class="ident">path</span>: <span class="kw">impl</span> <span class="ident">AsRef</span>&lt;<span class="ident">std::path::Path</span>&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">std::path::PathBuf</span>, <span class="ident">std::io::Error</span>&gt; {
-    <span class="kw">let</span> <span class="ident">path</span> = <span class="ident">path</span>.<span class="ident">as_ref</span>();
-    <span class="kw">let</span> <span class="ident">meta</span> = <span class="ident">std::fs::symlink_metadata</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
-    <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">is_dir</span>() {
-        <span class="ident">canonicalize</span>(<span class="ident">path</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">is_file</span>() {
-        <span class="comment">// Git might checkout symlinks as files</span>
-        <span class="kw">let</span> <span class="ident">target</span> = <span class="ident">std::fs::read_to_string</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">target_path</span> = <span class="ident">path</span>.<span class="ident">parent</span>().<span class="ident">unwrap</span>().<span class="ident">join</span>(<span class="ident">target</span>);
-        <span class="ident">resolve_dir</span>(<span class="ident">target_path</span>)
-    } <span class="kw">else</span> {
-        <span class="ident">canonicalize</span>(<span class="ident">path</span>)
+<span class="kw">pub fn </span>resolve_dir(
+    path: <span class="kw">impl </span>AsRef&lt;std::path::Path&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;std::path::PathBuf, std::io::Error&gt; {
+    <span class="kw">let </span>path = path.as_ref();
+    <span class="kw">let </span>meta = std::fs::symlink_metadata(path)<span class="question-mark">?</span>;
+    <span class="kw">if </span>meta.is_dir() {
+        canonicalize(path)
+    } <span class="kw">else if </span>meta.is_file() {
+        <span class="comment">// Git might checkout symlinks as files
+        </span><span class="kw">let </span>target = std::fs::read_to_string(path)<span class="question-mark">?</span>;
+        <span class="kw">let </span>target_path = path.parent().unwrap().join(target);
+        resolve_dir(target_path)
+    } <span class="kw">else </span>{
+        canonicalize(path)
     }
 }
 
-<span class="kw">fn</span> <span class="ident">canonicalize</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">std::path::PathBuf</span>, <span class="ident">std::io::Error</span>&gt; {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-    {
-        <span class="ident">dunce::canonicalize</span>(<span class="ident">path</span>)
+<span class="kw">fn </span>canonicalize(path: <span class="kw-2">&amp;</span>std::path::Path) -&gt; <span class="prelude-ty">Result</span>&lt;std::path::PathBuf, std::io::Error&gt; {
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+    </span>{
+        dunce::canonicalize(path)
     }
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>))]</span>
-    {
-        <span class="comment">// Hope for the best</span>
-        <span class="prelude-val">Ok</span>(<span class="ident">strip_trailing_slash</span>(<span class="ident">path</span>).<span class="ident">to_owned</span>())
+    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path&quot;</span>))]
+    </span>{
+        <span class="comment">// Hope for the best
+        </span><span class="prelude-val">Ok</span>(strip_trailing_slash(path).to_owned())
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">strip_trailing_slash</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span> {
-    <span class="ident">path</span>.<span class="ident">components</span>().<span class="ident">as_path</span>()
+<span class="kw">pub fn </span>strip_trailing_slash(path: <span class="kw-2">&amp;</span>std::path::Path) -&gt; <span class="kw-2">&amp;</span>std::path::Path {
+    path.components().as_path()
 }
 
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">display_relpath</span>(<span class="ident">path</span>: <span class="kw">impl</span> <span class="ident">AsRef</span>&lt;<span class="ident">std::path::Path</span>&gt;) -&gt; <span class="ident">String</span> {
-    <span class="kw">let</span> <span class="ident">path</span> = <span class="ident">path</span>.<span class="ident">as_ref</span>();
-    <span class="kw">let</span> <span class="ident">relpath</span> = <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">cwd</span>) = <span class="ident">std::env::current_dir</span>() {
-        <span class="kw">match</span> <span class="ident">path</span>.<span class="ident">strip_prefix</span>(<span class="ident">cwd</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">path</span>) =&gt; <span class="ident">path</span>,
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="ident">path</span>,
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>display_relpath(path: <span class="kw">impl </span>AsRef&lt;std::path::Path&gt;) -&gt; String {
+    <span class="kw">let </span>path = path.as_ref();
+    <span class="kw">let </span>relpath = <span class="kw">if let </span><span class="prelude-val">Ok</span>(cwd) = std::env::current_dir() {
+        <span class="kw">match </span>path.strip_prefix(cwd) {
+            <span class="prelude-val">Ok</span>(path) =&gt; path,
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; path,
         }
-    } <span class="kw">else</span> {
-        <span class="ident">path</span>
+    } <span class="kw">else </span>{
+        path
     };
-    <span class="ident">relpath</span>.<span class="ident">display</span>().<span class="ident">to_string</span>()
+    relpath.display().to_string()
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">strips_trailing_slash</span>() {
-        <span class="kw">let</span> <span class="ident">path</span> = <span class="ident">std::path::Path::new</span>(<span class="string">&quot;/foo/bar/&quot;</span>);
-        <span class="kw">let</span> <span class="ident">rendered</span> = <span class="ident">path</span>.<span class="ident">display</span>().<span class="ident">to_string</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">rendered</span>.<span class="ident">as_bytes</span>()[<span class="ident">rendered</span>.<span class="ident">len</span>() - <span class="number">1</span>], <span class="string">b&#39;/&#39;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>strips_trailing_slash() {
+        <span class="kw">let </span>path = std::path::Path::new(<span class="string">&quot;/foo/bar/&quot;</span>);
+        <span class="kw">let </span>rendered = path.display().to_string();
+        <span class="macro">assert_eq!</span>(rendered.as_bytes()[rendered.len() - <span class="number">1</span>], <span class="string">b&#39;/&#39;</span>);
 
-        <span class="kw">let</span> <span class="ident">stripped</span> = <span class="ident">strip_trailing_slash</span>(<span class="ident">path</span>);
-        <span class="kw">let</span> <span class="ident">rendered</span> = <span class="ident">stripped</span>.<span class="ident">display</span>().<span class="ident">to_string</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">rendered</span>.<span class="ident">as_bytes</span>()[<span class="ident">rendered</span>.<span class="ident">len</span>() - <span class="number">1</span>], <span class="string">b&#39;r&#39;</span>);
+        <span class="kw">let </span>stripped = strip_trailing_slash(path);
+        <span class="kw">let </span>rendered = stripped.display().to_string();
+        <span class="macro">assert_eq!</span>(rendered.as_bytes()[rendered.len() - <span class="number">1</span>], <span class="string">b&#39;r&#39;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">file_type_detect_file</span>() {
-        <span class="kw">let</span> <span class="ident">path</span> = <span class="ident">std::path::Path::new</span>(<span class="macro">env!</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>)).<span class="ident">join</span>(<span class="string">&quot;Cargo.toml&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>);
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">FileType::from_path</span>(<span class="kw-2">&amp;</span><span class="ident">path</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">actual</span>, <span class="ident">FileType::File</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>file_type_detect_file() {
+        <span class="kw">let </span>path = std::path::Path::new(<span class="macro">env!</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>)).join(<span class="string">&quot;Cargo.toml&quot;</span>);
+        <span class="macro">dbg!</span>(<span class="kw-2">&amp;</span>path);
+        <span class="kw">let </span>actual = FileType::from_path(<span class="kw-2">&amp;</span>path);
+        <span class="macro">assert_eq!</span>(actual, FileType::File);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">file_type_detect_dir</span>() {
-        <span class="kw">let</span> <span class="ident">path</span> = <span class="ident">std::path::Path::new</span>(<span class="macro">env!</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>));
-        <span class="macro">dbg!</span>(<span class="ident">path</span>);
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">FileType::from_path</span>(<span class="ident">path</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">actual</span>, <span class="ident">FileType::Dir</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>file_type_detect_dir() {
+        <span class="kw">let </span>path = std::path::Path::new(<span class="macro">env!</span>(<span class="string">&quot;CARGO_MANIFEST_DIR&quot;</span>));
+        <span class="macro">dbg!</span>(path);
+        <span class="kw">let </span>actual = FileType::from_path(path);
+        <span class="macro">assert_eq!</span>(actual, FileType::Dir);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">file_type_detect_missing</span>() {
-        <span class="kw">let</span> <span class="ident">path</span> = <span class="ident">std::path::Path::new</span>(<span class="string">&quot;this-should-never-exist&quot;</span>);
-        <span class="macro">dbg!</span>(<span class="ident">path</span>);
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">FileType::from_path</span>(<span class="ident">path</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">actual</span>, <span class="ident">FileType::Missing</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>file_type_detect_missing() {
+        <span class="kw">let </span>path = std::path::Path::new(<span class="string">&quot;this-should-never-exist&quot;</span>);
+        <span class="macro">dbg!</span>(path);
+        <span class="kw">let </span>actual = FileType::from_path(path);
+        <span class="macro">assert_eq!</span>(actual, FileType::Missing);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

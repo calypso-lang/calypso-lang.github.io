@@ -83,90 +83,90 @@
 <span id="83">83</span>
 <span id="84">84</span>
 <span id="85">85</span>
-</pre><pre class="rust"><code><span class="doccomment">//! The `Errno` type, which is a minimal wrapper around an error code.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! We define the error constants as individual `const`s instead of an</span>
-<span class="doccomment">//! enum because we may not know about all of the host&#39;s error values</span>
-<span class="doccomment">//! and we don&#39;t want unrecognized values to create UB.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! The `Errno` type, which is a minimal wrapper around an error code.
+//!
+//! We define the error constants as individual `const`s instead of an
+//! enum because we may not know about all of the host&#39;s error values
+//! and we don&#39;t want unrecognized values to create UB.
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::backend</span>;
-<span class="kw">use</span> <span class="ident">core</span>::{<span class="ident">fmt</span>, <span class="ident">result</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">std::error</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::backend;
+<span class="kw">use </span>core::{fmt, result};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+</span><span class="kw">use </span>std::error;
 
-<span class="doccomment">/// A specialized [`Result`] type for `rustix` APIs.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`Result`]: core::result::Result</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>&gt; = <span class="ident">result::Result</span>&lt;<span class="ident">T</span>, <span class="ident">Errno</span>&gt;;
+<span class="doccomment">/// A specialized [`Result`] type for `rustix` APIs.
+///
+/// [`Result`]: core::result::Result
+</span><span class="kw">pub type </span><span class="prelude-ty">Result</span>&lt;T&gt; = result::Result&lt;T, Errno&gt;;
 
-<span class="doccomment">/// `errno`—An error code.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The error type for `rustix` APIs. This is similar to `std::io::Error`, but</span>
-<span class="doccomment">/// only holds an OS error code, and no extra error value.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # References</span>
-<span class="doccomment">///  - [POSIX]</span>
-<span class="doccomment">///  - [Linux]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [POSIX]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/errno.html</span>
-<span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man3/errno.3.html</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">backend::io::errno::Errno</span>;
+<span class="doccomment">/// `errno`—An error code.
+///
+/// The error type for `rustix` APIs. This is similar to `std::io::Error`, but
+/// only holds an OS error code, and no extra error value.
+///
+/// # References
+///  - [POSIX]
+///  - [Linux]
+///
+/// [POSIX]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/errno.html
+/// [Linux]: https://man7.org/linux/man-pages/man3/errno.3.html
+</span><span class="kw">pub use </span>backend::io::errno::Errno;
 
-<span class="kw">impl</span> <span class="ident">Errno</span> {
-    <span class="doccomment">/// Shorthand for `std::io::Error::from(self).kind()`.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">kind</span>(<span class="self">self</span>) -&gt; <span class="ident">std::io::ErrorKind</span> {
-        <span class="ident">std::io::Error::from</span>(<span class="self">self</span>).<span class="ident">kind</span>()
+<span class="kw">impl </span>Errno {
+    <span class="doccomment">/// Shorthand for `std::io::Error::from(self).kind()`.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+    #[inline]
+    </span><span class="kw">pub fn </span>kind(<span class="self">self</span>) -&gt; std::io::ErrorKind {
+        std::io::Error::from(<span class="self">self</span>).kind()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">Errno</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
-        {
-            <span class="ident">std::io::Error::from</span>(<span class="kw-2">*</span><span class="self">self</span>).<span class="ident">fmt</span>(<span class="ident">fmt</span>)
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>Errno {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, fmt: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+        </span>{
+            std::io::Error::from(<span class="kw-2">*</span><span class="self">self</span>).fmt(fmt)
         }
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
-        {
-            <span class="macro">write!</span>(<span class="ident">fmt</span>, <span class="string">&quot;os error {}&quot;</span>, <span class="self">self</span>.<span class="ident">raw_os_error</span>())
-        }
-    }
-}
-
-<span class="kw">impl</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Errno</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">fmt</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
-        {
-            <span class="ident">std::io::Error::from</span>(<span class="kw-2">*</span><span class="self">self</span>).<span class="ident">fmt</span>(<span class="ident">fmt</span>)
-        }
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>))]</span>
-        {
-            <span class="macro">write!</span>(<span class="ident">fmt</span>, <span class="string">&quot;os error {}&quot;</span>, <span class="self">self</span>.<span class="ident">raw_os_error</span>())
+        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;std&quot;</span>))]
+        </span>{
+            <span class="macro">write!</span>(fmt, <span class="string">&quot;os error {}&quot;</span>, <span class="self">self</span>.raw_os_error())
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">error::Error</span> <span class="kw">for</span> <span class="ident">Errno</span> {}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">Errno</span>&gt; <span class="kw">for</span> <span class="ident">std::io::Error</span> {
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">Errno</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::from_raw_os_error</span>(<span class="ident">err</span>.<span class="ident">raw_os_error</span>() <span class="kw">as</span> <span class="kw">_</span>)
+<span class="kw">impl </span>fmt::Debug <span class="kw">for </span>Errno {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, fmt: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+        </span>{
+            std::io::Error::from(<span class="kw-2">*</span><span class="self">self</span>).fmt(fmt)
+        }
+        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;std&quot;</span>))]
+        </span>{
+            <span class="macro">write!</span>(fmt, <span class="string">&quot;os error {}&quot;</span>, <span class="self">self</span>.raw_os_error())
+        }
     }
 }
 
-<span class="doccomment">/// Call `f` until it either succeeds or fails other than [`Errno::INTR`].</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">retry_on_intr</span>&lt;<span class="ident">T</span>, <span class="ident">F</span>: <span class="ident">FnMut</span>() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>&gt;&gt;(<span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>&gt; {
-    <span class="kw">loop</span> {
-        <span class="kw">match</span> <span class="ident">f</span>() {
-            <span class="prelude-val">Err</span>(<span class="ident">Errno::INTR</span>) =&gt; (),
-            <span class="ident">result</span> =&gt; <span class="kw">return</span> <span class="ident">result</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+</span><span class="kw">impl </span>error::Error <span class="kw">for </span>Errno {}
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+</span><span class="kw">impl </span>From&lt;Errno&gt; <span class="kw">for </span>std::io::Error {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>from(err: Errno) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::from_raw_os_error(err.raw_os_error() <span class="kw">as _</span>)
+    }
+}
+
+<span class="doccomment">/// Call `f` until it either succeeds or fails other than [`Errno::INTR`].
+</span><span class="attribute">#[inline]
+</span><span class="kw">pub fn </span>retry_on_intr&lt;T, F: FnMut() -&gt; <span class="prelude-ty">Result</span>&lt;T&gt;&gt;(<span class="kw-2">mut </span>f: F) -&gt; <span class="prelude-ty">Result</span>&lt;T&gt; {
+    <span class="kw">loop </span>{
+        <span class="kw">match </span>f() {
+            <span class="prelude-val">Err</span>(Errno::INTR) =&gt; (),
+            result =&gt; <span class="kw">return </span>result,
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -482,489 +482,489 @@
 <span id="482">482</span>
 <span id="483">483</span>
 <span id="484">484</span>
-</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>, <span class="ident">no_std</span>)]</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">feature</span>(<span class="ident">doc_cfg</span>))]</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">warn</span>(<span class="ident">clippy::missing_inline_in_public_items</span>))]</span>
-<span class="comment">// `.copied()` was unstable in 1.34</span>
-<span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::map_clone</span>)]</span>
-<span class="attribute">#![<span class="ident">deny</span>(
-    <span class="ident">missing_docs</span>,
-    <span class="ident">missing_debug_implementations</span>,
-    <span class="ident">clippy::missing_safety_doc</span>
-)]</span>
+</pre><pre class="rust"><code><span class="attribute">#![cfg_attr(feature = <span class="string">&quot;no-std&quot;</span>, no_std)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, warn(clippy::missing_inline_in_public_items))]
+</span><span class="comment">// `.copied()` was unstable in 1.34
+</span><span class="attribute">#![allow(clippy::map_clone)]
+#![deny(
+    missing_docs,
+    missing_debug_implementations,
+    clippy::missing_safety_doc
+)]
 
-<span class="doccomment">//! [![CI][1]][0]</span>
-<span class="doccomment">//! [![Security Audit][2]][0]</span>
-<span class="doccomment">//! [![Coverage][3]][4]</span>
-<span class="doccomment">//! [![LoC][5]][0]</span>
-<span class="doccomment">//! [![Docs.rs][6]][7]</span>
-<span class="doccomment">//! [![Crates.io][8]][9]</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! A multithreaded and single threaded string interner that allows strings to be cached with a minimal memory footprint,</span>
-<span class="doccomment">//! associating them with a unique [key] that can be used to retrieve them at any time. A [`struct@Rodeo`] allows `O(1)`</span>
-<span class="doccomment">//! internment and resolution and can be turned into a [`struct@RodeoReader`] to allow for contention-free resolutions</span>
-<span class="doccomment">//! with both key to str and str to key operations. It can also be turned into a [`struct@RodeoResolver`] with only</span>
-<span class="doccomment">//! key to str operations for the lowest possible memory usage.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Which interner do I use?</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! For single-threaded workloads [`struct@Rodeo`] is encouraged, while multi-threaded applications should use [`struct@ThreadedRodeo`].</span>
-<span class="doccomment">//! Both of these are the only way to intern strings, but most applications will hit a stage where they are done interning</span>
-<span class="doccomment">//! strings, and at that point is where the choice between [`struct@RodeoReader`] and [`struct@RodeoResolver`]. If the user needs to get</span>
-<span class="doccomment">//! keys for strings still, then they must use the [`struct@RodeoReader`] (although they can still transfer into a  [`struct@RodeoResolver`])</span>
-<span class="doccomment">//! at this point. For users who just need key to string resolution, the [`struct@RodeoResolver`] gives contention-free access at the</span>
-<span class="doccomment">//! minimum possible memory usage. Note that to gain access to [`struct@ThreadedRodeo`] the `multi-threaded` feature is required.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! | Interner          | Thread-safe | Intern String | str to key | key to str | Contention Free | Memory Usage |</span>
-<span class="doccomment">//! |-------------------|:-----------:|:-------------:|:----------:|:----------:|:---------------:|:------------:|</span>
-<span class="doccomment">//! | [`struct@Rodeo`]         |      ❌      |       ✅       |     ✅      |     ✅      |       N/A       |    Medium    |</span>
-<span class="doccomment">//! | [`struct@ThreadedRodeo`] |      ✅      |       ✅       |     ✅      |     ✅      |        ❌        |     Most     |</span>
-<span class="doccomment">//! | [`struct@RodeoReader`]   |      ✅      |       ❌       |     ✅      |     ✅      |        ✅        |    Medium    |</span>
-<span class="doccomment">//! | [`struct@RodeoResolver`] |      ✅      |       ❌       |     ❌      |     ✅      |        ✅        |    Least     |</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Cargo Features</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! By default `lasso` has one dependency, `hashbrown`, and only [`struct@Rodeo`] is exposed. Hashbrown is used since the</span>
-<span class="doccomment">//! [`raw_entry` api] is currently unstable in the standard library&#39;s hashmap.</span>
-<span class="doccomment">//! The raw hashmap API is used for custom hashing within the hashmaps, which works to dramatically reduce memory usage</span>
-<span class="doccomment">//! To make use of [`struct@ThreadedRodeo`], you must enable the `multi-threaded` feature.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! * `multi-threaded` - Enables [`struct@ThreadedRodeo`], the interner for multi-threaded tasks</span>
-<span class="doccomment">//! * `ahasher` - Use [`ahash`]&#39;s `RandomState` as the default hasher</span>
-<span class="doccomment">//! * `no-std` - Enables `no_std` + `alloc` support for [`struct@Rodeo`] and [`struct@ThreadedRodeo`]</span>
-<span class="doccomment">//!   * Automatically enables the following required features:</span>
-<span class="doccomment">//!     * `ahasher` - `no_std` hashing function</span>
-<span class="doccomment">//! * `serialize` - Implements `Serialize` and `Deserialize` for all [`struct@Spur`] types and all interners</span>
-<span class="doccomment">//! * `inline-more` - Annotate external apis with `#[inline]`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Example: Using Rodeo</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```rust</span>
-<span class="doccomment">//! use lasso::Rodeo;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let mut rodeo = Rodeo::default();</span>
-<span class="doccomment">//! let key = rodeo.get_or_intern(&quot;Hello, world!&quot;);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Easily retrieve the value of a key and find the key for values</span>
-<span class="doccomment">//! assert_eq!(&quot;Hello, world!&quot;, rodeo.resolve(&amp;key));</span>
-<span class="doccomment">//! assert_eq!(Some(key), rodeo.get(&quot;Hello, world!&quot;));</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Interning the same string again will yield the same key</span>
-<span class="doccomment">//! let key2 = rodeo.get_or_intern(&quot;Hello, world!&quot;);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! assert_eq!(key, key2);</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Example: Using ThreadedRodeo</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```rust</span>
-<span class="doccomment">//! # // This keeps this doctest from running under miri since</span>
-<span class="doccomment">//! # // miri doesn&#39;t support threading</span>
-<span class="doccomment">//! # #[cfg(not(miri))]</span>
-<span class="doccomment">//! # {</span>
-<span class="doccomment">//! #</span>
-<span class="doccomment">//! # // This is hacky to the extreme, but it prevents failure of this doc test when</span>
-<span class="doccomment">//! # // run with `--no-default-features`</span>
-<span class="doccomment">//! #</span>
-<span class="doccomment">//! # #[cfg(not(feature = &quot;multi-threaded&quot;))]</span>
-<span class="doccomment">//! # #[derive(Default)]</span>
-<span class="doccomment">//! # struct ThreadedRodeo;</span>
-<span class="doccomment">//! #</span>
-<span class="doccomment">//! # #[cfg(not(feature = &quot;multi-threaded&quot;))]</span>
-<span class="doccomment">//! # impl ThreadedRodeo {</span>
-<span class="doccomment">//! #     fn get_or_intern(&amp;self, string: &amp;&#39;static str) -&gt; i32 {</span>
-<span class="doccomment">//! #         match string {</span>
-<span class="doccomment">//! #             &quot;Hello, world!&quot; =&gt; 0,</span>
-<span class="doccomment">//! #             &quot;Hello from the thread!&quot; =&gt; 1,</span>
-<span class="doccomment">//! #             _ =&gt; unreachable!(&quot;Update the docs, dude&quot;),</span>
-<span class="doccomment">//! #         }</span>
-<span class="doccomment">//! #     }</span>
-<span class="doccomment">//! #</span>
-<span class="doccomment">//! #     fn get(&amp;self, string: &amp;&#39;static str) -&gt; Option&lt;i32&gt; {</span>
-<span class="doccomment">//! #         match string {</span>
-<span class="doccomment">//! #             &quot;Hello, world!&quot; =&gt; Some(0),</span>
-<span class="doccomment">//! #             &quot;Hello from the thread!&quot; =&gt; Some(1),</span>
-<span class="doccomment">//! #             _ =&gt; unreachable!(&quot;Update the docs, dude&quot;),</span>
-<span class="doccomment">//! #         }</span>
-<span class="doccomment">//! #     }</span>
-<span class="doccomment">//! #</span>
-<span class="doccomment">//! #     fn resolve(&amp;self, id: &amp;i32) -&gt; &amp;&#39;static str {</span>
-<span class="doccomment">//! #         match *id {</span>
-<span class="doccomment">//! #             0 =&gt; &quot;Hello, world!&quot;,</span>
-<span class="doccomment">//! #             1 =&gt; &quot;Hello from the thread!&quot;,</span>
-<span class="doccomment">//! #             _ =&gt; unreachable!(&quot;Update the docs, dude&quot;),</span>
-<span class="doccomment">//! #         }</span>
-<span class="doccomment">//! #     }</span>
-<span class="doccomment">//! # }</span>
-<span class="doccomment">//! #</span>
-<span class="doccomment">//! # #[cfg(feature = &quot;multi-threaded&quot;)]</span>
-<span class="doccomment">//! use lasso::ThreadedRodeo;</span>
-<span class="doccomment">//! use std::{thread, sync::Arc};</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let rodeo = Arc::new(ThreadedRodeo::default());</span>
-<span class="doccomment">//! let key = rodeo.get_or_intern(&quot;Hello, world!&quot;);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Easily retrieve the value of a key and find the key for values</span>
-<span class="doccomment">//! assert_eq!(&quot;Hello, world!&quot;, rodeo.resolve(&amp;key));</span>
-<span class="doccomment">//! assert_eq!(Some(key), rodeo.get(&quot;Hello, world!&quot;));</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Interning the same string again will yield the same key</span>
-<span class="doccomment">//! let key2 = rodeo.get_or_intern(&quot;Hello, world!&quot;);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! assert_eq!(key, key2);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // ThreadedRodeo can be shared across threads</span>
-<span class="doccomment">//! let moved = Arc::clone(&amp;rodeo);</span>
-<span class="doccomment">//! let hello = thread::spawn(move || {</span>
-<span class="doccomment">//!     assert_eq!(&quot;Hello, world!&quot;, moved.resolve(&amp;key));</span>
-<span class="doccomment">//!     moved.get_or_intern(&quot;Hello from the thread!&quot;)</span>
-<span class="doccomment">//! })</span>
-<span class="doccomment">//! .join()</span>
-<span class="doccomment">//! .unwrap();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! assert_eq!(&quot;Hello, world!&quot;, rodeo.resolve(&amp;key));</span>
-<span class="doccomment">//! assert_eq!(&quot;Hello from the thread!&quot;, rodeo.resolve(&amp;hello));</span>
-<span class="doccomment">//! # }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Example: Creating a RodeoReader</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```rust</span>
-<span class="doccomment">//! use lasso::Rodeo;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Rodeo and ThreadedRodeo are interchangeable here</span>
-<span class="doccomment">//! let mut rodeo = Rodeo::default();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let key = rodeo.get_or_intern(&quot;Hello, world!&quot;);</span>
-<span class="doccomment">//! assert_eq!(&quot;Hello, world!&quot;, rodeo.resolve(&amp;key));</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let reader = rodeo.into_reader();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Reader keeps all the strings from the parent</span>
-<span class="doccomment">//! assert_eq!(&quot;Hello, world!&quot;, reader.resolve(&amp;key));</span>
-<span class="doccomment">//! assert_eq!(Some(key), reader.get(&quot;Hello, world!&quot;));</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // The Reader can now be shared across threads, no matter what kind of Rodeo created it</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Example: Creating a RodeoResolver</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```rust</span>
-<span class="doccomment">//! use lasso::Rodeo;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Rodeo and ThreadedRodeo are interchangeable here</span>
-<span class="doccomment">//! let mut rodeo = Rodeo::default();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let key = rodeo.get_or_intern(&quot;Hello, world!&quot;);</span>
-<span class="doccomment">//! assert_eq!(&quot;Hello, world!&quot;, rodeo.resolve(&amp;key));</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let resolver = rodeo.into_resolver();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Resolver keeps all the strings from the parent</span>
-<span class="doccomment">//! assert_eq!(&quot;Hello, world!&quot;, resolver.resolve(&amp;key));</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // The Resolver can now be shared across threads, no matter what kind of Rodeo created it</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Example: Making a custom-ranged key</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Sometimes you want your keys to only inhabit (or *not* inhabit) a certain range of values so that you can have custom [niches],</span>
-<span class="doccomment">//! meaning that an [`enum@Option`]`&lt;`[`struct@Spur`]`&gt;` is the same size as a [`struct@Spur`]. This allows you to pack more data into</span>
-<span class="doccomment">//! what would otherwise be unused space, which can be critical for memory-sensitive applications.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```rust</span>
-<span class="doccomment">//! use lasso::{Key, Rodeo};</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // First make our key type, this will be what we use as handles into our interner</span>
-<span class="doccomment">//! #[derive(Copy, Clone, PartialEq, Eq)]</span>
-<span class="doccomment">//! struct NicheKey(u32);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // This will reserve the upper 255 values for us to use as niches</span>
-<span class="doccomment">//! const NICHE: usize = 0xFF000000;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Implementing `Key` is unsafe and requires that anything given to `try_from_usize` must produce the</span>
-<span class="doccomment">//! // same `usize` when `into_usize` is later called</span>
-<span class="doccomment">//! unsafe impl Key for NicheKey {</span>
-<span class="doccomment">//!     fn into_usize(self) -&gt; usize {</span>
-<span class="doccomment">//!         self.0 as usize</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     fn try_from_usize(int: usize) -&gt; Option&lt;Self&gt; {</span>
-<span class="doccomment">//!         if int &lt; NICHE {</span>
-<span class="doccomment">//!             // The value isn&#39;t in our niche range, so we&#39;re good to go</span>
-<span class="doccomment">//!             Some(Self(int as u32))</span>
-<span class="doccomment">//!         } else {</span>
-<span class="doccomment">//!             // The value interferes with our niche, so we return `None`</span>
-<span class="doccomment">//!             None</span>
-<span class="doccomment">//!         }</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // To make sure we&#39;re upholding `Key`&#39;s safety contract, let&#39;s make two small tests</span>
-<span class="doccomment">//! #[test]</span>
-<span class="doccomment">//! # fn a() {}</span>
-<span class="doccomment">//! fn value_in_range() {</span>
-<span class="doccomment">//!     let key = NicheKey::try_from_usize(0).unwrap();</span>
-<span class="doccomment">//!     assert_eq!(key.into_usize(), 0);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let key = NicheKey::try_from_usize(NICHE - 1).unwrap();</span>
-<span class="doccomment">//!     assert_eq!(key.into_usize(), NICHE - 1);</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! # value_in_range();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #[test]</span>
-<span class="doccomment">//! # fn b() {}</span>
-<span class="doccomment">//! fn value_out_of_range() {</span>
-<span class="doccomment">//!     let key = NicheKey::try_from_usize(NICHE);</span>
-<span class="doccomment">//!     assert!(key.is_none());</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let key = NicheKey::try_from_usize(u32::max_value() as usize);</span>
-<span class="doccomment">//!     assert!(key.is_none());</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! # value_out_of_range();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // And now we&#39;re done and can make `Rodeo`s or `ThreadedRodeo`s that use our custom key!</span>
-<span class="doccomment">//! let mut rodeo: Rodeo&lt;NicheKey&gt; = Rodeo::new();</span>
-<span class="doccomment">//! let key = rodeo.get_or_intern(&quot;It works!&quot;);</span>
-<span class="doccomment">//! assert_eq!(rodeo.resolve(&amp;key), &quot;It works!&quot;);</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Example: Creation using `FromIterator`</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```rust</span>
-<span class="doccomment">//! use lasso::Rodeo;</span>
-<span class="doccomment">//! use core::iter::FromIterator;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Works for both `Rodeo` and `ThreadedRodeo`</span>
-<span class="doccomment">//! let rodeo: Rodeo = vec![&quot;one string&quot;, &quot;two string&quot;, &quot;red string&quot;, &quot;blue string&quot;]</span>
-<span class="doccomment">//!     .into_iter()</span>
-<span class="doccomment">//!     .collect();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! assert!(rodeo.contains(&quot;one string&quot;));</span>
-<span class="doccomment">//! assert!(rodeo.contains(&quot;two string&quot;));</span>
-<span class="doccomment">//! assert!(rodeo.contains(&quot;red string&quot;));</span>
-<span class="doccomment">//! assert!(rodeo.contains(&quot;blue string&quot;));</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```rust</span>
-<span class="doccomment">//! use lasso::Rodeo;</span>
-<span class="doccomment">//! use core::iter::FromIterator;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! // Works for both `Rodeo` and `ThreadedRodeo`</span>
-<span class="doccomment">//! let rodeo: Rodeo = Rodeo::from_iter(vec![</span>
-<span class="doccomment">//!     &quot;one string&quot;,</span>
-<span class="doccomment">//!     &quot;two string&quot;,</span>
-<span class="doccomment">//!     &quot;red string&quot;,</span>
-<span class="doccomment">//!     &quot;blue string&quot;,</span>
-<span class="doccomment">//! ]);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! assert!(rodeo.contains(&quot;one string&quot;));</span>
-<span class="doccomment">//! assert!(rodeo.contains(&quot;two string&quot;));</span>
-<span class="doccomment">//! assert!(rodeo.contains(&quot;red string&quot;));</span>
-<span class="doccomment">//! assert!(rodeo.contains(&quot;blue string&quot;));</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Benchmarks</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Benchmarks were gathered with [Criterion.rs](https://github.com/bheisler/criterion.rs)  </span>
-<span class="doccomment">//! OS: Windows 10  </span>
-<span class="doccomment">//! CPU: Ryzen 9 3900X at 3800Mhz  </span>
-<span class="doccomment">//! RAM: 3200Mhz  </span>
-<span class="doccomment">//! Rustc: Stable 1.44.1  </span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### Rodeo</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #### STD RandomState</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! | Method                       |   Time    |  Throughput  |</span>
-<span class="doccomment">//! |:-----------------------------|:---------:|:------------:|</span>
-<span class="doccomment">//! | `resolve`                    | 1.9251 μs | 13.285 GiB/s |</span>
-<span class="doccomment">//! | `try_resolve`                | 1.9214 μs | 13.311 GiB/s |</span>
-<span class="doccomment">//! | `resolve_unchecked`          | 1.4356 μs | 17.816 GiB/s |</span>
-<span class="doccomment">//! | `get_or_intern` (empty)      | 60.350 μs | 433.96 MiB/s |</span>
-<span class="doccomment">//! | `get_or_intern` (filled)     | 57.415 μs | 456.15 MiB/s |</span>
-<span class="doccomment">//! | `try_get_or_intern` (empty)  | 58.978 μs | 444.06 MiB/s |</span>
-<span class="doccomment">//! | `try_get_or_intern (filled)` | 57.421 μs | 456.10 MiB/s |</span>
-<span class="doccomment">//! | `get` (empty)                | 37.288 μs | 702.37 MiB/s |</span>
-<span class="doccomment">//! | `get` (filled)               | 55.095 μs | 475.36 MiB/s |</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #### AHash</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! | Method                       |   Time    |  Throughput  |</span>
-<span class="doccomment">//! |:-----------------------------|:---------:|:------------:|</span>
-<span class="doccomment">//! | `try_resolve`                | 1.9282 μs | 13.264 GiB/s |</span>
-<span class="doccomment">//! | `resolve`                    | 1.9404 μs | 13.181 GiB/s |</span>
-<span class="doccomment">//! | `resolve_unchecked`          | 1.4328 μs | 17.851 GiB/s |</span>
-<span class="doccomment">//! | `get_or_intern` (empty)      | 38.029 μs | 688.68 MiB/s |</span>
-<span class="doccomment">//! | `get_or_intern` (filled)     | 33.650 μs | 778.30 MiB/s |</span>
-<span class="doccomment">//! | `try_get_or_intern` (empty)  | 39.392 μs | 664.84 MiB/s |</span>
-<span class="doccomment">//! | `try_get_or_intern (filled)` | 33.435 μs | 783.31 MiB/s |</span>
-<span class="doccomment">//! | `get` (empty)                | 12.565 μs | 2.0356 GiB/s |</span>
-<span class="doccomment">//! | `get` (filled)               | 26.545 μs | 986.61 MiB/s |</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #### FXHash</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! | Method                       |   Time    |  Throughput  |</span>
-<span class="doccomment">//! |:-----------------------------|:---------:|:------------:|</span>
-<span class="doccomment">//! | `resolve`                    | 1.9014 μs | 13.451 GiB/s |</span>
-<span class="doccomment">//! | `try_resolve`                | 1.9278 μs | 13.267 GiB/s |</span>
-<span class="doccomment">//! | `resolve_unchecked`          | 1.4449 μs | 17.701 GiB/s |</span>
-<span class="doccomment">//! | `get_or_intern` (empty)      | 32.523 μs | 805.27 MiB/s |</span>
-<span class="doccomment">//! | `get_or_intern` (filled)     | 30.281 μs | 864.88 MiB/s |</span>
-<span class="doccomment">//! | `try_get_or_intern` (empty)  | 31.630 μs | 828.00 MiB/s |</span>
-<span class="doccomment">//! | `try_get_or_intern (filled)` | 31.002 μs | 844.78 MiB/s |</span>
-<span class="doccomment">//! | `get` (empty)                | 12.699 μs | 2.0141 GiB/s |</span>
-<span class="doccomment">//! | `get` (filled)               | 29.220 μs | 896.28 MiB/s |</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### ThreadedRodeo</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #### STD RandomState</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! | Method                       | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |</span>
-<span class="doccomment">//! |:-----------------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|</span>
-<span class="doccomment">//! | `resolve`                    |    54.336 μs    |     482.00 MiB/s      |     364.27 μs     |      71.897 MiB/s       |</span>
-<span class="doccomment">//! | `try_resolve`                |    54.582 μs    |     479.82 MiB/s      |     352.67 μs     |      74.261 MiB/s       |</span>
-<span class="doccomment">//! | `get_or_intern` (empty)      |    266.03 μs    |     98.447 MiB/s      |        N\A        |           N\A           |</span>
-<span class="doccomment">//! | `get_or_intern` (filled)     |    103.04 μs    |     254.17 MiB/s      |     441.42 μs     |      59.331 MiB/s       |</span>
-<span class="doccomment">//! | `try_get_or_intern` (empty)  |    261.80 μs    |     100.04 MiB/s      |        N\A        |           N\A           |</span>
-<span class="doccomment">//! | `try_get_or_intern` (filled) |    102.61 μs    |     255.25 MiB/s      |     447.42 μs     |      58.535 MiB/s       |</span>
-<span class="doccomment">//! | `get` (empty)                |    80.346 μs    |     325.96 MiB/s      |        N\A        |           N\A           |</span>
-<span class="doccomment">//! | `get` (filled)               |    92.669 μs    |     282.62 MiB/s      |     439.24 μs     |      59.626 MiB/s       |</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #### AHash</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! | Method                       | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |</span>
-<span class="doccomment">//! |:-----------------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|</span>
-<span class="doccomment">//! | `resolve`                    |    22.261 μs    |     1.1489 GiB/s      |     265.46 μs     |      98.658 MiB/s       |</span>
-<span class="doccomment">//! | `try_resolve`                |    22.378 μs    |     1.1429 GiB/s      |     268.58 μs     |      97.513 MiB/s       |</span>
-<span class="doccomment">//! | `get_or_intern` (empty)      |    157.86 μs    |     165.91 MiB/s      |        N\A        |           N\A           |</span>
-<span class="doccomment">//! | `get_or_intern` (filled)     |    56.320 μs    |     465.02 MiB/s      |     357.13 μs     |      73.335 MiB/s       |</span>
-<span class="doccomment">//! | `try_get_or_intern` (empty)  |    161.46 μs    |     162.21 MiB/s      |        N\A        |           N\A           |</span>
-<span class="doccomment">//! | `try_get_or_intern` (filled) |    55.874 μs    |     468.73 MiB/s      |     360.25 μs     |      72.698 MiB/s       |</span>
-<span class="doccomment">//! | `get` (empty)                |    43.520 μs    |     601.79 MiB/s      |        N\A        |           N\A           |</span>
-<span class="doccomment">//! | `get` (filled)               |    53.720 μs    |     487.52 MiB/s      |     360.66 μs     |      72.616 MiB/s       |</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #### FXHash</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! | Method                       | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |</span>
-<span class="doccomment">//! |:-----------------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|</span>
-<span class="doccomment">//! | `try_resolve`                |    17.289 μs    |     1.4794 GiB/s      |     238.29 μs     |      109.91 MiB/s       |</span>
-<span class="doccomment">//! | `resolve`                    |    19.833 μs    |     1.2896 GiB/s      |     237.05 μs     |      110.48 MiB/s       |</span>
-<span class="doccomment">//! | `get_or_intern` (empty)      |    130.97 μs    |     199.97 MiB/s      |        N\A        |           N\A           |</span>
-<span class="doccomment">//! | `get_or_intern` (filled)     |    42.630 μs    |     614.35 MiB/s      |     301.60 μs     |      86.837 MiB/s       |</span>
-<span class="doccomment">//! | `try_get_or_intern` (empty)  |    129.30 μs    |     202.55 MiB/s      |        N\A        |           N\A           |</span>
-<span class="doccomment">//! | `try_get_or_intern` (filled) |    42.508 μs    |     616.12 MiB/s      |     337.29 μs     |      77.648 MiB/s       |</span>
-<span class="doccomment">//! | `get` (empty)                |    28.001 μs    |     935.30 MiB/s      |        N\A        |           N\A           |</span>
-<span class="doccomment">//! | `get` (filled)               |    37.700 μs    |     694.68 MiB/s      |     292.15 μs     |      89.645 MiB/s       |</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### RodeoReader</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #### STD RandomState</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! | Method              | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput  (24 Threads) |</span>
-<span class="doccomment">//! |:--------------------|:---------------:|:---------------------:|:-----------------:|:------------------------:|</span>
-<span class="doccomment">//! | `resolve`           |    1.9398 μs    |     13.185 GiB/s      |     4.3153 μs     |       5.9269 GiB/s       |</span>
-<span class="doccomment">//! | `try_resolve`       |    1.9315 μs    |     13.242 GiB/s      |     4.1956 μs     |       6.0959 GiB/s       |</span>
-<span class="doccomment">//! | `resolve_unchecked` |    1.4416 μs    |     17.741 GiB/s      |     3.1204 μs     |       8.1964 GiB/s       |</span>
-<span class="doccomment">//! | `get` (empty)       |    38.886 μs    |     673.50 MiB/s      |        N\A        |           N\A            |</span>
-<span class="doccomment">//! | `get` (filled)      |    56.271 μs    |     465.42 MiB/s      |     105.12 μs     |       249.14 MiB/s       |</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #### AHash</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! | Method              | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |</span>
-<span class="doccomment">//! |:--------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|</span>
-<span class="doccomment">//! | `resolve`           |    1.9404 μs    |     13.181 GiB/s      |     4.1881 μs     |      6.1069 GiB/s       |</span>
-<span class="doccomment">//! | `try_resolve`       |    1.8932 μs    |     13.509 GiB/s      |     4.2410 μs     |      6.0306 GiB/s       |</span>
-<span class="doccomment">//! | `resolve_unchecked` |    1.4128 μs    |     18.103 GiB/s      |     3.1691 μs     |      8.0703 GiB/s       |</span>
-<span class="doccomment">//! | `get` (empty)       |    11.952 μs    |     2.1399 GiB/s      |        N\A        |           N\A           |</span>
-<span class="doccomment">//! | `get` (filled)      |    27.093 μs    |     966.65 MiB/s      |     56.269 μs     |      465.44 MiB/s       |</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #### FXHash</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! | Method              | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |</span>
-<span class="doccomment">//! |:--------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|</span>
-<span class="doccomment">//! | `resolve`           |    1.8987 μs    |     13.471 GiB/s      |     4.2117 μs     |      6.0727 GiB/s       |</span>
-<span class="doccomment">//! | `try_resolve`       |    1.9103 μs    |     13.389 GiB/s      |     4.2254 μs     |      6.0529 GiB/s       |</span>
-<span class="doccomment">//! | `resolve_unchecked` |    1.4469 μs    |     17.677 GiB/s      |     3.0923 μs     |      8.2709 GiB/s       |</span>
-<span class="doccomment">//! | `get` (empty)       |    12.994 μs    |     1.9682 GiB/s      |        N\A        |           N\A           |</span>
-<span class="doccomment">//! | `get` (filled)      |    29.745 μs    |     880.49 MiB/s      |     52.387 μs     |      499.93 MiB/s       |</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ### RodeoResolver</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! | Method              | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |</span>
-<span class="doccomment">//! |:--------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|</span>
-<span class="doccomment">//! | `resolve`           |    1.9416 μs    |     13.172 GiB/s      |     3.9114 μs     |      6.5387 GiB/s       |</span>
-<span class="doccomment">//! | `try_resolve`       |    1.9264 μs    |     13.277 GiB/s      |     3.9289 μs     |      6.5097 GiB/s       |</span>
-<span class="doccomment">//! | `resolve_unchecked` |    1.6638 μs    |     15.372 GiB/s      |     3.1741 μs     |      8.0578 GiB/s       |</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [0]: https://github.com/Kixiron/lasso</span>
-<span class="doccomment">//! [1]: https://github.com/Kixiron/lasso/workflows/CI/badge.svg</span>
-<span class="doccomment">//! [2]: https://github.com/Kixiron/lasso/workflows/Security%20Audit/badge.svg</span>
-<span class="doccomment">//! [3]: https://coveralls.io/repos/github/Kixiron/lasso/badge.svg?branch=master</span>
-<span class="doccomment">//! [4]: https://coveralls.io/github/Kixiron/lasso?branch=master</span>
-<span class="doccomment">//! [5]: https://tokei.rs/b1/github/Kixiron/lasso</span>
-<span class="doccomment">//! [6]: https://docs.rs/lasso/badge.svg</span>
-<span class="doccomment">//! [7]: https://docs.rs/lasso</span>
-<span class="doccomment">//! [8]: https://img.shields.io/crates/v/lasso.svg</span>
-<span class="doccomment">//! [9]: https://crates.io/crates/lasso</span>
-<span class="doccomment">//! [key]: crate::Key</span>
-<span class="doccomment">//! [niches]: https://rust-lang.github.io/unsafe-code-guidelines/layout/enums.html#discriminant-elision-on-option-like-enums</span>
-<span class="doccomment">//! [`hashbrown`]: https://crates.io/crates/hashbrown</span>
-<span class="doccomment">//! [`ahash`]: https://crates.io/crates/ahash</span>
-<span class="doccomment">//! [`raw_entry` api]: https://github.com/rust-lang/rust/issues/56167</span>
+</span><span class="doccomment">//! [![CI][1]][0]
+//! [![Security Audit][2]][0]
+//! [![Coverage][3]][4]
+//! [![LoC][5]][0]
+//! [![Docs.rs][6]][7]
+//! [![Crates.io][8]][9]
+//!
+//! A multithreaded and single threaded string interner that allows strings to be cached with a minimal memory footprint,
+//! associating them with a unique [key] that can be used to retrieve them at any time. A [`struct@Rodeo`] allows `O(1)`
+//! internment and resolution and can be turned into a [`struct@RodeoReader`] to allow for contention-free resolutions
+//! with both key to str and str to key operations. It can also be turned into a [`struct@RodeoResolver`] with only
+//! key to str operations for the lowest possible memory usage.
+//!
+//! ## Which interner do I use?
+//!
+//! For single-threaded workloads [`struct@Rodeo`] is encouraged, while multi-threaded applications should use [`struct@ThreadedRodeo`].
+//! Both of these are the only way to intern strings, but most applications will hit a stage where they are done interning
+//! strings, and at that point is where the choice between [`struct@RodeoReader`] and [`struct@RodeoResolver`]. If the user needs to get
+//! keys for strings still, then they must use the [`struct@RodeoReader`] (although they can still transfer into a  [`struct@RodeoResolver`])
+//! at this point. For users who just need key to string resolution, the [`struct@RodeoResolver`] gives contention-free access at the
+//! minimum possible memory usage. Note that to gain access to [`struct@ThreadedRodeo`] the `multi-threaded` feature is required.
+//!
+//! | Interner          | Thread-safe | Intern String | str to key | key to str | Contention Free | Memory Usage |
+//! |-------------------|:-----------:|:-------------:|:----------:|:----------:|:---------------:|:------------:|
+//! | [`struct@Rodeo`]         |      ❌      |       ✅       |     ✅      |     ✅      |       N/A       |    Medium    |
+//! | [`struct@ThreadedRodeo`] |      ✅      |       ✅       |     ✅      |     ✅      |        ❌        |     Most     |
+//! | [`struct@RodeoReader`]   |      ✅      |       ❌       |     ✅      |     ✅      |        ✅        |    Medium    |
+//! | [`struct@RodeoResolver`] |      ✅      |       ❌       |     ❌      |     ✅      |        ✅        |    Least     |
+//!
+//! ## Cargo Features
+//!
+//! By default `lasso` has one dependency, `hashbrown`, and only [`struct@Rodeo`] is exposed. Hashbrown is used since the
+//! [`raw_entry` api] is currently unstable in the standard library&#39;s hashmap.
+//! The raw hashmap API is used for custom hashing within the hashmaps, which works to dramatically reduce memory usage
+//! To make use of [`struct@ThreadedRodeo`], you must enable the `multi-threaded` feature.
+//!
+//! * `multi-threaded` - Enables [`struct@ThreadedRodeo`], the interner for multi-threaded tasks
+//! * `ahasher` - Use [`ahash`]&#39;s `RandomState` as the default hasher
+//! * `no-std` - Enables `no_std` + `alloc` support for [`struct@Rodeo`] and [`struct@ThreadedRodeo`]
+//!   * Automatically enables the following required features:
+//!     * `ahasher` - `no_std` hashing function
+//! * `serialize` - Implements `Serialize` and `Deserialize` for all [`struct@Spur`] types and all interners
+//! * `inline-more` - Annotate external apis with `#[inline]`
+//!
+//! ## Example: Using Rodeo
+//!
+//! ```rust
+//! use lasso::Rodeo;
+//!
+//! let mut rodeo = Rodeo::default();
+//! let key = rodeo.get_or_intern(&quot;Hello, world!&quot;);
+//!
+//! // Easily retrieve the value of a key and find the key for values
+//! assert_eq!(&quot;Hello, world!&quot;, rodeo.resolve(&amp;key));
+//! assert_eq!(Some(key), rodeo.get(&quot;Hello, world!&quot;));
+//!
+//! // Interning the same string again will yield the same key
+//! let key2 = rodeo.get_or_intern(&quot;Hello, world!&quot;);
+//!
+//! assert_eq!(key, key2);
+//! ```
+//!
+//! ## Example: Using ThreadedRodeo
+//!
+//! ```rust
+//! # // This keeps this doctest from running under miri since
+//! # // miri doesn&#39;t support threading
+//! # #[cfg(not(miri))]
+//! # {
+//! #
+//! # // This is hacky to the extreme, but it prevents failure of this doc test when
+//! # // run with `--no-default-features`
+//! #
+//! # #[cfg(not(feature = &quot;multi-threaded&quot;))]
+//! # #[derive(Default)]
+//! # struct ThreadedRodeo;
+//! #
+//! # #[cfg(not(feature = &quot;multi-threaded&quot;))]
+//! # impl ThreadedRodeo {
+//! #     fn get_or_intern(&amp;self, string: &amp;&#39;static str) -&gt; i32 {
+//! #         match string {
+//! #             &quot;Hello, world!&quot; =&gt; 0,
+//! #             &quot;Hello from the thread!&quot; =&gt; 1,
+//! #             _ =&gt; unreachable!(&quot;Update the docs, dude&quot;),
+//! #         }
+//! #     }
+//! #
+//! #     fn get(&amp;self, string: &amp;&#39;static str) -&gt; Option&lt;i32&gt; {
+//! #         match string {
+//! #             &quot;Hello, world!&quot; =&gt; Some(0),
+//! #             &quot;Hello from the thread!&quot; =&gt; Some(1),
+//! #             _ =&gt; unreachable!(&quot;Update the docs, dude&quot;),
+//! #         }
+//! #     }
+//! #
+//! #     fn resolve(&amp;self, id: &amp;i32) -&gt; &amp;&#39;static str {
+//! #         match *id {
+//! #             0 =&gt; &quot;Hello, world!&quot;,
+//! #             1 =&gt; &quot;Hello from the thread!&quot;,
+//! #             _ =&gt; unreachable!(&quot;Update the docs, dude&quot;),
+//! #         }
+//! #     }
+//! # }
+//! #
+//! # #[cfg(feature = &quot;multi-threaded&quot;)]
+//! use lasso::ThreadedRodeo;
+//! use std::{thread, sync::Arc};
+//!
+//! let rodeo = Arc::new(ThreadedRodeo::default());
+//! let key = rodeo.get_or_intern(&quot;Hello, world!&quot;);
+//!
+//! // Easily retrieve the value of a key and find the key for values
+//! assert_eq!(&quot;Hello, world!&quot;, rodeo.resolve(&amp;key));
+//! assert_eq!(Some(key), rodeo.get(&quot;Hello, world!&quot;));
+//!
+//! // Interning the same string again will yield the same key
+//! let key2 = rodeo.get_or_intern(&quot;Hello, world!&quot;);
+//!
+//! assert_eq!(key, key2);
+//!
+//! // ThreadedRodeo can be shared across threads
+//! let moved = Arc::clone(&amp;rodeo);
+//! let hello = thread::spawn(move || {
+//!     assert_eq!(&quot;Hello, world!&quot;, moved.resolve(&amp;key));
+//!     moved.get_or_intern(&quot;Hello from the thread!&quot;)
+//! })
+//! .join()
+//! .unwrap();
+//!
+//! assert_eq!(&quot;Hello, world!&quot;, rodeo.resolve(&amp;key));
+//! assert_eq!(&quot;Hello from the thread!&quot;, rodeo.resolve(&amp;hello));
+//! # }
+//! ```
+//!
+//! ## Example: Creating a RodeoReader
+//!
+//! ```rust
+//! use lasso::Rodeo;
+//!
+//! // Rodeo and ThreadedRodeo are interchangeable here
+//! let mut rodeo = Rodeo::default();
+//!
+//! let key = rodeo.get_or_intern(&quot;Hello, world!&quot;);
+//! assert_eq!(&quot;Hello, world!&quot;, rodeo.resolve(&amp;key));
+//!
+//! let reader = rodeo.into_reader();
+//!
+//! // Reader keeps all the strings from the parent
+//! assert_eq!(&quot;Hello, world!&quot;, reader.resolve(&amp;key));
+//! assert_eq!(Some(key), reader.get(&quot;Hello, world!&quot;));
+//!
+//! // The Reader can now be shared across threads, no matter what kind of Rodeo created it
+//! ```
+//!
+//! ## Example: Creating a RodeoResolver
+//!
+//! ```rust
+//! use lasso::Rodeo;
+//!
+//! // Rodeo and ThreadedRodeo are interchangeable here
+//! let mut rodeo = Rodeo::default();
+//!
+//! let key = rodeo.get_or_intern(&quot;Hello, world!&quot;);
+//! assert_eq!(&quot;Hello, world!&quot;, rodeo.resolve(&amp;key));
+//!
+//! let resolver = rodeo.into_resolver();
+//!
+//! // Resolver keeps all the strings from the parent
+//! assert_eq!(&quot;Hello, world!&quot;, resolver.resolve(&amp;key));
+//!
+//! // The Resolver can now be shared across threads, no matter what kind of Rodeo created it
+//! ```
+//!
+//! ## Example: Making a custom-ranged key
+//!
+//! Sometimes you want your keys to only inhabit (or *not* inhabit) a certain range of values so that you can have custom [niches],
+//! meaning that an [`enum@Option`]`&lt;`[`struct@Spur`]`&gt;` is the same size as a [`struct@Spur`]. This allows you to pack more data into
+//! what would otherwise be unused space, which can be critical for memory-sensitive applications.
+//!
+//! ```rust
+//! use lasso::{Key, Rodeo};
+//!
+//! // First make our key type, this will be what we use as handles into our interner
+//! #[derive(Copy, Clone, PartialEq, Eq)]
+//! struct NicheKey(u32);
+//!
+//! // This will reserve the upper 255 values for us to use as niches
+//! const NICHE: usize = 0xFF000000;
+//!
+//! // Implementing `Key` is unsafe and requires that anything given to `try_from_usize` must produce the
+//! // same `usize` when `into_usize` is later called
+//! unsafe impl Key for NicheKey {
+//!     fn into_usize(self) -&gt; usize {
+//!         self.0 as usize
+//!     }
+//!
+//!     fn try_from_usize(int: usize) -&gt; Option&lt;Self&gt; {
+//!         if int &lt; NICHE {
+//!             // The value isn&#39;t in our niche range, so we&#39;re good to go
+//!             Some(Self(int as u32))
+//!         } else {
+//!             // The value interferes with our niche, so we return `None`
+//!             None
+//!         }
+//!     }
+//! }
+//!
+//! // To make sure we&#39;re upholding `Key`&#39;s safety contract, let&#39;s make two small tests
+//! #[test]
+//! # fn a() {}
+//! fn value_in_range() {
+//!     let key = NicheKey::try_from_usize(0).unwrap();
+//!     assert_eq!(key.into_usize(), 0);
+//!
+//!     let key = NicheKey::try_from_usize(NICHE - 1).unwrap();
+//!     assert_eq!(key.into_usize(), NICHE - 1);
+//! }
+//! # value_in_range();
+//!
+//! #[test]
+//! # fn b() {}
+//! fn value_out_of_range() {
+//!     let key = NicheKey::try_from_usize(NICHE);
+//!     assert!(key.is_none());
+//!
+//!     let key = NicheKey::try_from_usize(u32::max_value() as usize);
+//!     assert!(key.is_none());
+//! }
+//! # value_out_of_range();
+//!
+//! // And now we&#39;re done and can make `Rodeo`s or `ThreadedRodeo`s that use our custom key!
+//! let mut rodeo: Rodeo&lt;NicheKey&gt; = Rodeo::new();
+//! let key = rodeo.get_or_intern(&quot;It works!&quot;);
+//! assert_eq!(rodeo.resolve(&amp;key), &quot;It works!&quot;);
+//! ```
+//!
+//! ## Example: Creation using `FromIterator`
+//!
+//! ```rust
+//! use lasso::Rodeo;
+//! use core::iter::FromIterator;
+//!
+//! // Works for both `Rodeo` and `ThreadedRodeo`
+//! let rodeo: Rodeo = vec![&quot;one string&quot;, &quot;two string&quot;, &quot;red string&quot;, &quot;blue string&quot;]
+//!     .into_iter()
+//!     .collect();
+//!
+//! assert!(rodeo.contains(&quot;one string&quot;));
+//! assert!(rodeo.contains(&quot;two string&quot;));
+//! assert!(rodeo.contains(&quot;red string&quot;));
+//! assert!(rodeo.contains(&quot;blue string&quot;));
+//! ```
+//!
+//! ```rust
+//! use lasso::Rodeo;
+//! use core::iter::FromIterator;
+//!
+//! // Works for both `Rodeo` and `ThreadedRodeo`
+//! let rodeo: Rodeo = Rodeo::from_iter(vec![
+//!     &quot;one string&quot;,
+//!     &quot;two string&quot;,
+//!     &quot;red string&quot;,
+//!     &quot;blue string&quot;,
+//! ]);
+//!
+//! assert!(rodeo.contains(&quot;one string&quot;));
+//! assert!(rodeo.contains(&quot;two string&quot;));
+//! assert!(rodeo.contains(&quot;red string&quot;));
+//! assert!(rodeo.contains(&quot;blue string&quot;));
+//! ```
+//!
+//! ## Benchmarks
+//!
+//! Benchmarks were gathered with [Criterion.rs](https://github.com/bheisler/criterion.rs)  
+//! OS: Windows 10  
+//! CPU: Ryzen 9 3900X at 3800Mhz  
+//! RAM: 3200Mhz  
+//! Rustc: Stable 1.44.1  
+//!
+//! ### Rodeo
+//!
+//! #### STD RandomState
+//!
+//! | Method                       |   Time    |  Throughput  |
+//! |:-----------------------------|:---------:|:------------:|
+//! | `resolve`                    | 1.9251 μs | 13.285 GiB/s |
+//! | `try_resolve`                | 1.9214 μs | 13.311 GiB/s |
+//! | `resolve_unchecked`          | 1.4356 μs | 17.816 GiB/s |
+//! | `get_or_intern` (empty)      | 60.350 μs | 433.96 MiB/s |
+//! | `get_or_intern` (filled)     | 57.415 μs | 456.15 MiB/s |
+//! | `try_get_or_intern` (empty)  | 58.978 μs | 444.06 MiB/s |
+//! | `try_get_or_intern (filled)` | 57.421 μs | 456.10 MiB/s |
+//! | `get` (empty)                | 37.288 μs | 702.37 MiB/s |
+//! | `get` (filled)               | 55.095 μs | 475.36 MiB/s |
+//!
+//! #### AHash
+//!
+//! | Method                       |   Time    |  Throughput  |
+//! |:-----------------------------|:---------:|:------------:|
+//! | `try_resolve`                | 1.9282 μs | 13.264 GiB/s |
+//! | `resolve`                    | 1.9404 μs | 13.181 GiB/s |
+//! | `resolve_unchecked`          | 1.4328 μs | 17.851 GiB/s |
+//! | `get_or_intern` (empty)      | 38.029 μs | 688.68 MiB/s |
+//! | `get_or_intern` (filled)     | 33.650 μs | 778.30 MiB/s |
+//! | `try_get_or_intern` (empty)  | 39.392 μs | 664.84 MiB/s |
+//! | `try_get_or_intern (filled)` | 33.435 μs | 783.31 MiB/s |
+//! | `get` (empty)                | 12.565 μs | 2.0356 GiB/s |
+//! | `get` (filled)               | 26.545 μs | 986.61 MiB/s |
+//!
+//! #### FXHash
+//!
+//! | Method                       |   Time    |  Throughput  |
+//! |:-----------------------------|:---------:|:------------:|
+//! | `resolve`                    | 1.9014 μs | 13.451 GiB/s |
+//! | `try_resolve`                | 1.9278 μs | 13.267 GiB/s |
+//! | `resolve_unchecked`          | 1.4449 μs | 17.701 GiB/s |
+//! | `get_or_intern` (empty)      | 32.523 μs | 805.27 MiB/s |
+//! | `get_or_intern` (filled)     | 30.281 μs | 864.88 MiB/s |
+//! | `try_get_or_intern` (empty)  | 31.630 μs | 828.00 MiB/s |
+//! | `try_get_or_intern (filled)` | 31.002 μs | 844.78 MiB/s |
+//! | `get` (empty)                | 12.699 μs | 2.0141 GiB/s |
+//! | `get` (filled)               | 29.220 μs | 896.28 MiB/s |
+//!
+//! ### ThreadedRodeo
+//!
+//! #### STD RandomState
+//!
+//! | Method                       | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |
+//! |:-----------------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|
+//! | `resolve`                    |    54.336 μs    |     482.00 MiB/s      |     364.27 μs     |      71.897 MiB/s       |
+//! | `try_resolve`                |    54.582 μs    |     479.82 MiB/s      |     352.67 μs     |      74.261 MiB/s       |
+//! | `get_or_intern` (empty)      |    266.03 μs    |     98.447 MiB/s      |        N\A        |           N\A           |
+//! | `get_or_intern` (filled)     |    103.04 μs    |     254.17 MiB/s      |     441.42 μs     |      59.331 MiB/s       |
+//! | `try_get_or_intern` (empty)  |    261.80 μs    |     100.04 MiB/s      |        N\A        |           N\A           |
+//! | `try_get_or_intern` (filled) |    102.61 μs    |     255.25 MiB/s      |     447.42 μs     |      58.535 MiB/s       |
+//! | `get` (empty)                |    80.346 μs    |     325.96 MiB/s      |        N\A        |           N\A           |
+//! | `get` (filled)               |    92.669 μs    |     282.62 MiB/s      |     439.24 μs     |      59.626 MiB/s       |
+//!
+//! #### AHash
+//!
+//! | Method                       | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |
+//! |:-----------------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|
+//! | `resolve`                    |    22.261 μs    |     1.1489 GiB/s      |     265.46 μs     |      98.658 MiB/s       |
+//! | `try_resolve`                |    22.378 μs    |     1.1429 GiB/s      |     268.58 μs     |      97.513 MiB/s       |
+//! | `get_or_intern` (empty)      |    157.86 μs    |     165.91 MiB/s      |        N\A        |           N\A           |
+//! | `get_or_intern` (filled)     |    56.320 μs    |     465.02 MiB/s      |     357.13 μs     |      73.335 MiB/s       |
+//! | `try_get_or_intern` (empty)  |    161.46 μs    |     162.21 MiB/s      |        N\A        |           N\A           |
+//! | `try_get_or_intern` (filled) |    55.874 μs    |     468.73 MiB/s      |     360.25 μs     |      72.698 MiB/s       |
+//! | `get` (empty)                |    43.520 μs    |     601.79 MiB/s      |        N\A        |           N\A           |
+//! | `get` (filled)               |    53.720 μs    |     487.52 MiB/s      |     360.66 μs     |      72.616 MiB/s       |
+//!
+//! #### FXHash
+//!
+//! | Method                       | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |
+//! |:-----------------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|
+//! | `try_resolve`                |    17.289 μs    |     1.4794 GiB/s      |     238.29 μs     |      109.91 MiB/s       |
+//! | `resolve`                    |    19.833 μs    |     1.2896 GiB/s      |     237.05 μs     |      110.48 MiB/s       |
+//! | `get_or_intern` (empty)      |    130.97 μs    |     199.97 MiB/s      |        N\A        |           N\A           |
+//! | `get_or_intern` (filled)     |    42.630 μs    |     614.35 MiB/s      |     301.60 μs     |      86.837 MiB/s       |
+//! | `try_get_or_intern` (empty)  |    129.30 μs    |     202.55 MiB/s      |        N\A        |           N\A           |
+//! | `try_get_or_intern` (filled) |    42.508 μs    |     616.12 MiB/s      |     337.29 μs     |      77.648 MiB/s       |
+//! | `get` (empty)                |    28.001 μs    |     935.30 MiB/s      |        N\A        |           N\A           |
+//! | `get` (filled)               |    37.700 μs    |     694.68 MiB/s      |     292.15 μs     |      89.645 MiB/s       |
+//!
+//! ### RodeoReader
+//!
+//! #### STD RandomState
+//!
+//! | Method              | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput  (24 Threads) |
+//! |:--------------------|:---------------:|:---------------------:|:-----------------:|:------------------------:|
+//! | `resolve`           |    1.9398 μs    |     13.185 GiB/s      |     4.3153 μs     |       5.9269 GiB/s       |
+//! | `try_resolve`       |    1.9315 μs    |     13.242 GiB/s      |     4.1956 μs     |       6.0959 GiB/s       |
+//! | `resolve_unchecked` |    1.4416 μs    |     17.741 GiB/s      |     3.1204 μs     |       8.1964 GiB/s       |
+//! | `get` (empty)       |    38.886 μs    |     673.50 MiB/s      |        N\A        |           N\A            |
+//! | `get` (filled)      |    56.271 μs    |     465.42 MiB/s      |     105.12 μs     |       249.14 MiB/s       |
+//!
+//! #### AHash
+//!
+//! | Method              | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |
+//! |:--------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|
+//! | `resolve`           |    1.9404 μs    |     13.181 GiB/s      |     4.1881 μs     |      6.1069 GiB/s       |
+//! | `try_resolve`       |    1.8932 μs    |     13.509 GiB/s      |     4.2410 μs     |      6.0306 GiB/s       |
+//! | `resolve_unchecked` |    1.4128 μs    |     18.103 GiB/s      |     3.1691 μs     |      8.0703 GiB/s       |
+//! | `get` (empty)       |    11.952 μs    |     2.1399 GiB/s      |        N\A        |           N\A           |
+//! | `get` (filled)      |    27.093 μs    |     966.65 MiB/s      |     56.269 μs     |      465.44 MiB/s       |
+//!
+//! #### FXHash
+//!
+//! | Method              | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |
+//! |:--------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|
+//! | `resolve`           |    1.8987 μs    |     13.471 GiB/s      |     4.2117 μs     |      6.0727 GiB/s       |
+//! | `try_resolve`       |    1.9103 μs    |     13.389 GiB/s      |     4.2254 μs     |      6.0529 GiB/s       |
+//! | `resolve_unchecked` |    1.4469 μs    |     17.677 GiB/s      |     3.0923 μs     |      8.2709 GiB/s       |
+//! | `get` (empty)       |    12.994 μs    |     1.9682 GiB/s      |        N\A        |           N\A           |
+//! | `get` (filled)      |    29.745 μs    |     880.49 MiB/s      |     52.387 μs     |      499.93 MiB/s       |
+//!
+//! ### RodeoResolver
+//!
+//! | Method              | Time (1 Thread) | Throughput (1 Thread) | Time (24 Threads) | Throughput (24 Threads) |
+//! |:--------------------|:---------------:|:---------------------:|:-----------------:|:-----------------------:|
+//! | `resolve`           |    1.9416 μs    |     13.172 GiB/s      |     3.9114 μs     |      6.5387 GiB/s       |
+//! | `try_resolve`       |    1.9264 μs    |     13.277 GiB/s      |     3.9289 μs     |      6.5097 GiB/s       |
+//! | `resolve_unchecked` |    1.6638 μs    |     15.372 GiB/s      |     3.1741 μs     |      8.0578 GiB/s       |
+//!
+//! [0]: https://github.com/Kixiron/lasso
+//! [1]: https://github.com/Kixiron/lasso/workflows/CI/badge.svg
+//! [2]: https://github.com/Kixiron/lasso/workflows/Security%20Audit/badge.svg
+//! [3]: https://coveralls.io/repos/github/Kixiron/lasso/badge.svg?branch=master
+//! [4]: https://coveralls.io/github/Kixiron/lasso?branch=master
+//! [5]: https://tokei.rs/b1/github/Kixiron/lasso
+//! [6]: https://docs.rs/lasso/badge.svg
+//! [7]: https://docs.rs/lasso
+//! [8]: https://img.shields.io/crates/v/lasso.svg
+//! [9]: https://crates.io/crates/lasso
+//! [key]: crate::Key
+//! [niches]: https://rust-lang.github.io/unsafe-code-guidelines/layout/enums.html#discriminant-elision-on-option-like-enums
+//! [`hashbrown`]: https://crates.io/crates/hashbrown
+//! [`ahash`]: https://crates.io/crates/ahash
+//! [`raw_entry` api]: https://github.com/rust-lang/rust/issues/56167
 
-<span class="attribute">#[<span class="ident">macro_use</span>]</span>
-<span class="kw">mod</span> <span class="ident">util</span>;
+</span><span class="attribute">#[macro_use]
+</span><span class="kw">mod </span>util;
 
-<span class="kw">mod</span> <span class="ident">arena</span>;
-<span class="kw">mod</span> <span class="ident">interface</span>;
-<span class="kw">mod</span> <span class="ident">keys</span>;
-<span class="kw">mod</span> <span class="ident">reader</span>;
-<span class="kw">mod</span> <span class="ident">resolver</span>;
-<span class="kw">mod</span> <span class="ident">single_threaded</span>;
+<span class="kw">mod </span>arena;
+<span class="kw">mod </span>interface;
+<span class="kw">mod </span>keys;
+<span class="kw">mod </span>reader;
+<span class="kw">mod </span>resolver;
+<span class="kw">mod </span>single_threaded;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">interface</span>::{<span class="ident">Interner</span>, <span class="ident">IntoReader</span>, <span class="ident">IntoReaderAndResolver</span>, <span class="ident">IntoResolver</span>, <span class="ident">Reader</span>, <span class="ident">Resolver</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">keys</span>::{<span class="ident">Key</span>, <span class="ident">LargeSpur</span>, <span class="ident">MicroSpur</span>, <span class="ident">MiniSpur</span>, <span class="ident">Spur</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">reader::RodeoReader</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">resolver::RodeoResolver</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">single_threaded::Rodeo</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">util</span>::{<span class="ident">Capacity</span>, <span class="ident">Iter</span>, <span class="ident">LassoError</span>, <span class="ident">LassoErrorKind</span>, <span class="ident">LassoResult</span>, <span class="ident">MemoryLimits</span>, <span class="ident">Strings</span>};
+<span class="kw">pub use </span>interface::{Interner, IntoReader, IntoReaderAndResolver, IntoResolver, Reader, Resolver};
+<span class="kw">pub use </span>keys::{Key, LargeSpur, MicroSpur, MiniSpur, Spur};
+<span class="kw">pub use </span>reader::RodeoReader;
+<span class="kw">pub use </span>resolver::RodeoResolver;
+<span class="kw">pub use </span>single_threaded::Rodeo;
+<span class="kw">pub use </span>util::{Capacity, Iter, LassoError, LassoErrorKind, LassoResult, MemoryLimits, Strings};
 
-<span class="macro">compile!</span> {
-    <span class="kw">if</span> <span class="attribute">#[<span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>]</span> {
-        <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">alloc</span>;
+<span class="macro">compile! </span>{
+    <span class="kw">if </span><span class="attribute">#[feature = <span class="string">&quot;no-std&quot;</span>] </span>{
+        <span class="kw">extern crate </span>alloc;
     }
 
-    <span class="kw">if</span> <span class="attribute">#[<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;multi-threaded&quot;</span>, <span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>))]</span> {
-        <span class="kw">mod</span> <span class="ident">multi_threaded</span>;
-        <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">multi_threaded::ThreadedRodeo</span>;
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="attribute">#[<span class="ident">all</span>(<span class="ident">feature</span> = <span class="string">&quot;multi-threaded&quot;</span>, <span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>)]</span> {
+    <span class="kw">if </span><span class="attribute">#[all(feature = <span class="string">&quot;multi-threaded&quot;</span>, not(feature = <span class="string">&quot;no-std&quot;</span>))] </span>{
+        <span class="kw">mod </span>multi_threaded;
+        <span class="kw">pub use </span>multi_threaded::ThreadedRodeo;
+    } <span class="kw">else if </span><span class="attribute">#[all(feature = <span class="string">&quot;multi-threaded&quot;</span>, feature = <span class="string">&quot;no-std&quot;</span>)] </span>{
         <span class="macro">compile_error!</span>(<span class="string">&quot;The `multi-threaded` and `no-std` features are not supported together&quot;</span>);
     }
 }
 
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">mod</span> <span class="ident">hasher</span> {
-    <span class="macro">compile!</span> {
-        <span class="kw">if</span> <span class="attribute">#[<span class="ident">feature</span> = <span class="string">&quot;ahasher&quot;</span>]</span> {
-            <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">ahash::RandomState</span>;
-        } <span class="kw">else</span> {
-            <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">std::collections::hash_map::RandomState</span>;
+<span class="attribute">#[doc(hidden)]
+</span><span class="kw">mod </span>hasher {
+    <span class="macro">compile! </span>{
+        <span class="kw">if </span><span class="attribute">#[feature = <span class="string">&quot;ahasher&quot;</span>] </span>{
+            <span class="kw">pub use </span>ahash::RandomState;
+        } <span class="kw">else </span>{
+            <span class="kw">pub use </span>std::collections::hash_map::RandomState;
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">mod</span> <span class="ident">locks</span> {
-    <span class="macro">compile!</span> {
-        <span class="kw">if</span> <span class="attribute">#[<span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>]</span> {
-            <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">alloc::sync::Arc</span>;
-        } <span class="kw">else</span> {
-            <span class="kw">pub</span> <span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
+<span class="attribute">#[doc(hidden)]
+</span><span class="kw">mod </span>locks {
+    <span class="macro">compile! </span>{
+        <span class="kw">if </span><span class="attribute">#[feature = <span class="string">&quot;no-std&quot;</span>] </span>{
+            <span class="kw">pub use </span>alloc::sync::Arc;
+        } <span class="kw">else </span>{
+            <span class="kw">pub use </span>std::sync::Arc;
         }
     }
 }
 
-<span class="comment">// TODO: No-alloc interner</span>
-</code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+<span class="comment">// TODO: No-alloc interner
+</span></code></pre></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

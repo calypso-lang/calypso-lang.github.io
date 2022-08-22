@@ -243,250 +243,250 @@
 <span id="243">243</span>
 <span id="244">244</span>
 <span id="245">245</span>
-</pre><pre class="rust"><code><span class="doccomment">//! # Snapshot testing toolbox</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! &gt; When you have to treat your tests like pets, instead of [cattle][trycmd]</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! `snapbox` is a snapshot-testing toolbox that is ready to use for verifying output from</span>
-<span class="doccomment">//! - Function return values</span>
-<span class="doccomment">//! - CLI stdout/stderr</span>
-<span class="doccomment">//! - Filesystem changes</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! It is also flexible enough to build your own test harness like [trycmd](https://crates.io/crates/trycmd).</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Which tool is right</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! - [cram](https://bitheap.org/cram/): End-to-end CLI snapshotting agnostic of any programming language</span>
-<span class="doccomment">//! - [trycmd](https://crates.io/crates/trycmd): For running a lot of blunt tests (limited test predicates)</span>
-<span class="doccomment">//!   - Particular attention is given to allow the test data to be pulled into documentation, like</span>
-<span class="doccomment">//!     with [mdbook](https://rust-lang.github.io/mdBook/)</span>
-<span class="doccomment">//! - `snapbox`: When you want something like `trycmd` in one off</span>
-<span class="doccomment">//!   cases or you need to customize `trycmd`s behavior.</span>
-<span class="doccomment">//! - [assert_cmd](https://crates.io/crates/assert_cmd) +</span>
-<span class="doccomment">//!   [assert_fs](https://crates.io/crates/assert_fs): Test cases follow a certain pattern but</span>
-<span class="doccomment">//!   special attention is needed in how to verify the results.</span>
-<span class="doccomment">//! - Hand-written test cases: for peculiar circumstances</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ## Getting Started</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Testing Functions:</span>
-<span class="doccomment">//! - [`assert_eq`][crate::assert_eq] and [`assert_matches`] for reusing diffing / pattern matching for non-snapshot testing</span>
-<span class="doccomment">//! - [`assert_eq_path`][crate::assert_eq_path] and [`assert_matches_path`] for one-off assertions with the snapshot stored in a file</span>
-<span class="doccomment">//! - [`harness::Harness`] for discovering test inputs and asserting against snapshot files:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Testing Commands:</span>
-<span class="doccomment">//! - [`cmd::Command`]: Process spawning for testing of non-interactive commands</span>
-<span class="doccomment">//! - [`cmd::OutputAssert`]: Assert the state of a [`Command`][cmd::Command]&#39;s</span>
-<span class="doccomment">//!   [`Output`][std::process::Output].</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Testing Filesystem Interactions:</span>
-<span class="doccomment">//! - [`path::PathFixture`]: Working directory for tests</span>
-<span class="doccomment">//! - [`Assert`]: Diff a directory against files present in a pattern directory</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! You can also build your own version of these with the lower-level building blocks these are</span>
-<span class="doccomment">//! made of.</span>
-<span class="doccomment">//!</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;document-features&quot;</span>, <span class="ident">doc</span> = <span class="macro">document_features::document_features!</span>())]</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Examples</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [`assert_matches`]</span>
-<span class="doccomment">//! ```rust</span>
-<span class="doccomment">//! snapbox::assert_matches(&quot;Hello [..] people!&quot;, &quot;Hello many people!&quot;);</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [`Assert`]</span>
-<span class="doccomment">//! ```rust,no_run</span>
-<span class="doccomment">//! let actual = &quot;...&quot;;</span>
-<span class="doccomment">//! let expected_path = &quot;tests/fixtures/help_output_is_clean.txt&quot;;</span>
-<span class="doccomment">//! snapbox::Assert::new()</span>
-<span class="doccomment">//!     .action_env(&quot;SNAPSHOTS&quot;)</span>
-<span class="doccomment">//!     .matches_path(expected_path, actual);</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [`harness::Harness`]</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">not</span>(<span class="ident">feature</span> = <span class="string">&quot;harness&quot;</span>), <span class="ident">doc</span> = <span class="string">&quot; ```rust,ignore&quot;</span>)]</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;harness&quot;</span>, <span class="ident">doc</span> = <span class="string">&quot; ```rust,no_run&quot;</span>)]</span>
-<span class="doccomment">//! snapbox::harness::Harness::new(</span>
-<span class="doccomment">//!     &quot;tests/fixtures/invalid&quot;,</span>
-<span class="doccomment">//!     setup,</span>
-<span class="doccomment">//!     test,</span>
-<span class="doccomment">//! )</span>
-<span class="doccomment">//! .select([&quot;tests/cases/*.in&quot;])</span>
-<span class="doccomment">//! .action_env(&quot;SNAPSHOTS&quot;)</span>
-<span class="doccomment">//! .test();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! fn setup(input_path: std::path::PathBuf) -&gt; snapbox::harness::Case {</span>
-<span class="doccomment">//!     let name = input_path.file_name().unwrap().to_str().unwrap().to_owned();</span>
-<span class="doccomment">//!     let expected = input_path.with_extension(&quot;out&quot;);</span>
-<span class="doccomment">//!     snapbox::harness::Case {</span>
-<span class="doccomment">//!         name,</span>
-<span class="doccomment">//!         fixture: input_path,</span>
-<span class="doccomment">//!         expected,</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! fn test(input_path: &amp;std::path::Path) -&gt; Result&lt;usize, Box&lt;dyn std::error::Error&gt;&gt; {</span>
-<span class="doccomment">//!     let raw = std::fs::read_to_string(input_path)?;</span>
-<span class="doccomment">//!     let num = raw.parse::&lt;usize&gt;()?;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     let actual = num + 10;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//!     Ok(actual)</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [trycmd]: https://docs.rs/trycmd</span>
+</pre><pre class="rust"><code><span class="doccomment">//! # Snapshot testing toolbox
+//!
+//! &gt; When you have to treat your tests like pets, instead of [cattle][trycmd]
+//!
+//! `snapbox` is a snapshot-testing toolbox that is ready to use for verifying output from
+//! - Function return values
+//! - CLI stdout/stderr
+//! - Filesystem changes
+//!
+//! It is also flexible enough to build your own test harness like [trycmd](https://crates.io/crates/trycmd).
+//!
+//! ## Which tool is right
+//!
+//! - [cram](https://bitheap.org/cram/): End-to-end CLI snapshotting agnostic of any programming language
+//! - [trycmd](https://crates.io/crates/trycmd): For running a lot of blunt tests (limited test predicates)
+//!   - Particular attention is given to allow the test data to be pulled into documentation, like
+//!     with [mdbook](https://rust-lang.github.io/mdBook/)
+//! - `snapbox`: When you want something like `trycmd` in one off
+//!   cases or you need to customize `trycmd`s behavior.
+//! - [assert_cmd](https://crates.io/crates/assert_cmd) +
+//!   [assert_fs](https://crates.io/crates/assert_fs): Test cases follow a certain pattern but
+//!   special attention is needed in how to verify the results.
+//! - Hand-written test cases: for peculiar circumstances
+//!
+//! ## Getting Started
+//!
+//! Testing Functions:
+//! - [`assert_eq`][crate::assert_eq] and [`assert_matches`] for reusing diffing / pattern matching for non-snapshot testing
+//! - [`assert_eq_path`][crate::assert_eq_path] and [`assert_matches_path`] for one-off assertions with the snapshot stored in a file
+//! - [`harness::Harness`] for discovering test inputs and asserting against snapshot files:
+//!
+//! Testing Commands:
+//! - [`cmd::Command`]: Process spawning for testing of non-interactive commands
+//! - [`cmd::OutputAssert`]: Assert the state of a [`Command`][cmd::Command]&#39;s
+//!   [`Output`][std::process::Output].
+//!
+//! Testing Filesystem Interactions:
+//! - [`path::PathFixture`]: Working directory for tests
+//! - [`Assert`]: Diff a directory against files present in a pattern directory
+//!
+//! You can also build your own version of these with the lower-level building blocks these are
+//! made of.
+//!
+</span><span class="attribute">#![cfg_attr(feature = <span class="string">&quot;document-features&quot;</span>, doc = <span class="macro">document_features::document_features!</span>())]
+</span><span class="doccomment">//!
+//! # Examples
+//!
+//! [`assert_matches`]
+//! ```rust
+//! snapbox::assert_matches(&quot;Hello [..] people!&quot;, &quot;Hello many people!&quot;);
+//! ```
+//!
+//! [`Assert`]
+//! ```rust,no_run
+//! let actual = &quot;...&quot;;
+//! let expected_path = &quot;tests/fixtures/help_output_is_clean.txt&quot;;
+//! snapbox::Assert::new()
+//!     .action_env(&quot;SNAPSHOTS&quot;)
+//!     .matches_path(expected_path, actual);
+//! ```
+//!
+//! [`harness::Harness`]
+</span><span class="attribute">#![cfg_attr(not(feature = <span class="string">&quot;harness&quot;</span>), doc = <span class="string">&quot; ```rust,ignore&quot;</span>)]
+#![cfg_attr(feature = <span class="string">&quot;harness&quot;</span>, doc = <span class="string">&quot; ```rust,no_run&quot;</span>)]
+</span><span class="doccomment">//! snapbox::harness::Harness::new(
+//!     &quot;tests/fixtures/invalid&quot;,
+//!     setup,
+//!     test,
+//! )
+//! .select([&quot;tests/cases/*.in&quot;])
+//! .action_env(&quot;SNAPSHOTS&quot;)
+//! .test();
+//!
+//! fn setup(input_path: std::path::PathBuf) -&gt; snapbox::harness::Case {
+//!     let name = input_path.file_name().unwrap().to_str().unwrap().to_owned();
+//!     let expected = input_path.with_extension(&quot;out&quot;);
+//!     snapbox::harness::Case {
+//!         name,
+//!         fixture: input_path,
+//!         expected,
+//!     }
+//! }
+//!
+//! fn test(input_path: &amp;std::path::Path) -&gt; Result&lt;usize, Box&lt;dyn std::error::Error&gt;&gt; {
+//!     let raw = std::fs::read_to_string(input_path)?;
+//!     let num = raw.parse::&lt;usize&gt;()?;
+//!
+//!     let actual = num + 10;
+//!
+//!     Ok(actual)
+//! }
+//! ```
+//!
+//! [trycmd]: https://docs.rs/trycmd
 
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">feature</span>(<span class="ident">doc_auto_cfg</span>))]</span>
+</span><span class="attribute">#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
-<span class="kw">mod</span> <span class="ident">action</span>;
-<span class="kw">mod</span> <span class="ident">assert</span>;
-<span class="kw">mod</span> <span class="ident">data</span>;
-<span class="kw">mod</span> <span class="ident">error</span>;
-<span class="kw">mod</span> <span class="ident">substitutions</span>;
+</span><span class="kw">mod </span>action;
+<span class="kw">mod </span>assert;
+<span class="kw">mod </span>data;
+<span class="kw">mod </span>error;
+<span class="kw">mod </span>substitutions;
 
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">cmd</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">path</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">report</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">utils</span>;
+<span class="kw">pub mod </span>cmd;
+<span class="kw">pub mod </span>path;
+<span class="kw">pub mod </span>report;
+<span class="kw">pub mod </span>utils;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;harness&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">harness</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;harness&quot;</span>)]
+</span><span class="kw">pub mod </span>harness;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">action::Action</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">action::DEFAULT_ACTION_ENV</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">assert::Assert</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">data::Data</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">data::DataFormat</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">error::Error</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">snapbox_macros::debug</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">substitutions::Substitutions</span>;
+<span class="kw">pub use </span>action::Action;
+<span class="kw">pub use </span>action::DEFAULT_ACTION_ENV;
+<span class="kw">pub use </span>assert::Assert;
+<span class="kw">pub use </span>data::Data;
+<span class="kw">pub use </span>data::DataFormat;
+<span class="kw">pub use </span>error::Error;
+<span class="kw">pub use </span>snapbox_macros::debug;
+<span class="kw">pub use </span>substitutions::Substitutions;
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>, <span class="ident">E</span> = <span class="ident">Error</span>&gt; = <span class="ident">std::result::Result</span>&lt;<span class="ident">T</span>, <span class="ident">E</span>&gt;;
+<span class="kw">pub type </span><span class="prelude-ty">Result</span>&lt;T, E = Error&gt; = std::result::Result&lt;T, E&gt;;
 
-<span class="doccomment">/// Check if a value is the same as an expected value</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// When the content is text, newlines are normalized.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust</span>
-<span class="doccomment">/// let output = &quot;something&quot;;</span>
-<span class="doccomment">/// let expected = &quot;something&quot;;</span>
-<span class="doccomment">/// snapbox::assert_matches(expected, output);</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">track_caller</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assert_eq</span>(<span class="ident">expected</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;, <span class="ident">actual</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;) {
-    <span class="ident">Assert::new</span>().<span class="ident">eq</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+<span class="doccomment">/// Check if a value is the same as an expected value
+///
+/// When the content is text, newlines are normalized.
+///
+/// ```rust
+/// let output = &quot;something&quot;;
+/// let expected = &quot;something&quot;;
+/// snapbox::assert_matches(expected, output);
+/// ```
+</span><span class="attribute">#[track_caller]
+</span><span class="kw">pub fn </span>assert_eq(expected: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;, actual: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;) {
+    Assert::new().eq(expected, actual);
 }
 
-<span class="doccomment">/// Check if a value matches a pattern</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Pattern syntax:</span>
-<span class="doccomment">/// - `...` is a line-wildcard when on a line by itself</span>
-<span class="doccomment">/// - `[..]` is a character-wildcard when inside a line</span>
-<span class="doccomment">/// - `[EXE]` matches `.exe` on Windows</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Normalization:</span>
-<span class="doccomment">/// - Newlines</span>
-<span class="doccomment">/// - `\` to `/`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust</span>
-<span class="doccomment">/// let output = &quot;something&quot;;</span>
-<span class="doccomment">/// let expected = &quot;so[..]g&quot;;</span>
-<span class="doccomment">/// snapbox::assert_matches(expected, output);</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">track_caller</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assert_matches</span>(<span class="ident">pattern</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;, <span class="ident">actual</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;) {
-    <span class="ident">Assert::new</span>().<span class="ident">matches</span>(<span class="ident">pattern</span>, <span class="ident">actual</span>);
+<span class="doccomment">/// Check if a value matches a pattern
+///
+/// Pattern syntax:
+/// - `...` is a line-wildcard when on a line by itself
+/// - `[..]` is a character-wildcard when inside a line
+/// - `[EXE]` matches `.exe` on Windows
+///
+/// Normalization:
+/// - Newlines
+/// - `\` to `/`
+///
+/// ```rust
+/// let output = &quot;something&quot;;
+/// let expected = &quot;so[..]g&quot;;
+/// snapbox::assert_matches(expected, output);
+/// ```
+</span><span class="attribute">#[track_caller]
+</span><span class="kw">pub fn </span>assert_matches(pattern: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;, actual: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;) {
+    Assert::new().matches(pattern, actual);
 }
 
-<span class="doccomment">/// Check if a value matches the content of a file</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// When the content is text, newlines are normalized.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// let output = &quot;something&quot;;</span>
-<span class="doccomment">/// let expected_path = &quot;tests/snapshots/output.txt&quot;;</span>
-<span class="doccomment">/// snapbox::assert_eq_path(expected_path, output);</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">track_caller</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assert_eq_path</span>(<span class="ident">expected_path</span>: <span class="kw">impl</span> <span class="ident">AsRef</span>&lt;<span class="ident">std::path::Path</span>&gt;, <span class="ident">actual</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;) {
-    <span class="ident">Assert::new</span>()
-        .<span class="ident">action_env</span>(<span class="ident">DEFAULT_ACTION_ENV</span>)
-        .<span class="ident">eq_path</span>(<span class="ident">expected_path</span>, <span class="ident">actual</span>);
+<span class="doccomment">/// Check if a value matches the content of a file
+///
+/// When the content is text, newlines are normalized.
+///
+/// ```rust,no_run
+/// let output = &quot;something&quot;;
+/// let expected_path = &quot;tests/snapshots/output.txt&quot;;
+/// snapbox::assert_eq_path(expected_path, output);
+/// ```
+</span><span class="attribute">#[track_caller]
+</span><span class="kw">pub fn </span>assert_eq_path(expected_path: <span class="kw">impl </span>AsRef&lt;std::path::Path&gt;, actual: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;) {
+    Assert::new()
+        .action_env(DEFAULT_ACTION_ENV)
+        .eq_path(expected_path, actual);
 }
 
-<span class="doccomment">/// Check if a value matches the pattern in a file</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Pattern syntax:</span>
-<span class="doccomment">/// - `...` is a line-wildcard when on a line by itself</span>
-<span class="doccomment">/// - `[..]` is a character-wildcard when inside a line</span>
-<span class="doccomment">/// - `[EXE]` matches `.exe` on Windows</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Normalization:</span>
-<span class="doccomment">/// - Newlines</span>
-<span class="doccomment">/// - `\` to `/`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// let output = &quot;something&quot;;</span>
-<span class="doccomment">/// let expected_path = &quot;tests/snapshots/output.txt&quot;;</span>
-<span class="doccomment">/// snapbox::assert_matches_path(expected_path, output);</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">track_caller</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assert_matches_path</span>(
-    <span class="ident">pattern_path</span>: <span class="kw">impl</span> <span class="ident">AsRef</span>&lt;<span class="ident">std::path::Path</span>&gt;,
-    <span class="ident">actual</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
+<span class="doccomment">/// Check if a value matches the pattern in a file
+///
+/// Pattern syntax:
+/// - `...` is a line-wildcard when on a line by itself
+/// - `[..]` is a character-wildcard when inside a line
+/// - `[EXE]` matches `.exe` on Windows
+///
+/// Normalization:
+/// - Newlines
+/// - `\` to `/`
+///
+/// ```rust,no_run
+/// let output = &quot;something&quot;;
+/// let expected_path = &quot;tests/snapshots/output.txt&quot;;
+/// snapbox::assert_matches_path(expected_path, output);
+/// ```
+</span><span class="attribute">#[track_caller]
+</span><span class="kw">pub fn </span>assert_matches_path(
+    pattern_path: <span class="kw">impl </span>AsRef&lt;std::path::Path&gt;,
+    actual: <span class="kw">impl </span>Into&lt;<span class="kw">crate</span>::Data&gt;,
 ) {
-    <span class="ident">Assert::new</span>()
-        .<span class="ident">action_env</span>(<span class="ident">DEFAULT_ACTION_ENV</span>)
-        .<span class="ident">matches_path</span>(<span class="ident">pattern_path</span>, <span class="ident">actual</span>);
+    Assert::new()
+        .action_env(DEFAULT_ACTION_ENV)
+        .matches_path(pattern_path, actual);
 }
 
-<span class="doccomment">/// Check if a path matches the content of another path, recursively</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// When the content is text, newlines are normalized.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// let output_root = &quot;...&quot;;</span>
-<span class="doccomment">/// let expected_root = &quot;tests/snapshots/output.txt&quot;;</span>
-<span class="doccomment">/// snapbox::assert_subset_eq(expected_root, output_root);</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">track_caller</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assert_subset_eq</span>(
-    <span class="ident">expected_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
-    <span class="ident">actual_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
+<span class="doccomment">/// Check if a path matches the content of another path, recursively
+///
+/// When the content is text, newlines are normalized.
+///
+/// ```rust,no_run
+/// let output_root = &quot;...&quot;;
+/// let expected_root = &quot;tests/snapshots/output.txt&quot;;
+/// snapbox::assert_subset_eq(expected_root, output_root);
+/// ```
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+#[track_caller]
+</span><span class="kw">pub fn </span>assert_subset_eq(
+    expected_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
+    actual_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
 ) {
-    <span class="ident">Assert::new</span>()
-        .<span class="ident">action_env</span>(<span class="ident">DEFAULT_ACTION_ENV</span>)
-        .<span class="ident">subset_eq</span>(<span class="ident">expected_root</span>, <span class="ident">actual_root</span>);
+    Assert::new()
+        .action_env(DEFAULT_ACTION_ENV)
+        .subset_eq(expected_root, actual_root);
 }
 
-<span class="doccomment">/// Check if a path matches the pattern of another path, recursively</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Pattern syntax:</span>
-<span class="doccomment">/// - `...` is a line-wildcard when on a line by itself</span>
-<span class="doccomment">/// - `[..]` is a character-wildcard when inside a line</span>
-<span class="doccomment">/// - `[EXE]` matches `.exe` on Windows</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Normalization:</span>
-<span class="doccomment">/// - Newlines</span>
-<span class="doccomment">/// - `\` to `/`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,no_run</span>
-<span class="doccomment">/// let output_root = &quot;...&quot;;</span>
-<span class="doccomment">/// let expected_root = &quot;tests/snapshots/output.txt&quot;;</span>
-<span class="doccomment">/// snapbox::assert_subset_matches(expected_root, output_root);</span>
-<span class="doccomment">/// ```</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;path&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">track_caller</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">assert_subset_matches</span>(
-    <span class="ident">pattern_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
-    <span class="ident">actual_root</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
+<span class="doccomment">/// Check if a path matches the pattern of another path, recursively
+///
+/// Pattern syntax:
+/// - `...` is a line-wildcard when on a line by itself
+/// - `[..]` is a character-wildcard when inside a line
+/// - `[EXE]` matches `.exe` on Windows
+///
+/// Normalization:
+/// - Newlines
+/// - `\` to `/`
+///
+/// ```rust,no_run
+/// let output_root = &quot;...&quot;;
+/// let expected_root = &quot;tests/snapshots/output.txt&quot;;
+/// snapbox::assert_subset_matches(expected_root, output_root);
+/// ```
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;path&quot;</span>)]
+#[track_caller]
+</span><span class="kw">pub fn </span>assert_subset_matches(
+    pattern_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
+    actual_root: <span class="kw">impl </span>Into&lt;std::path::PathBuf&gt;,
 ) {
-    <span class="ident">Assert::new</span>()
-        .<span class="ident">action_env</span>(<span class="ident">DEFAULT_ACTION_ENV</span>)
-        .<span class="ident">subset_matches</span>(<span class="ident">pattern_root</span>, <span class="ident">actual_root</span>);
+    Assert::new()
+        .action_env(DEFAULT_ACTION_ENV)
+        .subset_matches(pattern_root, actual_root);
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

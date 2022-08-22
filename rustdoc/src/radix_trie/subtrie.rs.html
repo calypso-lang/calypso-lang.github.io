@@ -112,119 +112,119 @@
 <span id="112">112</span>
 <span id="113">113</span>
 <span id="114">114</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keys</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::TrieNode</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">SubTrie</span>, <span class="ident">SubTrieMut</span>, <span class="ident">SubTrieResult</span>};
-<span class="kw">use</span> <span class="ident">std::borrow::Borrow</span>;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::keys::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::TrieNode;
+<span class="kw">use crate</span>::{SubTrie, SubTrieMut, SubTrieResult};
+<span class="kw">use </span>std::borrow::Borrow;
 
-<span class="kw">use</span> <span class="ident">nibble_vec::Nibblet</span>;
+<span class="kw">use </span>nibble_vec::Nibblet;
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">SubTrie</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K, V&gt; SubTrie&lt;<span class="lifetime">&#39;a</span>, K, V&gt;
+<span class="kw">where
+    </span>K: TrieKey,
 {
-    <span class="doccomment">/// Look up the value for the given key, which should be an extension of this subtrie&#39;s key.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The key may be any borrowed form of the trie&#39;s key type, but TrieKey on the borrowed</span>
-    <span class="doccomment">/// form *must* match those for the key type</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>&lt;<span class="ident">Q</span>: <span class="question-mark">?</span><span class="ident">Sized</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="ident">SubTrieResult</span>&lt;<span class="kw-2">&amp;</span><span class="ident">V</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">TrieKey</span>,
+    <span class="doccomment">/// Look up the value for the given key, which should be an extension of this subtrie&#39;s key.
+    ///
+    /// The key may be any borrowed form of the trie&#39;s key type, but TrieKey on the borrowed
+    /// form *must* match those for the key type
+    </span><span class="kw">pub fn </span>get&lt;Q: <span class="question-mark">?</span>Sized&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; SubTrieResult&lt;<span class="kw-2">&amp;</span>V&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: TrieKey,
     {
-        <span class="ident">subtrie_get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prefix</span>, <span class="self">self</span>.<span class="ident">node</span>, <span class="ident">key</span>)
+        subtrie_get(<span class="kw-2">&amp;</span><span class="self">self</span>.prefix, <span class="self">self</span>.node, key)
     }
 }
 
-<span class="kw">fn</span> <span class="ident">subtrie_get</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">Q</span>: <span class="question-mark">?</span><span class="ident">Sized</span>, <span class="ident">V</span>&gt;(
-    <span class="ident">prefix</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>,
-    <span class="ident">node</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">TrieNode</span>&lt;<span class="ident">K</span>, <span class="ident">V</span>&gt;,
-    <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>,
-) -&gt; <span class="ident">SubTrieResult</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">V</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
-    <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-    <span class="ident">Q</span>: <span class="ident">TrieKey</span>,
+<span class="kw">fn </span>subtrie_get&lt;<span class="lifetime">&#39;a</span>, K, Q: <span class="question-mark">?</span>Sized, V&gt;(
+    prefix: <span class="kw-2">&amp;</span>Nibblet,
+    node: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>TrieNode&lt;K, V&gt;,
+    key: <span class="kw-2">&amp;</span>Q,
+) -&gt; SubTrieResult&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>V&gt;
+<span class="kw">where
+    </span>K: TrieKey,
+    K: Borrow&lt;Q&gt;,
+    Q: TrieKey,
 {
-    <span class="kw">let</span> <span class="ident">key_enc</span> = <span class="ident">key</span>.<span class="ident">encode</span>();
-    <span class="kw">match</span> <span class="ident">match_keys</span>(<span class="number">0</span>, <span class="ident">prefix</span>, <span class="kw-2">&amp;</span><span class="ident">key_enc</span>) {
-        <span class="ident">KeyMatch::Full</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">node</span>.<span class="ident">value</span>()),
-        <span class="ident">KeyMatch::FirstPrefix</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident">node</span>
-            .<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">stripped</span>(<span class="ident">key_enc</span>, <span class="ident">prefix</span>))
-            .<span class="ident">and_then</span>(<span class="ident">TrieNode::value</span>)),
-        <span class="kw">_</span> =&gt; <span class="prelude-val">Err</span>(()),
+    <span class="kw">let </span>key_enc = key.encode();
+    <span class="kw">match </span>match_keys(<span class="number">0</span>, prefix, <span class="kw-2">&amp;</span>key_enc) {
+        KeyMatch::Full =&gt; <span class="prelude-val">Ok</span>(node.value()),
+        KeyMatch::FirstPrefix =&gt; <span class="prelude-val">Ok</span>(node
+            .get(<span class="kw-2">&amp;</span>stripped(key_enc, prefix))
+            .and_then(TrieNode::value)),
+        <span class="kw">_ </span>=&gt; <span class="prelude-val">Err</span>(()),
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt; <span class="ident">SubTrieMut</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">K</span>, <span class="ident">V</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">TrieKey</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, K, V&gt; SubTrieMut&lt;<span class="lifetime">&#39;a</span>, K, V&gt;
+<span class="kw">where
+    </span>K: TrieKey,
 {
-    <span class="doccomment">/// Mutable reference to the node&#39;s value.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">value_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut</span> <span class="ident">V</span>&gt; {
-        <span class="self">self</span>.<span class="ident">node</span>.<span class="ident">value_mut</span>()
+    <span class="doccomment">/// Mutable reference to the node&#39;s value.
+    </span><span class="kw">pub fn </span>value_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>V&gt; {
+        <span class="self">self</span>.node.value_mut()
     }
 
-    <span class="doccomment">/// Look up the value for the given key, which should be an extension of this subtrie&#39;s key.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The key may be any borrowed form of the trie&#39;s key type, but TrieKey on the borrowed</span>
-    <span class="doccomment">/// form *must* match those for the key type</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>&lt;<span class="ident">Q</span>: <span class="question-mark">?</span><span class="ident">Sized</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="ident">SubTrieResult</span>&lt;<span class="kw-2">&amp;</span><span class="ident">V</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">TrieKey</span>,
+    <span class="doccomment">/// Look up the value for the given key, which should be an extension of this subtrie&#39;s key.
+    ///
+    /// The key may be any borrowed form of the trie&#39;s key type, but TrieKey on the borrowed
+    /// form *must* match those for the key type
+    </span><span class="kw">pub fn </span>get&lt;Q: <span class="question-mark">?</span>Sized&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; SubTrieResult&lt;<span class="kw-2">&amp;</span>V&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: TrieKey,
     {
-        <span class="ident">subtrie_get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prefix</span>, <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">node</span>, <span class="ident">key</span>)
+        subtrie_get(<span class="kw-2">&amp;</span><span class="self">self</span>.prefix, <span class="kw-2">&amp;*</span><span class="self">self</span>.node, key)
     }
 
-    <span class="doccomment">/// Insert a value in this subtrie. The key should be an extension of this subtrie&#39;s key.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="ident">K</span>, <span class="ident">value</span>: <span class="ident">V</span>) -&gt; <span class="ident">SubTrieResult</span>&lt;<span class="ident">V</span>&gt; {
-        <span class="kw">let</span> <span class="ident">key_enc</span> = <span class="ident">key</span>.<span class="ident">encode</span>();
-        <span class="kw">let</span> <span class="ident">previous</span> = <span class="kw">match</span> <span class="ident">match_keys</span>(<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prefix</span>, <span class="kw-2">&amp;</span><span class="ident">key_enc</span>) {
-            <span class="ident">KeyMatch::Full</span> =&gt; <span class="self">self</span>.<span class="ident">node</span>.<span class="ident">replace_value</span>(<span class="ident">key</span>, <span class="ident">value</span>),
-            <span class="ident">KeyMatch::FirstPrefix</span> =&gt; <span class="self">self</span>
-                .<span class="ident">node</span>
-                .<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">value</span>, <span class="ident">stripped</span>(<span class="ident">key_enc</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prefix</span>)),
-            <span class="kw">_</span> =&gt; {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(());
+    <span class="doccomment">/// Insert a value in this subtrie. The key should be an extension of this subtrie&#39;s key.
+    </span><span class="kw">pub fn </span>insert(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: K, value: V) -&gt; SubTrieResult&lt;V&gt; {
+        <span class="kw">let </span>key_enc = key.encode();
+        <span class="kw">let </span>previous = <span class="kw">match </span>match_keys(<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.prefix, <span class="kw-2">&amp;</span>key_enc) {
+            KeyMatch::Full =&gt; <span class="self">self</span>.node.replace_value(key, value),
+            KeyMatch::FirstPrefix =&gt; <span class="self">self
+                </span>.node
+                .insert(key, value, stripped(key_enc, <span class="kw-2">&amp;</span><span class="self">self</span>.prefix)),
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(());
             }
         };
 
-        <span class="kw">if</span> <span class="ident">previous</span>.<span class="ident">is_none</span>() {
-            <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">length</span> += <span class="number">1</span>;
+        <span class="kw">if </span>previous.is_none() {
+            <span class="kw-2">*</span><span class="self">self</span>.length += <span class="number">1</span>;
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">previous</span>)
+        <span class="prelude-val">Ok</span>(previous)
     }
 
-    <span class="doccomment">/// Remove a value from this subtrie. The key should be an extension of this subtrie&#39;s key.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The key may be any borrowed form of the trie&#39;s key type, but TrieKey on the borrowed</span>
-    <span class="doccomment">/// form *must* match those for the key type</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">remove</span>&lt;<span class="ident">Q</span>: <span class="question-mark">?</span><span class="ident">Sized</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">Q</span>) -&gt; <span class="ident">SubTrieResult</span>&lt;<span class="ident">V</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">K</span>: <span class="ident">Borrow</span>&lt;<span class="ident">Q</span>&gt;,
-        <span class="ident">Q</span>: <span class="ident">TrieKey</span>,
+    <span class="doccomment">/// Remove a value from this subtrie. The key should be an extension of this subtrie&#39;s key.
+    ///
+    /// The key may be any borrowed form of the trie&#39;s key type, but TrieKey on the borrowed
+    /// form *must* match those for the key type
+    </span><span class="kw">pub fn </span>remove&lt;Q: <span class="question-mark">?</span>Sized&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>Q) -&gt; SubTrieResult&lt;V&gt;
+    <span class="kw">where
+        </span>K: Borrow&lt;Q&gt;,
+        Q: TrieKey,
     {
-        <span class="kw">let</span> <span class="ident">key_enc</span> = <span class="ident">key</span>.<span class="ident">encode</span>();
-        <span class="kw">let</span> <span class="ident">removed</span> = <span class="kw">match</span> <span class="ident">match_keys</span>(<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">prefix</span>, <span class="kw-2">&amp;</span><span class="ident">key_enc</span>) {
-            <span class="ident">KeyMatch::Full</span> =&gt; <span class="self">self</span>.<span class="ident">node</span>.<span class="ident">take_value</span>(<span class="ident">key</span>),
-            <span class="ident">KeyMatch::FirstPrefix</span> =&gt; <span class="self">self</span>.<span class="ident">node</span>.<span class="ident">remove</span>(<span class="ident">key</span>),
-            <span class="kw">_</span> =&gt; {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(());
+        <span class="kw">let </span>key_enc = key.encode();
+        <span class="kw">let </span>removed = <span class="kw">match </span>match_keys(<span class="number">0</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.prefix, <span class="kw-2">&amp;</span>key_enc) {
+            KeyMatch::Full =&gt; <span class="self">self</span>.node.take_value(key),
+            KeyMatch::FirstPrefix =&gt; <span class="self">self</span>.node.remove(key),
+            <span class="kw">_ </span>=&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(());
             }
         };
 
-        <span class="kw">if</span> <span class="ident">removed</span>.<span class="ident">is_some</span>() {
-            <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">length</span> -= <span class="number">1</span>;
+        <span class="kw">if </span>removed.is_some() {
+            <span class="kw-2">*</span><span class="self">self</span>.length -= <span class="number">1</span>;
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">removed</span>)
+        <span class="prelude-val">Ok</span>(removed)
     }
 }
 
-<span class="kw">fn</span> <span class="ident">stripped</span>(<span class="kw-2">mut</span> <span class="ident">key</span>: <span class="ident">Nibblet</span>, <span class="ident">prefix</span>: <span class="kw-2">&amp;</span><span class="ident">Nibblet</span>) -&gt; <span class="ident">Nibblet</span> {
-    <span class="ident">key</span>.<span class="ident">split</span>(<span class="ident">prefix</span>.<span class="ident">len</span>())
+<span class="kw">fn </span>stripped(<span class="kw-2">mut </span>key: Nibblet, prefix: <span class="kw-2">&amp;</span>Nibblet) -&gt; Nibblet {
+    key.split(prefix.len())
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="radix_trie" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="radix_trie" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

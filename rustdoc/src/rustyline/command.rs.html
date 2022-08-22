@@ -233,240 +233,240 @@
 <span id="233">233</span>
 <span id="234">234</span>
 <span id="235">235</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>std::sync::{Arc, Mutex};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::complete_hint_line</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::config::Config</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::edit::State</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::history::SearchDirection</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keymap</span>::{<span class="ident">Anchor</span>, <span class="ident">At</span>, <span class="ident">Cmd</span>, <span class="ident">Movement</span>, <span class="ident">Word</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keymap</span>::{<span class="ident">InputState</span>, <span class="ident">Refresher</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::kill_ring</span>::{<span class="ident">KillRing</span>, <span class="ident">Mode</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::line_buffer::WordAction</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Helper</span>, <span class="prelude-ty">Result</span>};
+<span class="kw">use </span><span class="kw">crate</span>::complete_hint_line;
+<span class="kw">use </span><span class="kw">crate</span>::config::Config;
+<span class="kw">use </span><span class="kw">crate</span>::edit::State;
+<span class="kw">use </span><span class="kw">crate</span>::error;
+<span class="kw">use </span><span class="kw">crate</span>::history::SearchDirection;
+<span class="kw">use </span><span class="kw">crate</span>::keymap::{Anchor, At, Cmd, Movement, Word};
+<span class="kw">use </span><span class="kw">crate</span>::keymap::{InputState, Refresher};
+<span class="kw">use </span><span class="kw">crate</span>::kill_ring::{KillRing, Mode};
+<span class="kw">use </span><span class="kw">crate</span>::line_buffer::WordAction;
+<span class="kw">use crate</span>::{Helper, <span class="prelude-ty">Result</span>};
 
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Status</span> {
-    <span class="ident">Proceed</span>,
-    <span class="ident">Submit</span>,
+<span class="kw">pub enum </span>Status {
+    Proceed,
+    Submit,
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">execute</span>&lt;<span class="ident">H</span>: <span class="ident">Helper</span>&gt;(
-    <span class="ident">cmd</span>: <span class="ident">Cmd</span>,
-    <span class="ident">s</span>: <span class="kw-2">&amp;mut</span> <span class="ident">State</span>&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="ident">H</span>&gt;,
-    <span class="ident">input_state</span>: <span class="kw-2">&amp;</span><span class="ident">InputState</span>,
-    <span class="ident">kill_ring</span>: <span class="kw-2">&amp;</span><span class="ident">Arc</span>&lt;<span class="ident">Mutex</span>&lt;<span class="ident">KillRing</span>&gt;&gt;,
-    <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
-) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">Status</span>&gt; {
-    <span class="kw">use</span> <span class="ident">Status</span>::{<span class="ident">Proceed</span>, <span class="ident">Submit</span>};
+<span class="kw">pub fn </span>execute&lt;H: Helper&gt;(
+    cmd: Cmd,
+    s: <span class="kw-2">&amp;mut </span>State&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, H&gt;,
+    input_state: <span class="kw-2">&amp;</span>InputState,
+    kill_ring: <span class="kw-2">&amp;</span>Arc&lt;Mutex&lt;KillRing&gt;&gt;,
+    config: <span class="kw-2">&amp;</span>Config,
+) -&gt; <span class="prelude-ty">Result</span>&lt;Status&gt; {
+    <span class="kw">use </span>Status::{Proceed, Submit};
 
-    <span class="kw">match</span> <span class="ident">cmd</span> {
-        <span class="ident">Cmd::EndOfFile</span> | <span class="ident">Cmd::AcceptLine</span> | <span class="ident">Cmd::AcceptOrInsertLine</span> { .. } | <span class="ident">Cmd::Newline</span> =&gt; {
-            <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">has_hint</span>() || !<span class="ident">s</span>.<span class="ident">is_default_prompt</span>() {
-                <span class="comment">// Force a refresh without hints to leave the previous</span>
-                <span class="comment">// line as the user typed it after a newline.</span>
-                <span class="ident">s</span>.<span class="ident">refresh_line_with_msg</span>(<span class="prelude-val">None</span>)<span class="question-mark">?</span>;
+    <span class="kw">match </span>cmd {
+        Cmd::EndOfFile | Cmd::AcceptLine | Cmd::AcceptOrInsertLine { .. } | Cmd::Newline =&gt; {
+            <span class="kw">if </span>s.has_hint() || !s.is_default_prompt() {
+                <span class="comment">// Force a refresh without hints to leave the previous
+                // line as the user typed it after a newline.
+                </span>s.refresh_line_with_msg(<span class="prelude-val">None</span>)<span class="question-mark">?</span>;
             }
         }
-        <span class="kw">_</span> =&gt; {}
+        <span class="kw">_ </span>=&gt; {}
     };
-    <span class="kw">match</span> <span class="ident">cmd</span> {
-        <span class="ident">Cmd::CompleteHint</span> =&gt; {
-            <span class="ident">complete_hint_line</span>(<span class="ident">s</span>)<span class="question-mark">?</span>;
+    <span class="kw">match </span>cmd {
+        Cmd::CompleteHint =&gt; {
+            complete_hint_line(s)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::SelfInsert</span>(<span class="ident">n</span>, <span class="ident">c</span>) =&gt; {
-            <span class="ident">s</span>.<span class="ident">edit_insert</span>(<span class="ident">c</span>, <span class="ident">n</span>)<span class="question-mark">?</span>;
+        Cmd::SelfInsert(n, c) =&gt; {
+            s.edit_insert(c, n)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Insert</span>(<span class="ident">n</span>, <span class="ident">text</span>) =&gt; {
-            <span class="ident">s</span>.<span class="ident">edit_yank</span>(<span class="ident">input_state</span>, <span class="kw-2">&amp;</span><span class="ident">text</span>, <span class="ident">Anchor::Before</span>, <span class="ident">n</span>)<span class="question-mark">?</span>;
+        Cmd::Insert(n, text) =&gt; {
+            s.edit_yank(input_state, <span class="kw-2">&amp;</span>text, Anchor::Before, n)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::BeginningOfLine</span>) =&gt; {
-            <span class="comment">// Move to the beginning of line.</span>
-            <span class="ident">s</span>.<span class="ident">edit_move_home</span>()<span class="question-mark">?</span>;
+        Cmd::Move(Movement::BeginningOfLine) =&gt; {
+            <span class="comment">// Move to the beginning of line.
+            </span>s.edit_move_home()<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::ViFirstPrint</span>) =&gt; {
-            <span class="ident">s</span>.<span class="ident">edit_move_home</span>()<span class="question-mark">?</span>;
-            <span class="ident">s</span>.<span class="ident">edit_move_to_next_word</span>(<span class="ident">At::Start</span>, <span class="ident">Word::Big</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
+        Cmd::Move(Movement::ViFirstPrint) =&gt; {
+            s.edit_move_home()<span class="question-mark">?</span>;
+            s.edit_move_to_next_word(At::Start, Word::Big, <span class="number">1</span>)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::BackwardChar</span>(<span class="ident">n</span>)) =&gt; {
-            <span class="comment">// Move back a character.</span>
-            <span class="ident">s</span>.<span class="ident">edit_move_backward</span>(<span class="ident">n</span>)<span class="question-mark">?</span>;
+        Cmd::Move(Movement::BackwardChar(n)) =&gt; {
+            <span class="comment">// Move back a character.
+            </span>s.edit_move_backward(n)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::ReplaceChar</span>(<span class="ident">n</span>, <span class="ident">c</span>) =&gt; <span class="ident">s</span>.<span class="ident">edit_replace_char</span>(<span class="ident">c</span>, <span class="ident">n</span>)<span class="question-mark">?</span>,
-        <span class="ident">Cmd::Replace</span>(<span class="ident">mvt</span>, <span class="ident">text</span>) =&gt; {
-            <span class="ident">s</span>.<span class="ident">edit_kill</span>(<span class="kw-2">&amp;</span><span class="ident">mvt</span>)<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">text</span>) = <span class="ident">text</span> {
-                <span class="ident">s</span>.<span class="ident">edit_insert_text</span>(<span class="kw-2">&amp;</span><span class="ident">text</span>)<span class="question-mark">?</span>;
+        Cmd::ReplaceChar(n, c) =&gt; s.edit_replace_char(c, n)<span class="question-mark">?</span>,
+        Cmd::Replace(mvt, text) =&gt; {
+            s.edit_kill(<span class="kw-2">&amp;</span>mvt)<span class="question-mark">?</span>;
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(text) = text {
+                s.edit_insert_text(<span class="kw-2">&amp;</span>text)<span class="question-mark">?</span>;
             }
         }
-        <span class="ident">Cmd::Overwrite</span>(<span class="ident">c</span>) =&gt; {
-            <span class="ident">s</span>.<span class="ident">edit_overwrite_char</span>(<span class="ident">c</span>)<span class="question-mark">?</span>;
+        Cmd::Overwrite(c) =&gt; {
+            s.edit_overwrite_char(c)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::EndOfFile</span> =&gt; {
-            <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">is_empty</span>() {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">error::ReadlineError::Eof</span>);
-            } <span class="kw">else</span> <span class="kw">if</span> !<span class="ident">input_state</span>.<span class="ident">is_emacs_mode</span>() {
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">Submit</span>);
+        Cmd::EndOfFile =&gt; {
+            <span class="kw">if </span>s.line.is_empty() {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(error::ReadlineError::Eof);
+            } <span class="kw">else if </span>!input_state.is_emacs_mode() {
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(Submit);
             }
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::EndOfLine</span>) =&gt; {
-            <span class="comment">// Move to the end of line.</span>
-            <span class="ident">s</span>.<span class="ident">edit_move_end</span>()<span class="question-mark">?</span>;
+        Cmd::Move(Movement::EndOfLine) =&gt; {
+            <span class="comment">// Move to the end of line.
+            </span>s.edit_move_end()<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::ForwardChar</span>(<span class="ident">n</span>)) =&gt; {
-            <span class="comment">// Move forward a character.</span>
-            <span class="ident">s</span>.<span class="ident">edit_move_forward</span>(<span class="ident">n</span>)<span class="question-mark">?</span>;
+        Cmd::Move(Movement::ForwardChar(n)) =&gt; {
+            <span class="comment">// Move forward a character.
+            </span>s.edit_move_forward(n)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::ClearScreen</span> =&gt; {
-            <span class="comment">// Clear the screen leaving the current line at the top of the screen.</span>
-            <span class="ident">s</span>.<span class="ident">clear_screen</span>()<span class="question-mark">?</span>;
-            <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
+        Cmd::ClearScreen =&gt; {
+            <span class="comment">// Clear the screen leaving the current line at the top of the screen.
+            </span>s.clear_screen()<span class="question-mark">?</span>;
+            s.refresh_line()<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::NextHistory</span> =&gt; {
-            <span class="comment">// Fetch the next command from the history list.</span>
-            <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        Cmd::NextHistory =&gt; {
+            <span class="comment">// Fetch the next command from the history list.
+            </span>s.edit_history_next(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::PreviousHistory</span> =&gt; {
-            <span class="comment">// Fetch the previous command from the history list.</span>
-            <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">true</span>)<span class="question-mark">?</span>;
+        Cmd::PreviousHistory =&gt; {
+            <span class="comment">// Fetch the previous command from the history list.
+            </span>s.edit_history_next(<span class="bool-val">true</span>)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::LineUpOrPreviousHistory</span>(<span class="ident">n</span>) =&gt; {
-            <span class="kw">if</span> !<span class="ident">s</span>.<span class="ident">edit_move_line_up</span>(<span class="ident">n</span>)<span class="question-mark">?</span> {
-                <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">true</span>)<span class="question-mark">?</span>;
+        Cmd::LineUpOrPreviousHistory(n) =&gt; {
+            <span class="kw">if </span>!s.edit_move_line_up(n)<span class="question-mark">? </span>{
+                s.edit_history_next(<span class="bool-val">true</span>)<span class="question-mark">?</span>;
             }
         }
-        <span class="ident">Cmd::LineDownOrNextHistory</span>(<span class="ident">n</span>) =&gt; {
-            <span class="kw">if</span> !<span class="ident">s</span>.<span class="ident">edit_move_line_down</span>(<span class="ident">n</span>)<span class="question-mark">?</span> {
-                <span class="ident">s</span>.<span class="ident">edit_history_next</span>(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        Cmd::LineDownOrNextHistory(n) =&gt; {
+            <span class="kw">if </span>!s.edit_move_line_down(n)<span class="question-mark">? </span>{
+                s.edit_history_next(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
             }
         }
-        <span class="ident">Cmd::HistorySearchBackward</span> =&gt; <span class="ident">s</span>.<span class="ident">edit_history_search</span>(<span class="ident">SearchDirection::Reverse</span>)<span class="question-mark">?</span>,
-        <span class="ident">Cmd::HistorySearchForward</span> =&gt; <span class="ident">s</span>.<span class="ident">edit_history_search</span>(<span class="ident">SearchDirection::Forward</span>)<span class="question-mark">?</span>,
-        <span class="ident">Cmd::TransposeChars</span> =&gt; {
-            <span class="comment">// Exchange the char before cursor with the character at cursor.</span>
-            <span class="ident">s</span>.<span class="ident">edit_transpose_chars</span>()<span class="question-mark">?</span>;
+        Cmd::HistorySearchBackward =&gt; s.edit_history_search(SearchDirection::Reverse)<span class="question-mark">?</span>,
+        Cmd::HistorySearchForward =&gt; s.edit_history_search(SearchDirection::Forward)<span class="question-mark">?</span>,
+        Cmd::TransposeChars =&gt; {
+            <span class="comment">// Exchange the char before cursor with the character at cursor.
+            </span>s.edit_transpose_chars()<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Yank</span>(<span class="ident">n</span>, <span class="ident">anchor</span>) =&gt; {
-            <span class="comment">// retrieve (yank) last item killed</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kill_ring</span> = <span class="ident">kill_ring</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">text</span>) = <span class="ident">kill_ring</span>.<span class="ident">yank</span>() {
-                <span class="ident">s</span>.<span class="ident">edit_yank</span>(<span class="ident">input_state</span>, <span class="ident">text</span>, <span class="ident">anchor</span>, <span class="ident">n</span>)<span class="question-mark">?</span>;
+        Cmd::Yank(n, anchor) =&gt; {
+            <span class="comment">// retrieve (yank) last item killed
+            </span><span class="kw">let </span><span class="kw-2">mut </span>kill_ring = kill_ring.lock().unwrap();
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(text) = kill_ring.yank() {
+                s.edit_yank(input_state, text, anchor, n)<span class="question-mark">?</span>;
             }
         }
-        <span class="ident">Cmd::ViYankTo</span>(<span class="kw-2">ref</span> <span class="ident">mvt</span>) =&gt; {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">text</span>) = <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">copy</span>(<span class="ident">mvt</span>) {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kill_ring</span> = <span class="ident">kill_ring</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-                <span class="ident">kill_ring</span>.<span class="ident">kill</span>(<span class="kw-2">&amp;</span><span class="ident">text</span>, <span class="ident">Mode::Append</span>);
+        Cmd::ViYankTo(<span class="kw-2">ref </span>mvt) =&gt; {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(text) = s.line.copy(mvt) {
+                <span class="kw">let </span><span class="kw-2">mut </span>kill_ring = kill_ring.lock().unwrap();
+                kill_ring.kill(<span class="kw-2">&amp;</span>text, Mode::Append);
             }
         }
-        <span class="ident">Cmd::Newline</span> =&gt; {
-            <span class="ident">s</span>.<span class="ident">edit_insert</span>(<span class="string">&#39;\n&#39;</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
+        Cmd::Newline =&gt; {
+            s.edit_insert(<span class="string">&#39;\n&#39;</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::AcceptLine</span> | <span class="ident">Cmd::AcceptOrInsertLine</span> { .. } =&gt; {
-            <span class="kw">let</span> <span class="ident">validation_result</span> = <span class="ident">s</span>.<span class="ident">validate</span>()<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">valid</span> = <span class="ident">validation_result</span>.<span class="ident">is_valid</span>();
-            <span class="kw">let</span> <span class="ident">end</span> = <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">is_end_of_input</span>();
-            <span class="kw">match</span> (<span class="ident">cmd</span>, <span class="ident">valid</span>, <span class="ident">end</span>) {
-                (<span class="ident">Cmd::AcceptLine</span>, ..)
-                | (<span class="ident">Cmd::AcceptOrInsertLine</span> { .. }, <span class="bool-val">true</span>, <span class="bool-val">true</span>)
+        Cmd::AcceptLine | Cmd::AcceptOrInsertLine { .. } =&gt; {
+            <span class="kw">let </span>validation_result = s.validate()<span class="question-mark">?</span>;
+            <span class="kw">let </span>valid = validation_result.is_valid();
+            <span class="kw">let </span>end = s.line.is_end_of_input();
+            <span class="kw">match </span>(cmd, valid, end) {
+                (Cmd::AcceptLine, ..)
+                | (Cmd::AcceptOrInsertLine { .. }, <span class="bool-val">true</span>, <span class="bool-val">true</span>)
                 | (
-                    <span class="ident">Cmd::AcceptOrInsertLine</span> {
-                        <span class="ident">accept_in_the_middle</span>: <span class="bool-val">true</span>,
+                    Cmd::AcceptOrInsertLine {
+                        accept_in_the_middle: <span class="bool-val">true</span>,
                     },
                     <span class="bool-val">true</span>,
                     <span class="kw">_</span>,
                 ) =&gt; {
-                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">Submit</span>);
+                    <span class="kw">return </span><span class="prelude-val">Ok</span>(Submit);
                 }
-                (<span class="ident">Cmd::AcceptOrInsertLine</span> { .. }, <span class="bool-val">false</span>, <span class="kw">_</span>)
-                | (<span class="ident">Cmd::AcceptOrInsertLine</span> { .. }, <span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; {
-                    <span class="kw">if</span> <span class="ident">valid</span> || !<span class="ident">validation_result</span>.<span class="ident">has_message</span>() {
-                        <span class="ident">s</span>.<span class="ident">edit_insert</span>(<span class="string">&#39;\n&#39;</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
+                (Cmd::AcceptOrInsertLine { .. }, <span class="bool-val">false</span>, <span class="kw">_</span>)
+                | (Cmd::AcceptOrInsertLine { .. }, <span class="bool-val">true</span>, <span class="bool-val">false</span>) =&gt; {
+                    <span class="kw">if </span>valid || !validation_result.has_message() {
+                        s.edit_insert(<span class="string">&#39;\n&#39;</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
                     }
                 }
-                <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
+                <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(),
             }
         }
-        <span class="ident">Cmd::BeginningOfHistory</span> =&gt; {
-            <span class="comment">// move to first entry in history</span>
-            <span class="ident">s</span>.<span class="ident">edit_history</span>(<span class="bool-val">true</span>)<span class="question-mark">?</span>;
+        Cmd::BeginningOfHistory =&gt; {
+            <span class="comment">// move to first entry in history
+            </span>s.edit_history(<span class="bool-val">true</span>)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::EndOfHistory</span> =&gt; {
-            <span class="comment">// move to last entry in history</span>
-            <span class="ident">s</span>.<span class="ident">edit_history</span>(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        Cmd::EndOfHistory =&gt; {
+            <span class="comment">// move to last entry in history
+            </span>s.edit_history(<span class="bool-val">false</span>)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::BackwardWord</span>(<span class="ident">n</span>, <span class="ident">word_def</span>)) =&gt; {
-            <span class="comment">// move backwards one word</span>
-            <span class="ident">s</span>.<span class="ident">edit_move_to_prev_word</span>(<span class="ident">word_def</span>, <span class="ident">n</span>)<span class="question-mark">?</span>;
+        Cmd::Move(Movement::BackwardWord(n, word_def)) =&gt; {
+            <span class="comment">// move backwards one word
+            </span>s.edit_move_to_prev_word(word_def, n)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::CapitalizeWord</span> =&gt; {
-            <span class="comment">// capitalize word after point</span>
-            <span class="ident">s</span>.<span class="ident">edit_word</span>(<span class="ident">WordAction::Capitalize</span>)<span class="question-mark">?</span>;
+        Cmd::CapitalizeWord =&gt; {
+            <span class="comment">// capitalize word after point
+            </span>s.edit_word(WordAction::Capitalize)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Kill</span>(<span class="kw-2">ref</span> <span class="ident">mvt</span>) =&gt; {
-            <span class="ident">s</span>.<span class="ident">edit_kill</span>(<span class="ident">mvt</span>)<span class="question-mark">?</span>;
+        Cmd::Kill(<span class="kw-2">ref </span>mvt) =&gt; {
+            s.edit_kill(mvt)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::ForwardWord</span>(<span class="ident">n</span>, <span class="ident">at</span>, <span class="ident">word_def</span>)) =&gt; {
-            <span class="comment">// move forwards one word</span>
-            <span class="ident">s</span>.<span class="ident">edit_move_to_next_word</span>(<span class="ident">at</span>, <span class="ident">word_def</span>, <span class="ident">n</span>)<span class="question-mark">?</span>;
+        Cmd::Move(Movement::ForwardWord(n, at, word_def)) =&gt; {
+            <span class="comment">// move forwards one word
+            </span>s.edit_move_to_next_word(at, word_def, n)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::LineUp</span>(<span class="ident">n</span>)) =&gt; {
-            <span class="ident">s</span>.<span class="ident">edit_move_line_up</span>(<span class="ident">n</span>)<span class="question-mark">?</span>;
+        Cmd::Move(Movement::LineUp(n)) =&gt; {
+            s.edit_move_line_up(n)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::LineDown</span>(<span class="ident">n</span>)) =&gt; {
-            <span class="ident">s</span>.<span class="ident">edit_move_line_down</span>(<span class="ident">n</span>)<span class="question-mark">?</span>;
+        Cmd::Move(Movement::LineDown(n)) =&gt; {
+            s.edit_move_line_down(n)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::BeginningOfBuffer</span>) =&gt; {
-            <span class="comment">// Move to the start of the buffer.</span>
-            <span class="ident">s</span>.<span class="ident">edit_move_buffer_start</span>()<span class="question-mark">?</span>;
+        Cmd::Move(Movement::BeginningOfBuffer) =&gt; {
+            <span class="comment">// Move to the start of the buffer.
+            </span>s.edit_move_buffer_start()<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::EndOfBuffer</span>) =&gt; {
-            <span class="comment">// Move to the end of the buffer.</span>
-            <span class="ident">s</span>.<span class="ident">edit_move_buffer_end</span>()<span class="question-mark">?</span>;
+        Cmd::Move(Movement::EndOfBuffer) =&gt; {
+            <span class="comment">// Move to the end of the buffer.
+            </span>s.edit_move_buffer_end()<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::DowncaseWord</span> =&gt; {
-            <span class="comment">// lowercase word after point</span>
-            <span class="ident">s</span>.<span class="ident">edit_word</span>(<span class="ident">WordAction::Lowercase</span>)<span class="question-mark">?</span>;
+        Cmd::DowncaseWord =&gt; {
+            <span class="comment">// lowercase word after point
+            </span>s.edit_word(WordAction::Lowercase)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::TransposeWords</span>(<span class="ident">n</span>) =&gt; {
-            <span class="comment">// transpose words</span>
-            <span class="ident">s</span>.<span class="ident">edit_transpose_words</span>(<span class="ident">n</span>)<span class="question-mark">?</span>;
+        Cmd::TransposeWords(n) =&gt; {
+            <span class="comment">// transpose words
+            </span>s.edit_transpose_words(n)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::UpcaseWord</span> =&gt; {
-            <span class="comment">// uppercase word after point</span>
-            <span class="ident">s</span>.<span class="ident">edit_word</span>(<span class="ident">WordAction::Uppercase</span>)<span class="question-mark">?</span>;
+        Cmd::UpcaseWord =&gt; {
+            <span class="comment">// uppercase word after point
+            </span>s.edit_word(WordAction::Uppercase)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::YankPop</span> =&gt; {
-            <span class="comment">// yank-pop</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kill_ring</span> = <span class="ident">kill_ring</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">yank_size</span>, <span class="ident">text</span>)) = <span class="ident">kill_ring</span>.<span class="ident">yank_pop</span>() {
-                <span class="ident">s</span>.<span class="ident">edit_yank_pop</span>(<span class="ident">yank_size</span>, <span class="ident">text</span>)<span class="question-mark">?</span>;
+        Cmd::YankPop =&gt; {
+            <span class="comment">// yank-pop
+            </span><span class="kw">let </span><span class="kw-2">mut </span>kill_ring = kill_ring.lock().unwrap();
+            <span class="kw">if let </span><span class="prelude-val">Some</span>((yank_size, text)) = kill_ring.yank_pop() {
+                s.edit_yank_pop(yank_size, text)<span class="question-mark">?</span>;
             }
         }
-        <span class="ident">Cmd::Move</span>(<span class="ident">Movement::ViCharSearch</span>(<span class="ident">n</span>, <span class="ident">cs</span>)) =&gt; <span class="ident">s</span>.<span class="ident">edit_move_to</span>(<span class="ident">cs</span>, <span class="ident">n</span>)<span class="question-mark">?</span>,
-        <span class="ident">Cmd::Undo</span>(<span class="ident">n</span>) =&gt; {
-            <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">undo</span>(<span class="kw-2">&amp;mut</span> <span class="ident">s</span>.<span class="ident">line</span>, <span class="ident">n</span>) {
-                <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
+        Cmd::Move(Movement::ViCharSearch(n, cs)) =&gt; s.edit_move_to(cs, n)<span class="question-mark">?</span>,
+        Cmd::Undo(n) =&gt; {
+            <span class="kw">if </span>s.changes.borrow_mut().undo(<span class="kw-2">&amp;mut </span>s.line, n) {
+                s.refresh_line()<span class="question-mark">?</span>;
             }
         }
-        <span class="ident">Cmd::Dedent</span>(<span class="ident">mvt</span>) =&gt; {
-            <span class="ident">s</span>.<span class="ident">edit_indent</span>(<span class="kw-2">&amp;</span><span class="ident">mvt</span>, <span class="ident">config</span>.<span class="ident">indent_size</span>(), <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+        Cmd::Dedent(mvt) =&gt; {
+            s.edit_indent(<span class="kw-2">&amp;</span>mvt, config.indent_size(), <span class="bool-val">true</span>)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Indent</span>(<span class="ident">mvt</span>) =&gt; {
-            <span class="ident">s</span>.<span class="ident">edit_indent</span>(<span class="kw-2">&amp;</span><span class="ident">mvt</span>, <span class="ident">config</span>.<span class="ident">indent_size</span>(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        Cmd::Indent(mvt) =&gt; {
+            s.edit_indent(<span class="kw-2">&amp;</span>mvt, config.indent_size(), <span class="bool-val">false</span>)<span class="question-mark">?</span>;
         }
-        <span class="ident">Cmd::Interrupt</span> =&gt; {
-            <span class="comment">// Move to end, in case cursor was in the middle of the</span>
-            <span class="comment">// line, so that next thing application prints goes after</span>
-            <span class="comment">// the input</span>
-            <span class="ident">s</span>.<span class="ident">move_cursor_to_end</span>()<span class="question-mark">?</span>;
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">error::ReadlineError::Interrupted</span>);
+        Cmd::Interrupt =&gt; {
+            <span class="comment">// Move to end, in case cursor was in the middle of the
+            // line, so that next thing application prints goes after
+            // the input
+            </span>s.move_cursor_to_end()<span class="question-mark">?</span>;
+            <span class="kw">return </span><span class="prelude-val">Err</span>(error::ReadlineError::Interrupted);
         }
-        <span class="kw">_</span> =&gt; {
-            <span class="comment">// Ignore the character typed.</span>
-        }
+        <span class="kw">_ </span>=&gt; {
+            <span class="comment">// Ignore the character typed.
+        </span>}
     }
-    <span class="prelude-val">Ok</span>(<span class="ident">Proceed</span>)
+    <span class="prelude-val">Ok</span>(Proceed)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

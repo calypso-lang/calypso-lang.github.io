@@ -51,58 +51,58 @@
 <span id="51">51</span>
 <span id="52">52</span>
 <span id="53">53</span>
-</pre><pre class="rust"><code><span class="doccomment">//! POSIX-style filesystem functions which operate on bare paths.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! POSIX-style filesystem functions which operate on bare paths.
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(
-    <span class="ident">target_os</span> = <span class="string">&quot;illumos&quot;</span>,
-    <span class="ident">target_os</span> = <span class="string">&quot;netbsd&quot;</span>,
-    <span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>,
-    <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>,
-)))]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::fs::StatFs</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;illumos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>)))]</span>
-<span class="kw">use</span> {
-    <span class="ident"><span class="kw">crate</span>::fs::StatVfs</span>,
-    <span class="kw">crate</span>::{<span class="ident">backend</span>, <span class="ident">io</span>, <span class="ident">path</span>},
+</span><span class="attribute">#[cfg(not(any(
+    target_os = <span class="string">&quot;illumos&quot;</span>,
+    target_os = <span class="string">&quot;netbsd&quot;</span>,
+    target_os = <span class="string">&quot;redox&quot;</span>,
+    target_os = <span class="string">&quot;wasi&quot;</span>,
+)))]
+</span><span class="kw">use </span><span class="kw">crate</span>::fs::StatFs;
+<span class="attribute">#[cfg(not(any(target_os = <span class="string">&quot;illumos&quot;</span>, target_os = <span class="string">&quot;redox&quot;</span>, target_os = <span class="string">&quot;wasi&quot;</span>)))]
+</span><span class="kw">use </span>{
+    <span class="kw">crate</span>::fs::StatVfs,
+    <span class="kw">crate</span>::{backend, io, path},
 };
 
-<span class="doccomment">/// `statfs`—Queries filesystem metadata.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Compared to [`statvfs`], this function often provides more information,</span>
-<span class="doccomment">/// though it&#39;s less portable.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # References</span>
-<span class="doccomment">///  - [Linux]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man2/statfs.2.html</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(
-    <span class="ident">target_os</span> = <span class="string">&quot;illumos&quot;</span>,
-    <span class="ident">target_os</span> = <span class="string">&quot;netbsd&quot;</span>,
-    <span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>,
-    <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>,
-)))]</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">statfs</span>&lt;<span class="ident">P</span>: <span class="ident">path::Arg</span>&gt;(<span class="ident">path</span>: <span class="ident">P</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">StatFs</span>&gt; {
-    <span class="ident">path</span>.<span class="ident">into_with_c_str</span>(<span class="ident">backend::fs::syscalls::statfs</span>)
+<span class="doccomment">/// `statfs`—Queries filesystem metadata.
+///
+/// Compared to [`statvfs`], this function often provides more information,
+/// though it&#39;s less portable.
+///
+/// # References
+///  - [Linux]
+///
+/// [Linux]: https://man7.org/linux/man-pages/man2/statfs.2.html
+</span><span class="attribute">#[cfg(not(any(
+    target_os = <span class="string">&quot;illumos&quot;</span>,
+    target_os = <span class="string">&quot;netbsd&quot;</span>,
+    target_os = <span class="string">&quot;redox&quot;</span>,
+    target_os = <span class="string">&quot;wasi&quot;</span>,
+)))]
+#[inline]
+</span><span class="kw">pub fn </span>statfs&lt;P: path::Arg&gt;(path: P) -&gt; io::Result&lt;StatFs&gt; {
+    path.into_with_c_str(backend::fs::syscalls::statfs)
 }
 
-<span class="doccomment">/// `statvfs`—Queries filesystem metadata, POSIX version.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Compared to [`statfs`], this function often provides less information,</span>
-<span class="doccomment">/// but it is more portable. But even so, filesystems are very diverse and not</span>
-<span class="doccomment">/// all the fields are meaningful for every filesystem. And `f_fsid` doesn&#39;t</span>
-<span class="doccomment">/// seem to have a clear meaning anywhere.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # References</span>
-<span class="doccomment">///  - [POSIX]</span>
-<span class="doccomment">///  - [Linux]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [POSIX]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/statvfs.html</span>
-<span class="doccomment">/// [Linux]: https://man7.org/linux/man-pages/man2/statvfs.2.html</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">target_os</span> = <span class="string">&quot;illumos&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;redox&quot;</span>, <span class="ident">target_os</span> = <span class="string">&quot;wasi&quot;</span>)))]</span>
-<span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">statvfs</span>&lt;<span class="ident">P</span>: <span class="ident">path::Arg</span>&gt;(<span class="ident">path</span>: <span class="ident">P</span>) -&gt; <span class="ident">io::Result</span>&lt;<span class="ident">StatVfs</span>&gt; {
-    <span class="ident">path</span>.<span class="ident">into_with_c_str</span>(<span class="ident">backend::fs::syscalls::statvfs</span>)
+<span class="doccomment">/// `statvfs`—Queries filesystem metadata, POSIX version.
+///
+/// Compared to [`statfs`], this function often provides less information,
+/// but it is more portable. But even so, filesystems are very diverse and not
+/// all the fields are meaningful for every filesystem. And `f_fsid` doesn&#39;t
+/// seem to have a clear meaning anywhere.
+///
+/// # References
+///  - [POSIX]
+///  - [Linux]
+///
+/// [POSIX]: https://pubs.opengroup.org/onlinepubs/9699919799/functions/statvfs.html
+/// [Linux]: https://man7.org/linux/man-pages/man2/statvfs.2.html
+</span><span class="attribute">#[cfg(not(any(target_os = <span class="string">&quot;illumos&quot;</span>, target_os = <span class="string">&quot;redox&quot;</span>, target_os = <span class="string">&quot;wasi&quot;</span>)))]
+#[inline]
+</span><span class="kw">pub fn </span>statvfs&lt;P: path::Arg&gt;(path: P) -&gt; io::Result&lt;StatVfs&gt; {
+    path.into_with_c_str(backend::fs::syscalls::statvfs)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

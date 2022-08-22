@@ -418,369 +418,369 @@
 <span id="418">418</span>
 <span id="419">419</span>
 <span id="420">420</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
+</pre><pre class="rust"><code><span class="kw">use </span>std::borrow::Cow;
 
-<span class="doccomment">/// Match pattern expressions, see [`Assert`][crate::Assert]</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Built-in expressions:</span>
-<span class="doccomment">/// - `...` on a line of its own: match multiple complete lines</span>
-<span class="doccomment">/// - `[..]`: match multiple characters within a line</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Substitutions</span> {
-    <span class="ident">vars</span>: <span class="ident">std::collections::BTreeMap</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;static</span>, <span class="ident">str</span>&gt;&gt;,
-    <span class="ident">unused</span>: <span class="ident">std::collections::BTreeSet</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>&gt;,
+<span class="doccomment">/// Match pattern expressions, see [`Assert`][crate::Assert]
+///
+/// Built-in expressions:
+/// - `...` on a line of its own: match multiple complete lines
+/// - `[..]`: match multiple characters within a line
+</span><span class="attribute">#[derive(Default, Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>Substitutions {
+    vars: std::collections::BTreeMap&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, Cow&lt;<span class="lifetime">&#39;static</span>, str&gt;&gt;,
+    unused: std::collections::BTreeSet&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Substitutions</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident">Default::default</span>()
+<span class="kw">impl </span>Substitutions {
+    <span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        Default::default()
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">with_exe</span>() -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">substitutions</span> = <span class="ident"><span class="self">Self</span>::new</span>();
-        <span class="ident">substitutions</span>
-            .<span class="ident">insert</span>(<span class="string">&quot;[EXE]&quot;</span>, <span class="ident">std::env::consts::EXE_SUFFIX</span>)
-            .<span class="ident">unwrap</span>();
-        <span class="ident">substitutions</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>with_exe() -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>substitutions = <span class="self">Self</span>::new();
+        substitutions
+            .insert(<span class="string">&quot;[EXE]&quot;</span>, std::env::consts::EXE_SUFFIX)
+            .unwrap();
+        substitutions
     }
 
-    <span class="doccomment">/// Insert an additional match pattern</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `key` must be enclosed in `[` and `]`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// let mut subst = snapbox::Substitutions::new();</span>
-    <span class="doccomment">/// subst.insert(&quot;[EXE]&quot;, std::env::consts::EXE_SUFFIX);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
-        <span class="ident">value</span>: <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">Cow</span>&lt;<span class="lifetime">&#39;static</span>, <span class="ident">str</span>&gt;&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="kw">let</span> <span class="ident">key</span> = <span class="ident">validate_key</span>(<span class="ident">key</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">value</span> = <span class="ident">value</span>.<span class="ident">into</span>();
-        <span class="kw">if</span> <span class="ident">value</span>.<span class="ident">is_empty</span>() {
-            <span class="self">self</span>.<span class="ident">unused</span>.<span class="ident">insert</span>(<span class="ident">key</span>);
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">vars</span>
-                .<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident"><span class="kw">crate</span>::utils::normalize_text</span>(<span class="ident">value</span>.<span class="ident">as_ref</span>()).<span class="ident">into</span>());
+    <span class="doccomment">/// Insert an additional match pattern
+    ///
+    /// `key` must be enclosed in `[` and `]`.
+    ///
+    /// ```rust
+    /// let mut subst = snapbox::Substitutions::new();
+    /// subst.insert(&quot;[EXE]&quot;, std::env::consts::EXE_SUFFIX);
+    /// ```
+    </span><span class="kw">pub fn </span>insert(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        key: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+        value: <span class="kw">impl </span>Into&lt;Cow&lt;<span class="lifetime">&#39;static</span>, str&gt;&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw">crate</span>::Error&gt; {
+        <span class="kw">let </span>key = validate_key(key)<span class="question-mark">?</span>;
+        <span class="kw">let </span>value = value.into();
+        <span class="kw">if </span>value.is_empty() {
+            <span class="self">self</span>.unused.insert(key);
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.vars
+                .insert(key, <span class="kw">crate</span>::utils::normalize_text(value.as_ref()).into());
         }
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Insert additional match patterns</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// keys must be enclosed in `[` and `]`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">extend</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">vars</span>: <span class="kw">impl</span> <span class="ident">IntoIterator</span>&lt;<span class="ident">Item</span> = (<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="kw">impl</span> <span class="ident">Into</span>&lt;<span class="ident">Cow</span>&lt;<span class="lifetime">&#39;static</span>, <span class="ident">str</span>&gt;&gt;)&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">vars</span> {
-            <span class="self">self</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">value</span>)<span class="question-mark">?</span>;
+    <span class="doccomment">/// Insert additional match patterns
+    ///
+    /// keys must be enclosed in `[` and `]`.
+    </span><span class="kw">pub fn </span>extend(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        vars: <span class="kw">impl </span>IntoIterator&lt;Item = (<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="kw">impl </span>Into&lt;Cow&lt;<span class="lifetime">&#39;static</span>, str&gt;&gt;)&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw">crate</span>::Error&gt; {
+        <span class="kw">for </span>(key, value) <span class="kw">in </span>vars {
+            <span class="self">self</span>.insert(key, value)<span class="question-mark">?</span>;
         }
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Apply match pattern to `input`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If `pattern` matches `input`, then `pattern` is returned.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Otherwise, `input`, with as many patterns replaced as possible, will be returned.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// let subst = snapbox::Substitutions::new();</span>
-    <span class="doccomment">/// let output = subst.normalize(&quot;Hello World!&quot;, &quot;Hello [..]!&quot;);</span>
-    <span class="doccomment">/// assert_eq!(output, &quot;Hello [..]!&quot;);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">normalize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pattern</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-        <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="self">self</span>)
+    <span class="doccomment">/// Apply match pattern to `input`
+    ///
+    /// If `pattern` matches `input`, then `pattern` is returned.
+    ///
+    /// Otherwise, `input`, with as many patterns replaced as possible, will be returned.
+    ///
+    /// ```rust
+    /// let subst = snapbox::Substitutions::new();
+    /// let output = subst.normalize(&quot;Hello World!&quot;, &quot;Hello [..]!&quot;);
+    /// assert_eq!(output, &quot;Hello [..]!&quot;);
+    /// ```
+    </span><span class="kw">pub fn </span>normalize(<span class="kw-2">&amp;</span><span class="self">self</span>, input: <span class="kw-2">&amp;</span>str, pattern: <span class="kw-2">&amp;</span>str) -&gt; String {
+        normalize(input, pattern, <span class="self">self</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">substitute</span>&lt;<span class="lifetime">&#39;v</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;v</span> <span class="ident">str</span>) -&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;v</span>, <span class="ident">str</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value</span> = <span class="ident">Cow::Borrowed</span>(<span class="ident">value</span>);
-        <span class="kw">for</span> (<span class="ident">var</span>, <span class="ident">replace</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="ident">vars</span>.<span class="ident">iter</span>() {
-            <span class="macro">debug_assert!</span>(!<span class="ident">replace</span>.<span class="ident">is_empty</span>());
-            <span class="ident">value</span> = <span class="ident">Cow::Owned</span>(<span class="ident">value</span>.<span class="ident">replace</span>(<span class="ident">replace</span>.<span class="ident">as_ref</span>(), <span class="ident">var</span>));
+    <span class="kw">fn </span>substitute&lt;<span class="lifetime">&#39;v</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, value: <span class="kw-2">&amp;</span><span class="lifetime">&#39;v </span>str) -&gt; Cow&lt;<span class="lifetime">&#39;v</span>, str&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>value = Cow::Borrowed(value);
+        <span class="kw">for </span>(var, replace) <span class="kw">in </span><span class="self">self</span>.vars.iter() {
+            <span class="macro">debug_assert!</span>(!replace.is_empty());
+            value = Cow::Owned(value.replace(replace.as_ref(), var));
         }
-        <span class="ident">value</span>
+        value
     }
 
-    <span class="kw">fn</span> <span class="ident">clear</span>&lt;<span class="lifetime">&#39;v</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">pattern</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;v</span> <span class="ident">str</span>) -&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;v</span>, <span class="ident">str</span>&gt; {
-        <span class="kw">if</span> <span class="ident">pattern</span>.<span class="ident">contains</span>(<span class="string">&#39;[&#39;</span>) {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pattern</span> = <span class="ident">Cow::Borrowed</span>(<span class="ident">pattern</span>);
-            <span class="kw">for</span> <span class="ident">var</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">unused</span>.<span class="ident">iter</span>() {
-                <span class="ident">pattern</span> = <span class="ident">Cow::Owned</span>(<span class="ident">pattern</span>.<span class="ident">replace</span>(<span class="ident">var</span>, <span class="string">&quot;&quot;</span>));
+    <span class="kw">fn </span>clear&lt;<span class="lifetime">&#39;v</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, pattern: <span class="kw-2">&amp;</span><span class="lifetime">&#39;v </span>str) -&gt; Cow&lt;<span class="lifetime">&#39;v</span>, str&gt; {
+        <span class="kw">if </span>pattern.contains(<span class="string">&#39;[&#39;</span>) {
+            <span class="kw">let </span><span class="kw-2">mut </span>pattern = Cow::Borrowed(pattern);
+            <span class="kw">for </span>var <span class="kw">in </span><span class="self">self</span>.unused.iter() {
+                pattern = Cow::Owned(pattern.replace(var, <span class="string">&quot;&quot;</span>));
             }
-            <span class="ident">pattern</span>
-        } <span class="kw">else</span> {
-            <span class="ident">Cow::Borrowed</span>(<span class="ident">pattern</span>)
+            pattern
+        } <span class="kw">else </span>{
+            Cow::Borrowed(pattern)
         }
     }
 }
 
-<span class="kw">fn</span> <span class="ident">validate_key</span>(<span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-    <span class="kw">if</span> !<span class="ident">key</span>.<span class="ident">starts_with</span>(<span class="string">&#39;[&#39;</span>) || !<span class="ident">key</span>.<span class="ident">ends_with</span>(<span class="string">&#39;]&#39;</span>) {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Key `{}` is not enclosed in []&quot;</span>, <span class="ident">key</span>).<span class="ident">into</span>());
+<span class="kw">fn </span>validate_key(key: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str, <span class="kw">crate</span>::Error&gt; {
+    <span class="kw">if </span>!key.starts_with(<span class="string">&#39;[&#39;</span>) || !key.ends_with(<span class="string">&#39;]&#39;</span>) {
+        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Key `{}` is not enclosed in []&quot;</span>, key).into());
     }
 
-    <span class="kw">if</span> <span class="ident">key</span>[<span class="number">1</span>..(<span class="ident">key</span>.<span class="ident">len</span>() - <span class="number">1</span>)]
-        .<span class="ident">find</span>(|<span class="ident">c</span>: <span class="ident">char</span>| !<span class="ident">c</span>.<span class="ident">is_ascii_uppercase</span>())
-        .<span class="ident">is_some</span>()
+    <span class="kw">if </span>key[<span class="number">1</span>..(key.len() - <span class="number">1</span>)]
+        .find(|c: char| !c.is_ascii_uppercase())
+        .is_some()
     {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Key `{}` can only be A-Z but &quot;</span>, <span class="ident">key</span>).<span class="ident">into</span>());
+        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Key `{}` can only be A-Z but &quot;</span>, key).into());
     }
 
-    <span class="prelude-val">Ok</span>(<span class="ident">key</span>)
+    <span class="prelude-val">Ok</span>(key)
 }
 
-<span class="kw">fn</span> <span class="ident">normalize</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pattern</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">substitutions</span>: <span class="kw-2">&amp;</span><span class="ident">Substitutions</span>) -&gt; <span class="ident">String</span> {
-    <span class="kw">if</span> <span class="ident">input</span> == <span class="ident">pattern</span> {
-        <span class="kw">return</span> <span class="ident">input</span>.<span class="ident">to_owned</span>();
+<span class="kw">fn </span>normalize(input: <span class="kw-2">&amp;</span>str, pattern: <span class="kw-2">&amp;</span>str, substitutions: <span class="kw-2">&amp;</span>Substitutions) -&gt; String {
+    <span class="kw">if </span>input == pattern {
+        <span class="kw">return </span>input.to_owned();
     }
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">normalized</span>: <span class="ident">Vec</span>&lt;<span class="ident">Cow</span>&lt;<span class="ident">str</span>&gt;&gt; = <span class="ident">Vec::new</span>();
-    <span class="kw">let</span> <span class="ident">input_lines</span>: <span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt; = <span class="ident"><span class="kw">crate</span>::utils::LinesWithTerminator::new</span>(<span class="ident">input</span>).<span class="ident">collect</span>();
-    <span class="kw">let</span> <span class="ident">pattern_lines</span>: <span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt; = <span class="ident"><span class="kw">crate</span>::utils::LinesWithTerminator::new</span>(<span class="ident">pattern</span>).<span class="ident">collect</span>();
+    <span class="kw">let </span><span class="kw-2">mut </span>normalized: Vec&lt;Cow&lt;str&gt;&gt; = Vec::new();
+    <span class="kw">let </span>input_lines: Vec&lt;<span class="kw">_</span>&gt; = <span class="kw">crate</span>::utils::LinesWithTerminator::new(input).collect();
+    <span class="kw">let </span>pattern_lines: Vec&lt;<span class="kw">_</span>&gt; = <span class="kw">crate</span>::utils::LinesWithTerminator::new(pattern).collect();
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input_index</span> = <span class="number">0</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pattern_index</span> = <span class="number">0</span>;
-    <span class="lifetime">&#39;outer</span>: <span class="kw">loop</span> {
-        <span class="kw">let</span> <span class="ident">pattern_line</span> = <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pattern_line</span>) = <span class="ident">pattern_lines</span>.<span class="ident">get</span>(<span class="ident">pattern_index</span>) {
-            <span class="kw-2">*</span><span class="ident">pattern_line</span>
-        } <span class="kw">else</span> {
-            <span class="ident">normalized</span>.<span class="ident">extend</span>(
-                <span class="ident">input_lines</span>[<span class="ident">input_index</span>..]
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">copied</span>()
-                    .<span class="ident">map</span>(|<span class="ident">s</span>| <span class="ident">substitutions</span>.<span class="ident">substitute</span>(<span class="ident">s</span>)),
+    <span class="kw">let </span><span class="kw-2">mut </span>input_index = <span class="number">0</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>pattern_index = <span class="number">0</span>;
+    <span class="lifetime">&#39;outer</span>: <span class="kw">loop </span>{
+        <span class="kw">let </span>pattern_line = <span class="kw">if let </span><span class="prelude-val">Some</span>(pattern_line) = pattern_lines.get(pattern_index) {
+            <span class="kw-2">*</span>pattern_line
+        } <span class="kw">else </span>{
+            normalized.extend(
+                input_lines[input_index..]
+                    .iter()
+                    .copied()
+                    .map(|s| substitutions.substitute(s)),
             );
-            <span class="kw">break</span> <span class="lifetime">&#39;outer</span>;
+            <span class="kw">break </span><span class="lifetime">&#39;outer</span>;
         };
-        <span class="kw">let</span> <span class="ident">next_pattern_index</span> = <span class="ident">pattern_index</span> + <span class="number">1</span>;
+        <span class="kw">let </span>next_pattern_index = pattern_index + <span class="number">1</span>;
 
-        <span class="kw">let</span> <span class="ident">input_line</span> = <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">input_line</span>) = <span class="ident">input_lines</span>.<span class="ident">get</span>(<span class="ident">input_index</span>) {
-            <span class="kw-2">*</span><span class="ident">input_line</span>
-        } <span class="kw">else</span> {
-            <span class="kw">break</span> <span class="lifetime">&#39;outer</span>;
+        <span class="kw">let </span>input_line = <span class="kw">if let </span><span class="prelude-val">Some</span>(input_line) = input_lines.get(input_index) {
+            <span class="kw-2">*</span>input_line
+        } <span class="kw">else </span>{
+            <span class="kw">break </span><span class="lifetime">&#39;outer</span>;
         };
-        <span class="kw">let</span> <span class="ident">next_input_index</span> = <span class="ident">input_index</span> + <span class="number">1</span>;
+        <span class="kw">let </span>next_input_index = input_index + <span class="number">1</span>;
 
-        <span class="kw">if</span> <span class="ident">line_matches</span>(<span class="ident">input_line</span>, <span class="ident">pattern_line</span>, <span class="ident">substitutions</span>) {
-            <span class="ident">pattern_index</span> = <span class="ident">next_pattern_index</span>;
-            <span class="ident">input_index</span> = <span class="ident">next_input_index</span>;
-            <span class="ident">normalized</span>.<span class="ident">push</span>(<span class="ident">Cow::Borrowed</span>(<span class="ident">pattern_line</span>));
-            <span class="kw">continue</span> <span class="lifetime">&#39;outer</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">is_line_elide</span>(<span class="ident">pattern_line</span>) {
-            <span class="kw">let</span> <span class="ident">next_pattern_line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> =
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">pattern_line</span>) = <span class="ident">pattern_lines</span>.<span class="ident">get</span>(<span class="ident">next_pattern_index</span>) {
-                    <span class="ident">pattern_line</span>
-                } <span class="kw">else</span> {
-                    <span class="ident">normalized</span>.<span class="ident">push</span>(<span class="ident">Cow::Borrowed</span>(<span class="ident">pattern_line</span>));
-                    <span class="kw">break</span> <span class="lifetime">&#39;outer</span>;
+        <span class="kw">if </span>line_matches(input_line, pattern_line, substitutions) {
+            pattern_index = next_pattern_index;
+            input_index = next_input_index;
+            normalized.push(Cow::Borrowed(pattern_line));
+            <span class="kw">continue </span><span class="lifetime">&#39;outer</span>;
+        } <span class="kw">else if </span>is_line_elide(pattern_line) {
+            <span class="kw">let </span>next_pattern_line: <span class="kw-2">&amp;</span>str =
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(pattern_line) = pattern_lines.get(next_pattern_index) {
+                    pattern_line
+                } <span class="kw">else </span>{
+                    normalized.push(Cow::Borrowed(pattern_line));
+                    <span class="kw">break </span><span class="lifetime">&#39;outer</span>;
                 };
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">future_input_index</span>) = <span class="ident">input_lines</span>[<span class="ident">input_index</span>..]
-                .<span class="ident">iter</span>()
-                .<span class="ident">enumerate</span>()
-                .<span class="ident">find</span>(|(<span class="kw">_</span>, <span class="ident">l</span>)| <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">l</span> == <span class="ident">next_pattern_line</span>)
-                .<span class="ident">map</span>(|(<span class="ident">i</span>, <span class="kw">_</span>)| <span class="ident">input_index</span> + <span class="ident">i</span>)
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(future_input_index) = input_lines[input_index..]
+                .iter()
+                .enumerate()
+                .find(|(<span class="kw">_</span>, l)| <span class="kw-2">**</span>l == next_pattern_line)
+                .map(|(i, <span class="kw">_</span>)| input_index + i)
             {
-                <span class="ident">normalized</span>.<span class="ident">push</span>(<span class="ident">Cow::Borrowed</span>(<span class="ident">pattern_line</span>));
-                <span class="ident">pattern_index</span> = <span class="ident">next_pattern_index</span>;
-                <span class="ident">input_index</span> = <span class="ident">future_input_index</span>;
-                <span class="kw">continue</span> <span class="lifetime">&#39;outer</span>;
-            } <span class="kw">else</span> {
-                <span class="ident">normalized</span>.<span class="ident">extend</span>(
-                    <span class="ident">input_lines</span>[<span class="ident">input_index</span>..]
-                        .<span class="ident">iter</span>()
-                        .<span class="ident">copied</span>()
-                        .<span class="ident">map</span>(|<span class="ident">s</span>| <span class="ident">substitutions</span>.<span class="ident">substitute</span>(<span class="ident">s</span>)),
+                normalized.push(Cow::Borrowed(pattern_line));
+                pattern_index = next_pattern_index;
+                input_index = future_input_index;
+                <span class="kw">continue </span><span class="lifetime">&#39;outer</span>;
+            } <span class="kw">else </span>{
+                normalized.extend(
+                    input_lines[input_index..]
+                        .iter()
+                        .copied()
+                        .map(|s| substitutions.substitute(s)),
                 );
-                <span class="kw">break</span> <span class="lifetime">&#39;outer</span>;
+                <span class="kw">break </span><span class="lifetime">&#39;outer</span>;
             }
-        } <span class="kw">else</span> {
-            <span class="comment">// Find where we can pick back up for normalizing</span>
-            <span class="kw">for</span> <span class="ident">future_input_index</span> <span class="kw">in</span> <span class="ident">next_input_index</span>..<span class="ident">input_lines</span>.<span class="ident">len</span>() {
-                <span class="kw">let</span> <span class="ident">future_input_line</span> = <span class="ident">input_lines</span>[<span class="ident">future_input_index</span>];
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">future_pattern_index</span>) = <span class="ident">pattern_lines</span>[<span class="ident">next_pattern_index</span>..]
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">enumerate</span>()
-                    .<span class="ident">find</span>(|(<span class="kw">_</span>, <span class="ident">l</span>)| <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">l</span> == <span class="ident">future_input_line</span> || <span class="ident">is_line_elide</span>(<span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">l</span>))
-                    .<span class="ident">map</span>(|(<span class="ident">i</span>, <span class="kw">_</span>)| <span class="ident">next_pattern_index</span> + <span class="ident">i</span>)
+        } <span class="kw">else </span>{
+            <span class="comment">// Find where we can pick back up for normalizing
+            </span><span class="kw">for </span>future_input_index <span class="kw">in </span>next_input_index..input_lines.len() {
+                <span class="kw">let </span>future_input_line = input_lines[future_input_index];
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(future_pattern_index) = pattern_lines[next_pattern_index..]
+                    .iter()
+                    .enumerate()
+                    .find(|(<span class="kw">_</span>, l)| <span class="kw-2">**</span>l == future_input_line || is_line_elide(<span class="kw-2">**</span>l))
+                    .map(|(i, <span class="kw">_</span>)| next_pattern_index + i)
                 {
-                    <span class="ident">normalized</span>.<span class="ident">extend</span>(
-                        <span class="ident">input_lines</span>[<span class="ident">input_index</span>..<span class="ident">future_input_index</span>]
-                            .<span class="ident">iter</span>()
-                            .<span class="ident">copied</span>()
-                            .<span class="ident">map</span>(|<span class="ident">s</span>| <span class="ident">substitutions</span>.<span class="ident">substitute</span>(<span class="ident">s</span>)),
+                    normalized.extend(
+                        input_lines[input_index..future_input_index]
+                            .iter()
+                            .copied()
+                            .map(|s| substitutions.substitute(s)),
                     );
-                    <span class="ident">pattern_index</span> = <span class="ident">future_pattern_index</span>;
-                    <span class="ident">input_index</span> = <span class="ident">future_input_index</span>;
-                    <span class="kw">continue</span> <span class="lifetime">&#39;outer</span>;
+                    pattern_index = future_pattern_index;
+                    input_index = future_input_index;
+                    <span class="kw">continue </span><span class="lifetime">&#39;outer</span>;
                 }
             }
 
-            <span class="ident">normalized</span>.<span class="ident">extend</span>(
-                <span class="ident">input_lines</span>[<span class="ident">input_index</span>..]
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">copied</span>()
-                    .<span class="ident">map</span>(|<span class="ident">s</span>| <span class="ident">substitutions</span>.<span class="ident">substitute</span>(<span class="ident">s</span>)),
+            normalized.extend(
+                input_lines[input_index..]
+                    .iter()
+                    .copied()
+                    .map(|s| substitutions.substitute(s)),
             );
-            <span class="kw">break</span> <span class="lifetime">&#39;outer</span>;
+            <span class="kw">break </span><span class="lifetime">&#39;outer</span>;
         }
     }
 
-    <span class="ident">normalized</span>.<span class="ident">join</span>(<span class="string">&quot;&quot;</span>)
+    normalized.join(<span class="string">&quot;&quot;</span>)
 }
 
-<span class="kw">fn</span> <span class="ident">is_line_elide</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">bool</span> {
-    <span class="ident">line</span> == <span class="string">&quot;...\n&quot;</span> || <span class="ident">line</span> == <span class="string">&quot;...&quot;</span>
-}
+<span class="kw">fn </span>is_line_elide(line: <span class="kw-2">&amp;</span>str) -&gt; bool {
+    line == <span class="string">&quot;...\n&quot; </span>|| line == <span class="string">&quot;...&quot;
+</span>}
 
-<span class="kw">fn</span> <span class="ident">line_matches</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pattern</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">substitutions</span>: <span class="kw-2">&amp;</span><span class="ident">Substitutions</span>) -&gt; <span class="ident">bool</span> {
-    <span class="kw">if</span> <span class="ident">line</span> == <span class="ident">pattern</span> {
-        <span class="kw">return</span> <span class="bool-val">true</span>;
+<span class="kw">fn </span>line_matches(line: <span class="kw-2">&amp;</span>str, pattern: <span class="kw-2">&amp;</span>str, substitutions: <span class="kw-2">&amp;</span>Substitutions) -&gt; bool {
+    <span class="kw">if </span>line == pattern {
+        <span class="kw">return </span><span class="bool-val">true</span>;
     }
 
-    <span class="kw">let</span> <span class="ident">subbed</span> = <span class="ident">substitutions</span>.<span class="ident">substitute</span>(<span class="ident">line</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">line</span> = <span class="ident">subbed</span>.<span class="ident">as_ref</span>();
+    <span class="kw">let </span>subbed = substitutions.substitute(line);
+    <span class="kw">let </span><span class="kw-2">mut </span>line = subbed.as_ref();
 
-    <span class="kw">let</span> <span class="ident">pattern</span> = <span class="ident">substitutions</span>.<span class="ident">clear</span>(<span class="ident">pattern</span>);
+    <span class="kw">let </span>pattern = substitutions.clear(pattern);
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sections</span> = <span class="ident">pattern</span>.<span class="ident">split</span>(<span class="string">&quot;[..]&quot;</span>).<span class="ident">peekable</span>();
-    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">section</span>) = <span class="ident">sections</span>.<span class="ident">next</span>() {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">remainder</span>) = <span class="ident">line</span>.<span class="ident">strip_prefix</span>(<span class="ident">section</span>) {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next_section</span>) = <span class="ident">sections</span>.<span class="ident">peek</span>() {
-                <span class="kw">if</span> <span class="ident">next_section</span>.<span class="ident">is_empty</span>() {
-                    <span class="ident">line</span> = <span class="string">&quot;&quot;</span>;
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">restart_index</span>) = <span class="ident">remainder</span>.<span class="ident">find</span>(<span class="ident">next_section</span>) {
-                    <span class="ident">line</span> = <span class="kw-2">&amp;</span><span class="ident">remainder</span>[<span class="ident">restart_index</span>..];
+    <span class="kw">let </span><span class="kw-2">mut </span>sections = pattern.split(<span class="string">&quot;[..]&quot;</span>).peekable();
+    <span class="kw">while let </span><span class="prelude-val">Some</span>(section) = sections.next() {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(remainder) = line.strip_prefix(section) {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(next_section) = sections.peek() {
+                <span class="kw">if </span>next_section.is_empty() {
+                    line = <span class="string">&quot;&quot;</span>;
+                } <span class="kw">else if let </span><span class="prelude-val">Some</span>(restart_index) = remainder.find(next_section) {
+                    line = <span class="kw-2">&amp;</span>remainder[restart_index..];
                 }
-            } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="ident">remainder</span>.<span class="ident">is_empty</span>();
+            } <span class="kw">else </span>{
+                <span class="kw">return </span>remainder.is_empty();
             }
-        } <span class="kw">else</span> {
-            <span class="kw">return</span> <span class="bool-val">false</span>;
+        } <span class="kw">else </span>{
+            <span class="kw">return </span><span class="bool-val">false</span>;
         }
     }
 
-    <span class="bool-val">false</span>
-}
+    <span class="bool-val">false
+</span>}
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">empty</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>empty() {
+        <span class="kw">let </span>input = <span class="string">&quot;&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">literals_match</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;Hello\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;Hello\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>literals_match() {
+        <span class="kw">let </span>input = <span class="string">&quot;Hello\nWorld&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;Hello\nWorld&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\nWorld&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">pattern_shorter</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;Hello\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;Hello\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>pattern_shorter() {
+        <span class="kw">let </span>input = <span class="string">&quot;Hello\nWorld&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;Hello\n&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\nWorld&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">input_shorter</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;Hello\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;Hello\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>input_shorter() {
+        <span class="kw">let </span>input = <span class="string">&quot;Hello\n&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;Hello\nWorld&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\n&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">all_different</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;Hello\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;Goodbye\nMoon&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>all_different() {
+        <span class="kw">let </span>input = <span class="string">&quot;Hello\nWorld&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;Goodbye\nMoon&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\nWorld&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">middles_diverge</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;Hello\nWorld\nGoodbye&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;Hello\nMoon\nGoodbye&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\nWorld\nGoodbye&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>middles_diverge() {
+        <span class="kw">let </span>input = <span class="string">&quot;Hello\nWorld\nGoodbye&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;Hello\nMoon\nGoodbye&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\nWorld\nGoodbye&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">leading_elide</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;Hello\nWorld\nGoodbye&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;...\nGoodbye&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;...\nGoodbye&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>leading_elide() {
+        <span class="kw">let </span>input = <span class="string">&quot;Hello\nWorld\nGoodbye&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;...\nGoodbye&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;...\nGoodbye&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">trailing_elide</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;Hello\nWorld\nGoodbye&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;Hello\n...&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\n...&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>trailing_elide() {
+        <span class="kw">let </span>input = <span class="string">&quot;Hello\nWorld\nGoodbye&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;Hello\n...&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\n...&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">middle_elide</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;Hello\nWorld\nGoodbye&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;Hello\n...\nGoodbye&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\n...\nGoodbye&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>middle_elide() {
+        <span class="kw">let </span>input = <span class="string">&quot;Hello\nWorld\nGoodbye&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;Hello\n...\nGoodbye&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\n...\nGoodbye&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">post_elide_diverge</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;Hello\nSun\nAnd\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;Hello\n...\nMoon&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\nSun\nAnd\nWorld&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>post_elide_diverge() {
+        <span class="kw">let </span>input = <span class="string">&quot;Hello\nSun\nAnd\nWorld&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;Hello\n...\nMoon&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\nSun\nAnd\nWorld&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">post_diverge_elide</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;Hello\nWorld\nGoodbye\nSir&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;Hello\nMoon\nGoodbye\n...&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\nWorld\nGoodbye\n...&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>post_diverge_elide() {
+        <span class="kw">let </span>input = <span class="string">&quot;Hello\nWorld\nGoodbye\nSir&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;Hello\nMoon\nGoodbye\n...&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\nWorld\nGoodbye\n...&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">inline_elide</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;Hello\nWorld\nGoodbye\nSir&quot;</span>;
-        <span class="kw">let</span> <span class="ident">pattern</span> = <span class="string">&quot;Hello\nW[..]d\nGoodbye\nSir&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="string">&quot;Hello\nW[..]d\nGoodbye\nSir&quot;</span>;
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">normalize</span>(<span class="ident">input</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>inline_elide() {
+        <span class="kw">let </span>input = <span class="string">&quot;Hello\nWorld\nGoodbye\nSir&quot;</span>;
+        <span class="kw">let </span>pattern = <span class="string">&quot;Hello\nW[..]d\nGoodbye\nSir&quot;</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;Hello\nW[..]d\nGoodbye\nSir&quot;</span>;
+        <span class="kw">let </span>actual = normalize(input, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">line_matches_cases</span>() {
-        <span class="kw">let</span> <span class="ident">cases</span> = [
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>line_matches_cases() {
+        <span class="kw">let </span>cases = [
             (<span class="string">&quot;&quot;</span>, <span class="string">&quot;&quot;</span>, <span class="bool-val">true</span>),
             (<span class="string">&quot;&quot;</span>, <span class="string">&quot;[..]&quot;</span>, <span class="bool-val">true</span>),
             (<span class="string">&quot;hello&quot;</span>, <span class="string">&quot;hello&quot;</span>, <span class="bool-val">true</span>),
@@ -817,26 +817,26 @@
             ),
             (<span class="string">&quot;hello world, goodbye moon&quot;</span>, <span class="string">&quot;hello [..], [..] world&quot;</span>, <span class="bool-val">false</span>),
         ];
-        <span class="kw">for</span> (<span class="ident">line</span>, <span class="ident">pattern</span>, <span class="ident">expected</span>) <span class="kw">in</span> <span class="ident">cases</span> {
-            <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">line_matches</span>(<span class="ident">line</span>, <span class="ident">pattern</span>, <span class="kw-2">&amp;</span><span class="ident">Substitutions::new</span>());
-            <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>, <span class="string">&quot;line={:?}  pattern={:?}&quot;</span>, <span class="ident">line</span>, <span class="ident">pattern</span>);
+        <span class="kw">for </span>(line, pattern, expected) <span class="kw">in </span>cases {
+            <span class="kw">let </span>actual = line_matches(line, pattern, <span class="kw-2">&amp;</span>Substitutions::new());
+            <span class="macro">assert_eq!</span>(expected, actual, <span class="string">&quot;line={:?}  pattern={:?}&quot;</span>, line, pattern);
         }
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">test_validate_key</span>() {
-        <span class="kw">let</span> <span class="ident">cases</span> = [
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>test_validate_key() {
+        <span class="kw">let </span>cases = [
             (<span class="string">&quot;[HELLO&quot;</span>, <span class="bool-val">false</span>),
             (<span class="string">&quot;HELLO]&quot;</span>, <span class="bool-val">false</span>),
             (<span class="string">&quot;[HELLO]&quot;</span>, <span class="bool-val">true</span>),
             (<span class="string">&quot;[hello]&quot;</span>, <span class="bool-val">false</span>),
             (<span class="string">&quot;[HE  O]&quot;</span>, <span class="bool-val">false</span>),
         ];
-        <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">expected</span>) <span class="kw">in</span> <span class="ident">cases</span> {
-            <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">validate_key</span>(<span class="ident">key</span>).<span class="ident">is_ok</span>();
-            <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>, <span class="string">&quot;key={:?}&quot;</span>, <span class="ident">key</span>);
+        <span class="kw">for </span>(key, expected) <span class="kw">in </span>cases {
+            <span class="kw">let </span>actual = validate_key(key).is_ok();
+            <span class="macro">assert_eq!</span>(expected, actual, <span class="string">&quot;key={:?}&quot;</span>, key);
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="snapbox" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

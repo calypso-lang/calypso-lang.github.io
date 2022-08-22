@@ -76,83 +76,83 @@
 <span id="76">76</span>
 <span id="77">77</span>
 <span id="78">78</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">super</span>::size_hint</span>;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::size_hint;
 
-<span class="kw">use</span> <span class="ident">std::cell::RefCell</span>;
-<span class="kw">use</span> <span class="ident">alloc::collections::VecDeque</span>;
-<span class="kw">use</span> <span class="ident">alloc::rc::Rc</span>;
+<span class="kw">use </span>std::cell::RefCell;
+<span class="kw">use </span>alloc::collections::VecDeque;
+<span class="kw">use </span>alloc::rc::Rc;
 
-<span class="doccomment">/// Common buffer object for the two tee halves</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">struct</span> <span class="ident">TeeBuffer</span>&lt;<span class="ident">A</span>, <span class="ident">I</span>&gt; {
-    <span class="ident">backlog</span>: <span class="ident">VecDeque</span>&lt;<span class="ident">A</span>&gt;,
-    <span class="ident">iter</span>: <span class="ident">I</span>,
-    <span class="doccomment">/// The owner field indicates which id should read from the backlog</span>
-    <span class="ident">owner</span>: <span class="ident">bool</span>,
+<span class="doccomment">/// Common buffer object for the two tee halves
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">struct </span>TeeBuffer&lt;A, I&gt; {
+    backlog: VecDeque&lt;A&gt;,
+    iter: I,
+    <span class="doccomment">/// The owner field indicates which id should read from the backlog
+    </span>owner: bool,
 }
 
-<span class="doccomment">/// One half of an iterator pair where both return the same elements.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.tee()`](crate::Itertools::tee) for more information.</span>
-<span class="attribute">#[<span class="ident">must_use</span> = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Tee</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>
+<span class="doccomment">/// One half of an iterator pair where both return the same elements.
+///
+/// See [`.tee()`](crate::Itertools::tee) for more information.
+</span><span class="attribute">#[must_use = <span class="string">&quot;iterator adaptors are lazy and do nothing unless consumed&quot;</span>]
+#[derive(Debug)]
+</span><span class="kw">pub struct </span>Tee&lt;I&gt;
+    <span class="kw">where </span>I: Iterator
 {
-    <span class="ident">rcbuffer</span>: <span class="ident">Rc</span>&lt;<span class="ident">RefCell</span>&lt;<span class="ident">TeeBuffer</span>&lt;<span class="ident">I::Item</span>, <span class="ident">I</span>&gt;&gt;&gt;,
-    <span class="ident">id</span>: <span class="ident">bool</span>,
+    rcbuffer: Rc&lt;RefCell&lt;TeeBuffer&lt;I::Item, I&gt;&gt;&gt;,
+    id: bool,
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>&lt;<span class="ident">I</span>&gt;(<span class="ident">iter</span>: <span class="ident">I</span>) -&gt; (<span class="ident">Tee</span>&lt;<span class="ident">I</span>&gt;, <span class="ident">Tee</span>&lt;<span class="ident">I</span>&gt;)
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>
+<span class="kw">pub fn </span>new&lt;I&gt;(iter: I) -&gt; (Tee&lt;I&gt;, Tee&lt;I&gt;)
+    <span class="kw">where </span>I: Iterator
 {
-    <span class="kw">let</span> <span class="ident">buffer</span> = <span class="ident">TeeBuffer</span>{<span class="ident">backlog</span>: <span class="ident">VecDeque::new</span>(), <span class="ident">iter</span>, <span class="ident">owner</span>: <span class="bool-val">false</span>};
-    <span class="kw">let</span> <span class="ident">t1</span> = <span class="ident">Tee</span>{<span class="ident">rcbuffer</span>: <span class="ident">Rc::new</span>(<span class="ident">RefCell::new</span>(<span class="ident">buffer</span>)), <span class="ident">id</span>: <span class="bool-val">true</span>};
-    <span class="kw">let</span> <span class="ident">t2</span> = <span class="ident">Tee</span>{<span class="ident">rcbuffer</span>: <span class="ident">t1</span>.<span class="ident">rcbuffer</span>.<span class="ident">clone</span>(), <span class="ident">id</span>: <span class="bool-val">false</span>};
-    (<span class="ident">t1</span>, <span class="ident">t2</span>)
+    <span class="kw">let </span>buffer = TeeBuffer{backlog: VecDeque::new(), iter, owner: <span class="bool-val">false</span>};
+    <span class="kw">let </span>t1 = Tee{rcbuffer: Rc::new(RefCell::new(buffer)), id: <span class="bool-val">true</span>};
+    <span class="kw">let </span>t2 = Tee{rcbuffer: t1.rcbuffer.clone(), id: <span class="bool-val">false</span>};
+    (t1, t2)
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Tee</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">Iterator</span>,
-          <span class="ident">I::Item</span>: <span class="ident">Clone</span>
+<span class="kw">impl</span>&lt;I&gt; Iterator <span class="kw">for </span>Tee&lt;I&gt;
+    <span class="kw">where </span>I: Iterator,
+          I::Item: Clone
 {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="ident">I::Item</span>;
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::Item</span>&gt; {
-        <span class="comment">// .borrow_mut may fail here -- but only if the user has tied some kind of weird</span>
-        <span class="comment">// knot where the iterator refers back to itself.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> = <span class="self">self</span>.<span class="ident">rcbuffer</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">if</span> <span class="ident">buffer</span>.<span class="ident">owner</span> == <span class="self">self</span>.<span class="ident">id</span> {
-            <span class="kw">match</span> <span class="ident">buffer</span>.<span class="ident">backlog</span>.<span class="ident">pop_front</span>() {
-                <span class="prelude-val">None</span> =&gt; {}
-                <span class="ident">some_elt</span> =&gt; <span class="kw">return</span> <span class="ident">some_elt</span>,
+    <span class="kw">type </span>Item = I::Item;
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::Item&gt; {
+        <span class="comment">// .borrow_mut may fail here -- but only if the user has tied some kind of weird
+        // knot where the iterator refers back to itself.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>buffer = <span class="self">self</span>.rcbuffer.borrow_mut();
+        <span class="kw">if </span>buffer.owner == <span class="self">self</span>.id {
+            <span class="kw">match </span>buffer.backlog.pop_front() {
+                <span class="prelude-val">None </span>=&gt; {}
+                some_elt =&gt; <span class="kw">return </span>some_elt,
             }
         }
-        <span class="kw">match</span> <span class="ident">buffer</span>.<span class="ident">iter</span>.<span class="ident">next</span>() {
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="prelude-val">Some</span>(<span class="ident">elt</span>) =&gt; {
-                <span class="ident">buffer</span>.<span class="ident">backlog</span>.<span class="ident">push_back</span>(<span class="ident">elt</span>.<span class="ident">clone</span>());
-                <span class="ident">buffer</span>.<span class="ident">owner</span> = !<span class="self">self</span>.<span class="ident">id</span>;
-                <span class="prelude-val">Some</span>(<span class="ident">elt</span>)
+        <span class="kw">match </span>buffer.iter.next() {
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+            <span class="prelude-val">Some</span>(elt) =&gt; {
+                buffer.backlog.push_back(elt.clone());
+                buffer.owner = !<span class="self">self</span>.id;
+                <span class="prelude-val">Some</span>(elt)
             }
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (<span class="ident">usize</span>, <span class="prelude-ty">Option</span>&lt;<span class="ident">usize</span>&gt;) {
-        <span class="kw">let</span> <span class="ident">buffer</span> = <span class="self">self</span>.<span class="ident">rcbuffer</span>.<span class="ident">borrow</span>();
-        <span class="kw">let</span> <span class="ident">sh</span> = <span class="ident">buffer</span>.<span class="ident">iter</span>.<span class="ident">size_hint</span>();
+    <span class="kw">fn </span>size_hint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (usize, <span class="prelude-ty">Option</span>&lt;usize&gt;) {
+        <span class="kw">let </span>buffer = <span class="self">self</span>.rcbuffer.borrow();
+        <span class="kw">let </span>sh = buffer.iter.size_hint();
 
-        <span class="kw">if</span> <span class="ident">buffer</span>.<span class="ident">owner</span> == <span class="self">self</span>.<span class="ident">id</span> {
-            <span class="kw">let</span> <span class="ident">log_len</span> = <span class="ident">buffer</span>.<span class="ident">backlog</span>.<span class="ident">len</span>();
-            <span class="ident">size_hint::add_scalar</span>(<span class="ident">sh</span>, <span class="ident">log_len</span>)
-        } <span class="kw">else</span> {
-            <span class="ident">sh</span>
+        <span class="kw">if </span>buffer.owner == <span class="self">self</span>.id {
+            <span class="kw">let </span>log_len = buffer.backlog.len();
+            size_hint::add_scalar(sh, log_len)
+        } <span class="kw">else </span>{
+            sh
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">I</span>&gt; <span class="ident">ExactSizeIterator</span> <span class="kw">for</span> <span class="ident">Tee</span>&lt;<span class="ident">I</span>&gt;
-    <span class="kw">where</span> <span class="ident">I</span>: <span class="ident">ExactSizeIterator</span>,
-          <span class="ident">I::Item</span>: <span class="ident">Clone</span>
+<span class="kw">impl</span>&lt;I&gt; ExactSizeIterator <span class="kw">for </span>Tee&lt;I&gt;
+    <span class="kw">where </span>I: ExactSizeIterator,
+          I::Item: Clone
 {}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="itertools" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

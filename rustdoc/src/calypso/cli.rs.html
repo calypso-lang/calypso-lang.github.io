@@ -178,185 +178,185 @@
 <span id="178">178</span>
 <span id="179">179</span>
 <span id="180">180</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">clap</span>::{<span class="ident">Parser</span>, <span class="ident">Subcommand</span>};
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Display</span>},
-    <span class="ident">path::PathBuf</span>,
+</pre><pre class="rust"><code><span class="kw">use </span>clap::{Parser, Subcommand};
+<span class="kw">use </span>std::{
+    fmt::{<span class="self">self</span>, Display},
+    path::PathBuf,
 };
 
-<span class="kw">use</span> <span class="ident">calypso_base::ui</span>::{<span class="self">self</span>, <span class="ident">atty::Stream</span>, <span class="ident">termcolor::ColorChoice</span>};
+<span class="kw">use </span>calypso_base::ui::{<span class="self">self</span>, atty::Stream, termcolor::ColorChoice};
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Parser</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Args</span> {
-    <span class="doccomment">/// Set how color is displayed, if at all. By default this is set to</span>
-    <span class="doccomment">/// `auto`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Possible values:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - `always`: Always use color, even if stdout/stderr is not a TTY</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - `ansi`: Always use color, using ANSI escape codes, even if</span>
-    <span class="doccomment">/// stdout/stderr is not a TTY or does not support them.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - `auto`: Use color if stdout/stderr is a TTY, don&#39;t if it is not.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - `never`: Never use color, even if stdout/stderr is a TTY.</span>
-    <span class="attribute">#[<span class="ident">clap</span>(
-        <span class="ident">long</span>,
-        <span class="ident">parse</span>(<span class="ident">from_str</span> = <span class="ident">parse_color_prefs</span>),
-        <span class="ident">possible_values</span> = <span class="kw-2">&amp;</span>[
+<span class="attribute">#[derive(Debug, Parser)]
+</span><span class="kw">pub struct </span>Args {
+    <span class="doccomment">/// Set how color is displayed, if at all. By default this is set to
+    /// `auto`.
+    ///
+    /// Possible values:
+    ///
+    /// - `always`: Always use color, even if stdout/stderr is not a TTY
+    ///
+    /// - `ansi`: Always use color, using ANSI escape codes, even if
+    /// stdout/stderr is not a TTY or does not support them.
+    ///
+    /// - `auto`: Use color if stdout/stderr is a TTY, don&#39;t if it is not.
+    ///
+    /// - `never`: Never use color, even if stdout/stderr is a TTY.
+    </span><span class="attribute">#[clap(
+        long,
+        parse(from_str = parse_color_prefs),
+        possible_values = <span class="kw-2">&amp;</span>[
             <span class="string">&quot;always&quot;</span>,
             <span class="string">&quot;ansi&quot;</span>,
             <span class="string">&quot;auto&quot;</span>,
-            <span class="string">&quot;never&quot;</span>
-        ]</span>,
-        <span class="ident">default_value</span> = <span class="string">&quot;auto&quot;</span>
-    )]
-    <span class="kw">pub</span> <span class="ident">color</span>: (<span class="ident">ColorChoice</span>, <span class="ident">ColorChoice</span>),
+            <span class="string">&quot;never&quot;
+        </span>]</span>,
+        default_value = <span class="string">&quot;auto&quot;
+    </span>)]
+    <span class="kw">pub </span>color: (ColorChoice, ColorChoice),
 
-    <span class="doccomment">/// The logging filter to use.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See tracing-subscriber&#39;s EnvFilter type for an explanation of the format:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// https://docs.rs/tracing-subscriber/*/tracing_subscriber/filter/struct.EnvFilter.html</span>
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">long</span>, <span class="ident">env</span> = <span class="string">&quot;CALYPSO_LOG&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">log</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">String</span>&gt;,
+    <span class="doccomment">/// The logging filter to use.
+    ///
+    /// See tracing-subscriber&#39;s EnvFilter type for an explanation of the format:
+    ///
+    /// https://docs.rs/tracing-subscriber/*/tracing_subscriber/filter/struct.EnvFilter.html
+    </span><span class="attribute">#[clap(long, env = <span class="string">&quot;CALYPSO_LOG&quot;</span>)]
+    </span><span class="kw">pub </span>log: <span class="prelude-ty">Option</span>&lt;String&gt;,
 
-    <span class="doccomment">/// The logging format to use.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Formats available:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - `pretty`: Overly verbose, but good for human consumption.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - `compact`: Less verbose, but still readable.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - `json`: Intended for machine interpretation.</span>
-    <span class="doccomment">/// (see https://docs.rs/tracing-subscriber/*/tracing_subscriber/fmt/format/struct.Json.html)</span>
-    <span class="attribute">#[<span class="ident">clap</span>(
-        <span class="ident">long</span>,
-        <span class="ident">env</span> = <span class="string">&quot;CALYPSO_LOG_FORMAT&quot;</span>,
-        <span class="ident">possible_values</span> = <span class="kw-2">&amp;</span>[
+    <span class="doccomment">/// The logging format to use.
+    ///
+    /// Formats available:
+    ///
+    /// - `pretty`: Overly verbose, but good for human consumption.
+    ///
+    /// - `compact`: Less verbose, but still readable.
+    ///
+    /// - `json`: Intended for machine interpretation.
+    /// (see https://docs.rs/tracing-subscriber/*/tracing_subscriber/fmt/format/struct.Json.html)
+    </span><span class="attribute">#[clap(
+        long,
+        env = <span class="string">&quot;CALYPSO_LOG_FORMAT&quot;</span>,
+        possible_values = <span class="kw-2">&amp;</span>[
             <span class="string">&quot;pretty&quot;</span>,
             <span class="string">&quot;compact&quot;</span>,
-            <span class="string">&quot;json&quot;</span>
-        ]</span>,
-        <span class="ident">default_value</span> = <span class="string">&quot;compact&quot;</span>,
-        <span class="ident">parse</span>(<span class="ident">from_str</span> = <span class="ident">parse_log_format</span>)
+            <span class="string">&quot;json&quot;
+        </span>]</span>,
+        default_value = <span class="string">&quot;compact&quot;</span>,
+        parse(from_str = parse_log_format)
     )]
-    <span class="kw">pub</span> <span class="ident">log_format</span>: <span class="ident">LogFormat</span>,
+    <span class="kw">pub </span>log_format: LogFormat,
 
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">subcommand</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">cmd</span>: <span class="ident">Command</span>,
+    <span class="attribute">#[clap(subcommand)]
+    </span><span class="kw">pub </span>cmd: Command,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Subcommand</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Command</span> {
-    <span class="doccomment">/// Explain an error that has detailed information on troubleshooting.</span>
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">visible_aliases</span> = <span class="kw-2">&amp;</span>[<span class="string">&quot;expl&quot;</span>, <span class="string">&quot;exp&quot;</span>, <span class="string">&quot;ex&quot;</span>]</span>)]
-    <span class="ident">Explain</span> {
-        <span class="doccomment">/// The error to get information for. This must be the error code of</span>
-        <span class="doccomment">/// the error, which is of the form `EXXXX` (e.g. E0591).</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">name</span> = <span class="string">&quot;EXXXX&quot;</span>)]</span>
-        <span class="ident">ecode</span>: <span class="ident">String</span>,
+<span class="attribute">#[derive(Debug, Subcommand)]
+</span><span class="kw">pub enum </span>Command {
+    <span class="doccomment">/// Explain an error that has detailed information on troubleshooting.
+    </span><span class="attribute">#[clap(visible_aliases = <span class="kw-2">&amp;</span>[<span class="string">&quot;expl&quot;</span>, <span class="string">&quot;exp&quot;</span>, <span class="string">&quot;ex&quot;</span>]</span>)]
+    Explain {
+        <span class="doccomment">/// The error to get information for. This must be the error code of
+        /// the error, which is of the form `EXXXX` (e.g. E0591).
+        </span><span class="attribute">#[clap(name = <span class="string">&quot;EXXXX&quot;</span>)]
+        </span>ecode: String,
     },
-    <span class="doccomment">/// Commands used for debugging Calypso&#39;s internals and implementation.</span>
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">visible_alias</span> = <span class="string">&quot;int&quot;</span>)]</span>
-    <span class="ident">Internal</span> {
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">subcommand</span>)]</span>
-        <span class="ident">cmd</span>: <span class="ident">InternalCmd</span>,
+    <span class="doccomment">/// Commands used for debugging Calypso&#39;s internals and implementation.
+    </span><span class="attribute">#[clap(visible_alias = <span class="string">&quot;int&quot;</span>)]
+    </span>Internal {
+        <span class="attribute">#[clap(subcommand)]
+        </span>cmd: InternalCmd,
     },
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Subcommand</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">InternalCmd</span> {
-    <span class="doccomment">/// Show information about the environment where this executable was built.</span>
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">visible_aliases</span> = <span class="kw-2">&amp;</span>[<span class="string">&quot;bi&quot;</span>, <span class="string">&quot;buildinfo&quot;</span>]</span>)]
-    <span class="ident">BuildInfo</span>,
-    <span class="doccomment">/// Intentionally panic in order to test out handling of ICEs (internal</span>
-    <span class="doccomment">/// compiler errors).</span>
-    <span class="ident">Panic</span>,
-    <span class="doccomment">/// Run analyses on Calypso source files and return the result in an</span>
-    <span class="doccomment">/// &quot;unpretty&quot; format, e.g. AST (abstract syntax tree) or token list.</span>
-    <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">visible_alias</span> = <span class="string">&quot;up&quot;</span>)]</span>
-    <span class="ident">Unpretty</span> {
-        <span class="doccomment">/// Use a REPL-like interface when using standard input. This does not</span>
-        <span class="doccomment">/// affect behaviour when using file input.</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">short</span>, <span class="ident">long</span>)]</span>
-        <span class="ident">repl</span>: <span class="ident">bool</span>,
-        <span class="doccomment">/// The &quot;unpretty&quot; format to output.</span>
-        <span class="doccomment">///</span>
-        <span class="doccomment">/// Current formats:</span>
-        <span class="doccomment">///</span>
-        <span class="doccomment">/// - `toks`: Token list</span>
-        <span class="doccomment">///</span>
-        <span class="doccomment">/// - `ast`: Abstract syntax tree (AST)</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">possible_values</span> = <span class="kw-2">&amp;</span>[
+<span class="attribute">#[derive(Debug, Subcommand)]
+</span><span class="kw">pub enum </span>InternalCmd {
+    <span class="doccomment">/// Show information about the environment where this executable was built.
+    </span><span class="attribute">#[clap(visible_aliases = <span class="kw-2">&amp;</span>[<span class="string">&quot;bi&quot;</span>, <span class="string">&quot;buildinfo&quot;</span>]</span>)]
+    BuildInfo,
+    <span class="doccomment">/// Intentionally panic in order to test out handling of ICEs (internal
+    /// compiler errors).
+    </span>Panic,
+    <span class="doccomment">/// Run analyses on Calypso source files and return the result in an
+    /// &quot;unpretty&quot; format, e.g. AST (abstract syntax tree) or token list.
+    </span><span class="attribute">#[clap(visible_alias = <span class="string">&quot;up&quot;</span>)]
+    </span>Unpretty {
+        <span class="doccomment">/// Use a REPL-like interface when using standard input. This does not
+        /// affect behaviour when using file input.
+        </span><span class="attribute">#[clap(short, long)]
+        </span>repl: bool,
+        <span class="doccomment">/// The &quot;unpretty&quot; format to output.
+        ///
+        /// Current formats:
+        ///
+        /// - `toks`: Token list
+        ///
+        /// - `ast`: Abstract syntax tree (AST)
+        </span><span class="attribute">#[clap(possible_values = <span class="kw-2">&amp;</span>[
             <span class="string">&quot;toks&quot;</span>,
-            <span class="string">&quot;ast&quot;</span>
-        ]</span>, <span class="ident">parse</span>(<span class="ident">from_str</span> = <span class="ident">parse_unpretty</span>))]
-        <span class="ident">format</span>: <span class="ident">UnprettyFormat</span>,
-        <span class="doccomment">/// The input file to run transformations on. Use the file name `-`</span>
-        <span class="doccomment">/// (without backticks) to use standard input.</span>
-        <span class="attribute">#[<span class="ident">clap</span>(<span class="ident">parse</span>(<span class="ident">from_os_str</span>))]</span>
-        <span class="ident">input</span>: <span class="ident">PathBuf</span>,
+            <span class="string">&quot;ast&quot;
+        </span>]</span>, parse(from_str = parse_unpretty))]
+        format: UnprettyFormat,
+        <span class="doccomment">/// The input file to run transformations on. Use the file name `-`
+        /// (without backticks) to use standard input.
+        </span><span class="attribute">#[clap(parse(from_os_str))]
+        </span>input: PathBuf,
     },
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">UnprettyFormat</span> {
-    <span class="ident">TokenList</span>,
-    <span class="ident">Ast</span>,
+<span class="attribute">#[derive(Copy, Clone, Debug)]
+</span><span class="kw">pub enum </span>UnprettyFormat {
+    TokenList,
+    Ast,
 }
 
-<span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">UnprettyFormat</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">UnprettyFormat::Ast</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;ast&quot;</span>),
-            <span class="ident">UnprettyFormat::TokenList</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;toks&quot;</span>),
+<span class="kw">impl </span>Display <span class="kw">for </span>UnprettyFormat {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">match </span><span class="kw-2">*</span><span class="self">self </span>{
+            UnprettyFormat::Ast =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;ast&quot;</span>),
+            UnprettyFormat::TokenList =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;toks&quot;</span>),
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">LogFormat</span> {
-    <span class="ident">Pretty</span>,
-    <span class="ident">Compat</span>,
-    <span class="ident">Json</span>,
+<span class="attribute">#[derive(Copy, Clone, Debug)]
+</span><span class="kw">pub enum </span>LogFormat {
+    Pretty,
+    Compat,
+    Json,
 }
 
-<span class="kw">fn</span> <span class="ident">parse_color_prefs</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; (<span class="ident">ColorChoice</span>, <span class="ident">ColorChoice</span>) {
+<span class="kw">fn </span>parse_color_prefs(s: <span class="kw-2">&amp;</span>str) -&gt; (ColorChoice, ColorChoice) {
     (
-        <span class="ident">ui::parse_color_pref</span>(<span class="ident">s</span>, <span class="ident">Stream::Stdout</span>),
-        <span class="ident">ui::parse_color_pref</span>(<span class="ident">s</span>, <span class="ident">Stream::Stderr</span>),
+        ui::parse_color_pref(s, Stream::Stdout),
+        ui::parse_color_pref(s, Stream::Stderr),
     )
 }
 
-<span class="kw">fn</span> <span class="ident">parse_unpretty</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">UnprettyFormat</span> {
-    <span class="kw">match</span> <span class="ident">s</span> {
-        <span class="string">&quot;toks&quot;</span> =&gt; <span class="ident">UnprettyFormat::TokenList</span>,
-        <span class="string">&quot;ast&quot;</span> =&gt; <span class="ident">UnprettyFormat::Ast</span>,
-        <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
+<span class="kw">fn </span>parse_unpretty(s: <span class="kw-2">&amp;</span>str) -&gt; UnprettyFormat {
+    <span class="kw">match </span>s {
+        <span class="string">&quot;toks&quot; </span>=&gt; UnprettyFormat::TokenList,
+        <span class="string">&quot;ast&quot; </span>=&gt; UnprettyFormat::Ast,
+        <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(),
     }
 }
 
-<span class="kw">fn</span> <span class="ident">parse_log_format</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">LogFormat</span> {
-    <span class="kw">match</span> <span class="ident">s</span> {
-        <span class="string">&quot;pretty&quot;</span> =&gt; <span class="ident">LogFormat::Pretty</span>,
-        <span class="string">&quot;compact&quot;</span> =&gt; <span class="ident">LogFormat::Compat</span>,
-        <span class="string">&quot;json&quot;</span> =&gt; <span class="ident">LogFormat::Json</span>,
-        <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
+<span class="kw">fn </span>parse_log_format(s: <span class="kw-2">&amp;</span>str) -&gt; LogFormat {
+    <span class="kw">match </span>s {
+        <span class="string">&quot;pretty&quot; </span>=&gt; LogFormat::Pretty,
+        <span class="string">&quot;compact&quot; </span>=&gt; LogFormat::Compat,
+        <span class="string">&quot;json&quot; </span>=&gt; LogFormat::Json,
+        <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(),
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">verify_app</span>() {
-        <span class="kw">use</span> <span class="ident">clap::IntoApp</span>;
-        <span class="ident">Args::into_app</span>().<span class="ident">debug_assert</span>();
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>verify_app() {
+        <span class="kw">use </span>clap::IntoApp;
+        Args::into_app().debug_assert();
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

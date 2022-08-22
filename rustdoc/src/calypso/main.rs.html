@@ -122,129 +122,129 @@
 <span id="122">122</span>
 <span id="123">123</span>
 <span id="124">124</span>
-</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">doc</span>(<span class="ident">html_root_url</span> = <span class="string">&quot;https://calypso-lang.github.io/rustdoc/calypso/index.html&quot;</span>)]</span>
-<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">clippy::pedantic</span>)]</span>
+</pre><pre class="rust"><code><span class="attribute">#![doc(html_root_url = <span class="string">&quot;https://calypso-lang.github.io/rustdoc/calypso/index.html&quot;</span>)]
+#![warn(clippy::pedantic)]
 
-<span class="kw">use</span> <span class="ident">std::panic</span>;
-<span class="kw">use</span> <span class="ident">std::sync::Arc</span>;
+</span><span class="kw">use </span>std::panic;
+<span class="kw">use </span>std::sync::Arc;
 
-<span class="kw">use</span> <span class="ident">clap::StructOpt</span>;
-<span class="kw">use</span> <span class="ident">once_cell::sync::OnceCell</span>;
-<span class="kw">use</span> <span class="ident">tracing_subscriber::EnvFilter</span>;
+<span class="kw">use </span>clap::StructOpt;
+<span class="kw">use </span>once_cell::sync::OnceCell;
+<span class="kw">use </span>tracing_subscriber::EnvFilter;
 
-<span class="kw">use</span> <span class="ident">calypso_base::ui::Emitters</span>;
-<span class="kw">use</span> <span class="ident">calypso_common</span>::{<span class="ident">gcx::GlobalCtxt</span>, <span class="ident">parking_lot::RwLock</span>};
-<span class="kw">use</span> <span class="ident">calypso_diagnostic::prelude</span>::<span class="kw-2">*</span>;
-<span class="kw">use</span> <span class="ident">calypso_diagnostic</span>::{<span class="ident">diagnostic::SourceMgr</span>, <span class="ident">report::GlobalReportingCtxt</span>};
+<span class="kw">use </span>calypso_base::ui::Emitters;
+<span class="kw">use </span>calypso_common::{gcx::GlobalCtxt, parking_lot::RwLock};
+<span class="kw">use </span>calypso_diagnostic::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span>calypso_diagnostic::{diagnostic::SourceMgr, report::GlobalReportingCtxt};
 
-<span class="kw">mod</span> <span class="ident">buildinfo</span>;
-<span class="kw">mod</span> <span class="ident">cli</span>;
-<span class="kw">mod</span> <span class="ident">commands</span>;
+<span class="kw">mod </span>buildinfo;
+<span class="kw">mod </span>cli;
+<span class="kw">mod </span>commands;
 
-<span class="kw">use</span> <span class="ident">buildinfo::BUILD_INFO</span>;
-<span class="kw">use</span> <span class="ident">cli</span>::{<span class="ident">Args</span>, <span class="ident">Command</span>, <span class="ident">LogFormat</span>};
+<span class="kw">use </span>buildinfo::BUILD_INFO;
+<span class="kw">use </span>cli::{Args, Command, LogFormat};
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;mimalloc&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">mimalloc::MiMalloc</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;mimalloc&quot;</span>)]
+</span><span class="kw">use </span>mimalloc::MiMalloc;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;mimalloc&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;mimalloc&quot;</span>, <span class="ident">global_allocator</span>)]</span>
-<span class="kw">static</span> <span class="ident">GLOBAL</span>: <span class="ident">MiMalloc</span> = <span class="ident">MiMalloc</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;mimalloc&quot;</span>)]
+#[cfg_attr(feature = <span class="string">&quot;mimalloc&quot;</span>, global_allocator)]
+</span><span class="kw">static </span>GLOBAL: MiMalloc = MiMalloc;
 
-<span class="kw">static</span> <span class="ident">DEFAULT_HOOK</span>: <span class="ident">OnceCell</span>&lt;<span class="ident">Box</span>&lt;<span class="kw">dyn</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">panic::PanicInfo</span>&lt;<span class="lifetime">&#39;_</span>&gt;) + <span class="ident">Sync</span> + <span class="ident">Send</span> + <span class="lifetime">&#39;static</span>&gt;&gt; =
-    <span class="ident">OnceCell::new</span>();
+<span class="kw">static </span>DEFAULT_HOOK: OnceCell&lt;Box&lt;<span class="kw">dyn </span>Fn(<span class="kw-2">&amp;</span>panic::PanicInfo&lt;<span class="lifetime">&#39;_</span>&gt;) + Sync + Send + <span class="lifetime">&#39;static</span>&gt;&gt; =
+    OnceCell::new();
 
-<span class="kw">const</span> <span class="ident">BUG_REPORT_URL</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> = <span class="string">&quot;https://github.com/calypso-lang/calypso/issues/new\
+<span class="kw">const </span>BUG_REPORT_URL: <span class="kw-2">&amp;</span>str = <span class="string">&quot;https://github.com/calypso-lang/calypso/issues/new\
     ?assignees=&amp;labels=C-bug&amp;template=bug-report.md&amp;title=bug%3A+&quot;</span>;
 
-<span class="kw">fn</span> <span class="ident">init_panic_hook</span>(<span class="ident">gcx</span>: <span class="kw-2">&amp;</span><span class="ident">Arc</span>&lt;<span class="ident">GlobalCtxt</span>&gt;) {
-    <span class="comment">// This is dumb but borrowck really wants me to do it this way. Luckily the</span>
-    <span class="comment">// remaining useless `Arc`s will just be dropped, and this is just init</span>
-    <span class="comment">// code.</span>
-    <span class="kw">let</span> <span class="ident">gcx</span> = <span class="ident">Arc::clone</span>(<span class="ident">gcx</span>);
-    <span class="ident">DEFAULT_HOOK</span>.<span class="ident">get_or_init</span>(|| {
-        <span class="kw">let</span> <span class="ident">gcx</span> = <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>);
-        <span class="kw">let</span> <span class="ident">hook</span> = <span class="ident">panic::take_hook</span>();
-        <span class="ident">panic::set_hook</span>(<span class="ident">Box::new</span>(<span class="kw">move</span> |<span class="ident">info</span>| {
-            <span class="kw">let</span> <span class="ident">gcx</span> = <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>);
-            <span class="ident">report_ice</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">gcx</span>, <span class="ident">info</span>, <span class="ident">BUG_REPORT_URL</span>).<span class="ident">unwrap</span>();
+<span class="kw">fn </span>init_panic_hook(gcx: <span class="kw-2">&amp;</span>Arc&lt;GlobalCtxt&gt;) {
+    <span class="comment">// This is dumb but borrowck really wants me to do it this way. Luckily the
+    // remaining useless `Arc`s will just be dropped, and this is just init
+    // code.
+    </span><span class="kw">let </span>gcx = Arc::clone(gcx);
+    DEFAULT_HOOK.get_or_init(|| {
+        <span class="kw">let </span>gcx = Arc::clone(<span class="kw-2">&amp;</span>gcx);
+        <span class="kw">let </span>hook = panic::take_hook();
+        panic::set_hook(Box::new(<span class="kw">move </span>|info| {
+            <span class="kw">let </span>gcx = Arc::clone(<span class="kw-2">&amp;</span>gcx);
+            report_ice(<span class="kw-2">&amp;*</span>gcx, info, BUG_REPORT_URL).unwrap();
         }));
-        <span class="ident">hook</span>
+        hook
     });
 }
 
-<span class="kw">fn</span> <span class="ident">report_ice</span>(<span class="ident">gcx</span>: <span class="kw-2">&amp;</span><span class="ident">GlobalCtxt</span>, <span class="ident">info</span>: <span class="kw-2">&amp;</span><span class="ident">panic::PanicInfo</span>&lt;<span class="lifetime">&#39;_</span>&gt;, <span class="ident">report_url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">CalResult</span>&lt;()&gt; {
-    <span class="comment">// Invoke the default handler, which prints the actual panic message and</span>
-    <span class="comment">// optionally a backtrace</span>
-    <span class="ident">DEFAULT_HOOK</span>.<span class="ident">get</span>().<span class="ident">unwrap</span>()(<span class="ident">info</span>);
+<span class="kw">fn </span>report_ice(gcx: <span class="kw-2">&amp;</span>GlobalCtxt, info: <span class="kw-2">&amp;</span>panic::PanicInfo&lt;<span class="lifetime">&#39;_</span>&gt;, report_url: <span class="kw-2">&amp;</span>str) -&gt; CalResult&lt;()&gt; {
+    <span class="comment">// Invoke the default handler, which prints the actual panic message and
+    // optionally a backtrace
+    </span>DEFAULT_HOOK.get().unwrap()(info);
 
-    <span class="ident">gcx</span>.<span class="ident">emit</span>
-        .<span class="ident">write</span>()
-        .<span class="ident">err</span>
-        .<span class="ident">newline</span>()<span class="question-mark">?</span>
-        .<span class="ident">error</span>(
+    gcx.emit
+        .write()
+        .err
+        .newline()<span class="question-mark">?
+        </span>.error(
             <span class="prelude-val">None</span>,
             <span class="string">&quot;the compiler unexpectedly crashed. this is a bug.&quot;</span>,
             <span class="prelude-val">None</span>,
-        )<span class="question-mark">?</span>
-        .<span class="ident">note</span>(<span class="string">&quot;we would appreciate a bug report at&quot;</span>, <span class="prelude-val">Some</span>(<span class="ident">report_url</span>))<span class="question-mark">?</span>
-        .<span class="ident">note</span>(
+        )<span class="question-mark">?
+        </span>.note(<span class="string">&quot;we would appreciate a bug report at&quot;</span>, <span class="prelude-val">Some</span>(report_url))<span class="question-mark">?
+        </span>.note(
             <span class="string">&quot;build information&quot;</span>,
             <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="macro">format!</span>(
                 <span class="string">&quot;calypso {} ({}) running on {}&quot;</span>,
-                <span class="ident">BUILD_INFO</span>.<span class="ident">version</span>, <span class="ident">BUILD_INFO</span>.<span class="ident">git_commit</span>, <span class="ident">BUILD_INFO</span>.<span class="ident">cargo_target_triple</span>
+                BUILD_INFO.version, BUILD_INFO.git_commit, BUILD_INFO.cargo_target_triple
             )),
-        )<span class="question-mark">?</span>
-        .<span class="ident">note</span>(
+        )<span class="question-mark">?
+        </span>.note(
             <span class="string">&quot;for further information, run&quot;</span>,
             <span class="prelude-val">Some</span>(<span class="string">&quot;`calypso internal build-info`&quot;</span>),
-        )<span class="question-mark">?</span>
-        .<span class="ident">flush</span>()<span class="question-mark">?</span>;
+        )<span class="question-mark">?
+        </span>.flush()<span class="question-mark">?</span>;
 
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">fn</span> <span class="ident">main</span>() {
-    <span class="kw">let</span> <span class="ident">args</span> = <span class="ident">Args::parse</span>();
+<span class="kw">fn </span>main() {
+    <span class="kw">let </span>args = Args::parse();
 
-    <span class="kw">let</span> <span class="ident">gcx</span> = <span class="ident">Arc::new</span>(<span class="ident">GlobalCtxt</span> {
-        <span class="ident">emit</span>: <span class="ident">RwLock::new</span>(<span class="ident">Emitters::new</span>(<span class="ident">args</span>.<span class="ident">color</span>.<span class="number">0</span>, <span class="ident">args</span>.<span class="ident">color</span>.<span class="number">1</span>)),
-        <span class="ident">grcx</span>: <span class="ident">RwLock::new</span>(<span class="ident">GlobalReportingCtxt::new</span>()),
-        <span class="ident">sourcemgr</span>: <span class="ident">RwLock::new</span>(<span class="ident">SourceMgr::new</span>()),
+    <span class="kw">let </span>gcx = Arc::new(GlobalCtxt {
+        emit: RwLock::new(Emitters::new(args.color.<span class="number">0</span>, args.color.<span class="number">1</span>)),
+        grcx: RwLock::new(GlobalReportingCtxt::new()),
+        sourcemgr: RwLock::new(SourceMgr::new()),
     });
 
-    <span class="ident">init_panic_hook</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">trace</span> = <span class="ident">tracing_subscriber::fmt::fmt</span>().<span class="ident">with_env_filter</span>(<span class="ident">EnvFilter::default</span>());
+    init_panic_hook(<span class="kw-2">&amp;</span>gcx);
+    <span class="kw">let </span><span class="kw-2">mut </span>trace = tracing_subscriber::fmt::fmt().with_env_filter(EnvFilter::default());
 
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">log</span>) = <span class="ident">args</span>.<span class="ident">log</span> {
-        <span class="ident">trace</span> = <span class="ident">trace</span>.<span class="ident">with_env_filter</span>(<span class="ident">EnvFilter::new</span>(<span class="ident">log</span>));
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(log) = args.log {
+        trace = trace.with_env_filter(EnvFilter::new(log));
     }
 
-    <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">log_format</span> {
-        <span class="ident">LogFormat::Pretty</span> =&gt; {
-            <span class="ident">trace</span>.<span class="ident">pretty</span>().<span class="ident">init</span>();
+    <span class="kw">match </span>args.log_format {
+        LogFormat::Pretty =&gt; {
+            trace.pretty().init();
         }
-        <span class="ident">LogFormat::Compat</span> =&gt; {
-            <span class="ident">trace</span>.<span class="ident">compact</span>().<span class="ident">init</span>();
+        LogFormat::Compat =&gt; {
+            trace.compact().init();
         }
-        <span class="ident">LogFormat::Json</span> =&gt; {
-            <span class="ident">trace</span>.<span class="ident">json</span>().<span class="ident">init</span>();
+        LogFormat::Json =&gt; {
+            trace.json().init();
         }
     }
 
-    <span class="kw">let</span> <span class="ident">res</span> = <span class="kw">match</span> <span class="ident">args</span>.<span class="ident">cmd</span> {
-        <span class="ident">Command::Explain</span> { <span class="ident">ecode</span> } =&gt; <span class="ident">commands::explain</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>, <span class="kw-2">&amp;</span><span class="ident">ecode</span>),
-        <span class="ident">Command::Internal</span> { <span class="ident">cmd</span> } =&gt; <span class="ident">commands::internal</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>, <span class="kw-2">&amp;</span><span class="ident">cmd</span>),
+    <span class="kw">let </span>res = <span class="kw">match </span>args.cmd {
+        Command::Explain { ecode } =&gt; commands::explain(<span class="kw-2">&amp;</span>gcx, <span class="kw-2">&amp;</span>ecode),
+        Command::Internal { cmd } =&gt; commands::internal(<span class="kw-2">&amp;</span>gcx, <span class="kw-2">&amp;</span>cmd),
     };
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) = <span class="ident">res</span> {
-        <span class="ident">gcx</span>.<span class="ident">emit</span>
-            .<span class="ident">write</span>()
-            .<span class="ident">err</span>
-            .<span class="ident">error</span>(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="ident">e</span>.<span class="ident">to_string</span>(), <span class="prelude-val">None</span>)
-            .<span class="ident">unwrap</span>()
-            .<span class="ident">flush</span>()
-            .<span class="ident">unwrap</span>();
+    <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = res {
+        gcx.emit
+            .write()
+            .err
+            .error(<span class="prelude-val">None</span>, <span class="kw-2">&amp;</span>e.to_string(), <span class="prelude-val">None</span>)
+            .unwrap()
+            .flush()
+            .unwrap();
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

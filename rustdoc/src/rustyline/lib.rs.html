@@ -953,960 +953,960 @@
 <span id="953">953</span>
 <span id="954">954</span>
 <span id="955">955</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Readline for Rust</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This implementation is based on [Antirez&#39;s</span>
-<span class="doccomment">//! Linenoise](https://github.com/antirez/linenoise)</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! # Example</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Usage</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! ```</span>
-<span class="doccomment">//! let mut rl = rustyline::Editor::&lt;()&gt;::new()?;</span>
-<span class="doccomment">//! let readline = rl.readline(&quot;&gt;&gt; &quot;);</span>
-<span class="doccomment">//! match readline {</span>
-<span class="doccomment">//!     Ok(line) =&gt; println!(&quot;Line: {:?}&quot;, line),</span>
-<span class="doccomment">//!     Err(_) =&gt; println!(&quot;No input&quot;),</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//! # Ok::&lt;(), rustyline::error::ReadlineError&gt;(())</span>
-<span class="doccomment">//! ```</span>
-<span class="attribute">#![<span class="ident">warn</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="attribute">#![<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">feature</span>(<span class="ident">doc_cfg</span>))]</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Readline for Rust
+//!
+//! This implementation is based on [Antirez&#39;s
+//! Linenoise](https://github.com/antirez/linenoise)
+//!
+//! # Example
+//!
+//! Usage
+//!
+//! ```
+//! let mut rl = rustyline::Editor::&lt;()&gt;::new()?;
+//! let readline = rl.readline(&quot;&gt;&gt; &quot;);
+//! match readline {
+//!     Ok(line) =&gt; println!(&quot;Line: {:?}&quot;, line),
+//!     Err(_) =&gt; println!(&quot;No input&quot;),
+//! }
+//! # Ok::&lt;(), rustyline::error::ReadlineError&gt;(())
+//! ```
+</span><span class="attribute">#![warn(missing_docs)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)]</span>
-<span class="kw">mod</span> <span class="ident">binding</span>;
-<span class="kw">mod</span> <span class="ident">command</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">completion</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">config</span>;
-<span class="kw">mod</span> <span class="ident">edit</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">error</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">highlight</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">hint</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">history</span>;
-<span class="kw">mod</span> <span class="ident">keymap</span>;
-<span class="kw">mod</span> <span class="ident">keys</span>;
-<span class="kw">mod</span> <span class="ident">kill_ring</span>;
-<span class="kw">mod</span> <span class="ident">layout</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">line_buffer</span>;
-<span class="kw">mod</span> <span class="ident">tty</span>;
-<span class="kw">mod</span> <span class="ident">undo</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">validate</span>;
+#[cfg(feature = <span class="string">&quot;custom-bindings&quot;</span>)]
+</span><span class="kw">mod </span>binding;
+<span class="kw">mod </span>command;
+<span class="kw">pub mod </span>completion;
+<span class="kw">pub mod </span>config;
+<span class="kw">mod </span>edit;
+<span class="kw">pub mod </span>error;
+<span class="kw">pub mod </span>highlight;
+<span class="kw">pub mod </span>hint;
+<span class="kw">pub mod </span>history;
+<span class="kw">mod </span>keymap;
+<span class="kw">mod </span>keys;
+<span class="kw">mod </span>kill_ring;
+<span class="kw">mod </span>layout;
+<span class="kw">pub mod </span>line_buffer;
+<span class="kw">mod </span>tty;
+<span class="kw">mod </span>undo;
+<span class="kw">pub mod </span>validate;
 
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="self">self</span>, <span class="ident">BufRead</span>, <span class="ident">Write</span>};
-<span class="kw">use</span> <span class="ident">std::path::Path</span>;
-<span class="kw">use</span> <span class="ident">std::result</span>;
-<span class="kw">use</span> <span class="ident">std::sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
+<span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::io::{<span class="self">self</span>, BufRead, Write};
+<span class="kw">use </span>std::path::Path;
+<span class="kw">use </span>std::result;
+<span class="kw">use </span>std::sync::{Arc, Mutex};
 
-<span class="kw">use</span> <span class="ident">log::debug</span>;
-<span class="kw">use</span> <span class="ident">unicode_width::UnicodeWidthStr</span>;
+<span class="kw">use </span>log::debug;
+<span class="kw">use </span>unicode_width::UnicodeWidthStr;
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::tty</span>::{<span class="ident">RawMode</span>, <span class="ident">RawReader</span>, <span class="ident">Renderer</span>, <span class="ident">Term</span>, <span class="ident">Terminal</span>};
+<span class="kw">use </span><span class="kw">crate</span>::tty::{RawMode, RawReader, Renderer, Term, Terminal};
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::binding</span>::{<span class="ident">ConditionalEventHandler</span>, <span class="ident">Event</span>, <span class="ident">EventContext</span>, <span class="ident">EventHandler</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::completion</span>::{<span class="ident">longest_common_prefix</span>, <span class="ident">Candidate</span>, <span class="ident">Completer</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::config</span>::{<span class="ident">Behavior</span>, <span class="ident">ColorMode</span>, <span class="ident">CompletionType</span>, <span class="ident">Config</span>, <span class="ident">EditMode</span>, <span class="ident">HistoryDuplicates</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::edit::State</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::ReadlineError</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::highlight::Highlighter</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::hint::Hinter</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::history</span>::{<span class="ident">History</span>, <span class="ident">SearchDirection</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keymap</span>::{<span class="ident">Anchor</span>, <span class="ident">At</span>, <span class="ident">CharSearch</span>, <span class="ident">Cmd</span>, <span class="ident">InputMode</span>, <span class="ident">Movement</span>, <span class="ident">RepeatCount</span>, <span class="ident">Word</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keymap</span>::{<span class="ident">Bindings</span>, <span class="ident">InputState</span>, <span class="ident">Refresher</span>};
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::keys</span>::{<span class="ident">KeyCode</span>, <span class="ident">KeyEvent</span>, <span class="ident">Modifiers</span>};
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::kill_ring::KillRing</span>;
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::tty::ExternalPrinter</span>;
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::validate::Validator</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;custom-bindings&quot;</span>)]
+</span><span class="kw">pub use </span><span class="kw">crate</span>::binding::{ConditionalEventHandler, Event, EventContext, EventHandler};
+<span class="kw">use </span><span class="kw">crate</span>::completion::{longest_common_prefix, Candidate, Completer};
+<span class="kw">pub use </span><span class="kw">crate</span>::config::{Behavior, ColorMode, CompletionType, Config, EditMode, HistoryDuplicates};
+<span class="kw">use </span><span class="kw">crate</span>::edit::State;
+<span class="kw">use </span><span class="kw">crate</span>::error::ReadlineError;
+<span class="kw">use </span><span class="kw">crate</span>::highlight::Highlighter;
+<span class="kw">use </span><span class="kw">crate</span>::hint::Hinter;
+<span class="kw">use </span><span class="kw">crate</span>::history::{History, SearchDirection};
+<span class="kw">pub use </span><span class="kw">crate</span>::keymap::{Anchor, At, CharSearch, Cmd, InputMode, Movement, RepeatCount, Word};
+<span class="kw">use </span><span class="kw">crate</span>::keymap::{Bindings, InputState, Refresher};
+<span class="kw">pub use </span><span class="kw">crate</span>::keys::{KeyCode, KeyEvent, Modifiers};
+<span class="kw">use </span><span class="kw">crate</span>::kill_ring::KillRing;
+<span class="kw">pub use </span><span class="kw">crate</span>::tty::ExternalPrinter;
+<span class="kw">use </span><span class="kw">crate</span>::validate::Validator;
 
-<span class="doccomment">/// The error type for I/O and Linux Syscalls (Errno)</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span>&lt;<span class="ident">T</span>&gt; = <span class="ident">result::Result</span>&lt;<span class="ident">T</span>, <span class="ident">error::ReadlineError</span>&gt;;
+<span class="doccomment">/// The error type for I/O and Linux Syscalls (Errno)
+</span><span class="kw">pub type </span><span class="prelude-ty">Result</span>&lt;T&gt; = result::Result&lt;T, error::ReadlineError&gt;;
 
-<span class="doccomment">/// Completes the line/word</span>
-<span class="kw">fn</span> <span class="ident">complete_line</span>&lt;<span class="ident">H</span>: <span class="ident">Helper</span>&gt;(
-    <span class="ident">rdr</span>: <span class="kw-2">&amp;mut</span> &lt;<span class="ident">Terminal</span> <span class="kw">as</span> <span class="ident">Term</span>&gt;<span class="ident">::Reader</span>,
-    <span class="ident">s</span>: <span class="kw-2">&amp;mut</span> <span class="ident">State</span>&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="ident">H</span>&gt;,
-    <span class="ident">input_state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">InputState</span>,
-    <span class="ident">config</span>: <span class="kw-2">&amp;</span><span class="ident">Config</span>,
-) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">Cmd</span>&gt;&gt; {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">unix</span>, <span class="ident">feature</span> = <span class="string">&quot;with-fuzzy&quot;</span>))]</span>
-    <span class="kw">use</span> <span class="ident">skim::prelude</span>::{
-        <span class="ident">unbounded</span>, <span class="ident">Skim</span>, <span class="ident">SkimItem</span>, <span class="ident">SkimItemReceiver</span>, <span class="ident">SkimItemSender</span>, <span class="ident">SkimOptionsBuilder</span>,
+<span class="doccomment">/// Completes the line/word
+</span><span class="kw">fn </span>complete_line&lt;H: Helper&gt;(
+    rdr: <span class="kw-2">&amp;mut </span>&lt;Terminal <span class="kw">as </span>Term&gt;::Reader,
+    s: <span class="kw-2">&amp;mut </span>State&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, H&gt;,
+    input_state: <span class="kw-2">&amp;mut </span>InputState,
+    config: <span class="kw-2">&amp;</span>Config,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Cmd&gt;&gt; {
+    <span class="attribute">#[cfg(all(unix, feature = <span class="string">&quot;with-fuzzy&quot;</span>))]
+    </span><span class="kw">use </span>skim::prelude::{
+        unbounded, Skim, SkimItem, SkimItemReceiver, SkimItemSender, SkimOptionsBuilder,
     };
 
-    <span class="kw">let</span> <span class="ident">completer</span> = <span class="ident">s</span>.<span class="ident">helper</span>.<span class="ident">unwrap</span>();
-    <span class="comment">// get a list of completions</span>
-    <span class="kw">let</span> (<span class="ident">start</span>, <span class="ident">candidates</span>) = <span class="ident">completer</span>.<span class="ident">complete</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">line</span>, <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">pos</span>(), <span class="kw-2">&amp;</span><span class="ident">s</span>.<span class="ident">ctx</span>)<span class="question-mark">?</span>;
-    <span class="comment">// if no completions, we are done</span>
-    <span class="kw">if</span> <span class="ident">candidates</span>.<span class="ident">is_empty</span>() {
-        <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">beep</span>()<span class="question-mark">?</span>;
+    <span class="kw">let </span>completer = s.helper.unwrap();
+    <span class="comment">// get a list of completions
+    </span><span class="kw">let </span>(start, candidates) = completer.complete(<span class="kw-2">&amp;</span>s.line, s.line.pos(), <span class="kw-2">&amp;</span>s.ctx)<span class="question-mark">?</span>;
+    <span class="comment">// if no completions, we are done
+    </span><span class="kw">if </span>candidates.is_empty() {
+        s.out.beep()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">CompletionType::Circular</span> == <span class="ident">config</span>.<span class="ident">completion_type</span>() {
-        <span class="kw">let</span> <span class="ident">mark</span> = <span class="ident">s</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
-        <span class="comment">// Save the current edited line before overwriting it</span>
-        <span class="kw">let</span> <span class="ident">backup</span> = <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">as_str</span>().<span class="ident">to_owned</span>();
-        <span class="kw">let</span> <span class="ident">backup_pos</span> = <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">pos</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmd</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> = <span class="number">0</span>;
-        <span class="kw">loop</span> {
-            <span class="comment">// Show completion or original buffer</span>
-            <span class="kw">if</span> <span class="ident">i</span> &lt; <span class="ident">candidates</span>.<span class="ident">len</span>() {
-                <span class="kw">let</span> <span class="ident">candidate</span> = <span class="ident">candidates</span>[<span class="ident">i</span>].<span class="ident">replacement</span>();
-                <span class="comment">// TODO we can&#39;t highlight the line buffer directly</span>
-                <span class="comment">/*let candidate = if let Some(highlighter) = s.highlighter {
+    } <span class="kw">else if </span>CompletionType::Circular == config.completion_type() {
+        <span class="kw">let </span>mark = s.changes.borrow_mut().begin();
+        <span class="comment">// Save the current edited line before overwriting it
+        </span><span class="kw">let </span>backup = s.line.as_str().to_owned();
+        <span class="kw">let </span>backup_pos = s.line.pos();
+        <span class="kw">let </span><span class="kw-2">mut </span>cmd;
+        <span class="kw">let </span><span class="kw-2">mut </span>i = <span class="number">0</span>;
+        <span class="kw">loop </span>{
+            <span class="comment">// Show completion or original buffer
+            </span><span class="kw">if </span>i &lt; candidates.len() {
+                <span class="kw">let </span>candidate = candidates[i].replacement();
+                <span class="comment">// TODO we can&#39;t highlight the line buffer directly
+                /*let candidate = if let Some(highlighter) = s.highlighter {
                     highlighter.highlight_candidate(candidate, CompletionType::Circular)
                 } else {
                     Borrowed(candidate)
-                };*/</span>
-                <span class="ident">completer</span>.<span class="ident">update</span>(<span class="kw-2">&amp;mut</span> <span class="ident">s</span>.<span class="ident">line</span>, <span class="ident">start</span>, <span class="ident">candidate</span>);
-            } <span class="kw">else</span> {
-                <span class="comment">// Restore current edited line</span>
-                <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="ident">backup</span>, <span class="ident">backup_pos</span>);
+                };*/
+                </span>completer.update(<span class="kw-2">&amp;mut </span>s.line, start, candidate);
+            } <span class="kw">else </span>{
+                <span class="comment">// Restore current edited line
+                </span>s.line.update(<span class="kw-2">&amp;</span>backup, backup_pos);
             }
-            <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
+            s.refresh_line()<span class="question-mark">?</span>;
 
-            <span class="ident">cmd</span> = <span class="ident">s</span>.<span class="ident">next_cmd</span>(<span class="ident">input_state</span>, <span class="ident">rdr</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
-            <span class="kw">match</span> <span class="ident">cmd</span> {
-                <span class="ident">Cmd::Complete</span> =&gt; {
-                    <span class="ident">i</span> = (<span class="ident">i</span> + <span class="number">1</span>) % (<span class="ident">candidates</span>.<span class="ident">len</span>() + <span class="number">1</span>); <span class="comment">// Circular</span>
-                    <span class="kw">if</span> <span class="ident">i</span> == <span class="ident">candidates</span>.<span class="ident">len</span>() {
-                        <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">beep</span>()<span class="question-mark">?</span>;
+            cmd = s.next_cmd(input_state, rdr, <span class="bool-val">true</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+            <span class="kw">match </span>cmd {
+                Cmd::Complete =&gt; {
+                    i = (i + <span class="number">1</span>) % (candidates.len() + <span class="number">1</span>); <span class="comment">// Circular
+                    </span><span class="kw">if </span>i == candidates.len() {
+                        s.out.beep()<span class="question-mark">?</span>;
                     }
                 }
-                <span class="ident">Cmd::CompleteBackward</span> =&gt; {
-                    <span class="kw">if</span> <span class="ident">i</span> == <span class="number">0</span> {
-                        <span class="ident">i</span> = <span class="ident">candidates</span>.<span class="ident">len</span>(); <span class="comment">// Circular</span>
-                        <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">beep</span>()<span class="question-mark">?</span>;
-                    } <span class="kw">else</span> {
-                        <span class="ident">i</span> = (<span class="ident">i</span> - <span class="number">1</span>) % (<span class="ident">candidates</span>.<span class="ident">len</span>() + <span class="number">1</span>); <span class="comment">// Circular</span>
-                    }
+                Cmd::CompleteBackward =&gt; {
+                    <span class="kw">if </span>i == <span class="number">0 </span>{
+                        i = candidates.len(); <span class="comment">// Circular
+                        </span>s.out.beep()<span class="question-mark">?</span>;
+                    } <span class="kw">else </span>{
+                        i = (i - <span class="number">1</span>) % (candidates.len() + <span class="number">1</span>); <span class="comment">// Circular
+                    </span>}
                 }
-                <span class="ident">Cmd::Abort</span> =&gt; {
-                    <span class="comment">// Re-show original buffer</span>
-                    <span class="kw">if</span> <span class="ident">i</span> &lt; <span class="ident">candidates</span>.<span class="ident">len</span>() {
-                        <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="ident">backup</span>, <span class="ident">backup_pos</span>);
-                        <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
+                Cmd::Abort =&gt; {
+                    <span class="comment">// Re-show original buffer
+                    </span><span class="kw">if </span>i &lt; candidates.len() {
+                        s.line.update(<span class="kw-2">&amp;</span>backup, backup_pos);
+                        s.refresh_line()<span class="question-mark">?</span>;
                     }
-                    <span class="ident">s</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">truncate</span>(<span class="ident">mark</span>);
-                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
+                    s.changes.borrow_mut().truncate(mark);
+                    <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
                 }
-                <span class="kw">_</span> =&gt; {
-                    <span class="ident">s</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
+                <span class="kw">_ </span>=&gt; {
+                    s.changes.borrow_mut().end();
                     <span class="kw">break</span>;
                 }
             }
         }
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">cmd</span>))
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">CompletionType::List</span> == <span class="ident">config</span>.<span class="ident">completion_type</span>() {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">lcp</span>) = <span class="ident">longest_common_prefix</span>(<span class="kw-2">&amp;</span><span class="ident">candidates</span>) {
-            <span class="comment">// if we can extend the item, extend it</span>
-            <span class="kw">if</span> <span class="ident">lcp</span>.<span class="ident">len</span>() &gt; <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">pos</span>() - <span class="ident">start</span> {
-                <span class="ident">completer</span>.<span class="ident">update</span>(<span class="kw-2">&amp;mut</span> <span class="ident">s</span>.<span class="ident">line</span>, <span class="ident">start</span>, <span class="ident">lcp</span>);
-                <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(cmd))
+    } <span class="kw">else if </span>CompletionType::List == config.completion_type() {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(lcp) = longest_common_prefix(<span class="kw-2">&amp;</span>candidates) {
+            <span class="comment">// if we can extend the item, extend it
+            </span><span class="kw">if </span>lcp.len() &gt; s.line.pos() - start {
+                completer.update(<span class="kw-2">&amp;mut </span>s.line, start, lcp);
+                s.refresh_line()<span class="question-mark">?</span>;
             }
         }
-        <span class="comment">// beep if ambiguous</span>
-        <span class="kw">if</span> <span class="ident">candidates</span>.<span class="ident">len</span>() &gt; <span class="number">1</span> {
-            <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">beep</span>()<span class="question-mark">?</span>;
-        } <span class="kw">else</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
+        <span class="comment">// beep if ambiguous
+        </span><span class="kw">if </span>candidates.len() &gt; <span class="number">1 </span>{
+            s.out.beep()<span class="question-mark">?</span>;
+        } <span class="kw">else </span>{
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         }
-        <span class="comment">// we can&#39;t complete any further, wait for second tab</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmd</span> = <span class="ident">s</span>.<span class="ident">next_cmd</span>(<span class="ident">input_state</span>, <span class="ident">rdr</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
-        <span class="comment">// if any character other than tab, pass it to the main loop</span>
-        <span class="kw">if</span> <span class="ident">cmd</span> != <span class="ident">Cmd::Complete</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">cmd</span>));
+        <span class="comment">// we can&#39;t complete any further, wait for second tab
+        </span><span class="kw">let </span><span class="kw-2">mut </span>cmd = s.next_cmd(input_state, rdr, <span class="bool-val">true</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+        <span class="comment">// if any character other than tab, pass it to the main loop
+        </span><span class="kw">if </span>cmd != Cmd::Complete {
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(cmd));
         }
-        <span class="comment">// move cursor to EOL to avoid overwriting the command line</span>
-        <span class="kw">let</span> <span class="ident">save_pos</span> = <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">pos</span>();
-        <span class="ident">s</span>.<span class="ident">edit_move_end</span>()<span class="question-mark">?</span>;
-        <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">set_pos</span>(<span class="ident">save_pos</span>);
-        <span class="comment">// we got a second tab, maybe show list of possible completions</span>
-        <span class="kw">let</span> <span class="ident">show_completions</span> = <span class="kw">if</span> <span class="ident">candidates</span>.<span class="ident">len</span>() &gt; <span class="ident">config</span>.<span class="ident">completion_prompt_limit</span>() {
-            <span class="kw">let</span> <span class="ident">msg</span> = <span class="macro">format!</span>(<span class="string">&quot;\nDisplay all {} possibilities? (y or n)&quot;</span>, <span class="ident">candidates</span>.<span class="ident">len</span>());
-            <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">write_and_flush</span>(<span class="ident">msg</span>.<span class="ident">as_str</span>())<span class="question-mark">?</span>;
-            <span class="ident">s</span>.<span class="ident">layout</span>.<span class="ident">end</span>.<span class="ident">row</span> += <span class="number">1</span>;
-            <span class="kw">while</span> <span class="ident">cmd</span> != <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;y&#39;</span>)
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;Y&#39;</span>)
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;n&#39;</span>)
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;N&#39;</span>)
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::Kill</span>(<span class="ident">Movement::BackwardChar</span>(<span class="number">1</span>))
+        <span class="comment">// move cursor to EOL to avoid overwriting the command line
+        </span><span class="kw">let </span>save_pos = s.line.pos();
+        s.edit_move_end()<span class="question-mark">?</span>;
+        s.line.set_pos(save_pos);
+        <span class="comment">// we got a second tab, maybe show list of possible completions
+        </span><span class="kw">let </span>show_completions = <span class="kw">if </span>candidates.len() &gt; config.completion_prompt_limit() {
+            <span class="kw">let </span>msg = <span class="macro">format!</span>(<span class="string">&quot;\nDisplay all {} possibilities? (y or n)&quot;</span>, candidates.len());
+            s.out.write_and_flush(msg.as_str())<span class="question-mark">?</span>;
+            s.layout.end.row += <span class="number">1</span>;
+            <span class="kw">while </span>cmd != Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;y&#39;</span>)
+                &amp;&amp; cmd != Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;Y&#39;</span>)
+                &amp;&amp; cmd != Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;n&#39;</span>)
+                &amp;&amp; cmd != Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;N&#39;</span>)
+                &amp;&amp; cmd != Cmd::Kill(Movement::BackwardChar(<span class="number">1</span>))
             {
-                <span class="ident">cmd</span> = <span class="ident">s</span>.<span class="ident">next_cmd</span>(<span class="ident">input_state</span>, <span class="ident">rdr</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+                cmd = s.next_cmd(input_state, rdr, <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
             }
-            <span class="macro">matches!</span>(<span class="ident">cmd</span>, <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;y&#39;</span> | <span class="string">&#39;Y&#39;</span>))
-        } <span class="kw">else</span> {
-            <span class="bool-val">true</span>
-        };
-        <span class="kw">if</span> <span class="ident">show_completions</span> {
-            <span class="ident">page_completions</span>(<span class="ident">rdr</span>, <span class="ident">s</span>, <span class="ident">input_state</span>, <span class="kw-2">&amp;</span><span class="ident">candidates</span>)
-        } <span class="kw">else</span> {
-            <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
+            <span class="macro">matches!</span>(cmd, Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;y&#39; </span>| <span class="string">&#39;Y&#39;</span>))
+        } <span class="kw">else </span>{
+            <span class="bool-val">true
+        </span>};
+        <span class="kw">if </span>show_completions {
+            page_completions(rdr, s, input_state, <span class="kw-2">&amp;</span>candidates)
+        } <span class="kw">else </span>{
+            s.refresh_line()<span class="question-mark">?</span>;
             <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
         }
-    } <span class="kw">else</span> {
-        <span class="comment">// if fuzzy feature is enabled and on unix based systems check for the</span>
-        <span class="comment">// corresponding completion_type</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">unix</span>, <span class="ident">feature</span> = <span class="string">&quot;with-fuzzy&quot;</span>))]</span>
-        {
-            <span class="kw">use</span> <span class="ident">std::borrow::Cow</span>;
-            <span class="kw">if</span> <span class="ident">CompletionType::Fuzzy</span> == <span class="ident">config</span>.<span class="ident">completion_type</span>() {
-                <span class="kw">struct</span> <span class="ident">Candidate</span> {
-                    <span class="ident">index</span>: <span class="ident">usize</span>,
-                    <span class="ident">text</span>: <span class="ident">String</span>,
+    } <span class="kw">else </span>{
+        <span class="comment">// if fuzzy feature is enabled and on unix based systems check for the
+        // corresponding completion_type
+        </span><span class="attribute">#[cfg(all(unix, feature = <span class="string">&quot;with-fuzzy&quot;</span>))]
+        </span>{
+            <span class="kw">use </span>std::borrow::Cow;
+            <span class="kw">if </span>CompletionType::Fuzzy == config.completion_type() {
+                <span class="kw">struct </span>Candidate {
+                    index: usize,
+                    text: String,
                 }
-                <span class="kw">impl</span> <span class="ident">SkimItem</span> <span class="kw">for</span> <span class="ident">Candidate</span> {
-                    <span class="kw">fn</span> <span class="ident">text</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Cow</span>&lt;<span class="ident">str</span>&gt; {
-                        <span class="ident">Cow::Borrowed</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">text</span>)
+                <span class="kw">impl </span>SkimItem <span class="kw">for </span>Candidate {
+                    <span class="kw">fn </span>text(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Cow&lt;str&gt; {
+                        Cow::Borrowed(<span class="kw-2">&amp;</span><span class="self">self</span>.text)
                     }
                 }
 
-                <span class="kw">let</span> (<span class="ident">tx_item</span>, <span class="ident">rx_item</span>): (<span class="ident">SkimItemSender</span>, <span class="ident">SkimItemReceiver</span>) = <span class="ident">unbounded</span>();
+                <span class="kw">let </span>(tx_item, rx_item): (SkimItemSender, SkimItemReceiver) = unbounded();
 
-                <span class="ident">candidates</span>
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">enumerate</span>()
-                    .<span class="ident">map</span>(|(<span class="ident">i</span>, <span class="ident">c</span>)| <span class="ident">Candidate</span> {
-                        <span class="ident">index</span>: <span class="ident">i</span>,
-                        <span class="ident">text</span>: <span class="ident">c</span>.<span class="ident">display</span>().<span class="ident">to_owned</span>(),
+                candidates
+                    .iter()
+                    .enumerate()
+                    .map(|(i, c)| Candidate {
+                        index: i,
+                        text: c.display().to_owned(),
                     })
-                    .<span class="ident">for_each</span>(|<span class="ident">c</span>| {
-                        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">tx_item</span>.<span class="ident">send</span>(<span class="ident">Arc::new</span>(<span class="ident">c</span>));
+                    .for_each(|c| {
+                        <span class="kw">let _ </span>= tx_item.send(Arc::new(c));
                     });
-                <span class="ident">drop</span>(<span class="ident">tx_item</span>); <span class="comment">// so that skim could know when to stop waiting for more items.</span>
+                drop(tx_item); <span class="comment">// so that skim could know when to stop waiting for more items.
 
-                <span class="comment">// setup skim and run with input options</span>
-                <span class="comment">// will display UI for fuzzy search and return selected results</span>
-                <span class="comment">// by default skim multi select is off so only expect one selection</span>
+                // setup skim and run with input options
+                // will display UI for fuzzy search and return selected results
+                // by default skim multi select is off so only expect one selection
 
-                <span class="kw">let</span> <span class="ident">options</span> = <span class="ident">SkimOptionsBuilder::default</span>()
-                    .<span class="ident">height</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;20%&quot;</span>))
-                    .<span class="ident">prompt</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;? &quot;</span>))
-                    .<span class="ident">reverse</span>(<span class="bool-val">true</span>)
-                    .<span class="ident">build</span>()
-                    .<span class="ident">unwrap</span>();
+                </span><span class="kw">let </span>options = SkimOptionsBuilder::default()
+                    .height(<span class="prelude-val">Some</span>(<span class="string">&quot;20%&quot;</span>))
+                    .prompt(<span class="prelude-val">Some</span>(<span class="string">&quot;? &quot;</span>))
+                    .reverse(<span class="bool-val">true</span>)
+                    .build()
+                    .unwrap();
 
-                <span class="kw">let</span> <span class="ident">selected_items</span> = <span class="ident">Skim::run_with</span>(<span class="kw-2">&amp;</span><span class="ident">options</span>, <span class="prelude-val">Some</span>(<span class="ident">rx_item</span>))
-                    .<span class="ident">map</span>(|<span class="ident">out</span>| <span class="ident">out</span>.<span class="ident">selected_items</span>)
-                    .<span class="ident">unwrap_or_else</span>(<span class="ident">Vec::new</span>);
+                <span class="kw">let </span>selected_items = Skim::run_with(<span class="kw-2">&amp;</span>options, <span class="prelude-val">Some</span>(rx_item))
+                    .map(|out| out.selected_items)
+                    .unwrap_or_else(Vec::new);
 
-                <span class="comment">// match the first (and only) returned option with the candidate and update the</span>
-                <span class="comment">// line otherwise only refresh line to clear the skim UI changes</span>
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">item</span>) = <span class="ident">selected_items</span>.<span class="ident">first</span>() {
-                    <span class="kw">let</span> <span class="ident">item</span>: <span class="kw-2">&amp;</span><span class="ident">Candidate</span> = (<span class="kw-2">*</span><span class="ident">item</span>).<span class="ident">as_any</span>() <span class="comment">// cast to Any</span>
-                        .<span class="ident">downcast_ref</span>::&lt;<span class="ident">Candidate</span>&gt;() <span class="comment">// downcast to concrete type</span>
-                        .<span class="ident">expect</span>(<span class="string">&quot;something wrong with downcast&quot;</span>);
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">candidate</span>) = <span class="ident">candidates</span>.<span class="ident">get</span>(<span class="ident">item</span>.<span class="ident">index</span>) {
-                        <span class="ident">completer</span>.<span class="ident">update</span>(<span class="kw-2">&amp;mut</span> <span class="ident">s</span>.<span class="ident">line</span>, <span class="ident">start</span>, <span class="ident">candidate</span>.<span class="ident">replacement</span>());
+                <span class="comment">// match the first (and only) returned option with the candidate and update the
+                // line otherwise only refresh line to clear the skim UI changes
+                </span><span class="kw">if let </span><span class="prelude-val">Some</span>(item) = selected_items.first() {
+                    <span class="kw">let </span>item: <span class="kw-2">&amp;</span>Candidate = (<span class="kw-2">*</span>item).as_any() <span class="comment">// cast to Any
+                        </span>.downcast_ref::&lt;Candidate&gt;() <span class="comment">// downcast to concrete type
+                        </span>.expect(<span class="string">&quot;something wrong with downcast&quot;</span>);
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(candidate) = candidates.get(item.index) {
+                        completer.update(<span class="kw-2">&amp;mut </span>s.line, start, candidate.replacement());
                     }
                 }
-                <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
+                s.refresh_line()<span class="question-mark">?</span>;
             }
         };
         <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
     }
 }
 
-<span class="doccomment">/// Completes the current hint</span>
-<span class="kw">fn</span> <span class="ident">complete_hint_line</span>&lt;<span class="ident">H</span>: <span class="ident">Helper</span>&gt;(<span class="ident">s</span>: <span class="kw-2">&amp;mut</span> <span class="ident">State</span>&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="ident">H</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-    <span class="kw">let</span> <span class="ident">hint</span> = <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">hint</span>.<span class="ident">as_ref</span>() {
-        <span class="prelude-val">Some</span>(<span class="ident">hint</span>) =&gt; <span class="ident">hint</span>,
-        <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Ok</span>(()),
+<span class="doccomment">/// Completes the current hint
+</span><span class="kw">fn </span>complete_hint_line&lt;H: Helper&gt;(s: <span class="kw-2">&amp;mut </span>State&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, H&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+    <span class="kw">let </span>hint = <span class="kw">match </span>s.hint.as_ref() {
+        <span class="prelude-val">Some</span>(hint) =&gt; hint,
+        <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
     };
-    <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">move_end</span>();
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">text</span>) = <span class="ident">hint</span>.<span class="ident">completion</span>() {
-        <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">yank</span>(<span class="ident">text</span>, <span class="number">1</span>).<span class="ident">is_none</span>() {
-            <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">beep</span>()<span class="question-mark">?</span>;
+    s.line.move_end();
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(text) = hint.completion() {
+        <span class="kw">if </span>s.line.yank(text, <span class="number">1</span>).is_none() {
+            s.out.beep()<span class="question-mark">?</span>;
         }
-    } <span class="kw">else</span> {
-        <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">beep</span>()<span class="question-mark">?</span>;
+    } <span class="kw">else </span>{
+        s.out.beep()<span class="question-mark">?</span>;
     }
-    <span class="ident">s</span>.<span class="ident">refresh_line</span>()
+    s.refresh_line()
 }
 
-<span class="kw">fn</span> <span class="ident">page_completions</span>&lt;<span class="ident">C</span>: <span class="ident">Candidate</span>, <span class="ident">H</span>: <span class="ident">Helper</span>&gt;(
-    <span class="ident">rdr</span>: <span class="kw-2">&amp;mut</span> &lt;<span class="ident">Terminal</span> <span class="kw">as</span> <span class="ident">Term</span>&gt;<span class="ident">::Reader</span>,
-    <span class="ident">s</span>: <span class="kw-2">&amp;mut</span> <span class="ident">State</span>&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="ident">H</span>&gt;,
-    <span class="ident">input_state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">InputState</span>,
-    <span class="ident">candidates</span>: <span class="kw-2">&amp;</span>[<span class="ident">C</span>],
-) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">Cmd</span>&gt;&gt; {
-    <span class="kw">use</span> <span class="ident">std::cmp</span>;
+<span class="kw">fn </span>page_completions&lt;C: Candidate, H: Helper&gt;(
+    rdr: <span class="kw-2">&amp;mut </span>&lt;Terminal <span class="kw">as </span>Term&gt;::Reader,
+    s: <span class="kw-2">&amp;mut </span>State&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, H&gt;,
+    input_state: <span class="kw-2">&amp;mut </span>InputState,
+    candidates: <span class="kw-2">&amp;</span>[C],
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Cmd&gt;&gt; {
+    <span class="kw">use </span>std::cmp;
 
-    <span class="kw">let</span> <span class="ident">min_col_pad</span> = <span class="number">2</span>;
-    <span class="kw">let</span> <span class="ident">cols</span> = <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">get_columns</span>();
-    <span class="kw">let</span> <span class="ident">max_width</span> = <span class="ident">cmp::min</span>(
-        <span class="ident">cols</span>,
-        <span class="ident">candidates</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(|<span class="ident">s</span>| <span class="ident">s</span>.<span class="ident">display</span>().<span class="ident">width</span>())
-            .<span class="ident">max</span>()
-            .<span class="ident">unwrap</span>()
-            + <span class="ident">min_col_pad</span>,
+    <span class="kw">let </span>min_col_pad = <span class="number">2</span>;
+    <span class="kw">let </span>cols = s.out.get_columns();
+    <span class="kw">let </span>max_width = cmp::min(
+        cols,
+        candidates
+            .iter()
+            .map(|s| s.display().width())
+            .max()
+            .unwrap()
+            + min_col_pad,
     );
-    <span class="kw">let</span> <span class="ident">num_cols</span> = <span class="ident">cols</span> / <span class="ident">max_width</span>;
+    <span class="kw">let </span>num_cols = cols / max_width;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pause_row</span> = <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">get_rows</span>() - <span class="number">1</span>;
-    <span class="kw">let</span> <span class="ident">num_rows</span> = (<span class="ident">candidates</span>.<span class="ident">len</span>() + <span class="ident">num_cols</span> - <span class="number">1</span>) / <span class="ident">num_cols</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ab</span> = <span class="ident">String::new</span>();
-    <span class="kw">for</span> <span class="ident">row</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">num_rows</span> {
-        <span class="kw">if</span> <span class="ident">row</span> == <span class="ident">pause_row</span> {
-            <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">write_and_flush</span>(<span class="string">&quot;\n--More--&quot;</span>)<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmd</span> = <span class="ident">Cmd::Noop</span>;
-            <span class="kw">while</span> <span class="ident">cmd</span> != <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;y&#39;</span>)
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;Y&#39;</span>)
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;n&#39;</span>)
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;N&#39;</span>)
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;q&#39;</span>)
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;Q&#39;</span>)
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39; &#39;</span>)
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::Kill</span>(<span class="ident">Movement::BackwardChar</span>(<span class="number">1</span>))
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::AcceptLine</span>
-                &amp;&amp; <span class="ident">cmd</span> != <span class="ident">Cmd::Newline</span>
-                &amp;&amp; !<span class="macro">matches!</span>(<span class="ident">cmd</span>, <span class="ident">Cmd::AcceptOrInsertLine</span> { .. })
+    <span class="kw">let </span><span class="kw-2">mut </span>pause_row = s.out.get_rows() - <span class="number">1</span>;
+    <span class="kw">let </span>num_rows = (candidates.len() + num_cols - <span class="number">1</span>) / num_cols;
+    <span class="kw">let </span><span class="kw-2">mut </span>ab = String::new();
+    <span class="kw">for </span>row <span class="kw">in </span><span class="number">0</span>..num_rows {
+        <span class="kw">if </span>row == pause_row {
+            s.out.write_and_flush(<span class="string">&quot;\n--More--&quot;</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>cmd = Cmd::Noop;
+            <span class="kw">while </span>cmd != Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;y&#39;</span>)
+                &amp;&amp; cmd != Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;Y&#39;</span>)
+                &amp;&amp; cmd != Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;n&#39;</span>)
+                &amp;&amp; cmd != Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;N&#39;</span>)
+                &amp;&amp; cmd != Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;q&#39;</span>)
+                &amp;&amp; cmd != Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;Q&#39;</span>)
+                &amp;&amp; cmd != Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39; &#39;</span>)
+                &amp;&amp; cmd != Cmd::Kill(Movement::BackwardChar(<span class="number">1</span>))
+                &amp;&amp; cmd != Cmd::AcceptLine
+                &amp;&amp; cmd != Cmd::Newline
+                &amp;&amp; !<span class="macro">matches!</span>(cmd, Cmd::AcceptOrInsertLine { .. })
             {
-                <span class="ident">cmd</span> = <span class="ident">s</span>.<span class="ident">next_cmd</span>(<span class="ident">input_state</span>, <span class="ident">rdr</span>, <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+                cmd = s.next_cmd(input_state, rdr, <span class="bool-val">false</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
             }
-            <span class="kw">match</span> <span class="ident">cmd</span> {
-                <span class="ident">Cmd::SelfInsert</span>(<span class="number">1</span>, <span class="string">&#39;y&#39;</span> | <span class="string">&#39;Y&#39;</span> | <span class="string">&#39; &#39;</span>) =&gt; {
-                    <span class="ident">pause_row</span> += <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">get_rows</span>() - <span class="number">1</span>;
+            <span class="kw">match </span>cmd {
+                Cmd::SelfInsert(<span class="number">1</span>, <span class="string">&#39;y&#39; </span>| <span class="string">&#39;Y&#39; </span>| <span class="string">&#39; &#39;</span>) =&gt; {
+                    pause_row += s.out.get_rows() - <span class="number">1</span>;
                 }
-                <span class="ident">Cmd::AcceptLine</span> | <span class="ident">Cmd::Newline</span> | <span class="ident">Cmd::AcceptOrInsertLine</span> { .. } =&gt; {
-                    <span class="ident">pause_row</span> += <span class="number">1</span>;
+                Cmd::AcceptLine | Cmd::Newline | Cmd::AcceptOrInsertLine { .. } =&gt; {
+                    pause_row += <span class="number">1</span>;
                 }
-                <span class="kw">_</span> =&gt; <span class="kw">break</span>,
+                <span class="kw">_ </span>=&gt; <span class="kw">break</span>,
             }
         }
-        <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">write_and_flush</span>(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
-        <span class="ident">ab</span>.<span class="ident">clear</span>();
-        <span class="kw">for</span> <span class="ident">col</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">num_cols</span> {
-            <span class="kw">let</span> <span class="ident">i</span> = (<span class="ident">col</span> * <span class="ident">num_rows</span>) + <span class="ident">row</span>;
-            <span class="kw">if</span> <span class="ident">i</span> &lt; <span class="ident">candidates</span>.<span class="ident">len</span>() {
-                <span class="kw">let</span> <span class="ident">candidate</span> = <span class="kw-2">&amp;</span><span class="ident">candidates</span>[<span class="ident">i</span>].<span class="ident">display</span>();
-                <span class="kw">let</span> <span class="ident">width</span> = <span class="ident">candidate</span>.<span class="ident">width</span>();
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">highlighter</span>) = <span class="ident">s</span>.<span class="ident">highlighter</span>() {
-                    <span class="ident">ab</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">highlighter</span>.<span class="ident">highlight_candidate</span>(<span class="ident">candidate</span>, <span class="ident">CompletionType::List</span>));
-                } <span class="kw">else</span> {
-                    <span class="ident">ab</span>.<span class="ident">push_str</span>(<span class="ident">candidate</span>);
+        s.out.write_and_flush(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
+        ab.clear();
+        <span class="kw">for </span>col <span class="kw">in </span><span class="number">0</span>..num_cols {
+            <span class="kw">let </span>i = (col * num_rows) + row;
+            <span class="kw">if </span>i &lt; candidates.len() {
+                <span class="kw">let </span>candidate = <span class="kw-2">&amp;</span>candidates[i].display();
+                <span class="kw">let </span>width = candidate.width();
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(highlighter) = s.highlighter() {
+                    ab.push_str(<span class="kw-2">&amp;</span>highlighter.highlight_candidate(candidate, CompletionType::List));
+                } <span class="kw">else </span>{
+                    ab.push_str(candidate);
                 }
-                <span class="kw">if</span> ((<span class="ident">col</span> + <span class="number">1</span>) * <span class="ident">num_rows</span>) + <span class="ident">row</span> &lt; <span class="ident">candidates</span>.<span class="ident">len</span>() {
-                    <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="ident">width</span>..<span class="ident">max_width</span> {
-                        <span class="ident">ab</span>.<span class="ident">push</span>(<span class="string">&#39; &#39;</span>);
+                <span class="kw">if </span>((col + <span class="number">1</span>) * num_rows) + row &lt; candidates.len() {
+                    <span class="kw">for _ in </span>width..max_width {
+                        ab.push(<span class="string">&#39; &#39;</span>);
                     }
                 }
             }
         }
-        <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">write_and_flush</span>(<span class="ident">ab</span>.<span class="ident">as_str</span>())<span class="question-mark">?</span>;
+        s.out.write_and_flush(ab.as_str())<span class="question-mark">?</span>;
     }
-    <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">write_and_flush</span>(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
-    <span class="ident">s</span>.<span class="ident">layout</span>.<span class="ident">end</span>.<span class="ident">row</span> = <span class="number">0</span>; <span class="comment">// dirty way to make clear_old_rows do nothing</span>
-    <span class="ident">s</span>.<span class="ident">layout</span>.<span class="ident">cursor</span>.<span class="ident">row</span> = <span class="number">0</span>;
-    <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
+    s.out.write_and_flush(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
+    s.layout.end.row = <span class="number">0</span>; <span class="comment">// dirty way to make clear_old_rows do nothing
+    </span>s.layout.cursor.row = <span class="number">0</span>;
+    s.refresh_line()<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
 }
 
-<span class="doccomment">/// Incremental search</span>
-<span class="kw">fn</span> <span class="ident">reverse_incremental_search</span>&lt;<span class="ident">H</span>: <span class="ident">Helper</span>&gt;(
-    <span class="ident">rdr</span>: <span class="kw-2">&amp;mut</span> &lt;<span class="ident">Terminal</span> <span class="kw">as</span> <span class="ident">Term</span>&gt;<span class="ident">::Reader</span>,
-    <span class="ident">s</span>: <span class="kw-2">&amp;mut</span> <span class="ident">State</span>&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, <span class="ident">H</span>&gt;,
-    <span class="ident">input_state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">InputState</span>,
-    <span class="ident">history</span>: <span class="kw-2">&amp;</span><span class="ident">History</span>,
-) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;<span class="ident">Cmd</span>&gt;&gt; {
-    <span class="kw">if</span> <span class="ident">history</span>.<span class="ident">is_empty</span>() {
-        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
+<span class="doccomment">/// Incremental search
+</span><span class="kw">fn </span>reverse_incremental_search&lt;H: Helper&gt;(
+    rdr: <span class="kw-2">&amp;mut </span>&lt;Terminal <span class="kw">as </span>Term&gt;::Reader,
+    s: <span class="kw-2">&amp;mut </span>State&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>, H&gt;,
+    input_state: <span class="kw-2">&amp;mut </span>InputState,
+    history: <span class="kw-2">&amp;</span>History,
+) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;Cmd&gt;&gt; {
+    <span class="kw">if </span>history.is_empty() {
+        <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
     }
-    <span class="kw">let</span> <span class="ident">mark</span> = <span class="ident">s</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">begin</span>();
-    <span class="comment">// Save the current edited line (and cursor position) before overwriting it</span>
-    <span class="kw">let</span> <span class="ident">backup</span> = <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">as_str</span>().<span class="ident">to_owned</span>();
-    <span class="kw">let</span> <span class="ident">backup_pos</span> = <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">pos</span>();
+    <span class="kw">let </span>mark = s.changes.borrow_mut().begin();
+    <span class="comment">// Save the current edited line (and cursor position) before overwriting it
+    </span><span class="kw">let </span>backup = s.line.as_str().to_owned();
+    <span class="kw">let </span>backup_pos = s.line.pos();
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">search_buf</span> = <span class="ident">String::new</span>();
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">history_idx</span> = <span class="ident">history</span>.<span class="ident">len</span>() - <span class="number">1</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">direction</span> = <span class="ident">SearchDirection::Reverse</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">success</span> = <span class="bool-val">true</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>search_buf = String::new();
+    <span class="kw">let </span><span class="kw-2">mut </span>history_idx = history.len() - <span class="number">1</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>direction = SearchDirection::Reverse;
+    <span class="kw">let </span><span class="kw-2">mut </span>success = <span class="bool-val">true</span>;
 
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmd</span>;
-    <span class="comment">// Display the reverse-i-search prompt and process chars</span>
-    <span class="kw">loop</span> {
-        <span class="kw">let</span> <span class="ident">prompt</span> = <span class="kw">if</span> <span class="ident">success</span> {
-            <span class="macro">format!</span>(<span class="string">&quot;(reverse-i-search)`{}&#39;: &quot;</span>, <span class="ident">search_buf</span>)
-        } <span class="kw">else</span> {
-            <span class="macro">format!</span>(<span class="string">&quot;(failed reverse-i-search)`{}&#39;: &quot;</span>, <span class="ident">search_buf</span>)
+    <span class="kw">let </span><span class="kw-2">mut </span>cmd;
+    <span class="comment">// Display the reverse-i-search prompt and process chars
+    </span><span class="kw">loop </span>{
+        <span class="kw">let </span>prompt = <span class="kw">if </span>success {
+            <span class="macro">format!</span>(<span class="string">&quot;(reverse-i-search)`{}&#39;: &quot;</span>, search_buf)
+        } <span class="kw">else </span>{
+            <span class="macro">format!</span>(<span class="string">&quot;(failed reverse-i-search)`{}&#39;: &quot;</span>, search_buf)
         };
-        <span class="ident">s</span>.<span class="ident">refresh_prompt_and_line</span>(<span class="kw-2">&amp;</span><span class="ident">prompt</span>)<span class="question-mark">?</span>;
+        s.refresh_prompt_and_line(<span class="kw-2">&amp;</span>prompt)<span class="question-mark">?</span>;
 
-        <span class="ident">cmd</span> = <span class="ident">s</span>.<span class="ident">next_cmd</span>(<span class="ident">input_state</span>, <span class="ident">rdr</span>, <span class="bool-val">true</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Cmd::SelfInsert</span>(<span class="kw">_</span>, <span class="ident">c</span>) = <span class="ident">cmd</span> {
-            <span class="ident">search_buf</span>.<span class="ident">push</span>(<span class="ident">c</span>);
-        } <span class="kw">else</span> {
-            <span class="kw">match</span> <span class="ident">cmd</span> {
-                <span class="ident">Cmd::Kill</span>(<span class="ident">Movement::BackwardChar</span>(<span class="kw">_</span>)) =&gt; {
-                    <span class="ident">search_buf</span>.<span class="ident">pop</span>();
+        cmd = s.next_cmd(input_state, rdr, <span class="bool-val">true</span>, <span class="bool-val">true</span>)<span class="question-mark">?</span>;
+        <span class="kw">if let </span>Cmd::SelfInsert(<span class="kw">_</span>, c) = cmd {
+            search_buf.push(c);
+        } <span class="kw">else </span>{
+            <span class="kw">match </span>cmd {
+                Cmd::Kill(Movement::BackwardChar(<span class="kw">_</span>)) =&gt; {
+                    search_buf.pop();
                     <span class="kw">continue</span>;
                 }
-                <span class="ident">Cmd::ReverseSearchHistory</span> =&gt; {
-                    <span class="ident">direction</span> = <span class="ident">SearchDirection::Reverse</span>;
-                    <span class="kw">if</span> <span class="ident">history_idx</span> &gt; <span class="number">0</span> {
-                        <span class="ident">history_idx</span> -= <span class="number">1</span>;
-                    } <span class="kw">else</span> {
-                        <span class="ident">success</span> = <span class="bool-val">false</span>;
+                Cmd::ReverseSearchHistory =&gt; {
+                    direction = SearchDirection::Reverse;
+                    <span class="kw">if </span>history_idx &gt; <span class="number">0 </span>{
+                        history_idx -= <span class="number">1</span>;
+                    } <span class="kw">else </span>{
+                        success = <span class="bool-val">false</span>;
                         <span class="kw">continue</span>;
                     }
                 }
-                <span class="ident">Cmd::ForwardSearchHistory</span> =&gt; {
-                    <span class="ident">direction</span> = <span class="ident">SearchDirection::Forward</span>;
-                    <span class="kw">if</span> <span class="ident">history_idx</span> &lt; <span class="ident">history</span>.<span class="ident">len</span>() - <span class="number">1</span> {
-                        <span class="ident">history_idx</span> += <span class="number">1</span>;
-                    } <span class="kw">else</span> {
-                        <span class="ident">success</span> = <span class="bool-val">false</span>;
+                Cmd::ForwardSearchHistory =&gt; {
+                    direction = SearchDirection::Forward;
+                    <span class="kw">if </span>history_idx &lt; history.len() - <span class="number">1 </span>{
+                        history_idx += <span class="number">1</span>;
+                    } <span class="kw">else </span>{
+                        success = <span class="bool-val">false</span>;
                         <span class="kw">continue</span>;
                     }
                 }
-                <span class="ident">Cmd::Abort</span> =&gt; {
-                    <span class="comment">// Restore current edited line (before search)</span>
-                    <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">update</span>(<span class="kw-2">&amp;</span><span class="ident">backup</span>, <span class="ident">backup_pos</span>);
-                    <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
-                    <span class="ident">s</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">truncate</span>(<span class="ident">mark</span>);
-                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
+                Cmd::Abort =&gt; {
+                    <span class="comment">// Restore current edited line (before search)
+                    </span>s.line.update(<span class="kw-2">&amp;</span>backup, backup_pos);
+                    s.refresh_line()<span class="question-mark">?</span>;
+                    s.changes.borrow_mut().truncate(mark);
+                    <span class="kw">return </span><span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
                 }
-                <span class="ident">Cmd::Move</span>(<span class="kw">_</span>) =&gt; {
-                    <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>; <span class="comment">// restore prompt</span>
-                    <span class="kw">break</span>;
+                Cmd::Move(<span class="kw">_</span>) =&gt; {
+                    s.refresh_line()<span class="question-mark">?</span>; <span class="comment">// restore prompt
+                    </span><span class="kw">break</span>;
                 }
-                <span class="kw">_</span> =&gt; <span class="kw">break</span>,
+                <span class="kw">_ </span>=&gt; <span class="kw">break</span>,
             }
         }
-        <span class="ident">success</span> = <span class="kw">match</span> <span class="ident">history</span>.<span class="ident">search</span>(<span class="kw-2">&amp;</span><span class="ident">search_buf</span>, <span class="ident">history_idx</span>, <span class="ident">direction</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">sr</span>) =&gt; {
-                <span class="ident">history_idx</span> = <span class="ident">sr</span>.<span class="ident">idx</span>;
-                <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">update</span>(<span class="ident">sr</span>.<span class="ident">entry</span>, <span class="ident">sr</span>.<span class="ident">pos</span>);
-                <span class="bool-val">true</span>
-            }
-            <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
+        success = <span class="kw">match </span>history.search(<span class="kw-2">&amp;</span>search_buf, history_idx, direction) {
+            <span class="prelude-val">Some</span>(sr) =&gt; {
+                history_idx = sr.idx;
+                s.line.update(sr.entry, sr.pos);
+                <span class="bool-val">true
+            </span>}
+            <span class="kw">_ </span>=&gt; <span class="bool-val">false</span>,
         };
     }
-    <span class="ident">s</span>.<span class="ident">changes</span>.<span class="ident">borrow_mut</span>().<span class="ident">end</span>();
-    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">cmd</span>))
+    s.changes.borrow_mut().end();
+    <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(cmd))
 }
 
-<span class="kw">struct</span> <span class="ident">Guard</span>&lt;<span class="lifetime">&#39;m</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;m</span> <span class="ident">tty::Mode</span>);
+<span class="kw">struct </span>Guard&lt;<span class="lifetime">&#39;m</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;m </span>tty::Mode);
 
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_must_use</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">Guard</span>&lt;<span class="lifetime">&#39;_</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="kw">let</span> <span class="ident">Guard</span>(<span class="ident">mode</span>) = <span class="kw-2">*</span><span class="self">self</span>;
-        <span class="ident">mode</span>.<span class="ident">disable_raw_mode</span>();
+<span class="attribute">#[allow(unused_must_use)]
+</span><span class="kw">impl </span>Drop <span class="kw">for </span>Guard&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">let </span>Guard(mode) = <span class="kw-2">*</span><span class="self">self</span>;
+        mode.disable_raw_mode();
     }
 }
 
-<span class="comment">// Helper to handle backspace characters in a direct input</span>
-<span class="kw">fn</span> <span class="ident">apply_backspace_direct</span>(<span class="ident">input</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
-    <span class="comment">// Setup the output buffer</span>
-    <span class="comment">// No &#39;\b&#39; in the input in the common case, so set the capacity to the input</span>
-    <span class="comment">// length</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out</span> = <span class="ident">String::with_capacity</span>(<span class="ident">input</span>.<span class="ident">len</span>());
+<span class="comment">// Helper to handle backspace characters in a direct input
+</span><span class="kw">fn </span>apply_backspace_direct(input: <span class="kw-2">&amp;</span>str) -&gt; String {
+    <span class="comment">// Setup the output buffer
+    // No &#39;\b&#39; in the input in the common case, so set the capacity to the input
+    // length
+    </span><span class="kw">let </span><span class="kw-2">mut </span>out = String::with_capacity(input.len());
 
-    <span class="comment">// Keep track of the size of each grapheme from the input</span>
-    <span class="comment">// As many graphemes as input bytes in the common case</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">grapheme_sizes</span>: <span class="ident">Vec</span>&lt;<span class="ident">u8</span>&gt; = <span class="ident">Vec::with_capacity</span>(<span class="ident">input</span>.<span class="ident">len</span>());
+    <span class="comment">// Keep track of the size of each grapheme from the input
+    // As many graphemes as input bytes in the common case
+    </span><span class="kw">let </span><span class="kw-2">mut </span>grapheme_sizes: Vec&lt;u8&gt; = Vec::with_capacity(input.len());
 
-    <span class="kw">for</span> <span class="ident">g</span> <span class="kw">in</span> <span class="ident">unicode_segmentation::UnicodeSegmentation::graphemes</span>(<span class="ident">input</span>, <span class="bool-val">true</span>) {
-        <span class="kw">if</span> <span class="ident">g</span> == <span class="string">&quot;\u{0008}&quot;</span> {
-            <span class="comment">// backspace char</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) = <span class="ident">grapheme_sizes</span>.<span class="ident">pop</span>() {
-                <span class="comment">// Remove the last grapheme</span>
-                <span class="ident">out</span>.<span class="ident">truncate</span>(<span class="ident">out</span>.<span class="ident">len</span>() - <span class="ident">n</span> <span class="kw">as</span> <span class="ident">usize</span>);
+    <span class="kw">for </span>g <span class="kw">in </span>unicode_segmentation::UnicodeSegmentation::graphemes(input, <span class="bool-val">true</span>) {
+        <span class="kw">if </span>g == <span class="string">&quot;\u{0008}&quot; </span>{
+            <span class="comment">// backspace char
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(n) = grapheme_sizes.pop() {
+                <span class="comment">// Remove the last grapheme
+                </span>out.truncate(out.len() - n <span class="kw">as </span>usize);
             }
-        } <span class="kw">else</span> {
-            <span class="ident">out</span>.<span class="ident">push_str</span>(<span class="ident">g</span>);
-            <span class="ident">grapheme_sizes</span>.<span class="ident">push</span>(<span class="ident">g</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u8</span>);
+        } <span class="kw">else </span>{
+            out.push_str(g);
+            grapheme_sizes.push(g.len() <span class="kw">as </span>u8);
         }
     }
 
-    <span class="ident">out</span>
+    out
 }
 
-<span class="kw">fn</span> <span class="ident">readline_direct</span>(
-    <span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="kw">impl</span> <span class="ident">BufRead</span>,
-    <span class="kw-2">mut</span> <span class="ident">writer</span>: <span class="kw">impl</span> <span class="ident">Write</span>,
-    <span class="ident">validator</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;<span class="kw">impl</span> <span class="ident">Validator</span>&gt;,
-) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">String</span>&gt; {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input</span> = <span class="ident">String::new</span>();
+<span class="kw">fn </span>readline_direct(
+    <span class="kw-2">mut </span>reader: <span class="kw">impl </span>BufRead,
+    <span class="kw-2">mut </span>writer: <span class="kw">impl </span>Write,
+    validator: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;<span class="kw">impl </span>Validator&gt;,
+) -&gt; <span class="prelude-ty">Result</span>&lt;String&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>input = String::new();
 
-    <span class="kw">loop</span> {
-        <span class="kw">if</span> <span class="ident">reader</span>.<span class="ident">read_line</span>(<span class="kw-2">&amp;mut</span> <span class="ident">input</span>)<span class="question-mark">?</span> == <span class="number">0</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">error::ReadlineError::Eof</span>);
+    <span class="kw">loop </span>{
+        <span class="kw">if </span>reader.read_line(<span class="kw-2">&amp;mut </span>input)<span class="question-mark">? </span>== <span class="number">0 </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(error::ReadlineError::Eof);
         }
-        <span class="comment">// Remove trailing newline</span>
-        <span class="kw">let</span> <span class="ident">trailing_n</span> = <span class="ident">input</span>.<span class="ident">ends_with</span>(<span class="string">&#39;\n&#39;</span>);
-        <span class="kw">let</span> <span class="ident">trailing_r</span>;
+        <span class="comment">// Remove trailing newline
+        </span><span class="kw">let </span>trailing_n = input.ends_with(<span class="string">&#39;\n&#39;</span>);
+        <span class="kw">let </span>trailing_r;
 
-        <span class="kw">if</span> <span class="ident">trailing_n</span> {
-            <span class="ident">input</span>.<span class="ident">pop</span>();
-            <span class="ident">trailing_r</span> = <span class="ident">input</span>.<span class="ident">ends_with</span>(<span class="string">&#39;\r&#39;</span>);
-            <span class="kw">if</span> <span class="ident">trailing_r</span> {
-                <span class="ident">input</span>.<span class="ident">pop</span>();
+        <span class="kw">if </span>trailing_n {
+            input.pop();
+            trailing_r = input.ends_with(<span class="string">&#39;\r&#39;</span>);
+            <span class="kw">if </span>trailing_r {
+                input.pop();
             }
-        } <span class="kw">else</span> {
-            <span class="ident">trailing_r</span> = <span class="bool-val">false</span>;
+        } <span class="kw">else </span>{
+            trailing_r = <span class="bool-val">false</span>;
         }
 
-        <span class="ident">input</span> = <span class="ident">apply_backspace_direct</span>(<span class="kw-2">&amp;</span><span class="ident">input</span>);
+        input = apply_backspace_direct(<span class="kw-2">&amp;</span>input);
 
-        <span class="kw">match</span> <span class="ident">validator</span>.<span class="ident">as_ref</span>() {
-            <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">input</span>),
-            <span class="prelude-val">Some</span>(<span class="ident">v</span>) =&gt; {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ctx</span> = <span class="ident">input</span>.<span class="ident">as_str</span>();
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ctx</span> = <span class="ident">validate::ValidationContext::new</span>(<span class="kw-2">&amp;mut</span> <span class="ident">ctx</span>);
+        <span class="kw">match </span>validator.as_ref() {
+            <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(input),
+            <span class="prelude-val">Some</span>(v) =&gt; {
+                <span class="kw">let </span><span class="kw-2">mut </span>ctx = input.as_str();
+                <span class="kw">let </span><span class="kw-2">mut </span>ctx = validate::ValidationContext::new(<span class="kw-2">&amp;mut </span>ctx);
 
-                <span class="kw">match</span> <span class="ident">v</span>.<span class="ident">validate</span>(<span class="kw-2">&amp;mut</span> <span class="ident">ctx</span>)<span class="question-mark">?</span> {
-                    <span class="ident">validate::ValidationResult::Valid</span>(<span class="ident">msg</span>) =&gt; {
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">msg</span>) = <span class="ident">msg</span> {
-                            <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="ident">msg</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
+                <span class="kw">match </span>v.validate(<span class="kw-2">&amp;mut </span>ctx)<span class="question-mark">? </span>{
+                    validate::ValidationResult::Valid(msg) =&gt; {
+                        <span class="kw">if let </span><span class="prelude-val">Some</span>(msg) = msg {
+                            writer.write_all(msg.as_bytes())<span class="question-mark">?</span>;
                         }
-                        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">input</span>);
+                        <span class="kw">return </span><span class="prelude-val">Ok</span>(input);
                     }
-                    <span class="ident">validate::ValidationResult::Invalid</span>(<span class="prelude-val">Some</span>(<span class="ident">msg</span>)) =&gt; {
-                        <span class="ident">writer</span>.<span class="ident">write_all</span>(<span class="ident">msg</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
+                    validate::ValidationResult::Invalid(<span class="prelude-val">Some</span>(msg)) =&gt; {
+                        writer.write_all(msg.as_bytes())<span class="question-mark">?</span>;
                     }
-                    <span class="ident">validate::ValidationResult::Incomplete</span> =&gt; {
-                        <span class="comment">// Add newline and keep on taking input</span>
-                        <span class="kw">if</span> <span class="ident">trailing_r</span> {
-                            <span class="ident">input</span>.<span class="ident">push</span>(<span class="string">&#39;\r&#39;</span>);
+                    validate::ValidationResult::Incomplete =&gt; {
+                        <span class="comment">// Add newline and keep on taking input
+                        </span><span class="kw">if </span>trailing_r {
+                            input.push(<span class="string">&#39;\r&#39;</span>);
                         }
-                        <span class="kw">if</span> <span class="ident">trailing_n</span> {
-                            <span class="ident">input</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
+                        <span class="kw">if </span>trailing_n {
+                            input.push(<span class="string">&#39;\n&#39;</span>);
                         }
                     }
-                    <span class="kw">_</span> =&gt; {}
+                    <span class="kw">_ </span>=&gt; {}
                 }
             }
         }
     }
 }
 
-<span class="doccomment">/// Syntax specific helper.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// TODO Tokenizer/parser used for both completion, suggestion, highlighting.</span>
-<span class="doccomment">/// (parse current line once)</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Helper</span>
-<span class="kw">where</span>
-    <span class="self">Self</span>: <span class="ident">Completer</span> + <span class="ident">Hinter</span> + <span class="ident">Highlighter</span> + <span class="ident">Validator</span>,
+<span class="doccomment">/// Syntax specific helper.
+///
+/// TODO Tokenizer/parser used for both completion, suggestion, highlighting.
+/// (parse current line once)
+</span><span class="kw">pub trait </span>Helper
+<span class="kw">where
+    </span><span class="self">Self</span>: Completer + Hinter + Highlighter + Validator,
 {
 }
 
-<span class="kw">impl</span> <span class="ident">Helper</span> <span class="kw">for</span> () {}
+<span class="kw">impl </span>Helper <span class="kw">for </span>() {}
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;h</span>, <span class="ident">H</span>: <span class="question-mark">?</span><span class="ident">Sized</span> + <span class="ident">Helper</span>&gt; <span class="ident">Helper</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;h</span> <span class="ident">H</span> {}
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;h</span>, H: <span class="question-mark">?</span>Sized + Helper&gt; Helper <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;h </span>H {}
 
-<span class="doccomment">/// Completion/suggestion context</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Context</span>&lt;<span class="lifetime">&#39;h</span>&gt; {
-    <span class="ident">history</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;h</span> <span class="ident">History</span>,
-    <span class="ident">history_index</span>: <span class="ident">usize</span>,
+<span class="doccomment">/// Completion/suggestion context
+</span><span class="kw">pub struct </span>Context&lt;<span class="lifetime">&#39;h</span>&gt; {
+    history: <span class="kw-2">&amp;</span><span class="lifetime">&#39;h </span>History,
+    history_index: usize,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;h</span>&gt; <span class="ident">Context</span>&lt;<span class="lifetime">&#39;h</span>&gt; {
-    <span class="doccomment">/// Constructor. Visible for testing.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">history</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;h</span> <span class="ident">History</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">Context</span> {
-            <span class="ident">history</span>,
-            <span class="ident">history_index</span>: <span class="ident">history</span>.<span class="ident">len</span>(),
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;h</span>&gt; Context&lt;<span class="lifetime">&#39;h</span>&gt; {
+    <span class="doccomment">/// Constructor. Visible for testing.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>new(history: <span class="kw-2">&amp;</span><span class="lifetime">&#39;h </span>History) -&gt; <span class="self">Self </span>{
+        Context {
+            history,
+            history_index: history.len(),
         }
     }
 
-    <span class="doccomment">/// Return an immutable reference to the history object.</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">history</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">History</span> {
-        <span class="self">self</span>.<span class="ident">history</span>
+    <span class="doccomment">/// Return an immutable reference to the history object.
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>history(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>History {
+        <span class="self">self</span>.history
     }
 
-    <span class="doccomment">/// The history index we are currently editing</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">history_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span> {
-        <span class="self">self</span>.<span class="ident">history_index</span>
+    <span class="doccomment">/// The history index we are currently editing
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>history_index(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+        <span class="self">self</span>.history_index
     }
 }
 
-<span class="doccomment">/// Line editor</span>
-<span class="attribute">#[<span class="ident">must_use</span>]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Editor</span>&lt;<span class="ident">H</span>: <span class="ident">Helper</span>&gt; {
-    <span class="ident">term</span>: <span class="ident">Terminal</span>,
-    <span class="ident">history</span>: <span class="ident">History</span>,
-    <span class="ident">helper</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">H</span>&gt;,
-    <span class="ident">kill_ring</span>: <span class="ident">Arc</span>&lt;<span class="ident">Mutex</span>&lt;<span class="ident">KillRing</span>&gt;&gt;,
-    <span class="ident">config</span>: <span class="ident">Config</span>,
-    <span class="ident">custom_bindings</span>: <span class="ident">Bindings</span>,
+<span class="doccomment">/// Line editor
+</span><span class="attribute">#[must_use]
+</span><span class="kw">pub struct </span>Editor&lt;H: Helper&gt; {
+    term: Terminal,
+    history: History,
+    helper: <span class="prelude-ty">Option</span>&lt;H&gt;,
+    kill_ring: Arc&lt;Mutex&lt;KillRing&gt;&gt;,
+    config: Config,
+    custom_bindings: Bindings,
 }
 
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::new_without_default</span>)]</span>
-<span class="kw">impl</span>&lt;<span class="ident">H</span>: <span class="ident">Helper</span>&gt; <span class="ident">Editor</span>&lt;<span class="ident">H</span>&gt; {
-    <span class="doccomment">/// Create an editor with the default configuration</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="ident"><span class="self">Self</span>::with_config</span>(<span class="ident">Config::default</span>())
+<span class="attribute">#[allow(clippy::new_without_default)]
+</span><span class="kw">impl</span>&lt;H: Helper&gt; Editor&lt;H&gt; {
+    <span class="doccomment">/// Create an editor with the default configuration
+    </span><span class="kw">pub fn </span>new() -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="self">Self</span>::with_config(Config::default())
     }
 
-    <span class="doccomment">/// Create an editor with a specific configuration.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_config</span>(<span class="ident">config</span>: <span class="ident">Config</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
-        <span class="kw">let</span> <span class="ident">term</span> = <span class="ident">Terminal::new</span>(
-            <span class="ident">config</span>.<span class="ident">color_mode</span>(),
-            <span class="ident">config</span>.<span class="ident">behavior</span>(),
-            <span class="ident">config</span>.<span class="ident">tab_stop</span>(),
-            <span class="ident">config</span>.<span class="ident">bell_style</span>(),
-            <span class="ident">config</span>.<span class="ident">enable_bracketed_paste</span>(),
+    <span class="doccomment">/// Create an editor with a specific configuration.
+    </span><span class="kw">pub fn </span>with_config(config: Config) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>&gt; {
+        <span class="kw">let </span>term = Terminal::new(
+            config.color_mode(),
+            config.behavior(),
+            config.tab_stop(),
+            config.bell_style(),
+            config.enable_bracketed_paste(),
         )<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
-            <span class="ident">term</span>,
-            <span class="ident">history</span>: <span class="ident">History::with_config</span>(<span class="ident">config</span>),
-            <span class="ident">helper</span>: <span class="prelude-val">None</span>,
-            <span class="ident">kill_ring</span>: <span class="ident">Arc::new</span>(<span class="ident">Mutex::new</span>(<span class="ident">KillRing::new</span>(<span class="number">60</span>))),
-            <span class="ident">config</span>,
-            <span class="ident">custom_bindings</span>: <span class="ident">Bindings::new</span>(),
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            term,
+            history: History::with_config(config),
+            helper: <span class="prelude-val">None</span>,
+            kill_ring: Arc::new(Mutex::new(KillRing::new(<span class="number">60</span>))),
+            config,
+            custom_bindings: Bindings::new(),
         })
     }
 
-    <span class="doccomment">/// This method will read a line from STDIN and will display a `prompt`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// It uses terminal-style interaction if `stdin` is connected to a</span>
-    <span class="doccomment">/// terminal.</span>
-    <span class="doccomment">/// Otherwise (e.g., if `stdin` is a pipe or the terminal is not supported),</span>
-    <span class="doccomment">/// it uses file-style interaction.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">readline</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">String</span>&gt; {
-        <span class="self">self</span>.<span class="ident">readline_with</span>(<span class="ident">prompt</span>, <span class="prelude-val">None</span>)
+    <span class="doccomment">/// This method will read a line from STDIN and will display a `prompt`.
+    ///
+    /// It uses terminal-style interaction if `stdin` is connected to a
+    /// terminal.
+    /// Otherwise (e.g., if `stdin` is a pipe or the terminal is not supported),
+    /// it uses file-style interaction.
+    </span><span class="kw">pub fn </span>readline(<span class="kw-2">&amp;mut </span><span class="self">self</span>, prompt: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;String&gt; {
+        <span class="self">self</span>.readline_with(prompt, <span class="prelude-val">None</span>)
     }
 
-    <span class="doccomment">/// This function behaves in the exact same manner as `readline`, except</span>
-    <span class="doccomment">/// that it pre-populates the input area.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The text that resides in the input area is given as a 2-tuple.</span>
-    <span class="doccomment">/// The string on the left of the tuple is what will appear to the left of</span>
-    <span class="doccomment">/// the cursor and the string on the right is what will appear to the</span>
-    <span class="doccomment">/// right of the cursor.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">readline_with_initial</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">initial</span>: (<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">String</span>&gt; {
-        <span class="self">self</span>.<span class="ident">readline_with</span>(<span class="ident">prompt</span>, <span class="prelude-val">Some</span>(<span class="ident">initial</span>))
+    <span class="doccomment">/// This function behaves in the exact same manner as `readline`, except
+    /// that it pre-populates the input area.
+    ///
+    /// The text that resides in the input area is given as a 2-tuple.
+    /// The string on the left of the tuple is what will appear to the left of
+    /// the cursor and the string on the right is what will appear to the
+    /// right of the cursor.
+    </span><span class="kw">pub fn </span>readline_with_initial(<span class="kw-2">&amp;mut </span><span class="self">self</span>, prompt: <span class="kw-2">&amp;</span>str, initial: (<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str)) -&gt; <span class="prelude-ty">Result</span>&lt;String&gt; {
+        <span class="self">self</span>.readline_with(prompt, <span class="prelude-val">Some</span>(initial))
     }
 
-    <span class="kw">fn</span> <span class="ident">readline_with</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">initial</span>: <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">String</span>&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">is_unsupported</span>() {
-            <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;unsupported terminal&quot;</span>);
-            <span class="comment">// Write prompt and flush it to stdout</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stdout</span> = <span class="ident">io::stdout</span>();
-            <span class="ident">stdout</span>.<span class="ident">write_all</span>(<span class="ident">prompt</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
-            <span class="ident">stdout</span>.<span class="ident">flush</span>()<span class="question-mark">?</span>;
+    <span class="kw">fn </span>readline_with(<span class="kw-2">&amp;mut </span><span class="self">self</span>, prompt: <span class="kw-2">&amp;</span>str, initial: <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str)&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;String&gt; {
+        <span class="kw">if </span><span class="self">self</span>.term.is_unsupported() {
+            <span class="macro">debug!</span>(target: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;unsupported terminal&quot;</span>);
+            <span class="comment">// Write prompt and flush it to stdout
+            </span><span class="kw">let </span><span class="kw-2">mut </span>stdout = io::stdout();
+            stdout.write_all(prompt.as_bytes())<span class="question-mark">?</span>;
+            stdout.flush()<span class="question-mark">?</span>;
 
-            <span class="ident">readline_direct</span>(<span class="ident">io::stdin</span>().<span class="ident">lock</span>(), <span class="ident">io::stderr</span>(), <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">helper</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">is_input_tty</span>() {
-            <span class="kw">let</span> (<span class="ident">original_mode</span>, <span class="ident">term_key_map</span>) = <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">enable_raw_mode</span>()<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="ident">guard</span> = <span class="ident">Guard</span>(<span class="kw-2">&amp;</span><span class="ident">original_mode</span>);
-            <span class="kw">let</span> <span class="ident">user_input</span> = <span class="self">self</span>.<span class="ident">readline_edit</span>(<span class="ident">prompt</span>, <span class="ident">initial</span>, <span class="kw-2">&amp;</span><span class="ident">original_mode</span>, <span class="ident">term_key_map</span>);
-            <span class="kw">if</span> <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">auto_add_history</span>() {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="kw-2">ref</span> <span class="ident">line</span>) = <span class="ident">user_input</span> {
-                    <span class="self">self</span>.<span class="ident">add_history_entry</span>(<span class="ident">line</span>.<span class="ident">as_str</span>());
+            readline_direct(io::stdin().lock(), io::stderr(), <span class="kw-2">&amp;</span><span class="self">self</span>.helper)
+        } <span class="kw">else if </span><span class="self">self</span>.term.is_input_tty() {
+            <span class="kw">let </span>(original_mode, term_key_map) = <span class="self">self</span>.term.enable_raw_mode()<span class="question-mark">?</span>;
+            <span class="kw">let </span>guard = Guard(<span class="kw-2">&amp;</span>original_mode);
+            <span class="kw">let </span>user_input = <span class="self">self</span>.readline_edit(prompt, initial, <span class="kw-2">&amp;</span>original_mode, term_key_map);
+            <span class="kw">if </span><span class="self">self</span>.config.auto_add_history() {
+                <span class="kw">if let </span><span class="prelude-val">Ok</span>(<span class="kw-2">ref </span>line) = user_input {
+                    <span class="self">self</span>.add_history_entry(line.as_str());
                 }
             }
-            <span class="ident">drop</span>(<span class="ident">guard</span>); <span class="comment">// disable_raw_mode(original_mode)?;</span>
-            <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">writeln</span>()<span class="question-mark">?</span>;
-            <span class="ident">user_input</span>
-        } <span class="kw">else</span> {
-            <span class="macro">debug!</span>(<span class="ident">target</span>: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;stdin is not a tty&quot;</span>);
-            <span class="comment">// Not a tty: read from file / pipe.</span>
-            <span class="ident">readline_direct</span>(<span class="ident">io::stdin</span>().<span class="ident">lock</span>(), <span class="ident">io::stderr</span>(), <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">helper</span>)
+            drop(guard); <span class="comment">// disable_raw_mode(original_mode)?;
+            </span><span class="self">self</span>.term.writeln()<span class="question-mark">?</span>;
+            user_input
+        } <span class="kw">else </span>{
+            <span class="macro">debug!</span>(target: <span class="string">&quot;rustyline&quot;</span>, <span class="string">&quot;stdin is not a tty&quot;</span>);
+            <span class="comment">// Not a tty: read from file / pipe.
+            </span>readline_direct(io::stdin().lock(), io::stderr(), <span class="kw-2">&amp;</span><span class="self">self</span>.helper)
         }
     }
 
-    <span class="doccomment">/// Handles reading and editing the readline buffer.</span>
-    <span class="doccomment">/// It will also handle special inputs in an appropriate fashion</span>
-    <span class="doccomment">/// (e.g., C-c will exit readline)</span>
-    <span class="kw">fn</span> <span class="ident">readline_edit</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="ident">initial</span>: <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="kw-2">&amp;</span><span class="ident">str</span>)&gt;,
-        <span class="ident">original_mode</span>: <span class="kw-2">&amp;</span><span class="ident">tty::Mode</span>,
-        <span class="ident">term_key_map</span>: <span class="ident">tty::KeyMap</span>,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">String</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stdout</span> = <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">create_writer</span>();
+    <span class="doccomment">/// Handles reading and editing the readline buffer.
+    /// It will also handle special inputs in an appropriate fashion
+    /// (e.g., C-c will exit readline)
+    </span><span class="kw">fn </span>readline_edit(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        prompt: <span class="kw-2">&amp;</span>str,
+        initial: <span class="prelude-ty">Option</span>&lt;(<span class="kw-2">&amp;</span>str, <span class="kw-2">&amp;</span>str)&gt;,
+        original_mode: <span class="kw-2">&amp;</span>tty::Mode,
+        term_key_map: tty::KeyMap,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;String&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>stdout = <span class="self">self</span>.term.create_writer();
 
-        <span class="self">self</span>.<span class="ident">reset_kill_ring</span>(); <span class="comment">// TODO recreate a new kill ring vs Arc&lt;Mutex&lt;KillRing&gt;&gt;</span>
-        <span class="kw">let</span> <span class="ident">ctx</span> = <span class="ident">Context::new</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">history</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> = <span class="ident">State::new</span>(<span class="kw-2">&amp;mut</span> <span class="ident">stdout</span>, <span class="ident">prompt</span>, <span class="self">self</span>.<span class="ident">helper</span>.<span class="ident">as_ref</span>(), <span class="ident">ctx</span>);
+        <span class="self">self</span>.reset_kill_ring(); <span class="comment">// TODO recreate a new kill ring vs Arc&lt;Mutex&lt;KillRing&gt;&gt;
+        </span><span class="kw">let </span>ctx = Context::new(<span class="kw-2">&amp;</span><span class="self">self</span>.history);
+        <span class="kw">let </span><span class="kw-2">mut </span>s = State::new(<span class="kw-2">&amp;mut </span>stdout, prompt, <span class="self">self</span>.helper.as_ref(), ctx);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">input_state</span> = <span class="ident">InputState::new</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">config</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">custom_bindings</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>input_state = InputState::new(<span class="kw-2">&amp;</span><span class="self">self</span>.config, <span class="kw-2">&amp;</span><span class="self">self</span>.custom_bindings);
 
-        <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">set_delete_listener</span>(<span class="self">self</span>.<span class="ident">kill_ring</span>.<span class="ident">clone</span>());
-        <span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">set_change_listener</span>(<span class="ident">s</span>.<span class="ident">changes</span>.<span class="ident">clone</span>());
+        s.line.set_delete_listener(<span class="self">self</span>.kill_ring.clone());
+        s.line.set_change_listener(s.changes.clone());
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">left</span>, <span class="ident">right</span>)) = <span class="ident">initial</span> {
-            <span class="ident">s</span>.<span class="ident">line</span>
-                .<span class="ident">update</span>((<span class="ident">left</span>.<span class="ident">to_owned</span>() + <span class="ident">right</span>).<span class="ident">as_ref</span>(), <span class="ident">left</span>.<span class="ident">len</span>());
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((left, right)) = initial {
+            s.line
+                .update((left.to_owned() + right).as_ref(), left.len());
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rdr</span> = <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">create_reader</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">config</span>, <span class="ident">term_key_map</span>);
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">is_output_tty</span>() &amp;&amp; <span class="self">self</span>.<span class="ident">config</span>.<span class="ident">check_cursor_position</span>() {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) = <span class="ident">s</span>.<span class="ident">move_cursor_at_leftmost</span>(<span class="kw-2">&amp;mut</span> <span class="ident">rdr</span>) {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">ReadlineError::WindowResized</span> = <span class="ident">e</span> {
-                    <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">update_size</span>();
-                } <span class="kw">else</span> {
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>rdr = <span class="self">self</span>.term.create_reader(<span class="kw-2">&amp;</span><span class="self">self</span>.config, term_key_map);
+        <span class="kw">if </span><span class="self">self</span>.term.is_output_tty() &amp;&amp; <span class="self">self</span>.config.check_cursor_position() {
+            <span class="kw">if let </span><span class="prelude-val">Err</span>(e) = s.move_cursor_at_leftmost(<span class="kw-2">&amp;mut </span>rdr) {
+                <span class="kw">if let </span>ReadlineError::WindowResized = e {
+                    s.out.update_size();
+                } <span class="kw">else </span>{
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(e);
                 }
             }
         }
-        <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
+        s.refresh_line()<span class="question-mark">?</span>;
 
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmd</span> = <span class="ident">s</span>.<span class="ident">next_cmd</span>(<span class="kw-2">&amp;mut</span> <span class="ident">input_state</span>, <span class="kw-2">&amp;mut</span> <span class="ident">rdr</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
+        <span class="kw">loop </span>{
+            <span class="kw">let </span><span class="kw-2">mut </span>cmd = s.next_cmd(<span class="kw-2">&amp;mut </span>input_state, <span class="kw-2">&amp;mut </span>rdr, <span class="bool-val">false</span>, <span class="bool-val">false</span>)<span class="question-mark">?</span>;
 
-            <span class="kw">if</span> <span class="ident">cmd</span>.<span class="ident">should_reset_kill_ring</span>() {
-                <span class="self">self</span>.<span class="ident">reset_kill_ring</span>();
+            <span class="kw">if </span>cmd.should_reset_kill_ring() {
+                <span class="self">self</span>.reset_kill_ring();
             }
 
-            <span class="comment">// First trigger commands that need extra input</span>
+            <span class="comment">// First trigger commands that need extra input
 
-            <span class="kw">if</span> <span class="ident">cmd</span> == <span class="ident">Cmd::Complete</span> &amp;&amp; <span class="ident">s</span>.<span class="ident">helper</span>.<span class="ident">is_some</span>() {
-                <span class="kw">let</span> <span class="ident">next</span> = <span class="ident">complete_line</span>(<span class="kw-2">&amp;mut</span> <span class="ident">rdr</span>, <span class="kw-2">&amp;mut</span> <span class="ident">s</span>, <span class="kw-2">&amp;mut</span> <span class="ident">input_state</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">config</span>)<span class="question-mark">?</span>;
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next</span>) = <span class="ident">next</span> {
-                    <span class="ident">cmd</span> = <span class="ident">next</span>;
-                } <span class="kw">else</span> {
+            </span><span class="kw">if </span>cmd == Cmd::Complete &amp;&amp; s.helper.is_some() {
+                <span class="kw">let </span>next = complete_line(<span class="kw-2">&amp;mut </span>rdr, <span class="kw-2">&amp;mut </span>s, <span class="kw-2">&amp;mut </span>input_state, <span class="kw-2">&amp;</span><span class="self">self</span>.config)<span class="question-mark">?</span>;
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(next) = next {
+                    cmd = next;
+                } <span class="kw">else </span>{
                     <span class="kw">continue</span>;
                 }
             }
 
-            <span class="kw">if</span> <span class="ident">cmd</span> == <span class="ident">Cmd::ReverseSearchHistory</span> {
-                <span class="comment">// Search history backward</span>
-                <span class="kw">let</span> <span class="ident">next</span> =
-                    <span class="ident">reverse_incremental_search</span>(<span class="kw-2">&amp;mut</span> <span class="ident">rdr</span>, <span class="kw-2">&amp;mut</span> <span class="ident">s</span>, <span class="kw-2">&amp;mut</span> <span class="ident">input_state</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">history</span>)<span class="question-mark">?</span>;
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">next</span>) = <span class="ident">next</span> {
-                    <span class="ident">cmd</span> = <span class="ident">next</span>;
-                } <span class="kw">else</span> {
+            <span class="kw">if </span>cmd == Cmd::ReverseSearchHistory {
+                <span class="comment">// Search history backward
+                </span><span class="kw">let </span>next =
+                    reverse_incremental_search(<span class="kw-2">&amp;mut </span>rdr, <span class="kw-2">&amp;mut </span>s, <span class="kw-2">&amp;mut </span>input_state, <span class="kw-2">&amp;</span><span class="self">self</span>.history)<span class="question-mark">?</span>;
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(next) = next {
+                    cmd = next;
+                } <span class="kw">else </span>{
                     <span class="kw">continue</span>;
                 }
             }
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            <span class="kw">if</span> <span class="ident">cmd</span> == <span class="ident">Cmd::Suspend</span> {
-                <span class="ident">original_mode</span>.<span class="ident">disable_raw_mode</span>()<span class="question-mark">?</span>;
-                <span class="ident">tty::suspend</span>()<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="kw">_</span> = <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">enable_raw_mode</span>()<span class="question-mark">?</span>; <span class="comment">// TODO original_mode may have changed</span>
-                <span class="ident">s</span>.<span class="ident">out</span>.<span class="ident">update_size</span>(); <span class="comment">// window may have been resized</span>
-                <span class="ident">s</span>.<span class="ident">refresh_line</span>()<span class="question-mark">?</span>;
+            <span class="attribute">#[cfg(unix)]
+            </span><span class="kw">if </span>cmd == Cmd::Suspend {
+                original_mode.disable_raw_mode()<span class="question-mark">?</span>;
+                tty::suspend()<span class="question-mark">?</span>;
+                <span class="kw">let _ </span>= <span class="self">self</span>.term.enable_raw_mode()<span class="question-mark">?</span>; <span class="comment">// TODO original_mode may have changed
+                </span>s.out.update_size(); <span class="comment">// window may have been resized
+                </span>s.refresh_line()<span class="question-mark">?</span>;
                 <span class="kw">continue</span>;
             }
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            <span class="kw">if</span> <span class="ident">cmd</span> == <span class="ident">Cmd::QuotedInsert</span> {
-                <span class="comment">// Quoted insert</span>
-                <span class="kw">let</span> <span class="ident">c</span> = <span class="ident">rdr</span>.<span class="ident">next_char</span>()<span class="question-mark">?</span>;
-                <span class="ident">s</span>.<span class="ident">edit_insert</span>(<span class="ident">c</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
+            <span class="attribute">#[cfg(unix)]
+            </span><span class="kw">if </span>cmd == Cmd::QuotedInsert {
+                <span class="comment">// Quoted insert
+                </span><span class="kw">let </span>c = rdr.next_char()<span class="question-mark">?</span>;
+                s.edit_insert(c, <span class="number">1</span>)<span class="question-mark">?</span>;
                 <span class="kw">continue</span>;
             }
 
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-            <span class="kw">if</span> <span class="ident">cmd</span> == <span class="ident">Cmd::PasteFromClipboard</span> {
-                <span class="kw">let</span> <span class="ident">clipboard</span> = <span class="ident">rdr</span>.<span class="ident">read_pasted_text</span>()<span class="question-mark">?</span>;
-                <span class="ident">s</span>.<span class="ident">edit_yank</span>(<span class="kw-2">&amp;</span><span class="ident">input_state</span>, <span class="kw-2">&amp;</span><span class="ident">clipboard</span>[..], <span class="ident">Anchor::Before</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
+            <span class="attribute">#[cfg(windows)]
+            </span><span class="kw">if </span>cmd == Cmd::PasteFromClipboard {
+                <span class="kw">let </span>clipboard = rdr.read_pasted_text()<span class="question-mark">?</span>;
+                s.edit_yank(<span class="kw-2">&amp;</span>input_state, <span class="kw-2">&amp;</span>clipboard[..], Anchor::Before, <span class="number">1</span>)<span class="question-mark">?</span>;
             }
 
-            <span class="comment">// Tiny test quirk</span>
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-            <span class="kw">if</span> <span class="macro">matches!</span>(
-                <span class="ident">cmd</span>,
-                <span class="ident">Cmd::AcceptLine</span> | <span class="ident">Cmd::Newline</span> | <span class="ident">Cmd::AcceptOrInsertLine</span> { .. }
+            <span class="comment">// Tiny test quirk
+            </span><span class="attribute">#[cfg(test)]
+            </span><span class="kw">if </span><span class="macro">matches!</span>(
+                cmd,
+                Cmd::AcceptLine | Cmd::Newline | Cmd::AcceptOrInsertLine { .. }
             ) {
-                <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">cursor</span> = <span class="ident">s</span>.<span class="ident">layout</span>.<span class="ident">cursor</span>.<span class="ident">col</span>;
+                <span class="self">self</span>.term.cursor = s.layout.cursor.col;
             }
 
-            <span class="comment">// Execute things can be done solely on a state object</span>
-            <span class="kw">match</span> <span class="ident">command::execute</span>(<span class="ident">cmd</span>, <span class="kw-2">&amp;mut</span> <span class="ident">s</span>, <span class="kw-2">&amp;</span><span class="ident">input_state</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">kill_ring</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">config</span>)<span class="question-mark">?</span> {
-                <span class="ident">command::Status::Proceed</span> =&gt; <span class="kw">continue</span>,
-                <span class="ident">command::Status::Submit</span> =&gt; <span class="kw">break</span>,
+            <span class="comment">// Execute things can be done solely on a state object
+            </span><span class="kw">match </span>command::execute(cmd, <span class="kw-2">&amp;mut </span>s, <span class="kw-2">&amp;</span>input_state, <span class="kw-2">&amp;</span><span class="self">self</span>.kill_ring, <span class="kw-2">&amp;</span><span class="self">self</span>.config)<span class="question-mark">? </span>{
+                command::Status::Proceed =&gt; <span class="kw">continue</span>,
+                command::Status::Submit =&gt; <span class="kw">break</span>,
             }
         }
 
-        <span class="comment">// Move to end, in case cursor was in the middle of the line, so that</span>
-        <span class="comment">// next thing application prints goes after the input</span>
-        <span class="ident">s</span>.<span class="ident">edit_move_buffer_end</span>()<span class="question-mark">?</span>;
+        <span class="comment">// Move to end, in case cursor was in the middle of the line, so that
+        // next thing application prints goes after the input
+        </span>s.edit_move_buffer_end()<span class="question-mark">?</span>;
 
-        <span class="kw">if</span> <span class="macro">cfg!</span>(<span class="ident">windows</span>) {
-            <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">original_mode</span>; <span class="comment">// silent warning</span>
-        }
-        <span class="prelude-val">Ok</span>(<span class="ident">s</span>.<span class="ident">line</span>.<span class="ident">into_string</span>())
+        <span class="kw">if </span><span class="macro">cfg!</span>(windows) {
+            <span class="kw">let _ </span>= original_mode; <span class="comment">// silent warning
+        </span>}
+        <span class="prelude-val">Ok</span>(s.line.into_string())
     }
 
-    <span class="doccomment">/// Load the history from the specified file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">load_history</span>&lt;<span class="ident">P</span>: <span class="ident">AsRef</span>&lt;<span class="ident">Path</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.<span class="ident">history</span>.<span class="ident">load</span>(<span class="ident">path</span>)
+    <span class="doccomment">/// Load the history from the specified file.
+    </span><span class="kw">pub fn </span>load_history&lt;P: AsRef&lt;Path&gt; + <span class="question-mark">?</span>Sized&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>P) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.history.load(path)
     }
 
-    <span class="doccomment">/// Save the history in the specified file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">save_history</span>&lt;<span class="ident">P</span>: <span class="ident">AsRef</span>&lt;<span class="ident">Path</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.<span class="ident">history</span>.<span class="ident">save</span>(<span class="ident">path</span>)
+    <span class="doccomment">/// Save the history in the specified file.
+    </span><span class="kw">pub fn </span>save_history&lt;P: AsRef&lt;Path&gt; + <span class="question-mark">?</span>Sized&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>P) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.history.save(path)
     }
 
-    <span class="doccomment">/// Append new entries in the specified file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">append_history</span>&lt;<span class="ident">P</span>: <span class="ident">AsRef</span>&lt;<span class="ident">Path</span>&gt; + <span class="question-mark">?</span><span class="ident">Sized</span>&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">P</span>) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
-        <span class="self">self</span>.<span class="ident">history</span>.<span class="ident">append</span>(<span class="ident">path</span>)
+    <span class="doccomment">/// Append new entries in the specified file.
+    </span><span class="kw">pub fn </span>append_history&lt;P: AsRef&lt;Path&gt; + <span class="question-mark">?</span>Sized&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>P) -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
+        <span class="self">self</span>.history.append(path)
     }
 
-    <span class="doccomment">/// Add a new entry in the history.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_history_entry</span>&lt;<span class="ident">S</span>: <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt; + <span class="ident">Into</span>&lt;<span class="ident">String</span>&gt;&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">line</span>: <span class="ident">S</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">history</span>.<span class="ident">add</span>(<span class="ident">line</span>)
+    <span class="doccomment">/// Add a new entry in the history.
+    </span><span class="kw">pub fn </span>add_history_entry&lt;S: AsRef&lt;str&gt; + Into&lt;String&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, line: S) -&gt; bool {
+        <span class="self">self</span>.history.add(line)
     }
 
-    <span class="doccomment">/// Clear history.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear_history</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
-        <span class="self">self</span>.<span class="ident">history</span>.<span class="ident">clear</span>();
+    <span class="doccomment">/// Clear history.
+    </span><span class="kw">pub fn </span>clear_history(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="self">self</span>.history.clear();
     }
 
-    <span class="doccomment">/// Return a mutable reference to the history object.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">history_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">History</span> {
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">history</span>
+    <span class="doccomment">/// Return a mutable reference to the history object.
+    </span><span class="kw">pub fn </span>history_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>History {
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>.history
     }
 
-    <span class="doccomment">/// Return an immutable reference to the history object.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">history</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">History</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">history</span>
+    <span class="doccomment">/// Return an immutable reference to the history object.
+    </span><span class="kw">pub fn </span>history(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>History {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.history
     }
 
-    <span class="doccomment">/// Register a callback function to be called for tab-completion</span>
-    <span class="doccomment">/// or to show hints to the user at the right of the prompt.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_helper</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">helper</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">H</span>&gt;) {
-        <span class="self">self</span>.<span class="ident">helper</span> = <span class="ident">helper</span>;
+    <span class="doccomment">/// Register a callback function to be called for tab-completion
+    /// or to show hints to the user at the right of the prompt.
+    </span><span class="kw">pub fn </span>set_helper(<span class="kw-2">&amp;mut </span><span class="self">self</span>, helper: <span class="prelude-ty">Option</span>&lt;H&gt;) {
+        <span class="self">self</span>.helper = helper;
     }
 
-    <span class="doccomment">/// Return a mutable reference to the helper.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">helper_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut</span> <span class="ident">H</span>&gt; {
-        <span class="self">self</span>.<span class="ident">helper</span>.<span class="ident">as_mut</span>()
+    <span class="doccomment">/// Return a mutable reference to the helper.
+    </span><span class="kw">pub fn </span>helper_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>H&gt; {
+        <span class="self">self</span>.helper.as_mut()
     }
 
-    <span class="doccomment">/// Return an immutable reference to the helper.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">helper</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">H</span>&gt; {
-        <span class="self">self</span>.<span class="ident">helper</span>.<span class="ident">as_ref</span>()
+    <span class="doccomment">/// Return an immutable reference to the helper.
+    </span><span class="kw">pub fn </span>helper(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>H&gt; {
+        <span class="self">self</span>.helper.as_ref()
     }
 
-    <span class="doccomment">/// Bind a sequence to a command.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bind_sequence</span>&lt;<span class="ident">E</span>: <span class="ident">Into</span>&lt;<span class="ident">Event</span>&gt;, <span class="ident">R</span>: <span class="ident">Into</span>&lt;<span class="ident">EventHandler</span>&gt;&gt;(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">key_seq</span>: <span class="ident">E</span>,
-        <span class="ident">handler</span>: <span class="ident">R</span>,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">EventHandler</span>&gt; {
-        <span class="self">self</span>.<span class="ident">custom_bindings</span>
-            .<span class="ident">insert</span>(<span class="ident">Event::normalize</span>(<span class="ident">key_seq</span>.<span class="ident">into</span>()), <span class="ident">handler</span>.<span class="ident">into</span>())
+    <span class="doccomment">/// Bind a sequence to a command.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;custom-bindings&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;custom-bindings&quot;</span>)))]
+    </span><span class="kw">pub fn </span>bind_sequence&lt;E: Into&lt;Event&gt;, R: Into&lt;EventHandler&gt;&gt;(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        key_seq: E,
+        handler: R,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;EventHandler&gt; {
+        <span class="self">self</span>.custom_bindings
+            .insert(Event::normalize(key_seq.into()), handler.into())
     }
 
-    <span class="doccomment">/// Remove a binding for the given sequence.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">docsrs</span>, <span class="ident">doc</span>(<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;custom-bindings&quot;</span>)))]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unbind_sequence</span>&lt;<span class="ident">E</span>: <span class="ident">Into</span>&lt;<span class="ident">Event</span>&gt;&gt;(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">key_seq</span>: <span class="ident">E</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">EventHandler</span>&gt; {
-        <span class="self">self</span>.<span class="ident">custom_bindings</span>
-            .<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">Event::normalize</span>(<span class="ident">key_seq</span>.<span class="ident">into</span>()))
+    <span class="doccomment">/// Remove a binding for the given sequence.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;custom-bindings&quot;</span>)]
+    #[cfg_attr(docsrs, doc(cfg(feature = <span class="string">&quot;custom-bindings&quot;</span>)))]
+    </span><span class="kw">pub fn </span>unbind_sequence&lt;E: Into&lt;Event&gt;&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, key_seq: E) -&gt; <span class="prelude-ty">Option</span>&lt;EventHandler&gt; {
+        <span class="self">self</span>.custom_bindings
+            .remove(<span class="kw-2">&amp;</span>Event::normalize(key_seq.into()))
     }
 
-    <span class="doccomment">/// Returns an iterator over edited lines</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// let mut rl = rustyline::Editor::&lt;()&gt;::new()?;</span>
-    <span class="doccomment">/// for readline in rl.iter(&quot;&gt; &quot;) {</span>
-    <span class="doccomment">///     match readline {</span>
-    <span class="doccomment">///         Ok(line) =&gt; {</span>
-    <span class="doccomment">///             println!(&quot;Line: {}&quot;, line);</span>
-    <span class="doccomment">///         }</span>
-    <span class="doccomment">///         Err(err) =&gt; {</span>
-    <span class="doccomment">///             println!(&quot;Error: {:?}&quot;, err);</span>
-    <span class="doccomment">///             break;</span>
-    <span class="doccomment">///         }</span>
-    <span class="doccomment">///     }</span>
-    <span class="doccomment">/// }</span>
-    <span class="doccomment">/// # Ok::&lt;(), rustyline::error::ReadlineError&gt;(())</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;<span class="ident">String</span>&gt;&gt; + <span class="lifetime">&#39;a</span> {
-        <span class="ident">Iter</span> {
-            <span class="ident">editor</span>: <span class="self">self</span>,
-            <span class="ident">prompt</span>,
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">reset_kill_ring</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">kill_ring</span> = <span class="self">self</span>.<span class="ident">kill_ring</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>();
-        <span class="ident">kill_ring</span>.<span class="ident">reset</span>();
-    }
-
-    <span class="doccomment">/// If output stream is a tty, this function returns its width and height as</span>
-    <span class="doccomment">/// a number of characters.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dimensions</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">usize</span>, <span class="ident">usize</span>)&gt; {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">is_output_tty</span>() {
-            <span class="kw">let</span> <span class="ident">out</span> = <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">create_writer</span>();
-            <span class="prelude-val">Some</span>((<span class="ident">out</span>.<span class="ident">get_columns</span>(), <span class="ident">out</span>.<span class="ident">get_rows</span>()))
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
+    <span class="doccomment">/// Returns an iterator over edited lines
+    /// ```
+    /// let mut rl = rustyline::Editor::&lt;()&gt;::new()?;
+    /// for readline in rl.iter(&quot;&gt; &quot;) {
+    ///     match readline {
+    ///         Ok(line) =&gt; {
+    ///             println!(&quot;Line: {}&quot;, line);
+    ///         }
+    ///         Err(err) =&gt; {
+    ///             println!(&quot;Error: {:?}&quot;, err);
+    ///             break;
+    ///         }
+    ///     }
+    /// }
+    /// # Ok::&lt;(), rustyline::error::ReadlineError&gt;(())
+    /// ```
+    </span><span class="kw">pub fn </span>iter&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span><span class="self">self</span>, prompt: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str) -&gt; <span class="kw">impl </span>Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;String&gt;&gt; + <span class="lifetime">&#39;a </span>{
+        Iter {
+            editor: <span class="self">self</span>,
+            prompt,
         }
     }
 
-    <span class="doccomment">/// Create an external printer</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_external_printer</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;&lt;<span class="ident">Terminal</span> <span class="kw">as</span> <span class="ident">Term</span>&gt;<span class="ident">::ExternalPrinter</span>&gt; {
-        <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">create_external_printer</span>()
+    <span class="kw">fn </span>reset_kill_ring(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="kw">let </span><span class="kw-2">mut </span>kill_ring = <span class="self">self</span>.kill_ring.lock().unwrap();
+        kill_ring.reset();
+    }
+
+    <span class="doccomment">/// If output stream is a tty, this function returns its width and height as
+    /// a number of characters.
+    </span><span class="kw">pub fn </span>dimensions(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(usize, usize)&gt; {
+        <span class="kw">if </span><span class="self">self</span>.term.is_output_tty() {
+            <span class="kw">let </span>out = <span class="self">self</span>.term.create_writer();
+            <span class="prelude-val">Some</span>((out.get_columns(), out.get_rows()))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
+    }
+
+    <span class="doccomment">/// Create an external printer
+    </span><span class="kw">pub fn </span>create_external_printer(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;&lt;Terminal <span class="kw">as </span>Term&gt;::ExternalPrinter&gt; {
+        <span class="self">self</span>.term.create_external_printer()
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">H</span>: <span class="ident">Helper</span>&gt; <span class="ident">config::Configurer</span> <span class="kw">for</span> <span class="ident">Editor</span>&lt;<span class="ident">H</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">config_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Config</span> {
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">config</span>
+<span class="kw">impl</span>&lt;H: Helper&gt; config::Configurer <span class="kw">for </span>Editor&lt;H&gt; {
+    <span class="kw">fn </span>config_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>Config {
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>.config
     }
 
-    <span class="kw">fn</span> <span class="ident">set_max_history_size</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">max_size</span>: <span class="ident">usize</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">set_max_history_size</span>(<span class="ident">max_size</span>);
-        <span class="self">self</span>.<span class="ident">history</span>.<span class="ident">set_max_len</span>(<span class="ident">max_size</span>);
+    <span class="kw">fn </span>set_max_history_size(<span class="kw-2">&amp;mut </span><span class="self">self</span>, max_size: usize) {
+        <span class="self">self</span>.config_mut().set_max_history_size(max_size);
+        <span class="self">self</span>.history.set_max_len(max_size);
     }
 
-    <span class="kw">fn</span> <span class="ident">set_history_ignore_dups</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">set_history_ignore_dups</span>(<span class="ident">yes</span>);
-        <span class="self">self</span>.<span class="ident">history</span>.<span class="ident">ignore_dups</span> = <span class="ident">yes</span>;
+    <span class="kw">fn </span>set_history_ignore_dups(<span class="kw-2">&amp;mut </span><span class="self">self</span>, yes: bool) {
+        <span class="self">self</span>.config_mut().set_history_ignore_dups(yes);
+        <span class="self">self</span>.history.ignore_dups = yes;
     }
 
-    <span class="kw">fn</span> <span class="ident">set_history_ignore_space</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">yes</span>: <span class="ident">bool</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">set_history_ignore_space</span>(<span class="ident">yes</span>);
-        <span class="self">self</span>.<span class="ident">history</span>.<span class="ident">ignore_space</span> = <span class="ident">yes</span>;
+    <span class="kw">fn </span>set_history_ignore_space(<span class="kw-2">&amp;mut </span><span class="self">self</span>, yes: bool) {
+        <span class="self">self</span>.config_mut().set_history_ignore_space(yes);
+        <span class="self">self</span>.history.ignore_space = yes;
     }
 
-    <span class="kw">fn</span> <span class="ident">set_color_mode</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">color_mode</span>: <span class="ident">ColorMode</span>) {
-        <span class="self">self</span>.<span class="ident">config_mut</span>().<span class="ident">set_color_mode</span>(<span class="ident">color_mode</span>);
-        <span class="self">self</span>.<span class="ident">term</span>.<span class="ident">color_mode</span> = <span class="ident">color_mode</span>;
-    }
-}
-
-<span class="kw">impl</span>&lt;<span class="ident">H</span>: <span class="ident">Helper</span>&gt; <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">Editor</span>&lt;<span class="ident">H</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;Editor&quot;</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;term&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">term</span>)
-            .<span class="ident">field</span>(<span class="string">&quot;config&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">config</span>)
-            .<span class="ident">finish</span>()
+    <span class="kw">fn </span>set_color_mode(<span class="kw-2">&amp;mut </span><span class="self">self</span>, color_mode: ColorMode) {
+        <span class="self">self</span>.config_mut().set_color_mode(color_mode);
+        <span class="self">self</span>.term.color_mode = color_mode;
     }
 }
 
-<span class="kw">struct</span> <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">H</span>: <span class="ident">Helper</span>&gt; {
-    <span class="ident">editor</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Editor</span>&lt;<span class="ident">H</span>&gt;,
-    <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
+<span class="kw">impl</span>&lt;H: Helper&gt; fmt::Debug <span class="kw">for </span>Editor&lt;H&gt; {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        f.debug_struct(<span class="string">&quot;Editor&quot;</span>)
+            .field(<span class="string">&quot;term&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.term)
+            .field(<span class="string">&quot;config&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.config)
+            .finish()
+    }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">H</span>: <span class="ident">Helper</span>&gt; <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">Iter</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">H</span>&gt; {
-    <span class="kw">type</span> <span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;<span class="ident">String</span>&gt;;
+<span class="kw">struct </span>Iter&lt;<span class="lifetime">&#39;a</span>, H: Helper&gt; {
+    editor: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>Editor&lt;H&gt;,
+    prompt: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+}
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="ident">String</span>&gt;&gt; {
-        <span class="kw">let</span> <span class="ident">readline</span> = <span class="self">self</span>.<span class="ident">editor</span>.<span class="ident">readline</span>(<span class="self">self</span>.<span class="ident">prompt</span>);
-        <span class="kw">match</span> <span class="ident">readline</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">l</span>) =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">l</span>)),
-            <span class="prelude-val">Err</span>(<span class="ident">error::ReadlineError::Eof</span>) =&gt; <span class="prelude-val">None</span>,
-            <span class="ident">e</span> @ <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">e</span>),
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, H: Helper&gt; Iterator <span class="kw">for </span>Iter&lt;<span class="lifetime">&#39;a</span>, H&gt; {
+    <span class="kw">type </span>Item = <span class="prelude-ty">Result</span>&lt;String&gt;;
+
+    <span class="kw">fn </span>next(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="prelude-ty">Result</span>&lt;String&gt;&gt; {
+        <span class="kw">let </span>readline = <span class="self">self</span>.editor.readline(<span class="self">self</span>.prompt);
+        <span class="kw">match </span>readline {
+            <span class="prelude-val">Ok</span>(l) =&gt; <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(l)),
+            <span class="prelude-val">Err</span>(error::ReadlineError::Eof) =&gt; <span class="prelude-val">None</span>,
+            e @ <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Some</span>(e),
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="attribute">#[<span class="ident">macro_use</span>]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">assert_matches</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span>;
+<span class="attribute">#[cfg(test)]
+#[macro_use]
+</span><span class="kw">extern crate </span>assert_matches;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">doctest</span>)]</span>
-<span class="macro">doc_comment::doctest!</span>(<span class="string">&quot;../README.md&quot;</span>);
+<span class="attribute">#[cfg(doctest)]
+</span><span class="macro">doc_comment::doctest!</span>(<span class="string">&quot;../README.md&quot;</span>);
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

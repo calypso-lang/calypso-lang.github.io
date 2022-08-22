@@ -319,326 +319,326 @@
 <span id="319">319</span>
 <span id="320">320</span>
 <span id="321">321</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">termcolor</span>::{<span class="ident">Color</span>, <span class="ident">ColorSpec</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>termcolor::{Color, ColorSpec};
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::diagnostic</span>::{<span class="ident">LabelStyle</span>, <span class="ident">Severity</span>};
+<span class="kw">use </span><span class="kw">crate</span>::diagnostic::{LabelStyle, Severity};
 
-<span class="doccomment">/// Configures how a diagnostic is rendered.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Config</span> {
-    <span class="doccomment">/// The display style to use when rendering diagnostics.</span>
-    <span class="doccomment">/// Defaults to: [`DisplayStyle::Rich`].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`DisplayStyle::Rich`]: DisplayStyle::Rich</span>
-    <span class="kw">pub</span> <span class="ident">display_style</span>: <span class="ident">DisplayStyle</span>,
-    <span class="doccomment">/// Column width of tabs.</span>
-    <span class="doccomment">/// Defaults to: `4`.</span>
-    <span class="kw">pub</span> <span class="ident">tab_width</span>: <span class="ident">usize</span>,
-    <span class="doccomment">/// Styles to use when rendering the diagnostic.</span>
-    <span class="kw">pub</span> <span class="ident">styles</span>: <span class="ident">Styles</span>,
-    <span class="doccomment">/// Characters to use when rendering the diagnostic.</span>
-    <span class="kw">pub</span> <span class="ident">chars</span>: <span class="ident">Chars</span>,
-    <span class="doccomment">/// The minimum number of lines to be shown after the line on which a multiline [`Label`] begins.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Defaults to: `3`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`Label`]: crate::diagnostic::Label</span>
-    <span class="kw">pub</span> <span class="ident">start_context_lines</span>: <span class="ident">usize</span>,
-    <span class="doccomment">/// The minimum number of lines to be shown before the line on which a multiline [`Label`] ends.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Defaults to: `1`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`Label`]: crate::diagnostic::Label</span>
-    <span class="kw">pub</span> <span class="ident">end_context_lines</span>: <span class="ident">usize</span>,
+<span class="doccomment">/// Configures how a diagnostic is rendered.
+</span><span class="attribute">#[derive(Clone, Debug)]
+</span><span class="kw">pub struct </span>Config {
+    <span class="doccomment">/// The display style to use when rendering diagnostics.
+    /// Defaults to: [`DisplayStyle::Rich`].
+    ///
+    /// [`DisplayStyle::Rich`]: DisplayStyle::Rich
+    </span><span class="kw">pub </span>display_style: DisplayStyle,
+    <span class="doccomment">/// Column width of tabs.
+    /// Defaults to: `4`.
+    </span><span class="kw">pub </span>tab_width: usize,
+    <span class="doccomment">/// Styles to use when rendering the diagnostic.
+    </span><span class="kw">pub </span>styles: Styles,
+    <span class="doccomment">/// Characters to use when rendering the diagnostic.
+    </span><span class="kw">pub </span>chars: Chars,
+    <span class="doccomment">/// The minimum number of lines to be shown after the line on which a multiline [`Label`] begins.
+    ///
+    /// Defaults to: `3`.
+    ///
+    /// [`Label`]: crate::diagnostic::Label
+    </span><span class="kw">pub </span>start_context_lines: usize,
+    <span class="doccomment">/// The minimum number of lines to be shown before the line on which a multiline [`Label`] ends.
+    ///
+    /// Defaults to: `1`.
+    ///
+    /// [`Label`]: crate::diagnostic::Label
+    </span><span class="kw">pub </span>end_context_lines: usize,
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Config</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="ident">Config</span> {
-        <span class="ident">Config</span> {
-            <span class="ident">display_style</span>: <span class="ident">DisplayStyle::Rich</span>,
-            <span class="ident">tab_width</span>: <span class="number">4</span>,
-            <span class="ident">styles</span>: <span class="ident">Styles::default</span>(),
-            <span class="ident">chars</span>: <span class="ident">Chars::default</span>(),
-            <span class="ident">start_context_lines</span>: <span class="number">3</span>,
-            <span class="ident">end_context_lines</span>: <span class="number">1</span>,
+<span class="kw">impl </span>Default <span class="kw">for </span>Config {
+    <span class="kw">fn </span>default() -&gt; Config {
+        Config {
+            display_style: DisplayStyle::Rich,
+            tab_width: <span class="number">4</span>,
+            styles: Styles::default(),
+            chars: Chars::default(),
+            start_context_lines: <span class="number">3</span>,
+            end_context_lines: <span class="number">1</span>,
         }
     }
 }
 
-<span class="doccomment">/// The display style to use when rendering diagnostics.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">DisplayStyle</span> {
-    <span class="doccomment">/// Output a richly formatted diagnostic, with source code previews.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```text</span>
-    <span class="doccomment">/// error[E0001]: unexpected type in `+` application</span>
-    <span class="doccomment">///   ┌─ test:2:9</span>
-    <span class="doccomment">///   │</span>
-    <span class="doccomment">/// 2 │ (+ test &quot;&quot;)</span>
-    <span class="doccomment">///   │         ^^ expected `Int` but found `String`</span>
-    <span class="doccomment">///   │</span>
-    <span class="doccomment">///   = expected type `Int`</span>
-    <span class="doccomment">///        found type `String`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// error[E0002]: Bad config found</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="ident">Rich</span>,
-    <span class="doccomment">/// Output a condensed diagnostic, with a line number, severity, message and notes (if any).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```text</span>
-    <span class="doccomment">/// test:2:9: error[E0001]: unexpected type in `+` application</span>
-    <span class="doccomment">/// = expected type `Int`</span>
-    <span class="doccomment">///      found type `String`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// error[E0002]: Bad config found</span>
-    <span class="doccomment">/// ```</span>
-    <span class="ident">Medium</span>,
-    <span class="doccomment">/// Output a short diagnostic, with a line number, severity, and message.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```text</span>
-    <span class="doccomment">/// test:2:9: error[E0001]: unexpected type in `+` application</span>
-    <span class="doccomment">/// error[E0002]: Bad config found</span>
-    <span class="doccomment">/// ```</span>
-    <span class="ident">Short</span>,
+<span class="doccomment">/// The display style to use when rendering diagnostics.
+</span><span class="attribute">#[derive(Clone, Debug)]
+</span><span class="kw">pub enum </span>DisplayStyle {
+    <span class="doccomment">/// Output a richly formatted diagnostic, with source code previews.
+    ///
+    /// ```text
+    /// error[E0001]: unexpected type in `+` application
+    ///   ┌─ test:2:9
+    ///   │
+    /// 2 │ (+ test &quot;&quot;)
+    ///   │         ^^ expected `Int` but found `String`
+    ///   │
+    ///   = expected type `Int`
+    ///        found type `String`
+    ///
+    /// error[E0002]: Bad config found
+    ///
+    /// ```
+    </span>Rich,
+    <span class="doccomment">/// Output a condensed diagnostic, with a line number, severity, message and notes (if any).
+    ///
+    /// ```text
+    /// test:2:9: error[E0001]: unexpected type in `+` application
+    /// = expected type `Int`
+    ///      found type `String`
+    ///
+    /// error[E0002]: Bad config found
+    /// ```
+    </span>Medium,
+    <span class="doccomment">/// Output a short diagnostic, with a line number, severity, and message.
+    ///
+    /// ```text
+    /// test:2:9: error[E0001]: unexpected type in `+` application
+    /// error[E0002]: Bad config found
+    /// ```
+    </span>Short,
 }
 
-<span class="doccomment">/// Styles to use when rendering the diagnostic.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Styles</span> {
-    <span class="doccomment">/// The style to use when rendering bug headers.</span>
-    <span class="doccomment">/// Defaults to `fg:red bold intense`.</span>
-    <span class="kw">pub</span> <span class="ident">header_bug</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when rendering error headers.</span>
-    <span class="doccomment">/// Defaults to `fg:red bold intense`.</span>
-    <span class="kw">pub</span> <span class="ident">header_error</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when rendering warning headers.</span>
-    <span class="doccomment">/// Defaults to `fg:yellow bold intense`.</span>
-    <span class="kw">pub</span> <span class="ident">header_warning</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when rendering note headers.</span>
-    <span class="doccomment">/// Defaults to `fg:green bold intense`.</span>
-    <span class="kw">pub</span> <span class="ident">header_note</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when rendering help headers.</span>
-    <span class="doccomment">/// Defaults to `fg:cyan bold intense`.</span>
-    <span class="kw">pub</span> <span class="ident">header_help</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when the main diagnostic message.</span>
-    <span class="doccomment">/// Defaults to `bold intense`.</span>
-    <span class="kw">pub</span> <span class="ident">header_message</span>: <span class="ident">ColorSpec</span>,
+<span class="doccomment">/// Styles to use when rendering the diagnostic.
+</span><span class="attribute">#[derive(Clone, Debug)]
+</span><span class="kw">pub struct </span>Styles {
+    <span class="doccomment">/// The style to use when rendering bug headers.
+    /// Defaults to `fg:red bold intense`.
+    </span><span class="kw">pub </span>header_bug: ColorSpec,
+    <span class="doccomment">/// The style to use when rendering error headers.
+    /// Defaults to `fg:red bold intense`.
+    </span><span class="kw">pub </span>header_error: ColorSpec,
+    <span class="doccomment">/// The style to use when rendering warning headers.
+    /// Defaults to `fg:yellow bold intense`.
+    </span><span class="kw">pub </span>header_warning: ColorSpec,
+    <span class="doccomment">/// The style to use when rendering note headers.
+    /// Defaults to `fg:green bold intense`.
+    </span><span class="kw">pub </span>header_note: ColorSpec,
+    <span class="doccomment">/// The style to use when rendering help headers.
+    /// Defaults to `fg:cyan bold intense`.
+    </span><span class="kw">pub </span>header_help: ColorSpec,
+    <span class="doccomment">/// The style to use when the main diagnostic message.
+    /// Defaults to `bold intense`.
+    </span><span class="kw">pub </span>header_message: ColorSpec,
 
-    <span class="doccomment">/// The style to use when rendering bug labels.</span>
-    <span class="doccomment">/// Defaults to `fg:red`.</span>
-    <span class="kw">pub</span> <span class="ident">primary_label_bug</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when rendering error labels.</span>
-    <span class="doccomment">/// Defaults to `fg:red`.</span>
-    <span class="kw">pub</span> <span class="ident">primary_label_error</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when rendering warning labels.</span>
-    <span class="doccomment">/// Defaults to `fg:yellow`.</span>
-    <span class="kw">pub</span> <span class="ident">primary_label_warning</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when rendering note labels.</span>
-    <span class="doccomment">/// Defaults to `fg:green`.</span>
-    <span class="kw">pub</span> <span class="ident">primary_label_note</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when rendering help labels.</span>
-    <span class="doccomment">/// Defaults to `fg:cyan`.</span>
-    <span class="kw">pub</span> <span class="ident">primary_label_help</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when rendering secondary labels.</span>
-    <span class="doccomment">/// Defaults `fg:blue` (or `fg:cyan` on windows).</span>
-    <span class="kw">pub</span> <span class="ident">secondary_label</span>: <span class="ident">ColorSpec</span>,
+    <span class="doccomment">/// The style to use when rendering bug labels.
+    /// Defaults to `fg:red`.
+    </span><span class="kw">pub </span>primary_label_bug: ColorSpec,
+    <span class="doccomment">/// The style to use when rendering error labels.
+    /// Defaults to `fg:red`.
+    </span><span class="kw">pub </span>primary_label_error: ColorSpec,
+    <span class="doccomment">/// The style to use when rendering warning labels.
+    /// Defaults to `fg:yellow`.
+    </span><span class="kw">pub </span>primary_label_warning: ColorSpec,
+    <span class="doccomment">/// The style to use when rendering note labels.
+    /// Defaults to `fg:green`.
+    </span><span class="kw">pub </span>primary_label_note: ColorSpec,
+    <span class="doccomment">/// The style to use when rendering help labels.
+    /// Defaults to `fg:cyan`.
+    </span><span class="kw">pub </span>primary_label_help: ColorSpec,
+    <span class="doccomment">/// The style to use when rendering secondary labels.
+    /// Defaults `fg:blue` (or `fg:cyan` on windows).
+    </span><span class="kw">pub </span>secondary_label: ColorSpec,
 
-    <span class="doccomment">/// The style to use when rendering the line numbers.</span>
-    <span class="doccomment">/// Defaults `fg:blue` (or `fg:cyan` on windows).</span>
-    <span class="kw">pub</span> <span class="ident">line_number</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when rendering the source code borders.</span>
-    <span class="doccomment">/// Defaults `fg:blue` (or `fg:cyan` on windows).</span>
-    <span class="kw">pub</span> <span class="ident">source_border</span>: <span class="ident">ColorSpec</span>,
-    <span class="doccomment">/// The style to use when rendering the note bullets.</span>
-    <span class="doccomment">/// Defaults `fg:blue` (or `fg:cyan` on windows).</span>
-    <span class="kw">pub</span> <span class="ident">note_bullet</span>: <span class="ident">ColorSpec</span>,
+    <span class="doccomment">/// The style to use when rendering the line numbers.
+    /// Defaults `fg:blue` (or `fg:cyan` on windows).
+    </span><span class="kw">pub </span>line_number: ColorSpec,
+    <span class="doccomment">/// The style to use when rendering the source code borders.
+    /// Defaults `fg:blue` (or `fg:cyan` on windows).
+    </span><span class="kw">pub </span>source_border: ColorSpec,
+    <span class="doccomment">/// The style to use when rendering the note bullets.
+    /// Defaults `fg:blue` (or `fg:cyan` on windows).
+    </span><span class="kw">pub </span>note_bullet: ColorSpec,
 }
 
-<span class="kw">impl</span> <span class="ident">Styles</span> {
-    <span class="doccomment">/// The style used to mark a header at a given severity.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">header</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">severity</span>: <span class="ident">Severity</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">ColorSpec</span> {
-        <span class="kw">match</span> <span class="ident">severity</span> {
-            <span class="ident">Severity::Bug</span> =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">header_bug</span>,
-            <span class="ident">Severity::Error</span> =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">header_error</span>,
-            <span class="ident">Severity::Warning</span> =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">header_warning</span>,
-            <span class="ident">Severity::Note</span> =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">header_note</span>,
-            <span class="ident">Severity::Help</span> =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">header_help</span>,
+<span class="kw">impl </span>Styles {
+    <span class="doccomment">/// The style used to mark a header at a given severity.
+    </span><span class="kw">pub fn </span>header(<span class="kw-2">&amp;</span><span class="self">self</span>, severity: Severity) -&gt; <span class="kw-2">&amp;</span>ColorSpec {
+        <span class="kw">match </span>severity {
+            Severity::Bug =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.header_bug,
+            Severity::Error =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.header_error,
+            Severity::Warning =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.header_warning,
+            Severity::Note =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.header_note,
+            Severity::Help =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.header_help,
         }
     }
 
-    <span class="doccomment">/// The style used to mark a primary or secondary label at a given severity.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">label</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">severity</span>: <span class="ident">Severity</span>, <span class="ident">label_style</span>: <span class="ident">LabelStyle</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">ColorSpec</span> {
-        <span class="kw">match</span> (<span class="ident">label_style</span>, <span class="ident">severity</span>) {
-            (<span class="ident">LabelStyle::Primary</span>, <span class="ident">Severity::Bug</span>) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">primary_label_bug</span>,
-            (<span class="ident">LabelStyle::Primary</span>, <span class="ident">Severity::Error</span>) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">primary_label_error</span>,
-            (<span class="ident">LabelStyle::Primary</span>, <span class="ident">Severity::Warning</span>) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">primary_label_warning</span>,
-            (<span class="ident">LabelStyle::Primary</span>, <span class="ident">Severity::Note</span>) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">primary_label_note</span>,
-            (<span class="ident">LabelStyle::Primary</span>, <span class="ident">Severity::Help</span>) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">primary_label_help</span>,
-            (<span class="ident">LabelStyle::Secondary</span>, <span class="kw">_</span>) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">secondary_label</span>,
+    <span class="doccomment">/// The style used to mark a primary or secondary label at a given severity.
+    </span><span class="kw">pub fn </span>label(<span class="kw-2">&amp;</span><span class="self">self</span>, severity: Severity, label_style: LabelStyle) -&gt; <span class="kw-2">&amp;</span>ColorSpec {
+        <span class="kw">match </span>(label_style, severity) {
+            (LabelStyle::Primary, Severity::Bug) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.primary_label_bug,
+            (LabelStyle::Primary, Severity::Error) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.primary_label_error,
+            (LabelStyle::Primary, Severity::Warning) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.primary_label_warning,
+            (LabelStyle::Primary, Severity::Note) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.primary_label_note,
+            (LabelStyle::Primary, Severity::Help) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.primary_label_help,
+            (LabelStyle::Secondary, <span class="kw">_</span>) =&gt; <span class="kw-2">&amp;</span><span class="self">self</span>.secondary_label,
         }
     }
 
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_blue</span>(<span class="ident">blue</span>: <span class="ident">Color</span>) -&gt; <span class="ident">Styles</span> {
-        <span class="kw">let</span> <span class="ident">header</span> = <span class="ident">ColorSpec::new</span>().<span class="ident">set_bold</span>(<span class="bool-val">true</span>).<span class="ident">set_intense</span>(<span class="bool-val">true</span>).<span class="ident">clone</span>();
+    <span class="attribute">#[doc(hidden)]
+    </span><span class="kw">pub fn </span>with_blue(blue: Color) -&gt; Styles {
+        <span class="kw">let </span>header = ColorSpec::new().set_bold(<span class="bool-val">true</span>).set_intense(<span class="bool-val">true</span>).clone();
 
-        <span class="ident">Styles</span> {
-            <span class="ident">header_bug</span>: <span class="ident">header</span>.<span class="ident">clone</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">Color::Red</span>)).<span class="ident">clone</span>(),
-            <span class="ident">header_error</span>: <span class="ident">header</span>.<span class="ident">clone</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">Color::Red</span>)).<span class="ident">clone</span>(),
-            <span class="ident">header_warning</span>: <span class="ident">header</span>.<span class="ident">clone</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">Color::Yellow</span>)).<span class="ident">clone</span>(),
-            <span class="ident">header_note</span>: <span class="ident">header</span>.<span class="ident">clone</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">Color::Green</span>)).<span class="ident">clone</span>(),
-            <span class="ident">header_help</span>: <span class="ident">header</span>.<span class="ident">clone</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">Color::Cyan</span>)).<span class="ident">clone</span>(),
-            <span class="ident">header_message</span>: <span class="ident">header</span>,
+        Styles {
+            header_bug: header.clone().set_fg(<span class="prelude-val">Some</span>(Color::Red)).clone(),
+            header_error: header.clone().set_fg(<span class="prelude-val">Some</span>(Color::Red)).clone(),
+            header_warning: header.clone().set_fg(<span class="prelude-val">Some</span>(Color::Yellow)).clone(),
+            header_note: header.clone().set_fg(<span class="prelude-val">Some</span>(Color::Green)).clone(),
+            header_help: header.clone().set_fg(<span class="prelude-val">Some</span>(Color::Cyan)).clone(),
+            header_message: header,
 
-            <span class="ident">primary_label_bug</span>: <span class="ident">ColorSpec::new</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">Color::Red</span>)).<span class="ident">clone</span>(),
-            <span class="ident">primary_label_error</span>: <span class="ident">ColorSpec::new</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">Color::Red</span>)).<span class="ident">clone</span>(),
-            <span class="ident">primary_label_warning</span>: <span class="ident">ColorSpec::new</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">Color::Yellow</span>)).<span class="ident">clone</span>(),
-            <span class="ident">primary_label_note</span>: <span class="ident">ColorSpec::new</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">Color::Green</span>)).<span class="ident">clone</span>(),
-            <span class="ident">primary_label_help</span>: <span class="ident">ColorSpec::new</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">Color::Cyan</span>)).<span class="ident">clone</span>(),
-            <span class="ident">secondary_label</span>: <span class="ident">ColorSpec::new</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">blue</span>)).<span class="ident">clone</span>(),
+            primary_label_bug: ColorSpec::new().set_fg(<span class="prelude-val">Some</span>(Color::Red)).clone(),
+            primary_label_error: ColorSpec::new().set_fg(<span class="prelude-val">Some</span>(Color::Red)).clone(),
+            primary_label_warning: ColorSpec::new().set_fg(<span class="prelude-val">Some</span>(Color::Yellow)).clone(),
+            primary_label_note: ColorSpec::new().set_fg(<span class="prelude-val">Some</span>(Color::Green)).clone(),
+            primary_label_help: ColorSpec::new().set_fg(<span class="prelude-val">Some</span>(Color::Cyan)).clone(),
+            secondary_label: ColorSpec::new().set_fg(<span class="prelude-val">Some</span>(blue)).clone(),
 
-            <span class="ident">line_number</span>: <span class="ident">ColorSpec::new</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">blue</span>)).<span class="ident">clone</span>(),
-            <span class="ident">source_border</span>: <span class="ident">ColorSpec::new</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">blue</span>)).<span class="ident">clone</span>(),
-            <span class="ident">note_bullet</span>: <span class="ident">ColorSpec::new</span>().<span class="ident">set_fg</span>(<span class="prelude-val">Some</span>(<span class="ident">blue</span>)).<span class="ident">clone</span>(),
+            line_number: ColorSpec::new().set_fg(<span class="prelude-val">Some</span>(blue)).clone(),
+            source_border: ColorSpec::new().set_fg(<span class="prelude-val">Some</span>(blue)).clone(),
+            note_bullet: ColorSpec::new().set_fg(<span class="prelude-val">Some</span>(blue)).clone(),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Styles</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="ident">Styles</span> {
-        <span class="comment">// Blue is really difficult to see on the standard windows command line</span>
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-        <span class="kw">const</span> <span class="ident">BLUE</span>: <span class="ident">Color</span> = <span class="ident">Color::Cyan</span>;
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">windows</span>))]</span>
-        <span class="kw">const</span> <span class="ident">BLUE</span>: <span class="ident">Color</span> = <span class="ident">Color::Blue</span>;
+<span class="kw">impl </span>Default <span class="kw">for </span>Styles {
+    <span class="kw">fn </span>default() -&gt; Styles {
+        <span class="comment">// Blue is really difficult to see on the standard windows command line
+        </span><span class="attribute">#[cfg(windows)]
+        </span><span class="kw">const </span>BLUE: Color = Color::Cyan;
+        <span class="attribute">#[cfg(not(windows))]
+        </span><span class="kw">const </span>BLUE: Color = Color::Blue;
 
-        <span class="ident"><span class="self">Self</span>::with_blue</span>(<span class="ident">BLUE</span>)
+        <span class="self">Self</span>::with_blue(BLUE)
     }
 }
 
-<span class="doccomment">/// Characters to use when rendering the diagnostic.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// By using [`Chars::ascii()`] you can switch to an ASCII-only format suitable</span>
-<span class="doccomment">/// for rendering on terminals that do not support box drawing characters.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Chars</span> {
-    <span class="doccomment">/// The characters to use for the top-left border of the snippet.</span>
-    <span class="doccomment">/// Defaults to: `&quot;┌─&quot;` or `&quot;--&gt;&quot;` with [`Chars::ascii()`].</span>
-    <span class="kw">pub</span> <span class="ident">snippet_start</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// The character to use for the left border of the source.</span>
-    <span class="doccomment">/// Defaults to: `&#39;│&#39;` or `&#39;|&#39;` with [`Chars::ascii()`].</span>
-    <span class="kw">pub</span> <span class="ident">source_border_left</span>: <span class="ident">char</span>,
-    <span class="doccomment">/// The character to use for the left border break of the source.</span>
-    <span class="doccomment">/// Defaults to: `&#39;·&#39;` or `&#39;.&#39;` with [`Chars::ascii()`].</span>
-    <span class="kw">pub</span> <span class="ident">source_border_left_break</span>: <span class="ident">char</span>,
+<span class="doccomment">/// Characters to use when rendering the diagnostic.
+///
+/// By using [`Chars::ascii()`] you can switch to an ASCII-only format suitable
+/// for rendering on terminals that do not support box drawing characters.
+</span><span class="attribute">#[derive(Clone, Debug)]
+</span><span class="kw">pub struct </span>Chars {
+    <span class="doccomment">/// The characters to use for the top-left border of the snippet.
+    /// Defaults to: `&quot;┌─&quot;` or `&quot;--&gt;&quot;` with [`Chars::ascii()`].
+    </span><span class="kw">pub </span>snippet_start: String,
+    <span class="doccomment">/// The character to use for the left border of the source.
+    /// Defaults to: `&#39;│&#39;` or `&#39;|&#39;` with [`Chars::ascii()`].
+    </span><span class="kw">pub </span>source_border_left: char,
+    <span class="doccomment">/// The character to use for the left border break of the source.
+    /// Defaults to: `&#39;·&#39;` or `&#39;.&#39;` with [`Chars::ascii()`].
+    </span><span class="kw">pub </span>source_border_left_break: char,
 
-    <span class="doccomment">/// The character to use for the note bullet.</span>
-    <span class="doccomment">/// Defaults to: `&#39;=&#39;`.</span>
-    <span class="kw">pub</span> <span class="ident">note_bullet</span>: <span class="ident">char</span>,
+    <span class="doccomment">/// The character to use for the note bullet.
+    /// Defaults to: `&#39;=&#39;`.
+    </span><span class="kw">pub </span>note_bullet: char,
 
-    <span class="doccomment">/// The character to use for marking a single-line primary label.</span>
-    <span class="doccomment">/// Defaults to: `&#39;^&#39;`.</span>
-    <span class="kw">pub</span> <span class="ident">single_primary_caret</span>: <span class="ident">char</span>,
-    <span class="doccomment">/// The character to use for marking a single-line secondary label.</span>
-    <span class="doccomment">/// Defaults to: `&#39;-&#39;`.</span>
-    <span class="kw">pub</span> <span class="ident">single_secondary_caret</span>: <span class="ident">char</span>,
+    <span class="doccomment">/// The character to use for marking a single-line primary label.
+    /// Defaults to: `&#39;^&#39;`.
+    </span><span class="kw">pub </span>single_primary_caret: char,
+    <span class="doccomment">/// The character to use for marking a single-line secondary label.
+    /// Defaults to: `&#39;-&#39;`.
+    </span><span class="kw">pub </span>single_secondary_caret: char,
 
-    <span class="doccomment">/// The character to use for marking the start of a multi-line primary label.</span>
-    <span class="doccomment">/// Defaults to: `&#39;^&#39;`.</span>
-    <span class="kw">pub</span> <span class="ident">multi_primary_caret_start</span>: <span class="ident">char</span>,
-    <span class="doccomment">/// The character to use for marking the end of a multi-line primary label.</span>
-    <span class="doccomment">/// Defaults to: `&#39;^&#39;`.</span>
-    <span class="kw">pub</span> <span class="ident">multi_primary_caret_end</span>: <span class="ident">char</span>,
-    <span class="doccomment">/// The character to use for marking the start of a multi-line secondary label.</span>
-    <span class="doccomment">/// Defaults to: `&#39;\&#39;&#39;`.</span>
-    <span class="kw">pub</span> <span class="ident">multi_secondary_caret_start</span>: <span class="ident">char</span>,
-    <span class="doccomment">/// The character to use for marking the end of a multi-line secondary label.</span>
-    <span class="doccomment">/// Defaults to: `&#39;\&#39;&#39;`.</span>
-    <span class="kw">pub</span> <span class="ident">multi_secondary_caret_end</span>: <span class="ident">char</span>,
-    <span class="doccomment">/// The character to use for the top-left corner of a multi-line label.</span>
-    <span class="doccomment">/// Defaults to: `&#39;╭&#39;` or `&#39;/&#39;` with [`Chars::ascii()`].</span>
-    <span class="kw">pub</span> <span class="ident">multi_top_left</span>: <span class="ident">char</span>,
-    <span class="doccomment">/// The character to use for the top of a multi-line label.</span>
-    <span class="doccomment">/// Defaults to: `&#39;─&#39;` or `&#39;-&#39;` with [`Chars::ascii()`].</span>
-    <span class="kw">pub</span> <span class="ident">multi_top</span>: <span class="ident">char</span>,
-    <span class="doccomment">/// The character to use for the bottom-left corner of a multi-line label.</span>
-    <span class="doccomment">/// Defaults to: `&#39;╰&#39;` or `&#39;\&#39;` with [`Chars::ascii()`].</span>
-    <span class="kw">pub</span> <span class="ident">multi_bottom_left</span>: <span class="ident">char</span>,
-    <span class="doccomment">/// The character to use when marking the bottom of a multi-line label.</span>
-    <span class="doccomment">/// Defaults to: `&#39;─&#39;` or `&#39;-&#39;` with [`Chars::ascii()`].</span>
-    <span class="kw">pub</span> <span class="ident">multi_bottom</span>: <span class="ident">char</span>,
-    <span class="doccomment">/// The character to use for the left of a multi-line label.</span>
-    <span class="doccomment">/// Defaults to: `&#39;│&#39;` or `&#39;|&#39;` with [`Chars::ascii()`].</span>
-    <span class="kw">pub</span> <span class="ident">multi_left</span>: <span class="ident">char</span>,
+    <span class="doccomment">/// The character to use for marking the start of a multi-line primary label.
+    /// Defaults to: `&#39;^&#39;`.
+    </span><span class="kw">pub </span>multi_primary_caret_start: char,
+    <span class="doccomment">/// The character to use for marking the end of a multi-line primary label.
+    /// Defaults to: `&#39;^&#39;`.
+    </span><span class="kw">pub </span>multi_primary_caret_end: char,
+    <span class="doccomment">/// The character to use for marking the start of a multi-line secondary label.
+    /// Defaults to: `&#39;\&#39;&#39;`.
+    </span><span class="kw">pub </span>multi_secondary_caret_start: char,
+    <span class="doccomment">/// The character to use for marking the end of a multi-line secondary label.
+    /// Defaults to: `&#39;\&#39;&#39;`.
+    </span><span class="kw">pub </span>multi_secondary_caret_end: char,
+    <span class="doccomment">/// The character to use for the top-left corner of a multi-line label.
+    /// Defaults to: `&#39;╭&#39;` or `&#39;/&#39;` with [`Chars::ascii()`].
+    </span><span class="kw">pub </span>multi_top_left: char,
+    <span class="doccomment">/// The character to use for the top of a multi-line label.
+    /// Defaults to: `&#39;─&#39;` or `&#39;-&#39;` with [`Chars::ascii()`].
+    </span><span class="kw">pub </span>multi_top: char,
+    <span class="doccomment">/// The character to use for the bottom-left corner of a multi-line label.
+    /// Defaults to: `&#39;╰&#39;` or `&#39;\&#39;` with [`Chars::ascii()`].
+    </span><span class="kw">pub </span>multi_bottom_left: char,
+    <span class="doccomment">/// The character to use when marking the bottom of a multi-line label.
+    /// Defaults to: `&#39;─&#39;` or `&#39;-&#39;` with [`Chars::ascii()`].
+    </span><span class="kw">pub </span>multi_bottom: char,
+    <span class="doccomment">/// The character to use for the left of a multi-line label.
+    /// Defaults to: `&#39;│&#39;` or `&#39;|&#39;` with [`Chars::ascii()`].
+    </span><span class="kw">pub </span>multi_left: char,
 
-    <span class="doccomment">/// The character to use for the left of a pointer underneath a caret.</span>
-    <span class="doccomment">/// Defaults to: `&#39;│&#39;` or `&#39;|&#39;` with [`Chars::ascii()`].</span>
-    <span class="kw">pub</span> <span class="ident">pointer_left</span>: <span class="ident">char</span>,
+    <span class="doccomment">/// The character to use for the left of a pointer underneath a caret.
+    /// Defaults to: `&#39;│&#39;` or `&#39;|&#39;` with [`Chars::ascii()`].
+    </span><span class="kw">pub </span>pointer_left: char,
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Chars</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="ident">Chars</span> {
-        <span class="ident">Chars::box_drawing</span>()
+<span class="kw">impl </span>Default <span class="kw">for </span>Chars {
+    <span class="kw">fn </span>default() -&gt; Chars {
+        Chars::box_drawing()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Chars</span> {
-    <span class="doccomment">/// A character set that uses Unicode box drawing characters.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">box_drawing</span>() -&gt; <span class="ident">Chars</span> {
-        <span class="ident">Chars</span> {
-            <span class="ident">snippet_start</span>: <span class="string">&quot;┌─&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">source_border_left</span>: <span class="string">&#39;│&#39;</span>,
-            <span class="ident">source_border_left_break</span>: <span class="string">&#39;·&#39;</span>,
+<span class="kw">impl </span>Chars {
+    <span class="doccomment">/// A character set that uses Unicode box drawing characters.
+    </span><span class="kw">pub fn </span>box_drawing() -&gt; Chars {
+        Chars {
+            snippet_start: <span class="string">&quot;┌─&quot;</span>.into(),
+            source_border_left: <span class="string">&#39;│&#39;</span>,
+            source_border_left_break: <span class="string">&#39;·&#39;</span>,
 
-            <span class="ident">note_bullet</span>: <span class="string">&#39;=&#39;</span>,
+            note_bullet: <span class="string">&#39;=&#39;</span>,
 
-            <span class="ident">single_primary_caret</span>: <span class="string">&#39;^&#39;</span>,
-            <span class="ident">single_secondary_caret</span>: <span class="string">&#39;-&#39;</span>,
+            single_primary_caret: <span class="string">&#39;^&#39;</span>,
+            single_secondary_caret: <span class="string">&#39;-&#39;</span>,
 
-            <span class="ident">multi_primary_caret_start</span>: <span class="string">&#39;^&#39;</span>,
-            <span class="ident">multi_primary_caret_end</span>: <span class="string">&#39;^&#39;</span>,
-            <span class="ident">multi_secondary_caret_start</span>: <span class="string">&#39;\&#39;&#39;</span>,
-            <span class="ident">multi_secondary_caret_end</span>: <span class="string">&#39;\&#39;&#39;</span>,
-            <span class="ident">multi_top_left</span>: <span class="string">&#39;╭&#39;</span>,
-            <span class="ident">multi_top</span>: <span class="string">&#39;─&#39;</span>,
-            <span class="ident">multi_bottom_left</span>: <span class="string">&#39;╰&#39;</span>,
-            <span class="ident">multi_bottom</span>: <span class="string">&#39;─&#39;</span>,
-            <span class="ident">multi_left</span>: <span class="string">&#39;│&#39;</span>,
+            multi_primary_caret_start: <span class="string">&#39;^&#39;</span>,
+            multi_primary_caret_end: <span class="string">&#39;^&#39;</span>,
+            multi_secondary_caret_start: <span class="string">&#39;\&#39;&#39;</span>,
+            multi_secondary_caret_end: <span class="string">&#39;\&#39;&#39;</span>,
+            multi_top_left: <span class="string">&#39;╭&#39;</span>,
+            multi_top: <span class="string">&#39;─&#39;</span>,
+            multi_bottom_left: <span class="string">&#39;╰&#39;</span>,
+            multi_bottom: <span class="string">&#39;─&#39;</span>,
+            multi_left: <span class="string">&#39;│&#39;</span>,
 
-            <span class="ident">pointer_left</span>: <span class="string">&#39;│&#39;</span>,
+            pointer_left: <span class="string">&#39;│&#39;</span>,
         }
     }
 
-    <span class="doccomment">/// A character set that only uses ASCII characters.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is useful if your terminal&#39;s font does not support box drawing</span>
-    <span class="doccomment">/// characters well and results in output that looks similar to rustc&#39;s</span>
-    <span class="doccomment">/// diagnostic output.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ascii</span>() -&gt; <span class="ident">Chars</span> {
-        <span class="ident">Chars</span> {
-            <span class="ident">snippet_start</span>: <span class="string">&quot;--&gt;&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">source_border_left</span>: <span class="string">&#39;|&#39;</span>,
-            <span class="ident">source_border_left_break</span>: <span class="string">&#39;.&#39;</span>,
+    <span class="doccomment">/// A character set that only uses ASCII characters.
+    ///
+    /// This is useful if your terminal&#39;s font does not support box drawing
+    /// characters well and results in output that looks similar to rustc&#39;s
+    /// diagnostic output.
+    </span><span class="kw">pub fn </span>ascii() -&gt; Chars {
+        Chars {
+            snippet_start: <span class="string">&quot;--&gt;&quot;</span>.into(),
+            source_border_left: <span class="string">&#39;|&#39;</span>,
+            source_border_left_break: <span class="string">&#39;.&#39;</span>,
 
-            <span class="ident">note_bullet</span>: <span class="string">&#39;=&#39;</span>,
+            note_bullet: <span class="string">&#39;=&#39;</span>,
 
-            <span class="ident">single_primary_caret</span>: <span class="string">&#39;^&#39;</span>,
-            <span class="ident">single_secondary_caret</span>: <span class="string">&#39;-&#39;</span>,
+            single_primary_caret: <span class="string">&#39;^&#39;</span>,
+            single_secondary_caret: <span class="string">&#39;-&#39;</span>,
 
-            <span class="ident">multi_primary_caret_start</span>: <span class="string">&#39;^&#39;</span>,
-            <span class="ident">multi_primary_caret_end</span>: <span class="string">&#39;^&#39;</span>,
-            <span class="ident">multi_secondary_caret_start</span>: <span class="string">&#39;\&#39;&#39;</span>,
-            <span class="ident">multi_secondary_caret_end</span>: <span class="string">&#39;\&#39;&#39;</span>,
-            <span class="ident">multi_top_left</span>: <span class="string">&#39;/&#39;</span>,
-            <span class="ident">multi_top</span>: <span class="string">&#39;-&#39;</span>,
-            <span class="ident">multi_bottom_left</span>: <span class="string">&#39;\\&#39;</span>,
-            <span class="ident">multi_bottom</span>: <span class="string">&#39;-&#39;</span>,
-            <span class="ident">multi_left</span>: <span class="string">&#39;|&#39;</span>,
+            multi_primary_caret_start: <span class="string">&#39;^&#39;</span>,
+            multi_primary_caret_end: <span class="string">&#39;^&#39;</span>,
+            multi_secondary_caret_start: <span class="string">&#39;\&#39;&#39;</span>,
+            multi_secondary_caret_end: <span class="string">&#39;\&#39;&#39;</span>,
+            multi_top_left: <span class="string">&#39;/&#39;</span>,
+            multi_top: <span class="string">&#39;-&#39;</span>,
+            multi_bottom_left: <span class="string">&#39;\\&#39;</span>,
+            multi_bottom: <span class="string">&#39;-&#39;</span>,
+            multi_left: <span class="string">&#39;|&#39;</span>,
 
-            <span class="ident">pointer_left</span>: <span class="string">&#39;|&#39;</span>,
+            pointer_left: <span class="string">&#39;|&#39;</span>,
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="codespan_reporting" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="codespan_reporting" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

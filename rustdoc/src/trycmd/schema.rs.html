@@ -1257,851 +1257,851 @@
 <span id="1257">1257</span>
 <span id="1258">1258</span>
 <span id="1259">1259</span>
-</pre><pre class="rust"><code><span class="doccomment">//! `cmd.toml` Schema</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [`OneShot`] is the top-level item in the `cmd.toml` files.</span>
+</pre><pre class="rust"><code><span class="doccomment">//! `cmd.toml` Schema
+//!
+//! [`OneShot`] is the top-level item in the `cmd.toml` files.
 
-<span class="kw">use</span> <span class="ident">std::collections::BTreeMap</span>;
-<span class="kw">use</span> <span class="ident">std::collections::VecDeque</span>;
+</span><span class="kw">use </span>std::collections::BTreeMap;
+<span class="kw">use </span>std::collections::VecDeque;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">TryCmd</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">steps</span>: <span class="ident">Vec</span>&lt;<span class="ident">Step</span>&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">fs</span>: <span class="ident">Filesystem</span>,
+<span class="attribute">#[derive(Clone, Default, Debug, PartialEq, Eq)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>TryCmd {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) steps: Vec&lt;Step&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) fs: Filesystem,
 }
 
-<span class="kw">impl</span> <span class="ident">TryCmd</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">load</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sequence</span> = <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ext</span>) = <span class="ident">path</span>.<span class="ident">extension</span>() {
-            <span class="kw">if</span> <span class="ident">ext</span> == <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;toml&quot;</span>) {
-                <span class="kw">let</span> <span class="ident">raw</span> = <span class="ident">std::fs::read_to_string</span>(<span class="ident">path</span>)
-                    .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">one_shot</span> = <span class="ident">OneShot::parse_toml</span>(<span class="kw-2">&amp;</span><span class="ident">raw</span>)<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sequence</span>: <span class="self">Self</span> = <span class="ident">one_shot</span>.<span class="ident">into</span>();
-                <span class="kw">let</span> <span class="ident">is_binary</span> = <span class="kw">match</span> <span class="ident">sequence</span>.<span class="ident">steps</span>[<span class="number">0</span>].<span class="ident">binary</span> {
-                    <span class="bool-val">true</span> =&gt; <span class="ident">snapbox::DataFormat::Binary</span>,
-                    <span class="bool-val">false</span> =&gt; <span class="ident">snapbox::DataFormat::Text</span>,
+<span class="kw">impl </span>TryCmd {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>load(path: <span class="kw-2">&amp;</span>std::path::Path) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="kw">crate</span>::Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>sequence = <span class="kw">if let </span><span class="prelude-val">Some</span>(ext) = path.extension() {
+            <span class="kw">if </span>ext == std::ffi::OsStr::new(<span class="string">&quot;toml&quot;</span>) {
+                <span class="kw">let </span>raw = std::fs::read_to_string(path)
+                    .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, path.display(), e))<span class="question-mark">?</span>;
+                <span class="kw">let </span>one_shot = OneShot::parse_toml(<span class="kw-2">&amp;</span>raw)<span class="question-mark">?</span>;
+                <span class="kw">let </span><span class="kw-2">mut </span>sequence: <span class="self">Self </span>= one_shot.into();
+                <span class="kw">let </span>is_binary = <span class="kw">match </span>sequence.steps[<span class="number">0</span>].binary {
+                    <span class="bool-val">true </span>=&gt; snapbox::DataFormat::Binary,
+                    <span class="bool-val">false </span>=&gt; snapbox::DataFormat::Text,
                 };
 
-                <span class="kw">if</span> <span class="ident">sequence</span>.<span class="ident">steps</span>[<span class="number">0</span>].<span class="ident">stdin</span>.<span class="ident">is_none</span>() {
-                    <span class="kw">let</span> <span class="ident">stdin_path</span> = <span class="ident">path</span>.<span class="ident">with_extension</span>(<span class="string">&quot;stdin&quot;</span>);
-                    <span class="kw">let</span> <span class="ident">stdin</span> = <span class="kw">if</span> <span class="ident">stdin_path</span>.<span class="ident">exists</span>() {
-                        <span class="comment">// No `map_text` as we will trust what the user inputted</span>
-                        <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::read_from</span>(<span class="kw-2">&amp;</span><span class="ident">stdin_path</span>, <span class="prelude-val">Some</span>(<span class="ident">is_binary</span>))<span class="question-mark">?</span>)
-                    } <span class="kw">else</span> {
-                        <span class="prelude-val">None</span>
-                    };
-                    <span class="ident">sequence</span>.<span class="ident">steps</span>[<span class="number">0</span>].<span class="ident">stdin</span> = <span class="ident">stdin</span>;
+                <span class="kw">if </span>sequence.steps[<span class="number">0</span>].stdin.is_none() {
+                    <span class="kw">let </span>stdin_path = path.with_extension(<span class="string">&quot;stdin&quot;</span>);
+                    <span class="kw">let </span>stdin = <span class="kw">if </span>stdin_path.exists() {
+                        <span class="comment">// No `map_text` as we will trust what the user inputted
+                        </span><span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::read_from(<span class="kw-2">&amp;</span>stdin_path, <span class="prelude-val">Some</span>(is_binary))<span class="question-mark">?</span>)
+                    } <span class="kw">else </span>{
+                        <span class="prelude-val">None
+                    </span>};
+                    sequence.steps[<span class="number">0</span>].stdin = stdin;
                 }
 
-                <span class="kw">if</span> <span class="ident">sequence</span>.<span class="ident">steps</span>[<span class="number">0</span>].<span class="ident">expected_stdout</span>.<span class="ident">is_none</span>() {
-                    <span class="kw">let</span> <span class="ident">stdout_path</span> = <span class="ident">path</span>.<span class="ident">with_extension</span>(<span class="string">&quot;stdout&quot;</span>);
-                    <span class="kw">let</span> <span class="ident">stdout</span> = <span class="kw">if</span> <span class="ident">stdout_path</span>.<span class="ident">exists</span>() {
+                <span class="kw">if </span>sequence.steps[<span class="number">0</span>].expected_stdout.is_none() {
+                    <span class="kw">let </span>stdout_path = path.with_extension(<span class="string">&quot;stdout&quot;</span>);
+                    <span class="kw">let </span>stdout = <span class="kw">if </span>stdout_path.exists() {
                         <span class="prelude-val">Some</span>(
-                            <span class="ident"><span class="kw">crate</span>::Data::read_from</span>(<span class="kw-2">&amp;</span><span class="ident">stdout_path</span>, <span class="prelude-val">Some</span>(<span class="ident">is_binary</span>))<span class="question-mark">?</span>
-                                .<span class="ident">map_text</span>(<span class="ident">snapbox::utils::normalize_text</span>),
+                            <span class="kw">crate</span>::Data::read_from(<span class="kw-2">&amp;</span>stdout_path, <span class="prelude-val">Some</span>(is_binary))<span class="question-mark">?
+                                </span>.map_text(snapbox::utils::normalize_text),
                         )
-                    } <span class="kw">else</span> {
-                        <span class="prelude-val">None</span>
-                    };
-                    <span class="ident">sequence</span>.<span class="ident">steps</span>[<span class="number">0</span>].<span class="ident">expected_stdout</span> = <span class="ident">stdout</span>;
+                    } <span class="kw">else </span>{
+                        <span class="prelude-val">None
+                    </span>};
+                    sequence.steps[<span class="number">0</span>].expected_stdout = stdout;
                 }
 
-                <span class="kw">if</span> <span class="ident">sequence</span>.<span class="ident">steps</span>[<span class="number">0</span>].<span class="ident">expected_stderr</span>.<span class="ident">is_none</span>() {
-                    <span class="kw">let</span> <span class="ident">stderr_path</span> = <span class="ident">path</span>.<span class="ident">with_extension</span>(<span class="string">&quot;stderr&quot;</span>);
-                    <span class="kw">let</span> <span class="ident">stderr</span> = <span class="kw">if</span> <span class="ident">stderr_path</span>.<span class="ident">exists</span>() {
+                <span class="kw">if </span>sequence.steps[<span class="number">0</span>].expected_stderr.is_none() {
+                    <span class="kw">let </span>stderr_path = path.with_extension(<span class="string">&quot;stderr&quot;</span>);
+                    <span class="kw">let </span>stderr = <span class="kw">if </span>stderr_path.exists() {
                         <span class="prelude-val">Some</span>(
-                            <span class="ident"><span class="kw">crate</span>::Data::read_from</span>(<span class="kw-2">&amp;</span><span class="ident">stderr_path</span>, <span class="prelude-val">Some</span>(<span class="ident">is_binary</span>))<span class="question-mark">?</span>
-                                .<span class="ident">map_text</span>(<span class="ident">snapbox::utils::normalize_text</span>),
+                            <span class="kw">crate</span>::Data::read_from(<span class="kw-2">&amp;</span>stderr_path, <span class="prelude-val">Some</span>(is_binary))<span class="question-mark">?
+                                </span>.map_text(snapbox::utils::normalize_text),
                         )
-                    } <span class="kw">else</span> {
-                        <span class="prelude-val">None</span>
-                    };
-                    <span class="ident">sequence</span>.<span class="ident">steps</span>[<span class="number">0</span>].<span class="ident">expected_stderr</span> = <span class="ident">stderr</span>;
+                    } <span class="kw">else </span>{
+                        <span class="prelude-val">None
+                    </span>};
+                    sequence.steps[<span class="number">0</span>].expected_stderr = stderr;
                 }
 
-                <span class="ident">sequence</span>
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">ext</span> == <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;trycmd&quot;</span>) || <span class="ident">ext</span> == <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;md&quot;</span>) {
-                <span class="kw">let</span> <span class="ident">raw</span> = <span class="ident"><span class="kw">crate</span>::Data::read_from</span>(<span class="ident">path</span>, <span class="prelude-val">Some</span>(<span class="ident">snapbox::DataFormat::Text</span>))<span class="question-mark">?</span>
-                    .<span class="ident">map_text</span>(<span class="ident">snapbox::utils::normalize_lines</span>)
-                    .<span class="ident">into_string</span>()
-                    .<span class="ident">unwrap</span>();
-                <span class="ident"><span class="self">Self</span>::parse_trycmd</span>(<span class="kw-2">&amp;</span><span class="ident">raw</span>)<span class="question-mark">?</span>
-            } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Unsupported extension: {}&quot;</span>, <span class="ident">ext</span>.<span class="ident">to_string_lossy</span>()).<span class="ident">into</span>());
+                sequence
+            } <span class="kw">else if </span>ext == std::ffi::OsStr::new(<span class="string">&quot;trycmd&quot;</span>) || ext == std::ffi::OsStr::new(<span class="string">&quot;md&quot;</span>) {
+                <span class="kw">let </span>raw = <span class="kw">crate</span>::Data::read_from(path, <span class="prelude-val">Some</span>(snapbox::DataFormat::Text))<span class="question-mark">?
+                    </span>.map_text(snapbox::utils::normalize_lines)
+                    .into_string()
+                    .unwrap();
+                <span class="self">Self</span>::parse_trycmd(<span class="kw-2">&amp;</span>raw)<span class="question-mark">?
+            </span>} <span class="kw">else </span>{
+                <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Unsupported extension: {}&quot;</span>, ext.to_string_lossy()).into());
             }
-        } <span class="kw">else</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;No extension&quot;</span>.<span class="ident">into</span>());
+        } <span class="kw">else </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">&quot;No extension&quot;</span>.into());
         };
 
-        <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">base</span> = <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">base</span>.<span class="ident">take</span>().<span class="ident">map</span>(|<span class="ident">base</span>| {
-            <span class="ident">path</span>.<span class="ident">parent</span>()
-                .<span class="ident">unwrap_or_else</span>(|| <span class="ident">std::path::Path::new</span>(<span class="string">&quot;.&quot;</span>))
-                .<span class="ident">join</span>(<span class="ident">base</span>)
+        sequence.fs.base = sequence.fs.base.take().map(|base| {
+            path.parent()
+                .unwrap_or_else(|| std::path::Path::new(<span class="string">&quot;.&quot;</span>))
+                .join(base)
         });
-        <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">cwd</span> = <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">cwd</span>.<span class="ident">take</span>().<span class="ident">map</span>(|<span class="ident">cwd</span>| {
-            <span class="ident">path</span>.<span class="ident">parent</span>()
-                .<span class="ident">unwrap_or_else</span>(|| <span class="ident">std::path::Path::new</span>(<span class="string">&quot;.&quot;</span>))
-                .<span class="ident">join</span>(<span class="ident">cwd</span>)
+        sequence.fs.cwd = sequence.fs.cwd.take().map(|cwd| {
+            path.parent()
+                .unwrap_or_else(|| std::path::Path::new(<span class="string">&quot;.&quot;</span>))
+                .join(cwd)
         });
 
-        <span class="kw">if</span> <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">base</span>.<span class="ident">is_none</span>() {
-            <span class="kw">let</span> <span class="ident">base_path</span> = <span class="ident">path</span>.<span class="ident">with_extension</span>(<span class="string">&quot;in&quot;</span>);
-            <span class="kw">if</span> <span class="ident">base_path</span>.<span class="ident">exists</span>() {
-                <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">base</span> = <span class="prelude-val">Some</span>(<span class="ident">base_path</span>);
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">cwd</span>.<span class="ident">is_some</span>() {
-                <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">base</span> = <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">cwd</span>.<span class="ident">clone</span>();
+        <span class="kw">if </span>sequence.fs.base.is_none() {
+            <span class="kw">let </span>base_path = path.with_extension(<span class="string">&quot;in&quot;</span>);
+            <span class="kw">if </span>base_path.exists() {
+                sequence.fs.base = <span class="prelude-val">Some</span>(base_path);
+            } <span class="kw">else if </span>sequence.fs.cwd.is_some() {
+                sequence.fs.base = sequence.fs.cwd.clone();
             }
         }
-        <span class="kw">if</span> <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">cwd</span>.<span class="ident">is_none</span>() {
-            <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">cwd</span> = <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">base</span>.<span class="ident">clone</span>();
+        <span class="kw">if </span>sequence.fs.cwd.is_none() {
+            sequence.fs.cwd = sequence.fs.base.clone();
         }
-        <span class="kw">if</span> <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">sandbox</span>.<span class="ident">is_none</span>() {
-            <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">sandbox</span> = <span class="prelude-val">Some</span>(<span class="ident">path</span>.<span class="ident">with_extension</span>(<span class="string">&quot;out&quot;</span>).<span class="ident">exists</span>());
+        <span class="kw">if </span>sequence.fs.sandbox.is_none() {
+            sequence.fs.sandbox = <span class="prelude-val">Some</span>(path.with_extension(<span class="string">&quot;out&quot;</span>).exists());
         }
 
-        <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">base</span> = <span class="ident">sequence</span>
-            .<span class="ident">fs</span>
-            .<span class="ident">base</span>
-            .<span class="ident">take</span>()
-            .<span class="ident">map</span>(|<span class="ident">p</span>| <span class="ident">snapbox::path::resolve_dir</span>(<span class="ident">p</span>).<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident">e</span>.<span class="ident">to_string</span>()))
-            .<span class="ident">transpose</span>()<span class="question-mark">?</span>;
-        <span class="ident">sequence</span>.<span class="ident">fs</span>.<span class="ident">cwd</span> = <span class="ident">sequence</span>
-            .<span class="ident">fs</span>
-            .<span class="ident">cwd</span>
-            .<span class="ident">take</span>()
-            .<span class="ident">map</span>(|<span class="ident">p</span>| <span class="ident">snapbox::path::resolve_dir</span>(<span class="ident">p</span>).<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident">e</span>.<span class="ident">to_string</span>()))
-            .<span class="ident">transpose</span>()<span class="question-mark">?</span>;
+        sequence.fs.base = sequence
+            .fs
+            .base
+            .take()
+            .map(|p| snapbox::path::resolve_dir(p).map_err(|e| e.to_string()))
+            .transpose()<span class="question-mark">?</span>;
+        sequence.fs.cwd = sequence
+            .fs
+            .cwd
+            .take()
+            .map(|p| snapbox::path::resolve_dir(p).map_err(|e| e.to_string()))
+            .transpose()<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(<span class="ident">sequence</span>)
+        <span class="prelude-val">Ok</span>(sequence)
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">overwrite</span>(
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>overwrite(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>,
-        <span class="ident">id</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>&gt;,
-        <span class="ident">stdout</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
-        <span class="ident">stderr</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ext</span>) = <span class="ident">path</span>.<span class="ident">extension</span>() {
-            <span class="kw">if</span> <span class="ident">ext</span> == <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;toml&quot;</span>) {
-                <span class="macro">assert_eq!</span>(<span class="ident">id</span>, <span class="prelude-val">None</span>);
+        path: <span class="kw-2">&amp;</span>std::path::Path,
+        id: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
+        stdout: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">crate</span>::Data&gt;,
+        stderr: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">crate</span>::Data&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw">crate</span>::Error&gt; {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(ext) = path.extension() {
+            <span class="kw">if </span>ext == std::ffi::OsStr::new(<span class="string">&quot;toml&quot;</span>) {
+                <span class="macro">assert_eq!</span>(id, <span class="prelude-val">None</span>);
 
-                <span class="ident">overwrite_toml_output</span>(<span class="ident">path</span>, <span class="ident">id</span>, <span class="ident">stdout</span>, <span class="string">&quot;stdout&quot;</span>, <span class="string">&quot;stdout&quot;</span>)<span class="question-mark">?</span>;
-                <span class="ident">overwrite_toml_output</span>(<span class="ident">path</span>, <span class="ident">id</span>, <span class="ident">stderr</span>, <span class="string">&quot;stderr&quot;</span>, <span class="string">&quot;stderr&quot;</span>)<span class="question-mark">?</span>;
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">ext</span> == <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;trycmd&quot;</span>) || <span class="ident">ext</span> == <span class="ident">std::ffi::OsStr::new</span>(<span class="string">&quot;md&quot;</span>) {
-                <span class="kw">if</span> <span class="ident">stderr</span>.<span class="ident">is_some</span>() &amp;&amp; <span class="ident">stderr</span> != <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::Data::new</span>()) {
-                    <span class="macro">panic!</span>(<span class="string">&quot;stderr should have been merged: {:?}&quot;</span>, <span class="ident">stderr</span>);
+                overwrite_toml_output(path, id, stdout, <span class="string">&quot;stdout&quot;</span>, <span class="string">&quot;stdout&quot;</span>)<span class="question-mark">?</span>;
+                overwrite_toml_output(path, id, stderr, <span class="string">&quot;stderr&quot;</span>, <span class="string">&quot;stderr&quot;</span>)<span class="question-mark">?</span>;
+            } <span class="kw">else if </span>ext == std::ffi::OsStr::new(<span class="string">&quot;trycmd&quot;</span>) || ext == std::ffi::OsStr::new(<span class="string">&quot;md&quot;</span>) {
+                <span class="kw">if </span>stderr.is_some() &amp;&amp; stderr != <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw">crate</span>::Data::new()) {
+                    <span class="macro">panic!</span>(<span class="string">&quot;stderr should have been merged: {:?}&quot;</span>, stderr);
                 }
-                <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">id</span>), <span class="prelude-val">Some</span>(<span class="ident">stdout</span>)) = (<span class="ident">id</span>, <span class="ident">stdout</span>) {
-                    <span class="kw">let</span> <span class="ident">step</span> = <span class="self">self</span>
-                        .<span class="ident">steps</span>
-                        .<span class="ident">iter</span>()
-                        .<span class="ident">find</span>(|<span class="ident">s</span>| <span class="ident">s</span>.<span class="ident">id</span>.<span class="ident">as_deref</span>() == <span class="prelude-val">Some</span>(<span class="ident">id</span>))
-                        .<span class="ident">expect</span>(<span class="string">&quot;id is valid&quot;</span>);
-                    <span class="kw">let</span> <span class="ident">line_nums</span> = <span class="ident">step</span>
-                        .<span class="ident">expected_stdout_source</span>
-                        .<span class="ident">clone</span>()
-                        .<span class="ident">expect</span>(<span class="string">&quot;always present for .trycmd&quot;</span>);
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stdout</span> = <span class="ident">stdout</span>
-                        .<span class="ident">as_str</span>()
-                        .<span class="ident">expect</span>(<span class="string">&quot;already converted to Text&quot;</span>)
-                        .<span class="ident">to_owned</span>();
-                    <span class="comment">// Add back trailing newline removed when parsing</span>
-                    <span class="ident">stdout</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">raw</span> = <span class="ident"><span class="kw">crate</span>::Data::read_from</span>(<span class="ident">path</span>, <span class="prelude-val">Some</span>(<span class="ident">snapbox::DataFormat::Text</span>))<span class="question-mark">?</span>
-                        .<span class="ident">map_text</span>(<span class="ident">snapbox::utils::normalize_lines</span>);
-                    <span class="ident">replace_lines</span>(<span class="kw-2">&amp;mut</span> <span class="ident">raw</span>, <span class="ident">line_nums</span>, <span class="kw-2">&amp;</span><span class="ident">stdout</span>)<span class="question-mark">?</span>;
-                    <span class="ident">raw</span>.<span class="ident">write_to</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
+                <span class="kw">if let </span>(<span class="prelude-val">Some</span>(id), <span class="prelude-val">Some</span>(stdout)) = (id, stdout) {
+                    <span class="kw">let </span>step = <span class="self">self
+                        </span>.steps
+                        .iter()
+                        .find(|s| s.id.as_deref() == <span class="prelude-val">Some</span>(id))
+                        .expect(<span class="string">&quot;id is valid&quot;</span>);
+                    <span class="kw">let </span>line_nums = step
+                        .expected_stdout_source
+                        .clone()
+                        .expect(<span class="string">&quot;always present for .trycmd&quot;</span>);
+                    <span class="kw">let </span><span class="kw-2">mut </span>stdout = stdout
+                        .as_str()
+                        .expect(<span class="string">&quot;already converted to Text&quot;</span>)
+                        .to_owned();
+                    <span class="comment">// Add back trailing newline removed when parsing
+                    </span>stdout.push(<span class="string">&#39;\n&#39;</span>);
+                    <span class="kw">let </span><span class="kw-2">mut </span>raw = <span class="kw">crate</span>::Data::read_from(path, <span class="prelude-val">Some</span>(snapbox::DataFormat::Text))<span class="question-mark">?
+                        </span>.map_text(snapbox::utils::normalize_lines);
+                    replace_lines(<span class="kw-2">&amp;mut </span>raw, line_nums, <span class="kw-2">&amp;</span>stdout)<span class="question-mark">?</span>;
+                    raw.write_to(path)<span class="question-mark">?</span>;
                 }
-            } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Unsupported extension: {}&quot;</span>, <span class="ident">ext</span>.<span class="ident">to_string_lossy</span>()).<span class="ident">into</span>());
+            } <span class="kw">else </span>{
+                <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Unsupported extension: {}&quot;</span>, ext.to_string_lossy()).into());
             }
-        } <span class="kw">else</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;No extension&quot;</span>.<span class="ident">into</span>());
+        } <span class="kw">else </span>{
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="string">&quot;No extension&quot;</span>.into());
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="kw">fn</span> <span class="ident">parse_trycmd</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">steps</span> = <span class="ident">Vec::new</span>();
+    <span class="kw">fn </span>parse_trycmd(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="kw">crate</span>::Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>steps = Vec::new();
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lines</span>: <span class="ident">VecDeque</span>&lt;<span class="kw">_</span>&gt; = <span class="ident">snapbox::utils::LinesWithTerminator::new</span>(<span class="ident">s</span>)
-            .<span class="ident">enumerate</span>()
-            .<span class="ident">map</span>(|(<span class="ident">i</span>, <span class="ident">l</span>)| (<span class="ident">i</span> + <span class="number">1</span>, <span class="ident">l</span>))
-            .<span class="ident">collect</span>();
-        <span class="lifetime">&#39;outer</span>: <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fence_pattern</span> = <span class="string">&quot;```&quot;</span>.<span class="ident">to_owned</span>();
-            <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">line</span>)) = <span class="ident">lines</span>.<span class="ident">pop_front</span>() {
-                <span class="kw">let</span> <span class="ident">tick_end</span> = <span class="ident">line</span>
-                    .<span class="ident">char_indices</span>()
-                    .<span class="ident">find_map</span>(|(<span class="ident">i</span>, <span class="ident">c</span>)| (<span class="ident">c</span> != <span class="string">&#39;`&#39;</span>).<span class="ident">then</span>(|| <span class="ident">i</span>))
-                    .<span class="ident">unwrap_or</span>(<span class="ident">line</span>.<span class="ident">len</span>());
-                <span class="kw">if</span> <span class="number">3</span> &lt;= <span class="ident">tick_end</span> {
-                    <span class="ident">fence_pattern</span> = <span class="ident">line</span>[..<span class="ident">tick_end</span>].<span class="ident">to_owned</span>();
-                    <span class="kw">let</span> <span class="ident">raw</span> = <span class="ident">line</span>[<span class="ident">tick_end</span>..].<span class="ident">trim</span>();
-                    <span class="kw">if</span> <span class="ident">raw</span>.<span class="ident">is_empty</span>() {
-                        <span class="comment">// Assuming a trycmd block</span>
-                        <span class="kw">break</span>;
-                    } <span class="kw">else</span> {
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">info</span> = <span class="ident">raw</span>.<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>);
-                        <span class="kw">let</span> <span class="ident">lang</span> = <span class="ident">info</span>.<span class="ident">next</span>().<span class="ident">unwrap</span>();
-                        <span class="kw">match</span> <span class="ident">lang</span> {
-                            <span class="string">&quot;trycmd&quot;</span> | <span class="string">&quot;console&quot;</span> =&gt; {
-                                <span class="kw">if</span> <span class="ident">info</span>.<span class="ident">any</span>(|<span class="ident">i</span>| <span class="ident">i</span> == <span class="string">&quot;ignore&quot;</span>) {
-                                    <span class="macro">snapbox::debug!</span>(<span class="string">&quot;ignore from infostring: {:?}&quot;</span>, <span class="ident">info</span>);
-                                } <span class="kw">else</span> {
+        <span class="kw">let </span><span class="kw-2">mut </span>lines: VecDeque&lt;<span class="kw">_</span>&gt; = snapbox::utils::LinesWithTerminator::new(s)
+            .enumerate()
+            .map(|(i, l)| (i + <span class="number">1</span>, l))
+            .collect();
+        <span class="lifetime">&#39;outer</span>: <span class="kw">loop </span>{
+            <span class="kw">let </span><span class="kw-2">mut </span>fence_pattern = <span class="string">&quot;```&quot;</span>.to_owned();
+            <span class="kw">while let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, line)) = lines.pop_front() {
+                <span class="kw">let </span>tick_end = line
+                    .char_indices()
+                    .find_map(|(i, c)| (c != <span class="string">&#39;`&#39;</span>).then(|| i))
+                    .unwrap_or(line.len());
+                <span class="kw">if </span><span class="number">3 </span>&lt;= tick_end {
+                    fence_pattern = line[..tick_end].to_owned();
+                    <span class="kw">let </span>raw = line[tick_end..].trim();
+                    <span class="kw">if </span>raw.is_empty() {
+                        <span class="comment">// Assuming a trycmd block
+                        </span><span class="kw">break</span>;
+                    } <span class="kw">else </span>{
+                        <span class="kw">let </span><span class="kw-2">mut </span>info = raw.split(<span class="string">&#39;,&#39;</span>);
+                        <span class="kw">let </span>lang = info.next().unwrap();
+                        <span class="kw">match </span>lang {
+                            <span class="string">&quot;trycmd&quot; </span>| <span class="string">&quot;console&quot; </span>=&gt; {
+                                <span class="kw">if </span>info.any(|i| i == <span class="string">&quot;ignore&quot;</span>) {
+                                    <span class="macro">snapbox::debug!</span>(<span class="string">&quot;ignore from infostring: {:?}&quot;</span>, info);
+                                } <span class="kw">else </span>{
                                     <span class="kw">break</span>;
                                 }
                             }
-                            <span class="kw">_</span> =&gt; {
-                                <span class="macro">snapbox::debug!</span>(<span class="string">&quot;ignore from lang: {:?}&quot;</span>, <span class="ident">lang</span>);
+                            <span class="kw">_ </span>=&gt; {
+                                <span class="macro">snapbox::debug!</span>(<span class="string">&quot;ignore from lang: {:?}&quot;</span>, lang);
                             }
                         }
                     }
 
-                    <span class="comment">// Irrelevant block, consume to end</span>
-                    <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">line</span>)) = <span class="ident">lines</span>.<span class="ident">pop_front</span>() {
-                        <span class="kw">if</span> <span class="ident">line</span>.<span class="ident">starts_with</span>(<span class="kw-2">&amp;</span><span class="ident">fence_pattern</span>) {
-                            <span class="kw">continue</span> <span class="lifetime">&#39;outer</span>;
+                    <span class="comment">// Irrelevant block, consume to end
+                    </span><span class="kw">while let </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, line)) = lines.pop_front() {
+                        <span class="kw">if </span>line.starts_with(<span class="kw-2">&amp;</span>fence_pattern) {
+                            <span class="kw">continue </span><span class="lifetime">&#39;outer</span>;
                         }
                     }
                 }
             }
 
-            <span class="lifetime">&#39;code</span>: <span class="kw">loop</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmdline</span> = <span class="ident">Vec::new</span>();
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expected_status</span> = <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Success</span>);
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stdout</span> = <span class="ident">String::new</span>();
-                <span class="kw">let</span> <span class="ident">cmd_start</span>;
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">stdout_start</span>;
+            <span class="lifetime">&#39;code</span>: <span class="kw">loop </span>{
+                <span class="kw">let </span><span class="kw-2">mut </span>cmdline = Vec::new();
+                <span class="kw">let </span><span class="kw-2">mut </span>expected_status = <span class="prelude-val">Some</span>(CommandStatus::Success);
+                <span class="kw">let </span><span class="kw-2">mut </span>stdout = String::new();
+                <span class="kw">let </span>cmd_start;
+                <span class="kw">let </span><span class="kw-2">mut </span>stdout_start;
 
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">line_num</span>, <span class="ident">line</span>)) = <span class="ident">lines</span>.<span class="ident">pop_front</span>() {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">raw</span>) = <span class="ident">line</span>.<span class="ident">strip_prefix</span>(<span class="string">&quot;$ &quot;</span>) {
-                        <span class="ident">cmdline</span>.<span class="ident">extend</span>(<span class="ident">shlex::Shlex::new</span>(<span class="ident">raw</span>.<span class="ident">trim</span>()));
-                        <span class="ident">cmd_start</span> = <span class="ident">line_num</span>;
-                        <span class="ident">stdout_start</span> = <span class="ident">line_num</span> + <span class="number">1</span>;
-                    } <span class="kw">else</span> {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(
-                            <span class="macro">format!</span>(<span class="string">&quot;Expected `$` on line {}, got `{}`&quot;</span>, <span class="ident">line_num</span>, <span class="ident">line</span>).<span class="ident">into</span>()
+                <span class="kw">if let </span><span class="prelude-val">Some</span>((line_num, line)) = lines.pop_front() {
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(raw) = line.strip_prefix(<span class="string">&quot;$ &quot;</span>) {
+                        cmdline.extend(shlex::Shlex::new(raw.trim()));
+                        cmd_start = line_num;
+                        stdout_start = line_num + <span class="number">1</span>;
+                    } <span class="kw">else </span>{
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(
+                            <span class="macro">format!</span>(<span class="string">&quot;Expected `$` on line {}, got `{}`&quot;</span>, line_num, line).into()
                         );
                     }
-                } <span class="kw">else</span> {
-                    <span class="kw">break</span> <span class="lifetime">&#39;outer</span>;
+                } <span class="kw">else </span>{
+                    <span class="kw">break </span><span class="lifetime">&#39;outer</span>;
                 }
-                <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">line_num</span>, <span class="ident">line</span>)) = <span class="ident">lines</span>.<span class="ident">pop_front</span>() {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">raw</span>) = <span class="ident">line</span>.<span class="ident">strip_prefix</span>(<span class="string">&quot;&gt; &quot;</span>) {
-                        <span class="ident">cmdline</span>.<span class="ident">extend</span>(<span class="ident">shlex::Shlex::new</span>(<span class="ident">raw</span>.<span class="ident">trim</span>()));
-                        <span class="ident">stdout_start</span> = <span class="ident">line_num</span> + <span class="number">1</span>;
-                    } <span class="kw">else</span> {
-                        <span class="ident">lines</span>.<span class="ident">push_front</span>((<span class="ident">line_num</span>, <span class="ident">line</span>));
+                <span class="kw">while let </span><span class="prelude-val">Some</span>((line_num, line)) = lines.pop_front() {
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(raw) = line.strip_prefix(<span class="string">&quot;&gt; &quot;</span>) {
+                        cmdline.extend(shlex::Shlex::new(raw.trim()));
+                        stdout_start = line_num + <span class="number">1</span>;
+                    } <span class="kw">else </span>{
+                        lines.push_front((line_num, line));
                         <span class="kw">break</span>;
                     }
                 }
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">line_num</span>, <span class="ident">line</span>)) = <span class="ident">lines</span>.<span class="ident">pop_front</span>() {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">raw</span>) = <span class="ident">line</span>.<span class="ident">strip_prefix</span>(<span class="string">&quot;? &quot;</span>) {
-                        <span class="ident">expected_status</span> = <span class="prelude-val">Some</span>(<span class="ident">raw</span>.<span class="ident">trim</span>().<span class="ident">parse</span>::&lt;<span class="ident">CommandStatus</span>&gt;()<span class="question-mark">?</span>);
-                        <span class="ident">stdout_start</span> = <span class="ident">line_num</span> + <span class="number">1</span>;
-                    } <span class="kw">else</span> {
-                        <span class="ident">lines</span>.<span class="ident">push_front</span>((<span class="ident">line_num</span>, <span class="ident">line</span>));
+                <span class="kw">if let </span><span class="prelude-val">Some</span>((line_num, line)) = lines.pop_front() {
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(raw) = line.strip_prefix(<span class="string">&quot;? &quot;</span>) {
+                        expected_status = <span class="prelude-val">Some</span>(raw.trim().parse::&lt;CommandStatus&gt;()<span class="question-mark">?</span>);
+                        stdout_start = line_num + <span class="number">1</span>;
+                    } <span class="kw">else </span>{
+                        lines.push_front((line_num, line));
                     }
                 }
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">post_stdout_start</span> = <span class="ident">stdout_start</span>;
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">block_done</span> = <span class="bool-val">false</span>;
-                <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">line_num</span>, <span class="ident">line</span>)) = <span class="ident">lines</span>.<span class="ident">pop_front</span>() {
-                    <span class="kw">if</span> <span class="ident">line</span>.<span class="ident">starts_with</span>(<span class="string">&quot;$ &quot;</span>) {
-                        <span class="ident">lines</span>.<span class="ident">push_front</span>((<span class="ident">line_num</span>, <span class="ident">line</span>));
-                        <span class="ident">post_stdout_start</span> = <span class="ident">line_num</span>;
+                <span class="kw">let </span><span class="kw-2">mut </span>post_stdout_start = stdout_start;
+                <span class="kw">let </span><span class="kw-2">mut </span>block_done = <span class="bool-val">false</span>;
+                <span class="kw">while let </span><span class="prelude-val">Some</span>((line_num, line)) = lines.pop_front() {
+                    <span class="kw">if </span>line.starts_with(<span class="string">&quot;$ &quot;</span>) {
+                        lines.push_front((line_num, line));
+                        post_stdout_start = line_num;
                         <span class="kw">break</span>;
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">line</span>.<span class="ident">starts_with</span>(<span class="kw-2">&amp;</span><span class="ident">fence_pattern</span>) {
-                        <span class="ident">block_done</span> = <span class="bool-val">true</span>;
-                        <span class="ident">post_stdout_start</span> = <span class="ident">line_num</span>;
+                    } <span class="kw">else if </span>line.starts_with(<span class="kw-2">&amp;</span>fence_pattern) {
+                        block_done = <span class="bool-val">true</span>;
+                        post_stdout_start = line_num;
                         <span class="kw">break</span>;
-                    } <span class="kw">else</span> {
-                        <span class="ident">stdout</span>.<span class="ident">push_str</span>(<span class="ident">line</span>);
-                        <span class="ident">post_stdout_start</span> = <span class="ident">line_num</span> + <span class="number">1</span>;
+                    } <span class="kw">else </span>{
+                        stdout.push_str(line);
+                        post_stdout_start = line_num + <span class="number">1</span>;
                     }
                 }
-                <span class="kw">if</span> <span class="ident">stdout</span>.<span class="ident">ends_with</span>(<span class="string">&#39;\n&#39;</span>) {
-                    <span class="comment">// Last newline is for formatting purposes so tests can verify cases without a</span>
-                    <span class="comment">// trailing newline.</span>
-                    <span class="ident">stdout</span>.<span class="ident">pop</span>();
+                <span class="kw">if </span>stdout.ends_with(<span class="string">&#39;\n&#39;</span>) {
+                    <span class="comment">// Last newline is for formatting purposes so tests can verify cases without a
+                    // trailing newline.
+                    </span>stdout.pop();
                 }
 
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">env</span> = <span class="ident">Env::default</span>();
+                <span class="kw">let </span><span class="kw-2">mut </span>env = Env::default();
 
-                <span class="kw">let</span> <span class="ident">bin</span> = <span class="kw">loop</span> {
-                    <span class="kw">if</span> <span class="ident">cmdline</span>.<span class="ident">is_empty</span>() {
-                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;No bin specified on line {}&quot;</span>, <span class="ident">cmd_start</span>).<span class="ident">into</span>());
+                <span class="kw">let </span>bin = <span class="kw">loop </span>{
+                    <span class="kw">if </span>cmdline.is_empty() {
+                        <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;No bin specified on line {}&quot;</span>, cmd_start).into());
                     }
-                    <span class="kw">let</span> <span class="ident">next</span> = <span class="ident">cmdline</span>.<span class="ident">remove</span>(<span class="number">0</span>);
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">key</span>, <span class="ident">value</span>)) = <span class="ident">next</span>.<span class="ident">split_once</span>(<span class="string">&#39;=&#39;</span>) {
-                        <span class="ident">env</span>.<span class="ident">add</span>.<span class="ident">insert</span>(<span class="ident">key</span>.<span class="ident">to_owned</span>(), <span class="ident">value</span>.<span class="ident">to_owned</span>());
-                    } <span class="kw">else</span> {
-                        <span class="kw">break</span> <span class="ident">next</span>;
+                    <span class="kw">let </span>next = cmdline.remove(<span class="number">0</span>);
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>((key, value)) = next.split_once(<span class="string">&#39;=&#39;</span>) {
+                        env.add.insert(key.to_owned(), value.to_owned());
+                    } <span class="kw">else </span>{
+                        <span class="kw">break </span>next;
                     }
                 };
-                <span class="kw">let</span> <span class="ident">step</span> = <span class="ident">Step</span> {
-                    <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="ident">cmd_start</span>.<span class="ident">to_string</span>()),
-                    <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="ident">bin</span>)),
-                    <span class="ident">args</span>: <span class="ident">cmdline</span>,
-                    <span class="ident">env</span>,
-                    <span class="ident">stdin</span>: <span class="prelude-val">None</span>,
-                    <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                    <span class="ident">expected_status</span>,
-                    <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="ident">stdout_start</span>..<span class="ident">post_stdout_start</span>),
-                    <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::text</span>(<span class="ident">stdout</span>)),
-                    <span class="ident">expected_stderr_source</span>: <span class="prelude-val">None</span>,
-                    <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                    <span class="ident">binary</span>: <span class="bool-val">false</span>,
-                    <span class="ident">timeout</span>: <span class="prelude-val">None</span>,
+                <span class="kw">let </span>step = Step {
+                    id: <span class="prelude-val">Some</span>(cmd_start.to_string()),
+                    bin: <span class="prelude-val">Some</span>(Bin::Name(bin)),
+                    args: cmdline,
+                    env,
+                    stdin: <span class="prelude-val">None</span>,
+                    stderr_to_stdout: <span class="bool-val">true</span>,
+                    expected_status,
+                    expected_stdout_source: <span class="prelude-val">Some</span>(stdout_start..post_stdout_start),
+                    expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::text(stdout)),
+                    expected_stderr_source: <span class="prelude-val">None</span>,
+                    expected_stderr: <span class="prelude-val">None</span>,
+                    binary: <span class="bool-val">false</span>,
+                    timeout: <span class="prelude-val">None</span>,
                 };
-                <span class="ident">steps</span>.<span class="ident">push</span>(<span class="ident">step</span>);
-                <span class="kw">if</span> <span class="ident">block_done</span> {
-                    <span class="kw">break</span> <span class="lifetime">&#39;code</span>;
+                steps.push(step);
+                <span class="kw">if </span>block_done {
+                    <span class="kw">break </span><span class="lifetime">&#39;code</span>;
                 }
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
-            <span class="ident">steps</span>,
-            ..<span class="ident">Default::default</span>()
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{
+            steps,
+            ..Default::default()
         })
     }
 }
 
-<span class="kw">fn</span> <span class="ident">overwrite_toml_output</span>(
-    <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>,
-    <span class="ident">_id</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>&gt;,
-    <span class="ident">output</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
-    <span class="ident">output_ext</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    <span class="ident">output_field</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">output</span>) = <span class="ident">output</span> {
-        <span class="kw">let</span> <span class="ident">output_path</span> = <span class="ident">path</span>.<span class="ident">with_extension</span>(<span class="ident">output_ext</span>);
-        <span class="kw">if</span> <span class="ident">output_path</span>.<span class="ident">exists</span>() {
-            <span class="ident">output</span>.<span class="ident">write_to</span>(<span class="kw-2">&amp;</span><span class="ident">output_path</span>)<span class="question-mark">?</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">output</span>) = <span class="ident">output</span>.<span class="ident">as_str</span>() {
-            <span class="kw">let</span> <span class="ident">raw</span> = <span class="ident">std::fs::read_to_string</span>(<span class="ident">path</span>)
-                .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">doc</span> = <span class="ident">raw</span>
-                .<span class="ident">parse</span>::&lt;<span class="ident">toml_edit::Document</span>&gt;()
-                .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">output_value</span>) = <span class="ident">doc</span>.<span class="ident">get_mut</span>(<span class="ident">output_field</span>) {
-                <span class="kw-2">*</span><span class="ident">output_value</span> = <span class="ident">toml_edit::value</span>(<span class="ident">output</span>);
+<span class="kw">fn </span>overwrite_toml_output(
+    path: <span class="kw-2">&amp;</span>std::path::Path,
+    _id: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;,
+    output: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="kw">crate</span>::Data&gt;,
+    output_ext: <span class="kw-2">&amp;</span>str,
+    output_field: <span class="kw-2">&amp;</span>str,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw">crate</span>::Error&gt; {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(output) = output {
+        <span class="kw">let </span>output_path = path.with_extension(output_ext);
+        <span class="kw">if </span>output_path.exists() {
+            output.write_to(<span class="kw-2">&amp;</span>output_path)<span class="question-mark">?</span>;
+        } <span class="kw">else if let </span><span class="prelude-val">Some</span>(output) = output.as_str() {
+            <span class="kw">let </span>raw = std::fs::read_to_string(path)
+                .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, path.display(), e))<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>doc = raw
+                .parse::&lt;toml_edit::Document&gt;()
+                .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, path.display(), e))<span class="question-mark">?</span>;
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(output_value) = doc.get_mut(output_field) {
+                <span class="kw-2">*</span>output_value = toml_edit::value(output);
             }
-            <span class="ident">std::fs::write</span>(<span class="ident">path</span>, <span class="ident">doc</span>.<span class="ident">to_string</span>())
-                .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to write {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-        } <span class="kw">else</span> {
-            <span class="ident">output</span>.<span class="ident">write_to</span>(<span class="kw-2">&amp;</span><span class="ident">output_path</span>)<span class="question-mark">?</span>;
+            std::fs::write(path, doc.to_string())
+                .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to write {}: {}&quot;</span>, path.display(), e))<span class="question-mark">?</span>;
+        } <span class="kw">else </span>{
+            output.write_to(<span class="kw-2">&amp;</span>output_path)<span class="question-mark">?</span>;
 
-            <span class="kw">let</span> <span class="ident">raw</span> = <span class="ident">std::fs::read_to_string</span>(<span class="ident">path</span>)
-                .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">doc</span> = <span class="ident">raw</span>
-                .<span class="ident">parse</span>::&lt;<span class="ident">toml_edit::Document</span>&gt;()
-                .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-            <span class="ident">doc</span>[<span class="ident">output_field</span>] = <span class="ident">toml_edit::Item::None</span>;
-            <span class="ident">std::fs::write</span>(<span class="ident">path</span>, <span class="ident">doc</span>.<span class="ident">to_string</span>())
-                .<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="macro">format!</span>(<span class="string">&quot;Failed to write {}: {}&quot;</span>, <span class="ident">path</span>.<span class="ident">display</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
+            <span class="kw">let </span>raw = std::fs::read_to_string(path)
+                .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, path.display(), e))<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>doc = raw
+                .parse::&lt;toml_edit::Document&gt;()
+                .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to read {}: {}&quot;</span>, path.display(), e))<span class="question-mark">?</span>;
+            doc[output_field] = toml_edit::Item::None;
+            std::fs::write(path, doc.to_string())
+                .map_err(|e| <span class="macro">format!</span>(<span class="string">&quot;Failed to write {}: {}&quot;</span>, path.display(), e))<span class="question-mark">?</span>;
         }
     }
 
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="doccomment">/// Update an inline snapshot</span>
-<span class="kw">fn</span> <span class="ident">replace_lines</span>(
-    <span class="ident">data</span>: <span class="kw-2">&amp;mut</span> <span class="ident"><span class="kw">crate</span>::Data</span>,
-    <span class="ident">line_nums</span>: <span class="ident">std::ops::Range</span>&lt;<span class="ident">usize</span>&gt;,
-    <span class="ident">text</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output_lines</span> = <span class="ident">String::new</span>();
+<span class="doccomment">/// Update an inline snapshot
+</span><span class="kw">fn </span>replace_lines(
+    data: <span class="kw-2">&amp;mut </span><span class="kw">crate</span>::Data,
+    line_nums: std::ops::Range&lt;usize&gt;,
+    text: <span class="kw-2">&amp;</span>str,
+) -&gt; <span class="prelude-ty">Result</span>&lt;(), <span class="kw">crate</span>::Error&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>output_lines = String::new();
 
-    <span class="kw">let</span> <span class="ident">s</span> = <span class="ident">data</span>
-        .<span class="ident">as_str</span>()
-        .<span class="ident">ok_or</span>(<span class="string">&quot;Binary file can&#39;t have lines replaced&quot;</span>)<span class="question-mark">?</span>;
-    <span class="kw">for</span> (<span class="ident">line_num</span>, <span class="ident">line</span>) <span class="kw">in</span> <span class="ident">snapbox::utils::LinesWithTerminator::new</span>(<span class="ident">s</span>)
-        .<span class="ident">enumerate</span>()
-        .<span class="ident">map</span>(|(<span class="ident">i</span>, <span class="ident">l</span>)| (<span class="ident">i</span> + <span class="number">1</span>, <span class="ident">l</span>))
+    <span class="kw">let </span>s = data
+        .as_str()
+        .ok_or(<span class="string">&quot;Binary file can&#39;t have lines replaced&quot;</span>)<span class="question-mark">?</span>;
+    <span class="kw">for </span>(line_num, line) <span class="kw">in </span>snapbox::utils::LinesWithTerminator::new(s)
+        .enumerate()
+        .map(|(i, l)| (i + <span class="number">1</span>, l))
     {
-        <span class="kw">if</span> <span class="ident">line_num</span> == <span class="ident">line_nums</span>.<span class="ident">start</span> {
-            <span class="ident">output_lines</span>.<span class="ident">push_str</span>(<span class="ident">text</span>);
-            <span class="kw">if</span> !<span class="ident">text</span>.<span class="ident">is_empty</span>() &amp;&amp; !<span class="ident">text</span>.<span class="ident">ends_with</span>(<span class="string">&#39;\n&#39;</span>) {
-                <span class="ident">output_lines</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
+        <span class="kw">if </span>line_num == line_nums.start {
+            output_lines.push_str(text);
+            <span class="kw">if </span>!text.is_empty() &amp;&amp; !text.ends_with(<span class="string">&#39;\n&#39;</span>) {
+                output_lines.push(<span class="string">&#39;\n&#39;</span>);
             }
         }
-        <span class="kw">if</span> !<span class="ident">line_nums</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">line_num</span>) {
-            <span class="ident">output_lines</span>.<span class="ident">push_str</span>(<span class="ident">line</span>);
+        <span class="kw">if </span>!line_nums.contains(<span class="kw-2">&amp;</span>line_num) {
+            output_lines.push_str(line);
         }
     }
 
-    <span class="kw-2">*</span><span class="ident">data</span> = <span class="ident"><span class="kw">crate</span>::Data::text</span>(<span class="ident">output_lines</span>);
+    <span class="kw-2">*</span>data = <span class="kw">crate</span>::Data::text(output_lines);
     <span class="prelude-val">Ok</span>(())
 }
 
-<span class="kw">impl</span> <span class="ident">std::str::FromStr</span> <span class="kw">for</span> <span class="ident">TryCmd</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> = <span class="ident"><span class="kw">crate</span>::Error</span>;
+<span class="kw">impl </span>std::str::FromStr <span class="kw">for </span>TryCmd {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= <span class="kw">crate</span>::Error;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span>&gt; {
-        <span class="ident"><span class="self">Self</span>::parse_trycmd</span>(<span class="ident">s</span>)
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        <span class="self">Self</span>::parse_trycmd(s)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">OneShot</span>&gt; <span class="kw">for</span> <span class="ident">TryCmd</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="ident">OneShot</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">OneShot</span> {
-            <span class="ident">bin</span>,
-            <span class="ident">args</span>,
-            <span class="ident">env</span>,
-            <span class="ident">stdin</span>,
-            <span class="ident">stdout</span>,
-            <span class="ident">stderr</span>,
-            <span class="ident">stderr_to_stdout</span>,
-            <span class="ident">status</span>,
-            <span class="ident">binary</span>,
-            <span class="ident">timeout</span>,
-            <span class="ident">fs</span>,
-        } = <span class="ident">other</span>;
-        <span class="self">Self</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[<span class="ident">Step</span> {
-                <span class="ident">id</span>: <span class="prelude-val">None</span>,
-                <span class="ident">bin</span>,
-                <span class="ident">args</span>: <span class="ident">args</span>.<span class="ident">into_vec</span>(),
-                <span class="ident">env</span>,
-                <span class="ident">stdin</span>: <span class="ident">stdin</span>.<span class="ident">map</span>(<span class="ident"><span class="kw">crate</span>::Data::text</span>),
-                <span class="ident">stderr_to_stdout</span>,
-                <span class="ident">expected_status</span>: <span class="ident">status</span>,
-                <span class="ident">expected_stdout_source</span>: <span class="prelude-val">None</span>,
-                <span class="ident">expected_stdout</span>: <span class="ident">stdout</span>.<span class="ident">map</span>(<span class="ident"><span class="kw">crate</span>::Data::text</span>),
-                <span class="ident">expected_stderr_source</span>: <span class="prelude-val">None</span>,
-                <span class="ident">expected_stderr</span>: <span class="ident">stderr</span>.<span class="ident">map</span>(<span class="ident"><span class="kw">crate</span>::Data::text</span>),
-                <span class="ident">binary</span>,
-                <span class="ident">timeout</span>,
+<span class="kw">impl </span>From&lt;OneShot&gt; <span class="kw">for </span>TryCmd {
+    <span class="kw">fn </span>from(other: OneShot) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>OneShot {
+            bin,
+            args,
+            env,
+            stdin,
+            stdout,
+            stderr,
+            stderr_to_stdout,
+            status,
+            binary,
+            timeout,
+            fs,
+        } = other;
+        <span class="self">Self </span>{
+            steps: <span class="macro">vec!</span>[Step {
+                id: <span class="prelude-val">None</span>,
+                bin,
+                args: args.into_vec(),
+                env,
+                stdin: stdin.map(<span class="kw">crate</span>::Data::text),
+                stderr_to_stdout,
+                expected_status: status,
+                expected_stdout_source: <span class="prelude-val">None</span>,
+                expected_stdout: stdout.map(<span class="kw">crate</span>::Data::text),
+                expected_stderr_source: <span class="prelude-val">None</span>,
+                expected_stderr: stderr.map(<span class="kw">crate</span>::Data::text),
+                binary,
+                timeout,
             }],
-            <span class="ident">fs</span>,
+            fs,
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Step</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">id</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">String</span>&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">bin</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">Bin</span>&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">args</span>: <span class="ident">Vec</span>&lt;<span class="ident">String</span>&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">env</span>: <span class="ident">Env</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">stdin</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">stderr_to_stdout</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">expected_status</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">CommandStatus</span>&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">expected_stdout_source</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">std::ops::Range</span>&lt;<span class="ident">usize</span>&gt;&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">expected_stdout</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">expected_stderr_source</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">std::ops::Range</span>&lt;<span class="ident">usize</span>&gt;&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">expected_stderr</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="kw">crate</span>::Data</span>&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">binary</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">timeout</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">std::time::Duration</span>&gt;,
+<span class="attribute">#[derive(Clone, Default, Debug, PartialEq, Eq)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Step {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) id: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) bin: <span class="prelude-ty">Option</span>&lt;Bin&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) args: Vec&lt;String&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) env: Env,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) stdin: <span class="prelude-ty">Option</span>&lt;<span class="kw">crate</span>::Data&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) stderr_to_stdout: bool,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) expected_status: <span class="prelude-ty">Option</span>&lt;CommandStatus&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) expected_stdout_source: <span class="prelude-ty">Option</span>&lt;std::ops::Range&lt;usize&gt;&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) expected_stdout: <span class="prelude-ty">Option</span>&lt;<span class="kw">crate</span>::Data&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) expected_stderr_source: <span class="prelude-ty">Option</span>&lt;std::ops::Range&lt;usize&gt;&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) expected_stderr: <span class="prelude-ty">Option</span>&lt;<span class="kw">crate</span>::Data&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) binary: bool,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) timeout: <span class="prelude-ty">Option</span>&lt;std::time::Duration&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Step</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">to_command</span>(
+<span class="kw">impl </span>Step {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>to_command(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">cwd</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>&gt;,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">snapbox::cmd::Command</span>, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="kw">let</span> <span class="ident">bin</span> = <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">bin</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">Bin::Path</span>(<span class="ident">path</span>)) =&gt; <span class="prelude-val">Ok</span>(<span class="ident">path</span>.<span class="ident">clone</span>()),
-            <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="ident">name</span>)) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Unknown bin.name = {}&quot;</span>, <span class="ident">name</span>).<span class="ident">into</span>()),
-            <span class="prelude-val">Some</span>(<span class="ident">Bin::Error</span>(<span class="ident">err</span>)) =&gt; <span class="prelude-val">Err</span>(<span class="ident">err</span>.<span class="ident">clone</span>()),
-            <span class="prelude-val">None</span> =&gt; <span class="prelude-val">Err</span>(<span class="string">&quot;No bin specified&quot;</span>.<span class="ident">into</span>()),
+        cwd: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>std::path::Path&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;snapbox::cmd::Command, <span class="kw">crate</span>::Error&gt; {
+        <span class="kw">let </span>bin = <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self</span>.bin {
+            <span class="prelude-val">Some</span>(Bin::Path(path)) =&gt; <span class="prelude-val">Ok</span>(path.clone()),
+            <span class="prelude-val">Some</span>(Bin::Name(name)) =&gt; <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Unknown bin.name = {}&quot;</span>, name).into()),
+            <span class="prelude-val">Some</span>(Bin::Error(err)) =&gt; <span class="prelude-val">Err</span>(err.clone()),
+            <span class="prelude-val">None </span>=&gt; <span class="prelude-val">Err</span>(<span class="string">&quot;No bin specified&quot;</span>.into()),
         }<span class="question-mark">?</span>;
-        <span class="kw">if</span> !<span class="ident">bin</span>.<span class="ident">exists</span>() {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Bin doesn&#39;t exist: {}&quot;</span>, <span class="ident">bin</span>.<span class="ident">display</span>()).<span class="ident">into</span>());
+        <span class="kw">if </span>!bin.exists() {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(<span class="macro">format!</span>(<span class="string">&quot;Bin doesn&#39;t exist: {}&quot;</span>, bin.display()).into());
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cmd</span> = <span class="ident">snapbox::cmd::Command::new</span>(<span class="ident">bin</span>).<span class="ident">args</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">args</span>);
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">cwd</span>) = <span class="ident">cwd</span> {
-            <span class="ident">cmd</span> = <span class="ident">cmd</span>.<span class="ident">current_dir</span>(<span class="ident">cwd</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>cmd = snapbox::cmd::Command::new(bin).args(<span class="kw-2">&amp;</span><span class="self">self</span>.args);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(cwd) = cwd {
+            cmd = cmd.current_dir(cwd);
         }
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">stdin</span>) = <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">stdin</span> {
-            <span class="ident">cmd</span> = <span class="ident">cmd</span>.<span class="ident">stdin</span>(<span class="ident">stdin</span>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(stdin) = <span class="kw-2">&amp;</span><span class="self">self</span>.stdin {
+            cmd = cmd.stdin(stdin);
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stderr_to_stdout</span> {
-            <span class="ident">cmd</span> = <span class="ident">cmd</span>.<span class="ident">stderr_to_stdout</span>();
+        <span class="kw">if </span><span class="self">self</span>.stderr_to_stdout {
+            cmd = cmd.stderr_to_stdout();
         }
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">timeout</span>) = <span class="self">self</span>.<span class="ident">timeout</span> {
-            <span class="ident">cmd</span> = <span class="ident">cmd</span>.<span class="ident">timeout</span>(<span class="ident">timeout</span>)
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(timeout) = <span class="self">self</span>.timeout {
+            cmd = cmd.timeout(timeout)
         }
-        <span class="ident">cmd</span> = <span class="self">self</span>.<span class="ident">env</span>.<span class="ident">apply</span>(<span class="ident">cmd</span>);
+        cmd = <span class="self">self</span>.env.apply(cmd);
 
-        <span class="prelude-val">Ok</span>(<span class="ident">cmd</span>)
+        <span class="prelude-val">Ok</span>(cmd)
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">expected_status</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">CommandStatus</span> {
-        <span class="self">self</span>.<span class="ident">expected_status</span>.<span class="ident">unwrap_or_default</span>()
-    }
-}
-
-<span class="doccomment">/// Top-level data in `cmd.toml` files</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">serde::Deserialize</span>, <span class="ident">serde::Serialize</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> = <span class="string">&quot;kebab-case&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;schema&quot;</span>, <span class="ident">derive</span>(<span class="ident">schemars::JsonSchema</span>))]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OneShot</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">bin</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">Bin</span>&gt;,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">args</span>: <span class="ident">Args</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">env</span>: <span class="ident">Env</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">stdin</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">String</span>&gt;,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">stdout</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">String</span>&gt;,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">stderr</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">String</span>&gt;,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">stderr_to_stdout</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">status</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">CommandStatus</span>&gt;,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">binary</span>: <span class="ident">bool</span>,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">deserialize_with</span> = <span class="string">&quot;humantime_serde::deserialize&quot;</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">timeout</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">std::time::Duration</span>&gt;,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">fs</span>: <span class="ident">Filesystem</span>,
-}
-
-<span class="kw">impl</span> <span class="ident">OneShot</span> {
-    <span class="kw">fn</span> <span class="ident">parse_toml</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="ident">toml_edit::de::from_str</span>(<span class="ident">s</span>).<span class="ident">map_err</span>(|<span class="ident">e</span>| <span class="ident">e</span>.<span class="ident">to_string</span>().<span class="ident">into</span>())
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>expected_status(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; CommandStatus {
+        <span class="self">self</span>.expected_status.unwrap_or_default()
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">serde::Deserialize</span>, <span class="ident">serde::Serialize</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;schema&quot;</span>, <span class="ident">derive</span>(<span class="ident">schemars::JsonSchema</span>))]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">untagged</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum</span> <span class="ident">Args</span> {
-    <span class="ident">Joined</span>(<span class="ident">JoinedArgs</span>),
-    <span class="ident">Split</span>(<span class="ident">Vec</span>&lt;<span class="ident">String</span>&gt;),
+<span class="doccomment">/// Top-level data in `cmd.toml` files
+</span><span class="attribute">#[derive(Clone, Default, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+#[cfg_attr(feature = <span class="string">&quot;schema&quot;</span>, derive(schemars::JsonSchema))]
+</span><span class="kw">pub struct </span>OneShot {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) bin: <span class="prelude-ty">Option</span>&lt;Bin&gt;,
+    <span class="attribute">#[serde(default)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) args: Args,
+    <span class="attribute">#[serde(default)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) env: Env,
+    <span class="attribute">#[serde(default)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) stdin: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(default)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) stdout: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(default)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) stderr: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(default)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) stderr_to_stdout: bool,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) status: <span class="prelude-ty">Option</span>&lt;CommandStatus&gt;,
+    <span class="attribute">#[serde(default)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) binary: bool,
+    <span class="attribute">#[serde(default)]
+    #[serde(deserialize_with = <span class="string">&quot;humantime_serde::deserialize&quot;</span>)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) timeout: <span class="prelude-ty">Option</span>&lt;std::time::Duration&gt;,
+    <span class="attribute">#[serde(default)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) fs: Filesystem,
 }
 
-<span class="kw">impl</span> <span class="ident">Args</span> {
-    <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::Split</span>(<span class="ident">Default::default</span>())
+<span class="kw">impl </span>OneShot {
+    <span class="kw">fn </span>parse_toml(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="kw">crate</span>::Error&gt; {
+        toml_edit::de::from_str(s).map_err(|e| e.to_string().into())
+    }
+}
+
+<span class="attribute">#[derive(Clone, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+#[cfg_attr(feature = <span class="string">&quot;schema&quot;</span>, derive(schemars::JsonSchema))]
+#[serde(untagged)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>Args {
+    Joined(JoinedArgs),
+    Split(Vec&lt;String&gt;),
+}
+
+<span class="kw">impl </span>Args {
+    <span class="kw">fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::Split(Default::default())
     }
 
-    <span class="kw">fn</span> <span class="ident">as_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">String</span>] {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::Joined</span>(<span class="ident">j</span>) =&gt; <span class="ident">j</span>.<span class="ident">inner</span>.<span class="ident">as_slice</span>(),
-            <span class="ident"><span class="self">Self</span>::Split</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>.<span class="ident">as_slice</span>(),
-        }
-    }
-
-    <span class="kw">fn</span> <span class="ident">into_vec</span>(<span class="self">self</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">String</span>&gt; {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident"><span class="self">Self</span>::Joined</span>(<span class="ident">j</span>) =&gt; <span class="ident">j</span>.<span class="ident">inner</span>,
-            <span class="ident"><span class="self">Self</span>::Split</span>(<span class="ident">v</span>) =&gt; <span class="ident">v</span>,
+    <span class="kw">fn </span>as_slice(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[String] {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Joined(j) =&gt; j.inner.as_slice(),
+            <span class="self">Self</span>::Split(v) =&gt; v.as_slice(),
         }
     }
-}
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Args</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::new</span>()
+    <span class="kw">fn </span>into_vec(<span class="self">self</span>) -&gt; Vec&lt;String&gt; {
+        <span class="kw">match </span><span class="self">self </span>{
+            <span class="self">Self</span>::Joined(j) =&gt; j.inner,
+            <span class="self">Self</span>::Split(v) =&gt; v,
+        }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::ops::Deref</span> <span class="kw">for</span> <span class="ident">Args</span> {
-    <span class="kw">type</span> <span class="ident">Target</span> = [<span class="ident">String</span>];
-
-    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Target</span> {
-        <span class="self">self</span>.<span class="ident">as_slice</span>()
+<span class="kw">impl </span>Default <span class="kw">for </span>Args {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::new()
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;schema&quot;</span>, <span class="ident">derive</span>(<span class="ident">schemars::JsonSchema</span>))]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">JoinedArgs</span> {
-    <span class="ident">inner</span>: <span class="ident">Vec</span>&lt;<span class="ident">String</span>&gt;,
-}
+<span class="kw">impl </span>std::ops::Deref <span class="kw">for </span>Args {
+    <span class="kw">type </span>Target = [String];
 
-<span class="kw">impl</span> <span class="ident">JoinedArgs</span> {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from_vec</span>(<span class="ident">inner</span>: <span class="ident">Vec</span>&lt;<span class="ident">String</span>&gt;) -&gt; <span class="self">Self</span> {
-        <span class="ident">JoinedArgs</span> { <span class="ident">inner</span> }
-    }
-
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::inherent_to_string_shadow_display</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">to_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="ident">shlex::join</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|<span class="ident">s</span>| <span class="ident">s</span>.<span class="ident">as_str</span>()))
+    <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Target {
+        <span class="self">self</span>.as_slice()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::str::FromStr</span> <span class="kw">for</span> <span class="ident">JoinedArgs</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> = <span class="ident">std::convert::Infallible</span>;
+<span class="attribute">#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[cfg_attr(feature = <span class="string">&quot;schema&quot;</span>, derive(schemars::JsonSchema))]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>JoinedArgs {
+    inner: Vec&lt;String&gt;,
+}
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span>&gt; {
-        <span class="kw">let</span> <span class="ident">inner</span> = <span class="ident">shlex::Shlex::new</span>(<span class="ident">s</span>).<span class="ident">collect</span>();
-        <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">inner</span> })
+<span class="kw">impl </span>JoinedArgs {
+    <span class="attribute">#[cfg(test)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>from_vec(inner: Vec&lt;String&gt;) -&gt; <span class="self">Self </span>{
+        JoinedArgs { inner }
+    }
+
+    <span class="attribute">#[allow(clippy::inherent_to_string_shadow_display)]
+    </span><span class="kw">fn </span>to_string(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        shlex::join(<span class="self">self</span>.inner.iter().map(|s| s.as_str()))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::fmt::Display</span> <span class="kw">for</span> <span class="ident">JoinedArgs</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">std::fmt::Result</span> {
-        <span class="self">self</span>.<span class="ident">to_string</span>().<span class="ident">fmt</span>(<span class="ident">f</span>)
+<span class="kw">impl </span>std::str::FromStr <span class="kw">for </span>JoinedArgs {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= std::convert::Infallible;
+
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        <span class="kw">let </span>inner = shlex::Shlex::new(s).collect();
+        <span class="prelude-val">Ok</span>(<span class="self">Self </span>{ inner })
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; <span class="ident">serde::de::Deserialize</span>&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for</span> <span class="ident">JoinedArgs</span> {
-    <span class="kw">fn</span> <span class="ident">deserialize</span>&lt;<span class="ident">D</span>&gt;(<span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident">D::Error</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">serde::de::Deserializer</span>&lt;<span class="lifetime">&#39;de</span>&gt;,
+<span class="kw">impl </span>std::fmt::Display <span class="kw">for </span>JoinedArgs {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        <span class="self">self</span>.to_string().fmt(f)
+    }
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; serde::de::Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>JoinedArgs {
+    <span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
+    <span class="kw">where
+        </span>D: serde::de::Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
     {
-        <span class="kw">let</span> <span class="ident">s</span> = <span class="ident">String::deserialize</span>(<span class="ident">deserializer</span>)<span class="question-mark">?</span>;
-        <span class="ident">std::str::FromStr::from_str</span>(<span class="kw-2">&amp;</span><span class="ident">s</span>).<span class="ident">map_err</span>(<span class="ident">serde::de::Error::custom</span>)
+        <span class="kw">let </span>s = String::deserialize(deserializer)<span class="question-mark">?</span>;
+        std::str::FromStr::from_str(<span class="kw-2">&amp;</span>s).map_err(serde::de::Error::custom)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">serde::ser::Serialize</span> <span class="kw">for</span> <span class="ident">JoinedArgs</span> {
-    <span class="kw">fn</span> <span class="ident">serialize</span>&lt;<span class="ident">S</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">S::Ok</span>, <span class="ident">S::Error</span>&gt;
-    <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">serde::ser::Serializer</span>,
+<span class="kw">impl </span>serde::ser::Serialize <span class="kw">for </span>JoinedArgs {
+    <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+    <span class="kw">where
+        </span>S: serde::ser::Serializer,
     {
-        <span class="ident">serializer</span>.<span class="ident">serialize_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">to_string</span>())
+        serializer.serialize_str(<span class="kw-2">&amp;</span><span class="self">self</span>.to_string())
     }
 }
 
-<span class="doccomment">/// Describe command&#39;s the filesystem context</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">serde::Deserialize</span>, <span class="ident">serde::Serialize</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> = <span class="string">&quot;kebab-case&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;schema&quot;</span>, <span class="ident">derive</span>(<span class="ident">schemars::JsonSchema</span>))]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Filesystem</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">cwd</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
-    <span class="doccomment">/// Sandbox base</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">base</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">std::path::PathBuf</span>&gt;,
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">sandbox</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">bool</span>&gt;,
+<span class="doccomment">/// Describe command&#39;s the filesystem context
+</span><span class="attribute">#[derive(Clone, Default, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+#[cfg_attr(feature = <span class="string">&quot;schema&quot;</span>, derive(schemars::JsonSchema))]
+</span><span class="kw">pub struct </span>Filesystem {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) cwd: <span class="prelude-ty">Option</span>&lt;std::path::PathBuf&gt;,
+    <span class="doccomment">/// Sandbox base
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) base: <span class="prelude-ty">Option</span>&lt;std::path::PathBuf&gt;,
+    <span class="kw">pub</span>(<span class="kw">crate</span>) sandbox: <span class="prelude-ty">Option</span>&lt;bool&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Filesystem</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">sandbox</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">sandbox</span>.<span class="ident">unwrap_or_default</span>()
+<span class="kw">impl </span>Filesystem {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>sandbox(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.sandbox.unwrap_or_default()
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">rel_cwd</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span><span class="ident">std::path::Path</span>, <span class="ident"><span class="kw">crate</span>::Error</span>&gt; {
-        <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">orig_cwd</span>), <span class="prelude-val">Some</span>(<span class="ident">orig_base</span>)) = (<span class="self">self</span>.<span class="ident">cwd</span>.<span class="ident">as_deref</span>(), <span class="self">self</span>.<span class="ident">base</span>.<span class="ident">as_deref</span>()) {
-            <span class="kw">let</span> <span class="ident">rel_cwd</span> = <span class="ident">orig_cwd</span>.<span class="ident">strip_prefix</span>(<span class="ident">orig_base</span>).<span class="ident">map_err</span>(|<span class="kw">_</span>| {
-                <span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="macro">format!</span>(
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>rel_cwd(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>std::path::Path, <span class="kw">crate</span>::Error&gt; {
+        <span class="kw">if let </span>(<span class="prelude-val">Some</span>(orig_cwd), <span class="prelude-val">Some</span>(orig_base)) = (<span class="self">self</span>.cwd.as_deref(), <span class="self">self</span>.base.as_deref()) {
+            <span class="kw">let </span>rel_cwd = orig_cwd.strip_prefix(orig_base).map_err(|<span class="kw">_</span>| {
+                <span class="kw">crate</span>::Error::new(<span class="macro">format!</span>(
                     <span class="string">&quot;fs.cwd ({}) must be within fs.base ({})&quot;</span>,
-                    <span class="ident">orig_cwd</span>.<span class="ident">display</span>(),
-                    <span class="ident">orig_base</span>.<span class="ident">display</span>()
+                    orig_cwd.display(),
+                    orig_base.display()
                 ))
             })<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="ident">rel_cwd</span>)
-        } <span class="kw">else</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">std::path::Path::new</span>(<span class="string">&quot;&quot;</span>))
+            <span class="prelude-val">Ok</span>(rel_cwd)
+        } <span class="kw">else </span>{
+            <span class="prelude-val">Ok</span>(std::path::Path::new(<span class="string">&quot;&quot;</span>))
         }
     }
 }
 
-<span class="doccomment">/// Describe command&#39;s environment</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">serde::Deserialize</span>, <span class="ident">serde::Serialize</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> = <span class="string">&quot;kebab-case&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;schema&quot;</span>, <span class="ident">derive</span>(<span class="ident">schemars::JsonSchema</span>))]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Env</span> {
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">inherit</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">bool</span>&gt;,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">add</span>: <span class="ident">BTreeMap</span>&lt;<span class="ident">String</span>, <span class="ident">String</span>&gt;,
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="ident">remove</span>: <span class="ident">Vec</span>&lt;<span class="ident">String</span>&gt;,
+<span class="doccomment">/// Describe command&#39;s environment
+</span><span class="attribute">#[derive(Clone, Default, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+#[cfg_attr(feature = <span class="string">&quot;schema&quot;</span>, derive(schemars::JsonSchema))]
+</span><span class="kw">pub struct </span>Env {
+    <span class="attribute">#[serde(default)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) inherit: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    <span class="attribute">#[serde(default)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) add: BTreeMap&lt;String, String&gt;,
+    <span class="attribute">#[serde(default)]
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) remove: Vec&lt;String&gt;,
 }
 
-<span class="kw">impl</span> <span class="ident">Env</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">update</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">inherit</span>.<span class="ident">is_none</span>() {
-            <span class="self">self</span>.<span class="ident">inherit</span> = <span class="ident">other</span>.<span class="ident">inherit</span>;
+<span class="kw">impl </span>Env {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>update(<span class="kw-2">&amp;mut </span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) {
+        <span class="kw">if </span><span class="self">self</span>.inherit.is_none() {
+            <span class="self">self</span>.inherit = other.inherit;
         }
-        <span class="self">self</span>.<span class="ident">add</span>
-            .<span class="ident">extend</span>(<span class="ident">other</span>.<span class="ident">add</span>.<span class="ident">iter</span>().<span class="ident">map</span>(|(<span class="ident">k</span>, <span class="ident">v</span>)| (<span class="ident">k</span>.<span class="ident">clone</span>(), <span class="ident">v</span>.<span class="ident">clone</span>())));
-        <span class="self">self</span>.<span class="ident">remove</span>.<span class="ident">extend</span>(<span class="ident">other</span>.<span class="ident">remove</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>());
+        <span class="self">self</span>.add
+            .extend(other.add.iter().map(|(k, v)| (k.clone(), v.clone())));
+        <span class="self">self</span>.remove.extend(other.remove.iter().cloned());
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">apply</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">command</span>: <span class="ident">snapbox::cmd::Command</span>) -&gt; <span class="ident">snapbox::cmd::Command</span> {
-        <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">inherit</span>() {
-            <span class="ident">command</span> = <span class="ident">command</span>.<span class="ident">env_clear</span>();
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>apply(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>command: snapbox::cmd::Command) -&gt; snapbox::cmd::Command {
+        <span class="kw">if </span>!<span class="self">self</span>.inherit() {
+            command = command.env_clear();
         }
-        <span class="kw">for</span> <span class="ident">remove</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">remove</span> {
-            <span class="ident">command</span> = <span class="ident">command</span>.<span class="ident">env_remove</span>(<span class="kw-2">&amp;</span><span class="ident">remove</span>);
+        <span class="kw">for </span>remove <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.remove {
+            command = command.env_remove(<span class="kw-2">&amp;</span>remove);
         }
-        <span class="ident">command</span>.<span class="ident">envs</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">add</span>)
+        command.envs(<span class="kw-2">&amp;</span><span class="self">self</span>.add)
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">inherit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">inherit</span>.<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>)
-    }
-}
-
-<span class="doccomment">/// Target under test</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">serde::Deserialize</span>, <span class="ident">serde::Serialize</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> = <span class="string">&quot;kebab-case&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;schema&quot;</span>, <span class="ident">derive</span>(<span class="ident">schemars::JsonSchema</span>))]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Bin</span> {
-    <span class="ident">Path</span>(<span class="ident">std::path::PathBuf</span>),
-    <span class="ident">Name</span>(<span class="ident">String</span>),
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip</span>)]</span>
-    <span class="ident">Error</span>(<span class="ident"><span class="kw">crate</span>::Error</span>),
-}
-
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">std::path::PathBuf</span>&gt; <span class="kw">for</span> <span class="ident">Bin</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="ident">std::path::PathBuf</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::Path</span>(<span class="ident">other</span>)
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>inherit(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.inherit.unwrap_or(<span class="bool-val">true</span>)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">From</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">std::path::PathBuf</span>&gt; <span class="kw">for</span> <span class="ident">Bin</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">std::path::PathBuf</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::Path</span>(<span class="ident">other</span>.<span class="ident">clone</span>())
+<span class="doccomment">/// Target under test
+</span><span class="attribute">#[derive(Clone, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+#[cfg_attr(feature = <span class="string">&quot;schema&quot;</span>, derive(schemars::JsonSchema))]
+</span><span class="kw">pub enum </span>Bin {
+    Path(std::path::PathBuf),
+    Name(String),
+    <span class="attribute">#[serde(skip)]
+    </span>Error(<span class="kw">crate</span>::Error),
+}
+
+<span class="kw">impl </span>From&lt;std::path::PathBuf&gt; <span class="kw">for </span>Bin {
+    <span class="kw">fn </span>from(other: std::path::PathBuf) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::Path(other)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="ident">From</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">std::path::Path</span>&gt; <span class="kw">for</span> <span class="ident">Bin</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">std::path::Path</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident"><span class="self">Self</span>::Path</span>(<span class="ident">other</span>.<span class="ident">to_owned</span>())
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>std::path::PathBuf&gt; <span class="kw">for </span>Bin {
+    <span class="kw">fn </span>from(other: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>std::path::PathBuf) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::Path(other.clone())
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">P</span>, <span class="ident">E</span>&gt; <span class="ident">From</span>&lt;<span class="prelude-ty">Result</span>&lt;<span class="ident">P</span>, <span class="ident">E</span>&gt;&gt; <span class="kw">for</span> <span class="ident">Bin</span>
-<span class="kw">where</span>
-    <span class="ident">P</span>: <span class="ident">Into</span>&lt;<span class="ident">Bin</span>&gt;,
-    <span class="ident">E</span>: <span class="ident">std::fmt::Display</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>std::path::Path&gt; <span class="kw">for </span>Bin {
+    <span class="kw">fn </span>from(other: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>std::path::Path) -&gt; <span class="self">Self </span>{
+        <span class="self">Self</span>::Path(other.to_owned())
+    }
+}
+
+<span class="kw">impl</span>&lt;P, E&gt; From&lt;<span class="prelude-ty">Result</span>&lt;P, E&gt;&gt; <span class="kw">for </span>Bin
+<span class="kw">where
+    </span>P: Into&lt;Bin&gt;,
+    E: std::fmt::Display,
 {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">other</span>: <span class="prelude-ty">Result</span>&lt;<span class="ident">P</span>, <span class="ident">E</span>&gt;) -&gt; <span class="self">Self</span> {
-        <span class="kw">match</span> <span class="ident">other</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">path</span>) =&gt; <span class="ident">path</span>.<span class="ident">into</span>(),
-            <span class="prelude-val">Err</span>(<span class="ident">err</span>) =&gt; {
-                <span class="kw">let</span> <span class="ident">err</span> = <span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="ident">err</span>.<span class="ident">to_string</span>());
-                <span class="ident">Bin::Error</span>(<span class="ident">err</span>)
+    <span class="kw">fn </span>from(other: <span class="prelude-ty">Result</span>&lt;P, E&gt;) -&gt; <span class="self">Self </span>{
+        <span class="kw">match </span>other {
+            <span class="prelude-val">Ok</span>(path) =&gt; path.into(),
+            <span class="prelude-val">Err</span>(err) =&gt; {
+                <span class="kw">let </span>err = <span class="kw">crate</span>::Error::new(err.to_string());
+                Bin::Error(err)
             }
         }
     }
 }
 
-<span class="doccomment">/// Expected status for command</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">serde::Deserialize</span>, <span class="ident">serde::Serialize</span>)]</span>
-<span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> = <span class="string">&quot;kebab-case&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;schema&quot;</span>, <span class="ident">derive</span>(<span class="ident">schemars::JsonSchema</span>))]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">CommandStatus</span> {
-    <span class="ident">Success</span>,
-    <span class="ident">Failed</span>,
-    <span class="ident">Interrupted</span>,
-    <span class="ident">Skipped</span>,
-    <span class="ident">Code</span>(<span class="ident">i32</span>),
+<span class="doccomment">/// Expected status for command
+</span><span class="attribute">#[derive(Copy, Clone, Debug, PartialEq, Eq, serde::Deserialize, serde::Serialize)]
+#[serde(rename_all = <span class="string">&quot;kebab-case&quot;</span>)]
+#[cfg_attr(feature = <span class="string">&quot;schema&quot;</span>, derive(schemars::JsonSchema))]
+</span><span class="kw">pub enum </span>CommandStatus {
+    Success,
+    Failed,
+    Interrupted,
+    Skipped,
+    Code(i32),
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">CommandStatus</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
-        <span class="ident">CommandStatus::Success</span>
+<span class="kw">impl </span>Default <span class="kw">for </span>CommandStatus {
+    <span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
+        CommandStatus::Success
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::str::FromStr</span> <span class="kw">for</span> <span class="ident">CommandStatus</span> {
-    <span class="kw">type</span> <span class="prelude-val">Err</span> = <span class="ident"><span class="kw">crate</span>::Error</span>;
+<span class="kw">impl </span>std::str::FromStr <span class="kw">for </span>CommandStatus {
+    <span class="kw">type </span><span class="prelude-val">Err </span>= <span class="kw">crate</span>::Error;
 
-    <span class="kw">fn</span> <span class="ident">from_str</span>(<span class="ident">s</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="ident"><span class="self">Self</span>::Err</span>&gt; {
-        <span class="kw">match</span> <span class="ident">s</span> {
-            <span class="string">&quot;success&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Success</span>),
-            <span class="string">&quot;failed&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Failed</span>),
-            <span class="string">&quot;interrupted&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Interrupted</span>),
-            <span class="string">&quot;skipped&quot;</span> =&gt; <span class="prelude-val">Ok</span>(<span class="ident"><span class="self">Self</span>::Skipped</span>),
-            <span class="kw">_</span> =&gt; <span class="ident">s</span>
-                .<span class="ident">parse</span>::&lt;<span class="ident">i32</span>&gt;()
-                .<span class="ident">map</span>(<span class="ident"><span class="self">Self</span>::Code</span>)
-                .<span class="ident">map_err</span>(|<span class="kw">_</span>| <span class="ident"><span class="kw">crate</span>::Error::new</span>(<span class="macro">format!</span>(<span class="string">&quot;Expected an exit code, got {}&quot;</span>, <span class="ident">s</span>))),
+    <span class="kw">fn </span>from_str(s: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, <span class="self">Self</span>::Err&gt; {
+        <span class="kw">match </span>s {
+            <span class="string">&quot;success&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Success),
+            <span class="string">&quot;failed&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Failed),
+            <span class="string">&quot;interrupted&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Interrupted),
+            <span class="string">&quot;skipped&quot; </span>=&gt; <span class="prelude-val">Ok</span>(<span class="self">Self</span>::Skipped),
+            <span class="kw">_ </span>=&gt; s
+                .parse::&lt;i32&gt;()
+                .map(<span class="self">Self</span>::Code)
+                .map_err(|<span class="kw">_</span>| <span class="kw">crate</span>::Error::new(<span class="macro">format!</span>(<span class="string">&quot;Expected an exit code, got {}&quot;</span>, s))),
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="ident">snapbox::Data</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+    <span class="kw">use </span>snapbox::Data;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_trycmd_empty</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">TryCmd</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[],
-            ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_trycmd_empty() {
+        <span class="kw">let </span>expected = TryCmd {
+            steps: <span class="macro">vec!</span>[],
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">TryCmd::parse_trycmd</span>(<span class="string">&quot;&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>actual = TryCmd::parse_trycmd(<span class="string">&quot;&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_trycmd_command</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">TryCmd</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[<span class="ident">Step</span> {
-                <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.<span class="ident">into</span>()),
-                <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;cmd&quot;</span>.<span class="ident">into</span>())),
-                <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Success</span>),
-                <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">4</span>..<span class="number">4</span>),
-                <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::new</span>()),
-                <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_trycmd_command() {
+        <span class="kw">let </span>expected = TryCmd {
+            steps: <span class="macro">vec!</span>[Step {
+                id: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.into()),
+                bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;cmd&quot;</span>.into())),
+                expected_status: <span class="prelude-val">Some</span>(CommandStatus::Success),
+                stderr_to_stdout: <span class="bool-val">true</span>,
+                expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">4</span>..<span class="number">4</span>),
+                expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::new()),
+                expected_stderr: <span class="prelude-val">None</span>,
+                ..Default::default()
             }],
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">TryCmd::parse_trycmd</span>(
+        <span class="kw">let </span>actual = TryCmd::parse_trycmd(
             <span class="string">&quot;
 ```
 $ cmd
 ```
 &quot;</span>,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        .unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_trycmd_command_line</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">TryCmd</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[<span class="ident">Step</span> {
-                <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.<span class="ident">into</span>()),
-                <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;cmd&quot;</span>.<span class="ident">into</span>())),
-                <span class="ident">args</span>: <span class="macro">vec!</span>[<span class="string">&quot;arg1&quot;</span>.<span class="ident">into</span>(), <span class="string">&quot;arg with space&quot;</span>.<span class="ident">into</span>()],
-                <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Success</span>),
-                <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">4</span>..<span class="number">4</span>),
-                <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::new</span>()),
-                <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_trycmd_command_line() {
+        <span class="kw">let </span>expected = TryCmd {
+            steps: <span class="macro">vec!</span>[Step {
+                id: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.into()),
+                bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;cmd&quot;</span>.into())),
+                args: <span class="macro">vec!</span>[<span class="string">&quot;arg1&quot;</span>.into(), <span class="string">&quot;arg with space&quot;</span>.into()],
+                expected_status: <span class="prelude-val">Some</span>(CommandStatus::Success),
+                stderr_to_stdout: <span class="bool-val">true</span>,
+                expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">4</span>..<span class="number">4</span>),
+                expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::new()),
+                expected_stderr: <span class="prelude-val">None</span>,
+                ..Default::default()
             }],
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">TryCmd::parse_trycmd</span>(
+        <span class="kw">let </span>actual = TryCmd::parse_trycmd(
             <span class="string">&quot;
 ```
 $ cmd arg1 &#39;arg with space&#39;
 ```
 &quot;</span>,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        .unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_trycmd_multi_line</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">TryCmd</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[<span class="ident">Step</span> {
-                <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.<span class="ident">into</span>()),
-                <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;cmd&quot;</span>.<span class="ident">into</span>())),
-                <span class="ident">args</span>: <span class="macro">vec!</span>[<span class="string">&quot;arg1&quot;</span>.<span class="ident">into</span>(), <span class="string">&quot;arg with space&quot;</span>.<span class="ident">into</span>()],
-                <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Success</span>),
-                <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">5</span>..<span class="number">5</span>),
-                <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::new</span>()),
-                <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_trycmd_multi_line() {
+        <span class="kw">let </span>expected = TryCmd {
+            steps: <span class="macro">vec!</span>[Step {
+                id: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.into()),
+                bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;cmd&quot;</span>.into())),
+                args: <span class="macro">vec!</span>[<span class="string">&quot;arg1&quot;</span>.into(), <span class="string">&quot;arg with space&quot;</span>.into()],
+                expected_status: <span class="prelude-val">Some</span>(CommandStatus::Success),
+                stderr_to_stdout: <span class="bool-val">true</span>,
+                expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">5</span>..<span class="number">5</span>),
+                expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::new()),
+                expected_stderr: <span class="prelude-val">None</span>,
+                ..Default::default()
             }],
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">TryCmd::parse_trycmd</span>(
+        <span class="kw">let </span>actual = TryCmd::parse_trycmd(
             <span class="string">&quot;
 ```
 $ cmd arg1
@@ -2109,60 +2109,60 @@ $ cmd arg1
 ```
 &quot;</span>,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        .unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_trycmd_env</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">TryCmd</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[<span class="ident">Step</span> {
-                <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.<span class="ident">into</span>()),
-                <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;cmd&quot;</span>.<span class="ident">into</span>())),
-                <span class="ident">env</span>: <span class="ident">Env</span> {
-                    <span class="ident">add</span>: <span class="ident">IntoIterator::into_iter</span>([
-                        (<span class="string">&quot;KEY1&quot;</span>.<span class="ident">into</span>(), <span class="string">&quot;VALUE1&quot;</span>.<span class="ident">into</span>()),
-                        (<span class="string">&quot;KEY2&quot;</span>.<span class="ident">into</span>(), <span class="string">&quot;VALUE2 with space&quot;</span>.<span class="ident">into</span>()),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_trycmd_env() {
+        <span class="kw">let </span>expected = TryCmd {
+            steps: <span class="macro">vec!</span>[Step {
+                id: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.into()),
+                bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;cmd&quot;</span>.into())),
+                env: Env {
+                    add: IntoIterator::into_iter([
+                        (<span class="string">&quot;KEY1&quot;</span>.into(), <span class="string">&quot;VALUE1&quot;</span>.into()),
+                        (<span class="string">&quot;KEY2&quot;</span>.into(), <span class="string">&quot;VALUE2 with space&quot;</span>.into()),
                     ])
-                    .<span class="ident">collect</span>(),
-                    ..<span class="ident">Default::default</span>()
+                    .collect(),
+                    ..Default::default()
                 },
-                <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Success</span>),
-                <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">4</span>..<span class="number">4</span>),
-                <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::new</span>()),
-                <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                ..<span class="ident">Default::default</span>()
+                expected_status: <span class="prelude-val">Some</span>(CommandStatus::Success),
+                stderr_to_stdout: <span class="bool-val">true</span>,
+                expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">4</span>..<span class="number">4</span>),
+                expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::new()),
+                expected_stderr: <span class="prelude-val">None</span>,
+                ..Default::default()
             }],
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">TryCmd::parse_trycmd</span>(
+        <span class="kw">let </span>actual = TryCmd::parse_trycmd(
             <span class="string">&quot;
 ```
 $ KEY1=VALUE1 KEY2=&#39;VALUE2 with space&#39; cmd
 ```
 &quot;</span>,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        .unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_trycmd_status</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">TryCmd</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[<span class="ident">Step</span> {
-                <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.<span class="ident">into</span>()),
-                <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;cmd&quot;</span>.<span class="ident">into</span>())),
-                <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Skipped</span>),
-                <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">5</span>..<span class="number">5</span>),
-                <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::new</span>()),
-                <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_trycmd_status() {
+        <span class="kw">let </span>expected = TryCmd {
+            steps: <span class="macro">vec!</span>[Step {
+                id: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.into()),
+                bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;cmd&quot;</span>.into())),
+                expected_status: <span class="prelude-val">Some</span>(CommandStatus::Skipped),
+                stderr_to_stdout: <span class="bool-val">true</span>,
+                expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">5</span>..<span class="number">5</span>),
+                expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::new()),
+                expected_stderr: <span class="prelude-val">None</span>,
+                ..Default::default()
             }],
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">TryCmd::parse_trycmd</span>(
+        <span class="kw">let </span>actual = TryCmd::parse_trycmd(
             <span class="string">&quot;
 ```
 $ cmd
@@ -2170,26 +2170,26 @@ $ cmd
 ```
 &quot;</span>,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        .unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_trycmd_status_code</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">TryCmd</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[<span class="ident">Step</span> {
-                <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.<span class="ident">into</span>()),
-                <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;cmd&quot;</span>.<span class="ident">into</span>())),
-                <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Code</span>(-<span class="number">1</span>)),
-                <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">5</span>..<span class="number">5</span>),
-                <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::new</span>()),
-                <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_trycmd_status_code() {
+        <span class="kw">let </span>expected = TryCmd {
+            steps: <span class="macro">vec!</span>[Step {
+                id: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.into()),
+                bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;cmd&quot;</span>.into())),
+                expected_status: <span class="prelude-val">Some</span>(CommandStatus::Code(-<span class="number">1</span>)),
+                stderr_to_stdout: <span class="bool-val">true</span>,
+                expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">5</span>..<span class="number">5</span>),
+                expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::new()),
+                expected_stderr: <span class="prelude-val">None</span>,
+                ..Default::default()
             }],
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">TryCmd::parse_trycmd</span>(
+        <span class="kw">let </span>actual = TryCmd::parse_trycmd(
             <span class="string">&quot;
 ```
 $ cmd
@@ -2197,26 +2197,26 @@ $ cmd
 ```
 &quot;</span>,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        .unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_trycmd_stdout</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">TryCmd</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[<span class="ident">Step</span> {
-                <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.<span class="ident">into</span>()),
-                <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;cmd&quot;</span>.<span class="ident">into</span>())),
-                <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Success</span>),
-                <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">4</span>..<span class="number">6</span>),
-                <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::text</span>(<span class="string">&quot;Hello World\n&quot;</span>)),
-                <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_trycmd_stdout() {
+        <span class="kw">let </span>expected = TryCmd {
+            steps: <span class="macro">vec!</span>[Step {
+                id: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.into()),
+                bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;cmd&quot;</span>.into())),
+                expected_status: <span class="prelude-val">Some</span>(CommandStatus::Success),
+                stderr_to_stdout: <span class="bool-val">true</span>,
+                expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">4</span>..<span class="number">6</span>),
+                expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::text(<span class="string">&quot;Hello World\n&quot;</span>)),
+                expected_stderr: <span class="prelude-val">None</span>,
+                ..Default::default()
             }],
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">TryCmd::parse_trycmd</span>(
+        <span class="kw">let </span>actual = TryCmd::parse_trycmd(
             <span class="string">&quot;
 ```
 $ cmd
@@ -2224,26 +2224,26 @@ Hello World
 
 ```&quot;</span>,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        .unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_trycmd_escaped_stdout</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">TryCmd</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[<span class="ident">Step</span> {
-                <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.<span class="ident">into</span>()),
-                <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;cmd&quot;</span>.<span class="ident">into</span>())),
-                <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Success</span>),
-                <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">4</span>..<span class="number">7</span>),
-                <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::text</span>(<span class="string">&quot;```\nHello World\n```&quot;</span>)),
-                <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_trycmd_escaped_stdout() {
+        <span class="kw">let </span>expected = TryCmd {
+            steps: <span class="macro">vec!</span>[Step {
+                id: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.into()),
+                bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;cmd&quot;</span>.into())),
+                expected_status: <span class="prelude-val">Some</span>(CommandStatus::Success),
+                stderr_to_stdout: <span class="bool-val">true</span>,
+                expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">4</span>..<span class="number">7</span>),
+                expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::text(<span class="string">&quot;```\nHello World\n```&quot;</span>)),
+                expected_stderr: <span class="prelude-val">None</span>,
+                ..Default::default()
             }],
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">TryCmd::parse_trycmd</span>(
+        <span class="kw">let </span>actual = TryCmd::parse_trycmd(
             <span class="string">&quot;
 ````
 $ cmd
@@ -2252,38 +2252,38 @@ Hello World
 ```
 ````&quot;</span>,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        .unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_trycmd_multi_step</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">TryCmd</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[
-                <span class="ident">Step</span> {
-                    <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.<span class="ident">into</span>()),
-                    <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;cmd1&quot;</span>.<span class="ident">into</span>())),
-                    <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Code</span>(<span class="number">1</span>)),
-                    <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                    <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">5</span>..<span class="number">5</span>),
-                    <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::new</span>()),
-                    <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                    ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_trycmd_multi_step() {
+        <span class="kw">let </span>expected = TryCmd {
+            steps: <span class="macro">vec!</span>[
+                Step {
+                    id: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.into()),
+                    bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;cmd1&quot;</span>.into())),
+                    expected_status: <span class="prelude-val">Some</span>(CommandStatus::Code(<span class="number">1</span>)),
+                    stderr_to_stdout: <span class="bool-val">true</span>,
+                    expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">5</span>..<span class="number">5</span>),
+                    expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::new()),
+                    expected_stderr: <span class="prelude-val">None</span>,
+                    ..Default::default()
                 },
-                <span class="ident">Step</span> {
-                    <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;5&quot;</span>.<span class="ident">into</span>()),
-                    <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;cmd2&quot;</span>.<span class="ident">into</span>())),
-                    <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Success</span>),
-                    <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                    <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">6</span>..<span class="number">6</span>),
-                    <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::new</span>()),
-                    <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                    ..<span class="ident">Default::default</span>()
+                Step {
+                    id: <span class="prelude-val">Some</span>(<span class="string">&quot;5&quot;</span>.into()),
+                    bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;cmd2&quot;</span>.into())),
+                    expected_status: <span class="prelude-val">Some</span>(CommandStatus::Success),
+                    stderr_to_stdout: <span class="bool-val">true</span>,
+                    expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">6</span>..<span class="number">6</span>),
+                    expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::new()),
+                    expected_stderr: <span class="prelude-val">None</span>,
+                    ..Default::default()
                 },
             ],
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">TryCmd::parse_trycmd</span>(
+        <span class="kw">let </span>actual = TryCmd::parse_trycmd(
             <span class="string">&quot;
 ```
 $ cmd1
@@ -2292,48 +2292,48 @@ $ cmd2
 ```
 &quot;</span>,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        .unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_trycmd_info_string</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">TryCmd</span> {
-            <span class="ident">steps</span>: <span class="macro">vec!</span>[
-                <span class="ident">Step</span> {
-                    <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.<span class="ident">into</span>()),
-                    <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;bare-cmd&quot;</span>.<span class="ident">into</span>())),
-                    <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Code</span>(<span class="number">1</span>)),
-                    <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                    <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">5</span>..<span class="number">5</span>),
-                    <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::new</span>()),
-                    <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                    ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_trycmd_info_string() {
+        <span class="kw">let </span>expected = TryCmd {
+            steps: <span class="macro">vec!</span>[
+                Step {
+                    id: <span class="prelude-val">Some</span>(<span class="string">&quot;3&quot;</span>.into()),
+                    bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;bare-cmd&quot;</span>.into())),
+                    expected_status: <span class="prelude-val">Some</span>(CommandStatus::Code(<span class="number">1</span>)),
+                    stderr_to_stdout: <span class="bool-val">true</span>,
+                    expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">5</span>..<span class="number">5</span>),
+                    expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::new()),
+                    expected_stderr: <span class="prelude-val">None</span>,
+                    ..Default::default()
                 },
-                <span class="ident">Step</span> {
-                    <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;8&quot;</span>.<span class="ident">into</span>()),
-                    <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;trycmd-cmd&quot;</span>.<span class="ident">into</span>())),
-                    <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Code</span>(<span class="number">1</span>)),
-                    <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                    <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">10</span>..<span class="number">10</span>),
-                    <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::new</span>()),
-                    <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                    ..<span class="ident">Default::default</span>()
+                Step {
+                    id: <span class="prelude-val">Some</span>(<span class="string">&quot;8&quot;</span>.into()),
+                    bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;trycmd-cmd&quot;</span>.into())),
+                    expected_status: <span class="prelude-val">Some</span>(CommandStatus::Code(<span class="number">1</span>)),
+                    stderr_to_stdout: <span class="bool-val">true</span>,
+                    expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">10</span>..<span class="number">10</span>),
+                    expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::new()),
+                    expected_stderr: <span class="prelude-val">None</span>,
+                    ..Default::default()
                 },
-                <span class="ident">Step</span> {
-                    <span class="ident">id</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;18&quot;</span>.<span class="ident">into</span>()),
-                    <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;console-cmd&quot;</span>.<span class="ident">into</span>())),
-                    <span class="ident">expected_status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Code</span>(<span class="number">1</span>)),
-                    <span class="ident">stderr_to_stdout</span>: <span class="bool-val">true</span>,
-                    <span class="ident">expected_stdout_source</span>: <span class="prelude-val">Some</span>(<span class="number">20</span>..<span class="number">20</span>),
-                    <span class="ident">expected_stdout</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="kw">crate</span>::Data::new</span>()),
-                    <span class="ident">expected_stderr</span>: <span class="prelude-val">None</span>,
-                    ..<span class="ident">Default::default</span>()
+                Step {
+                    id: <span class="prelude-val">Some</span>(<span class="string">&quot;18&quot;</span>.into()),
+                    bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;console-cmd&quot;</span>.into())),
+                    expected_status: <span class="prelude-val">Some</span>(CommandStatus::Code(<span class="number">1</span>)),
+                    stderr_to_stdout: <span class="bool-val">true</span>,
+                    expected_stdout_source: <span class="prelude-val">Some</span>(<span class="number">20</span>..<span class="number">20</span>),
+                    expected_stdout: <span class="prelude-val">Some</span>(<span class="kw">crate</span>::Data::new()),
+                    expected_stderr: <span class="prelude-val">None</span>,
+                    ..Default::default()
                 },
             ],
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">TryCmd::parse_trycmd</span>(
+        <span class="kw">let </span>actual = TryCmd::parse_trycmd(
             <span class="string">&quot;
 ```
 $ bare-cmd
@@ -2371,150 +2371,150 @@ $ rust-cmd1
 ```
 &quot;</span>,
         )
-        .<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        .unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_toml_minimal</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">OneShot</span> {
-            ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_toml_minimal() {
+        <span class="kw">let </span>expected = OneShot {
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">OneShot::parse_toml</span>(<span class="string">&quot;&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>actual = OneShot::parse_toml(<span class="string">&quot;&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_toml_minimal_env</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">OneShot</span> {
-            ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_toml_minimal_env() {
+        <span class="kw">let </span>expected = OneShot {
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">OneShot::parse_toml</span>(<span class="string">&quot;[env]&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>actual = OneShot::parse_toml(<span class="string">&quot;[env]&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_toml_bin_name</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">OneShot</span> {
-            <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Name</span>(<span class="string">&quot;cmd&quot;</span>.<span class="ident">into</span>())),
-            ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_toml_bin_name() {
+        <span class="kw">let </span>expected = OneShot {
+            bin: <span class="prelude-val">Some</span>(Bin::Name(<span class="string">&quot;cmd&quot;</span>.into())),
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">OneShot::parse_toml</span>(<span class="string">&quot;bin.name = &#39;cmd&#39;&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>actual = OneShot::parse_toml(<span class="string">&quot;bin.name = &#39;cmd&#39;&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_toml_bin_path</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">OneShot</span> {
-            <span class="ident">bin</span>: <span class="prelude-val">Some</span>(<span class="ident">Bin::Path</span>(<span class="string">&quot;/usr/bin/cmd&quot;</span>.<span class="ident">into</span>())),
-            ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_toml_bin_path() {
+        <span class="kw">let </span>expected = OneShot {
+            bin: <span class="prelude-val">Some</span>(Bin::Path(<span class="string">&quot;/usr/bin/cmd&quot;</span>.into())),
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">OneShot::parse_toml</span>(<span class="string">&quot;bin.path = &#39;/usr/bin/cmd&#39;&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>actual = OneShot::parse_toml(<span class="string">&quot;bin.path = &#39;/usr/bin/cmd&#39;&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_toml_args_split</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">OneShot</span> {
-            <span class="ident">args</span>: <span class="ident">Args::Split</span>(<span class="macro">vec!</span>[<span class="string">&quot;arg1&quot;</span>.<span class="ident">into</span>(), <span class="string">&quot;arg with space&quot;</span>.<span class="ident">into</span>()]),
-            ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_toml_args_split() {
+        <span class="kw">let </span>expected = OneShot {
+            args: Args::Split(<span class="macro">vec!</span>[<span class="string">&quot;arg1&quot;</span>.into(), <span class="string">&quot;arg with space&quot;</span>.into()]),
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">OneShot::parse_toml</span>(<span class="string">r#&quot;args = [&quot;arg1&quot;, &quot;arg with space&quot;]&quot;#</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>actual = OneShot::parse_toml(<span class="string">r#&quot;args = [&quot;arg1&quot;, &quot;arg with space&quot;]&quot;#</span>).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_toml_args_joined</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">OneShot</span> {
-            <span class="ident">args</span>: <span class="ident">Args::Joined</span>(<span class="ident">JoinedArgs::from_vec</span>(<span class="macro">vec!</span>[
-                <span class="string">&quot;arg1&quot;</span>.<span class="ident">into</span>(),
-                <span class="string">&quot;arg with space&quot;</span>.<span class="ident">into</span>(),
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_toml_args_joined() {
+        <span class="kw">let </span>expected = OneShot {
+            args: Args::Joined(JoinedArgs::from_vec(<span class="macro">vec!</span>[
+                <span class="string">&quot;arg1&quot;</span>.into(),
+                <span class="string">&quot;arg with space&quot;</span>.into(),
             ])),
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">OneShot::parse_toml</span>(<span class="string">r#&quot;args = &quot;arg1 &#39;arg with space&#39;&quot;&quot;#</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>actual = OneShot::parse_toml(<span class="string">r#&quot;args = &quot;arg1 &#39;arg with space&#39;&quot;&quot;#</span>).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_toml_status_success</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">OneShot</span> {
-            <span class="ident">status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Success</span>),
-            ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_toml_status_success() {
+        <span class="kw">let </span>expected = OneShot {
+            status: <span class="prelude-val">Some</span>(CommandStatus::Success),
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">OneShot::parse_toml</span>(<span class="string">&quot;status = &#39;success&#39;&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>actual = OneShot::parse_toml(<span class="string">&quot;status = &#39;success&#39;&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">parse_toml_status_code</span>() {
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">OneShot</span> {
-            <span class="ident">status</span>: <span class="prelude-val">Some</span>(<span class="ident">CommandStatus::Code</span>(<span class="number">42</span>)),
-            ..<span class="ident">Default::default</span>()
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>parse_toml_status_code() {
+        <span class="kw">let </span>expected = OneShot {
+            status: <span class="prelude-val">Some</span>(CommandStatus::Code(<span class="number">42</span>)),
+            ..Default::default()
         };
-        <span class="kw">let</span> <span class="ident">actual</span> = <span class="ident">OneShot::parse_toml</span>(<span class="string">&quot;status.code = 42&quot;</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span>actual = OneShot::parse_toml(<span class="string">&quot;status.code = 42&quot;</span>).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">replace_lines_same_line_count</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;One\nTwo\nThree&quot;</span>;
-        <span class="kw">let</span> <span class="ident">line_nums</span> = <span class="number">2</span>..<span class="number">3</span>;
-        <span class="kw">let</span> <span class="ident">replacement</span> = <span class="string">&quot;World\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">Data::text</span>(<span class="string">&quot;One\nWorld\nThree&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>replace_lines_same_line_count() {
+        <span class="kw">let </span>input = <span class="string">&quot;One\nTwo\nThree&quot;</span>;
+        <span class="kw">let </span>line_nums = <span class="number">2</span>..<span class="number">3</span>;
+        <span class="kw">let </span>replacement = <span class="string">&quot;World\n&quot;</span>;
+        <span class="kw">let </span>expected = Data::text(<span class="string">&quot;One\nWorld\nThree&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual</span> = <span class="ident">Data::text</span>(<span class="ident">input</span>);
-        <span class="ident">replace_lines</span>(<span class="kw-2">&amp;mut</span> <span class="ident">actual</span>, <span class="ident">line_nums</span>, <span class="ident">replacement</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>actual = Data::text(input);
+        replace_lines(<span class="kw-2">&amp;mut </span>actual, line_nums, replacement).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">replace_lines_grow</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;One\nTwo\nThree&quot;</span>;
-        <span class="kw">let</span> <span class="ident">line_nums</span> = <span class="number">2</span>..<span class="number">3</span>;
-        <span class="kw">let</span> <span class="ident">replacement</span> = <span class="string">&quot;World\nTrees\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">Data::text</span>(<span class="string">&quot;One\nWorld\nTrees\nThree&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>replace_lines_grow() {
+        <span class="kw">let </span>input = <span class="string">&quot;One\nTwo\nThree&quot;</span>;
+        <span class="kw">let </span>line_nums = <span class="number">2</span>..<span class="number">3</span>;
+        <span class="kw">let </span>replacement = <span class="string">&quot;World\nTrees\n&quot;</span>;
+        <span class="kw">let </span>expected = Data::text(<span class="string">&quot;One\nWorld\nTrees\nThree&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual</span> = <span class="ident">Data::text</span>(<span class="ident">input</span>);
-        <span class="ident">replace_lines</span>(<span class="kw-2">&amp;mut</span> <span class="ident">actual</span>, <span class="ident">line_nums</span>, <span class="ident">replacement</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>actual = Data::text(input);
+        replace_lines(<span class="kw-2">&amp;mut </span>actual, line_nums, replacement).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">replace_lines_shrink</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;One\nTwo\nThree&quot;</span>;
-        <span class="kw">let</span> <span class="ident">line_nums</span> = <span class="number">2</span>..<span class="number">3</span>;
-        <span class="kw">let</span> <span class="ident">replacement</span> = <span class="string">&quot;&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">Data::text</span>(<span class="string">&quot;One\nThree&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>replace_lines_shrink() {
+        <span class="kw">let </span>input = <span class="string">&quot;One\nTwo\nThree&quot;</span>;
+        <span class="kw">let </span>line_nums = <span class="number">2</span>..<span class="number">3</span>;
+        <span class="kw">let </span>replacement = <span class="string">&quot;&quot;</span>;
+        <span class="kw">let </span>expected = Data::text(<span class="string">&quot;One\nThree&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual</span> = <span class="ident">Data::text</span>(<span class="ident">input</span>);
-        <span class="ident">replace_lines</span>(<span class="kw-2">&amp;mut</span> <span class="ident">actual</span>, <span class="ident">line_nums</span>, <span class="ident">replacement</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>actual = Data::text(input);
+        replace_lines(<span class="kw-2">&amp;mut </span>actual, line_nums, replacement).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">replace_lines_no_trailing</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;One\nTwo\nThree&quot;</span>;
-        <span class="kw">let</span> <span class="ident">line_nums</span> = <span class="number">2</span>..<span class="number">3</span>;
-        <span class="kw">let</span> <span class="ident">replacement</span> = <span class="string">&quot;World&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">Data::text</span>(<span class="string">&quot;One\nWorld\nThree&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>replace_lines_no_trailing() {
+        <span class="kw">let </span>input = <span class="string">&quot;One\nTwo\nThree&quot;</span>;
+        <span class="kw">let </span>line_nums = <span class="number">2</span>..<span class="number">3</span>;
+        <span class="kw">let </span>replacement = <span class="string">&quot;World&quot;</span>;
+        <span class="kw">let </span>expected = Data::text(<span class="string">&quot;One\nWorld\nThree&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual</span> = <span class="ident">Data::text</span>(<span class="ident">input</span>);
-        <span class="ident">replace_lines</span>(<span class="kw-2">&amp;mut</span> <span class="ident">actual</span>, <span class="ident">line_nums</span>, <span class="ident">replacement</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>actual = Data::text(input);
+        replace_lines(<span class="kw-2">&amp;mut </span>actual, line_nums, replacement).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">replace_lines_empty_range</span>() {
-        <span class="kw">let</span> <span class="ident">input</span> = <span class="string">&quot;One\nTwo\nThree&quot;</span>;
-        <span class="kw">let</span> <span class="ident">line_nums</span> = <span class="number">2</span>..<span class="number">2</span>;
-        <span class="kw">let</span> <span class="ident">replacement</span> = <span class="string">&quot;World\n&quot;</span>;
-        <span class="kw">let</span> <span class="ident">expected</span> = <span class="ident">Data::text</span>(<span class="string">&quot;One\nWorld\nTwo\nThree&quot;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>replace_lines_empty_range() {
+        <span class="kw">let </span>input = <span class="string">&quot;One\nTwo\nThree&quot;</span>;
+        <span class="kw">let </span>line_nums = <span class="number">2</span>..<span class="number">2</span>;
+        <span class="kw">let </span>replacement = <span class="string">&quot;World\n&quot;</span>;
+        <span class="kw">let </span>expected = Data::text(<span class="string">&quot;One\nWorld\nTwo\nThree&quot;</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">actual</span> = <span class="ident">Data::text</span>(<span class="ident">input</span>);
-        <span class="ident">replace_lines</span>(<span class="kw-2">&amp;mut</span> <span class="ident">actual</span>, <span class="ident">line_nums</span>, <span class="ident">replacement</span>).<span class="ident">unwrap</span>();
-        <span class="macro">assert_eq!</span>(<span class="ident">expected</span>, <span class="ident">actual</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>actual = Data::text(input);
+        replace_lines(<span class="kw-2">&amp;mut </span>actual, line_nums, replacement).unwrap();
+        <span class="macro">assert_eq!</span>(expected, actual);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="trycmd" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="trycmd" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

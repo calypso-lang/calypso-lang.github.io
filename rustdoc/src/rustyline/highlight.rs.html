@@ -277,284 +277,284 @@
 <span id="277">277</span>
 <span id="278">278</span>
 <span id="279">279</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Syntax highlighting</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Syntax highlighting
 
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::config::CompletionType</span>;
-<span class="kw">use</span> <span class="ident">memchr::memchr</span>;
-<span class="kw">use</span> <span class="ident">std::borrow::Cow</span>::{<span class="self">self</span>, <span class="ident">Borrowed</span>, <span class="ident">Owned</span>};
-<span class="kw">use</span> <span class="ident">std::cell::Cell</span>;
+</span><span class="kw">use </span><span class="kw">crate</span>::config::CompletionType;
+<span class="kw">use </span>memchr::memchr;
+<span class="kw">use </span>std::borrow::Cow::{<span class="self">self</span>, Borrowed, Owned};
+<span class="kw">use </span>std::cell::Cell;
 
-<span class="doccomment">/// Syntax highlighter with [ANSI color](https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters).</span>
-<span class="doccomment">/// Rustyline will try to handle escape sequence for ANSI color on windows</span>
-<span class="doccomment">/// when not supported natively (windows &lt;10).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Currently, the highlighted version *must* have the same display width as</span>
-<span class="doccomment">/// the original input.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Highlighter</span> {
-    <span class="doccomment">/// Takes the currently edited `line` with the cursor `pos`ition and</span>
-    <span class="doccomment">/// returns the highlighted version (with ANSI color).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// For example, you can implement</span>
-    <span class="doccomment">/// [blink-matching-paren](https://www.gnu.org/software/bash/manual/html_node/Readline-Init-File-Syntax.html).</span>
-    <span class="kw">fn</span> <span class="ident">highlight</span>&lt;<span class="lifetime">&#39;l</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l</span> <span class="ident">str</span>, <span class="ident">pos</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;l</span>, <span class="ident">str</span>&gt; {
-        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">pos</span>;
-        <span class="ident">Borrowed</span>(<span class="ident">line</span>)
+<span class="doccomment">/// Syntax highlighter with [ANSI color](https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters).
+/// Rustyline will try to handle escape sequence for ANSI color on windows
+/// when not supported natively (windows &lt;10).
+///
+/// Currently, the highlighted version *must* have the same display width as
+/// the original input.
+</span><span class="kw">pub trait </span>Highlighter {
+    <span class="doccomment">/// Takes the currently edited `line` with the cursor `pos`ition and
+    /// returns the highlighted version (with ANSI color).
+    ///
+    /// For example, you can implement
+    /// [blink-matching-paren](https://www.gnu.org/software/bash/manual/html_node/Readline-Init-File-Syntax.html).
+    </span><span class="kw">fn </span>highlight&lt;<span class="lifetime">&#39;l</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, line: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l </span>str, pos: usize) -&gt; Cow&lt;<span class="lifetime">&#39;l</span>, str&gt; {
+        <span class="kw">let _ </span>= pos;
+        Borrowed(line)
     }
-    <span class="doccomment">/// Takes the `prompt` and</span>
-    <span class="doccomment">/// returns the highlighted version (with ANSI color).</span>
-    <span class="kw">fn</span> <span class="ident">highlight_prompt</span>&lt;<span class="lifetime">&#39;b</span>, <span class="lifetime">&#39;s</span>: <span class="lifetime">&#39;b</span>, <span class="lifetime">&#39;p</span>: <span class="lifetime">&#39;b</span>&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="self">self</span>,
-        <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;p</span> <span class="ident">str</span>,
-        <span class="ident">default</span>: <span class="ident">bool</span>,
-    ) -&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;b</span>, <span class="ident">str</span>&gt; {
-        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">default</span>;
-        <span class="ident">Borrowed</span>(<span class="ident">prompt</span>)
+    <span class="doccomment">/// Takes the `prompt` and
+    /// returns the highlighted version (with ANSI color).
+    </span><span class="kw">fn </span>highlight_prompt&lt;<span class="lifetime">&#39;b</span>, <span class="lifetime">&#39;s</span>: <span class="lifetime">&#39;b</span>, <span class="lifetime">&#39;p</span>: <span class="lifetime">&#39;b</span>&gt;(
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;s </span><span class="self">self</span>,
+        prompt: <span class="kw-2">&amp;</span><span class="lifetime">&#39;p </span>str,
+        default: bool,
+    ) -&gt; Cow&lt;<span class="lifetime">&#39;b</span>, str&gt; {
+        <span class="kw">let _ </span>= default;
+        Borrowed(prompt)
     }
-    <span class="doccomment">/// Takes the `hint` and</span>
-    <span class="doccomment">/// returns the highlighted version (with ANSI color).</span>
-    <span class="kw">fn</span> <span class="ident">highlight_hint</span>&lt;<span class="lifetime">&#39;h</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hint</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;h</span> <span class="ident">str</span>) -&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;h</span>, <span class="ident">str</span>&gt; {
-        <span class="ident">Borrowed</span>(<span class="ident">hint</span>)
+    <span class="doccomment">/// Takes the `hint` and
+    /// returns the highlighted version (with ANSI color).
+    </span><span class="kw">fn </span>highlight_hint&lt;<span class="lifetime">&#39;h</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, hint: <span class="kw-2">&amp;</span><span class="lifetime">&#39;h </span>str) -&gt; Cow&lt;<span class="lifetime">&#39;h</span>, str&gt; {
+        Borrowed(hint)
     }
-    <span class="doccomment">/// Takes the completion `candidate` and</span>
-    <span class="doccomment">/// returns the highlighted version (with ANSI color).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Currently, used only with `CompletionType::List`.</span>
-    <span class="kw">fn</span> <span class="ident">highlight_candidate</span>&lt;<span class="lifetime">&#39;c</span>&gt;(
+    <span class="doccomment">/// Takes the completion `candidate` and
+    /// returns the highlighted version (with ANSI color).
+    ///
+    /// Currently, used only with `CompletionType::List`.
+    </span><span class="kw">fn </span>highlight_candidate&lt;<span class="lifetime">&#39;c</span>&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">candidate</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;c</span> <span class="ident">str</span>, <span class="comment">// FIXME should be Completer::Candidate</span>
-        <span class="ident">completion</span>: <span class="ident">CompletionType</span>,
-    ) -&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;c</span>, <span class="ident">str</span>&gt; {
-        <span class="kw">let</span> <span class="kw">_</span> = <span class="ident">completion</span>;
-        <span class="ident">Borrowed</span>(<span class="ident">candidate</span>)
+        candidate: <span class="kw-2">&amp;</span><span class="lifetime">&#39;c </span>str, <span class="comment">// FIXME should be Completer::Candidate
+        </span>completion: CompletionType,
+    ) -&gt; Cow&lt;<span class="lifetime">&#39;c</span>, str&gt; {
+        <span class="kw">let _ </span>= completion;
+        Borrowed(candidate)
     }
-    <span class="doccomment">/// Tells if `line` needs to be highlighted when a specific char is typed or</span>
-    <span class="doccomment">/// when cursor is moved under a specific char.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Used to optimize refresh when a character is inserted or the cursor is</span>
-    <span class="doccomment">/// moved.</span>
-    <span class="kw">fn</span> <span class="ident">highlight_char</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pos</span>: <span class="ident">usize</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">let</span> <span class="kw">_</span> = (<span class="ident">line</span>, <span class="ident">pos</span>);
-        <span class="bool-val">false</span>
-    }
+    <span class="doccomment">/// Tells if `line` needs to be highlighted when a specific char is typed or
+    /// when cursor is moved under a specific char.
+    ///
+    /// Used to optimize refresh when a character is inserted or the cursor is
+    /// moved.
+    </span><span class="kw">fn </span>highlight_char(<span class="kw-2">&amp;</span><span class="self">self</span>, line: <span class="kw-2">&amp;</span>str, pos: usize) -&gt; bool {
+        <span class="kw">let _ </span>= (line, pos);
+        <span class="bool-val">false
+    </span>}
 }
 
-<span class="kw">impl</span> <span class="ident">Highlighter</span> <span class="kw">for</span> () {}
+<span class="kw">impl </span>Highlighter <span class="kw">for </span>() {}
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;r</span>, <span class="ident">H</span>: <span class="question-mark">?</span><span class="ident">Sized</span> + <span class="ident">Highlighter</span>&gt; <span class="ident">Highlighter</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;r</span> <span class="ident">H</span> {
-    <span class="kw">fn</span> <span class="ident">highlight</span>&lt;<span class="lifetime">&#39;l</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l</span> <span class="ident">str</span>, <span class="ident">pos</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;l</span>, <span class="ident">str</span>&gt; {
-        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">highlight</span>(<span class="ident">line</span>, <span class="ident">pos</span>)
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;r</span>, H: <span class="question-mark">?</span>Sized + Highlighter&gt; Highlighter <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;r </span>H {
+    <span class="kw">fn </span>highlight&lt;<span class="lifetime">&#39;l</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, line: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l </span>str, pos: usize) -&gt; Cow&lt;<span class="lifetime">&#39;l</span>, str&gt; {
+        (<span class="kw-2">**</span><span class="self">self</span>).highlight(line, pos)
     }
 
-    <span class="kw">fn</span> <span class="ident">highlight_prompt</span>&lt;<span class="lifetime">&#39;b</span>, <span class="lifetime">&#39;s</span>: <span class="lifetime">&#39;b</span>, <span class="lifetime">&#39;p</span>: <span class="lifetime">&#39;b</span>&gt;(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;s</span> <span class="self">self</span>,
-        <span class="ident">prompt</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;p</span> <span class="ident">str</span>,
-        <span class="ident">default</span>: <span class="ident">bool</span>,
-    ) -&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;b</span>, <span class="ident">str</span>&gt; {
-        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">highlight_prompt</span>(<span class="ident">prompt</span>, <span class="ident">default</span>)
+    <span class="kw">fn </span>highlight_prompt&lt;<span class="lifetime">&#39;b</span>, <span class="lifetime">&#39;s</span>: <span class="lifetime">&#39;b</span>, <span class="lifetime">&#39;p</span>: <span class="lifetime">&#39;b</span>&gt;(
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;s </span><span class="self">self</span>,
+        prompt: <span class="kw-2">&amp;</span><span class="lifetime">&#39;p </span>str,
+        default: bool,
+    ) -&gt; Cow&lt;<span class="lifetime">&#39;b</span>, str&gt; {
+        (<span class="kw-2">**</span><span class="self">self</span>).highlight_prompt(prompt, default)
     }
 
-    <span class="kw">fn</span> <span class="ident">highlight_hint</span>&lt;<span class="lifetime">&#39;h</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">hint</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;h</span> <span class="ident">str</span>) -&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;h</span>, <span class="ident">str</span>&gt; {
-        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">highlight_hint</span>(<span class="ident">hint</span>)
+    <span class="kw">fn </span>highlight_hint&lt;<span class="lifetime">&#39;h</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, hint: <span class="kw-2">&amp;</span><span class="lifetime">&#39;h </span>str) -&gt; Cow&lt;<span class="lifetime">&#39;h</span>, str&gt; {
+        (<span class="kw-2">**</span><span class="self">self</span>).highlight_hint(hint)
     }
 
-    <span class="kw">fn</span> <span class="ident">highlight_candidate</span>&lt;<span class="lifetime">&#39;c</span>&gt;(
+    <span class="kw">fn </span>highlight_candidate&lt;<span class="lifetime">&#39;c</span>&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">candidate</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;c</span> <span class="ident">str</span>,
-        <span class="ident">completion</span>: <span class="ident">CompletionType</span>,
-    ) -&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;c</span>, <span class="ident">str</span>&gt; {
-        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">highlight_candidate</span>(<span class="ident">candidate</span>, <span class="ident">completion</span>)
+        candidate: <span class="kw-2">&amp;</span><span class="lifetime">&#39;c </span>str,
+        completion: CompletionType,
+    ) -&gt; Cow&lt;<span class="lifetime">&#39;c</span>, str&gt; {
+        (<span class="kw-2">**</span><span class="self">self</span>).highlight_candidate(candidate, completion)
     }
 
-    <span class="kw">fn</span> <span class="ident">highlight_char</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pos</span>: <span class="ident">usize</span>) -&gt; <span class="ident">bool</span> {
-        (<span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>).<span class="ident">highlight_char</span>(<span class="ident">line</span>, <span class="ident">pos</span>)
+    <span class="kw">fn </span>highlight_char(<span class="kw-2">&amp;</span><span class="self">self</span>, line: <span class="kw-2">&amp;</span>str, pos: usize) -&gt; bool {
+        (<span class="kw-2">**</span><span class="self">self</span>).highlight_char(line, pos)
     }
 }
 
-<span class="kw">const</span> <span class="ident">OPENS</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>; <span class="number">3</span>] = <span class="string">b&quot;{[(&quot;</span>;
-<span class="kw">const</span> <span class="ident">CLOSES</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>; <span class="number">3</span>] = <span class="string">b&quot;}])&quot;</span>;
+<span class="kw">const </span>OPENS: <span class="kw-2">&amp;</span>[u8; <span class="number">3</span>] = <span class="string">b&quot;{[(&quot;</span>;
+<span class="kw">const </span>CLOSES: <span class="kw-2">&amp;</span>[u8; <span class="number">3</span>] = <span class="string">b&quot;}])&quot;</span>;
 
-<span class="comment">// TODO versus https://python-prompt-toolkit.readthedocs.io/en/master/pages/reference.html?highlight=HighlightMatchingBracketProcessor#prompt_toolkit.layout.processors.HighlightMatchingBracketProcessor</span>
+<span class="comment">// TODO versus https://python-prompt-toolkit.readthedocs.io/en/master/pages/reference.html?highlight=HighlightMatchingBracketProcessor#prompt_toolkit.layout.processors.HighlightMatchingBracketProcessor
 
-<span class="doccomment">/// Highlight matching bracket when typed or cursor moved on.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MatchingBracketHighlighter</span> {
-    <span class="ident">bracket</span>: <span class="ident">Cell</span>&lt;<span class="prelude-ty">Option</span>&lt;(<span class="ident">u8</span>, <span class="ident">usize</span>)&gt;&gt;, <span class="comment">// memorize the character to search...</span>
-}
+</span><span class="doccomment">/// Highlight matching bracket when typed or cursor moved on.
+</span><span class="attribute">#[derive(Default)]
+</span><span class="kw">pub struct </span>MatchingBracketHighlighter {
+    bracket: Cell&lt;<span class="prelude-ty">Option</span>&lt;(u8, usize)&gt;&gt;, <span class="comment">// memorize the character to search...
+</span>}
 
-<span class="kw">impl</span> <span class="ident">MatchingBracketHighlighter</span> {
-    <span class="doccomment">/// Constructor</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">bracket</span>: <span class="ident">Cell::new</span>(<span class="prelude-val">None</span>),
+<span class="kw">impl </span>MatchingBracketHighlighter {
+    <span class="doccomment">/// Constructor
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            bracket: Cell::new(<span class="prelude-val">None</span>),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Highlighter</span> <span class="kw">for</span> <span class="ident">MatchingBracketHighlighter</span> {
-    <span class="kw">fn</span> <span class="ident">highlight</span>&lt;<span class="lifetime">&#39;l</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l</span> <span class="ident">str</span>, <span class="ident">_pos</span>: <span class="ident">usize</span>) -&gt; <span class="ident">Cow</span>&lt;<span class="lifetime">&#39;l</span>, <span class="ident">str</span>&gt; {
-        <span class="kw">if</span> <span class="ident">line</span>.<span class="ident">len</span>() &lt;= <span class="number">1</span> {
-            <span class="kw">return</span> <span class="ident">Borrowed</span>(<span class="ident">line</span>);
+<span class="kw">impl </span>Highlighter <span class="kw">for </span>MatchingBracketHighlighter {
+    <span class="kw">fn </span>highlight&lt;<span class="lifetime">&#39;l</span>&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, line: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l </span>str, _pos: usize) -&gt; Cow&lt;<span class="lifetime">&#39;l</span>, str&gt; {
+        <span class="kw">if </span>line.len() &lt;= <span class="number">1 </span>{
+            <span class="kw">return </span>Borrowed(line);
         }
-        <span class="comment">// highlight matching brace/bracket/parenthesis if it exists</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">bracket</span>, <span class="ident">pos</span>)) = <span class="self">self</span>.<span class="ident">bracket</span>.<span class="ident">get</span>() {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">matching</span>, <span class="ident">idx</span>)) = <span class="ident">find_matching_bracket</span>(<span class="ident">line</span>, <span class="ident">pos</span>, <span class="ident">bracket</span>) {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">copy</span> = <span class="ident">line</span>.<span class="ident">to_owned</span>();
-                <span class="ident">copy</span>.<span class="ident">replace_range</span>(<span class="ident">idx</span>..=<span class="ident">idx</span>, <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;\x1b[1;34m{}\x1b[0m&quot;</span>, <span class="ident">matching</span> <span class="kw">as</span> <span class="ident">char</span>));
-                <span class="kw">return</span> <span class="ident">Owned</span>(<span class="ident">copy</span>);
+        <span class="comment">// highlight matching brace/bracket/parenthesis if it exists
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>((bracket, pos)) = <span class="self">self</span>.bracket.get() {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>((matching, idx)) = find_matching_bracket(line, pos, bracket) {
+                <span class="kw">let </span><span class="kw-2">mut </span>copy = line.to_owned();
+                copy.replace_range(idx..=idx, <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;\x1b[1;34m{}\x1b[0m&quot;</span>, matching <span class="kw">as </span>char));
+                <span class="kw">return </span>Owned(copy);
             }
         }
-        <span class="ident">Borrowed</span>(<span class="ident">line</span>)
+        Borrowed(line)
     }
 
-    <span class="kw">fn</span> <span class="ident">highlight_char</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pos</span>: <span class="ident">usize</span>) -&gt; <span class="ident">bool</span> {
-        <span class="comment">// will highlight matching brace/bracket/parenthesis if it exists</span>
-        <span class="self">self</span>.<span class="ident">bracket</span>.<span class="ident">set</span>(<span class="ident">check_bracket</span>(<span class="ident">line</span>, <span class="ident">pos</span>));
-        <span class="self">self</span>.<span class="ident">bracket</span>.<span class="ident">get</span>().<span class="ident">is_some</span>()
+    <span class="kw">fn </span>highlight_char(<span class="kw-2">&amp;</span><span class="self">self</span>, line: <span class="kw-2">&amp;</span>str, pos: usize) -&gt; bool {
+        <span class="comment">// will highlight matching brace/bracket/parenthesis if it exists
+        </span><span class="self">self</span>.bracket.set(check_bracket(line, pos));
+        <span class="self">self</span>.bracket.get().is_some()
     }
 }
 
-<span class="kw">fn</span> <span class="ident">find_matching_bracket</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pos</span>: <span class="ident">usize</span>, <span class="ident">bracket</span>: <span class="ident">u8</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">u8</span>, <span class="ident">usize</span>)&gt; {
-    <span class="kw">let</span> <span class="ident">matching</span> = <span class="ident">matching_bracket</span>(<span class="ident">bracket</span>);
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">idx</span>;
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">unmatched</span> = <span class="number">1</span>;
-    <span class="kw">if</span> <span class="ident">is_open_bracket</span>(<span class="ident">bracket</span>) {
-        <span class="comment">// forward search</span>
-        <span class="ident">idx</span> = <span class="ident">pos</span> + <span class="number">1</span>;
-        <span class="kw">let</span> <span class="ident">bytes</span> = <span class="kw-2">&amp;</span><span class="ident">line</span>.<span class="ident">as_bytes</span>()[<span class="ident">idx</span>..];
-        <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">bytes</span> {
-            <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">b</span> == <span class="ident">matching</span> {
-                <span class="ident">unmatched</span> -= <span class="number">1</span>;
-                <span class="kw">if</span> <span class="ident">unmatched</span> == <span class="number">0</span> {
-                    <span class="macro">debug_assert_eq!</span>(<span class="ident">matching</span>, <span class="ident">line</span>.<span class="ident">as_bytes</span>()[<span class="ident">idx</span>]);
-                    <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">matching</span>, <span class="ident">idx</span>));
+<span class="kw">fn </span>find_matching_bracket(line: <span class="kw-2">&amp;</span>str, pos: usize, bracket: u8) -&gt; <span class="prelude-ty">Option</span>&lt;(u8, usize)&gt; {
+    <span class="kw">let </span>matching = matching_bracket(bracket);
+    <span class="kw">let </span><span class="kw-2">mut </span>idx;
+    <span class="kw">let </span><span class="kw-2">mut </span>unmatched = <span class="number">1</span>;
+    <span class="kw">if </span>is_open_bracket(bracket) {
+        <span class="comment">// forward search
+        </span>idx = pos + <span class="number">1</span>;
+        <span class="kw">let </span>bytes = <span class="kw-2">&amp;</span>line.as_bytes()[idx..];
+        <span class="kw">for </span>b <span class="kw">in </span>bytes {
+            <span class="kw">if </span><span class="kw-2">*</span>b == matching {
+                unmatched -= <span class="number">1</span>;
+                <span class="kw">if </span>unmatched == <span class="number">0 </span>{
+                    <span class="macro">debug_assert_eq!</span>(matching, line.as_bytes()[idx]);
+                    <span class="kw">return </span><span class="prelude-val">Some</span>((matching, idx));
                 }
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">b</span> == <span class="ident">bracket</span> {
-                <span class="ident">unmatched</span> += <span class="number">1</span>;
+            } <span class="kw">else if </span><span class="kw-2">*</span>b == bracket {
+                unmatched += <span class="number">1</span>;
             }
-            <span class="ident">idx</span> += <span class="number">1</span>;
+            idx += <span class="number">1</span>;
         }
-        <span class="macro">debug_assert_eq!</span>(<span class="ident">idx</span>, <span class="ident">line</span>.<span class="ident">len</span>());
-    } <span class="kw">else</span> {
-        <span class="comment">// backward search</span>
-        <span class="ident">idx</span> = <span class="ident">pos</span>;
-        <span class="kw">let</span> <span class="ident">bytes</span> = <span class="kw-2">&amp;</span><span class="ident">line</span>.<span class="ident">as_bytes</span>()[..<span class="ident">idx</span>];
-        <span class="kw">for</span> <span class="ident">b</span> <span class="kw">in</span> <span class="ident">bytes</span>.<span class="ident">iter</span>().<span class="ident">rev</span>() {
-            <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">b</span> == <span class="ident">matching</span> {
-                <span class="ident">unmatched</span> -= <span class="number">1</span>;
-                <span class="kw">if</span> <span class="ident">unmatched</span> == <span class="number">0</span> {
-                    <span class="macro">debug_assert_eq!</span>(<span class="ident">matching</span>, <span class="ident">line</span>.<span class="ident">as_bytes</span>()[<span class="ident">idx</span> - <span class="number">1</span>]);
-                    <span class="kw">return</span> <span class="prelude-val">Some</span>((<span class="ident">matching</span>, <span class="ident">idx</span> - <span class="number">1</span>));
+        <span class="macro">debug_assert_eq!</span>(idx, line.len());
+    } <span class="kw">else </span>{
+        <span class="comment">// backward search
+        </span>idx = pos;
+        <span class="kw">let </span>bytes = <span class="kw-2">&amp;</span>line.as_bytes()[..idx];
+        <span class="kw">for </span>b <span class="kw">in </span>bytes.iter().rev() {
+            <span class="kw">if </span><span class="kw-2">*</span>b == matching {
+                unmatched -= <span class="number">1</span>;
+                <span class="kw">if </span>unmatched == <span class="number">0 </span>{
+                    <span class="macro">debug_assert_eq!</span>(matching, line.as_bytes()[idx - <span class="number">1</span>]);
+                    <span class="kw">return </span><span class="prelude-val">Some</span>((matching, idx - <span class="number">1</span>));
                 }
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">b</span> == <span class="ident">bracket</span> {
-                <span class="ident">unmatched</span> += <span class="number">1</span>;
+            } <span class="kw">else if </span><span class="kw-2">*</span>b == bracket {
+                unmatched += <span class="number">1</span>;
             }
-            <span class="ident">idx</span> -= <span class="number">1</span>;
+            idx -= <span class="number">1</span>;
         }
-        <span class="macro">debug_assert_eq!</span>(<span class="ident">idx</span>, <span class="number">0</span>);
+        <span class="macro">debug_assert_eq!</span>(idx, <span class="number">0</span>);
     }
-    <span class="prelude-val">None</span>
-}
+    <span class="prelude-val">None
+</span>}
 
-<span class="comment">// check under or before the cursor</span>
-<span class="kw">fn</span> <span class="ident">check_bracket</span>(<span class="ident">line</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">pos</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Option</span>&lt;(<span class="ident">u8</span>, <span class="ident">usize</span>)&gt; {
-    <span class="kw">if</span> <span class="ident">line</span>.<span class="ident">is_empty</span>() {
-        <span class="kw">return</span> <span class="prelude-val">None</span>;
+<span class="comment">// check under or before the cursor
+</span><span class="kw">fn </span>check_bracket(line: <span class="kw-2">&amp;</span>str, pos: usize) -&gt; <span class="prelude-ty">Option</span>&lt;(u8, usize)&gt; {
+    <span class="kw">if </span>line.is_empty() {
+        <span class="kw">return </span><span class="prelude-val">None</span>;
     }
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">pos</span> = <span class="ident">pos</span>;
-    <span class="kw">if</span> <span class="ident">pos</span> &gt;= <span class="ident">line</span>.<span class="ident">len</span>() {
-        <span class="ident">pos</span> = <span class="ident">line</span>.<span class="ident">len</span>() - <span class="number">1</span>; <span class="comment">// before cursor</span>
-        <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">line</span>.<span class="ident">as_bytes</span>()[<span class="ident">pos</span>]; <span class="comment">// previous byte</span>
-        <span class="kw">if</span> <span class="ident">is_close_bracket</span>(<span class="ident">b</span>) {
-            <span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="ident">pos</span>))
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        }
-    } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">under_cursor</span> = <span class="bool-val">true</span>;
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">b</span> = <span class="ident">line</span>.<span class="ident">as_bytes</span>()[<span class="ident">pos</span>];
-            <span class="kw">if</span> <span class="ident">is_close_bracket</span>(<span class="ident">b</span>) {
-                <span class="kw">return</span> <span class="kw">if</span> <span class="ident">pos</span> == <span class="number">0</span> { <span class="prelude-val">None</span> } <span class="kw">else</span> { <span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="ident">pos</span>)) };
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">is_open_bracket</span>(<span class="ident">b</span>) {
-                <span class="kw">return</span> <span class="kw">if</span> <span class="ident">pos</span> + <span class="number">1</span> == <span class="ident">line</span>.<span class="ident">len</span>() {
-                    <span class="prelude-val">None</span>
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">Some</span>((<span class="ident">b</span>, <span class="ident">pos</span>))
+    <span class="kw">let </span><span class="kw-2">mut </span>pos = pos;
+    <span class="kw">if </span>pos &gt;= line.len() {
+        pos = line.len() - <span class="number">1</span>; <span class="comment">// before cursor
+        </span><span class="kw">let </span>b = line.as_bytes()[pos]; <span class="comment">// previous byte
+        </span><span class="kw">if </span>is_close_bracket(b) {
+            <span class="prelude-val">Some</span>((b, pos))
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>}
+    } <span class="kw">else </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>under_cursor = <span class="bool-val">true</span>;
+        <span class="kw">loop </span>{
+            <span class="kw">let </span>b = line.as_bytes()[pos];
+            <span class="kw">if </span>is_close_bracket(b) {
+                <span class="kw">return if </span>pos == <span class="number">0 </span>{ <span class="prelude-val">None </span>} <span class="kw">else </span>{ <span class="prelude-val">Some</span>((b, pos)) };
+            } <span class="kw">else if </span>is_open_bracket(b) {
+                <span class="kw">return if </span>pos + <span class="number">1 </span>== line.len() {
+                    <span class="prelude-val">None
+                </span>} <span class="kw">else </span>{
+                    <span class="prelude-val">Some</span>((b, pos))
                 };
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">under_cursor</span> &amp;&amp; <span class="ident">pos</span> &gt; <span class="number">0</span> {
-                <span class="ident">under_cursor</span> = <span class="bool-val">false</span>;
-                <span class="ident">pos</span> -= <span class="number">1</span>; <span class="comment">// or before cursor</span>
-            } <span class="kw">else</span> {
-                <span class="kw">return</span> <span class="prelude-val">None</span>;
+            } <span class="kw">else if </span>under_cursor &amp;&amp; pos &gt; <span class="number">0 </span>{
+                under_cursor = <span class="bool-val">false</span>;
+                pos -= <span class="number">1</span>; <span class="comment">// or before cursor
+            </span>} <span class="kw">else </span>{
+                <span class="kw">return </span><span class="prelude-val">None</span>;
             }
         }
     }
 }
 
-<span class="kw">const</span> <span class="kw">fn</span> <span class="ident">matching_bracket</span>(<span class="ident">bracket</span>: <span class="ident">u8</span>) -&gt; <span class="ident">u8</span> {
-    <span class="kw">match</span> <span class="ident">bracket</span> {
-        <span class="string">b&#39;{&#39;</span> =&gt; <span class="string">b&#39;}&#39;</span>,
-        <span class="string">b&#39;}&#39;</span> =&gt; <span class="string">b&#39;{&#39;</span>,
-        <span class="string">b&#39;[&#39;</span> =&gt; <span class="string">b&#39;]&#39;</span>,
-        <span class="string">b&#39;]&#39;</span> =&gt; <span class="string">b&#39;[&#39;</span>,
-        <span class="string">b&#39;(&#39;</span> =&gt; <span class="string">b&#39;)&#39;</span>,
-        <span class="string">b&#39;)&#39;</span> =&gt; <span class="string">b&#39;(&#39;</span>,
-        <span class="ident">b</span> =&gt; <span class="ident">b</span>,
+<span class="kw">const fn </span>matching_bracket(bracket: u8) -&gt; u8 {
+    <span class="kw">match </span>bracket {
+        <span class="string">b&#39;{&#39; </span>=&gt; <span class="string">b&#39;}&#39;</span>,
+        <span class="string">b&#39;}&#39; </span>=&gt; <span class="string">b&#39;{&#39;</span>,
+        <span class="string">b&#39;[&#39; </span>=&gt; <span class="string">b&#39;]&#39;</span>,
+        <span class="string">b&#39;]&#39; </span>=&gt; <span class="string">b&#39;[&#39;</span>,
+        <span class="string">b&#39;(&#39; </span>=&gt; <span class="string">b&#39;)&#39;</span>,
+        <span class="string">b&#39;)&#39; </span>=&gt; <span class="string">b&#39;(&#39;</span>,
+        b =&gt; b,
     }
 }
-<span class="kw">fn</span> <span class="ident">is_open_bracket</span>(<span class="ident">bracket</span>: <span class="ident">u8</span>) -&gt; <span class="ident">bool</span> {
-    <span class="ident">memchr</span>(<span class="ident">bracket</span>, <span class="ident">OPENS</span>).<span class="ident">is_some</span>()
+<span class="kw">fn </span>is_open_bracket(bracket: u8) -&gt; bool {
+    memchr(bracket, OPENS).is_some()
 }
-<span class="kw">fn</span> <span class="ident">is_close_bracket</span>(<span class="ident">bracket</span>: <span class="ident">u8</span>) -&gt; <span class="ident">bool</span> {
-    <span class="ident">memchr</span>(<span class="ident">bracket</span>, <span class="ident">CLOSES</span>).<span class="ident">is_some</span>()
+<span class="kw">fn </span>is_close_bracket(bracket: u8) -&gt; bool {
+    memchr(bracket, CLOSES).is_some()
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">find_matching_bracket</span>() {
-        <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::find_matching_bracket</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">find_matching_bracket</span>(<span class="string">&quot;(...&quot;</span>, <span class="number">0</span>, <span class="string">b&#39;(&#39;</span>), <span class="prelude-val">None</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">find_matching_bracket</span>(<span class="string">&quot;...)&quot;</span>, <span class="number">3</span>, <span class="string">b&#39;)&#39;</span>), <span class="prelude-val">None</span>);
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>tests {
+    <span class="attribute">#[test]
+    </span><span class="kw">pub fn </span>find_matching_bracket() {
+        <span class="kw">use </span><span class="kw">super</span>::find_matching_bracket;
+        <span class="macro">assert_eq!</span>(find_matching_bracket(<span class="string">&quot;(...&quot;</span>, <span class="number">0</span>, <span class="string">b&#39;(&#39;</span>), <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(find_matching_bracket(<span class="string">&quot;...)&quot;</span>, <span class="number">3</span>, <span class="string">b&#39;)&#39;</span>), <span class="prelude-val">None</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">find_matching_bracket</span>(<span class="string">&quot;()..&quot;</span>, <span class="number">0</span>, <span class="string">b&#39;(&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;)&#39;</span>, <span class="number">1</span>)));
-        <span class="macro">assert_eq!</span>(<span class="ident">find_matching_bracket</span>(<span class="string">&quot;(..)&quot;</span>, <span class="number">0</span>, <span class="string">b&#39;(&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;)&#39;</span>, <span class="number">3</span>)));
+        <span class="macro">assert_eq!</span>(find_matching_bracket(<span class="string">&quot;()..&quot;</span>, <span class="number">0</span>, <span class="string">b&#39;(&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;)&#39;</span>, <span class="number">1</span>)));
+        <span class="macro">assert_eq!</span>(find_matching_bracket(<span class="string">&quot;(..)&quot;</span>, <span class="number">0</span>, <span class="string">b&#39;(&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;)&#39;</span>, <span class="number">3</span>)));
 
-        <span class="macro">assert_eq!</span>(<span class="ident">find_matching_bracket</span>(<span class="string">&quot;..()&quot;</span>, <span class="number">3</span>, <span class="string">b&#39;)&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;(&#39;</span>, <span class="number">2</span>)));
-        <span class="macro">assert_eq!</span>(<span class="ident">find_matching_bracket</span>(<span class="string">&quot;(..)&quot;</span>, <span class="number">3</span>, <span class="string">b&#39;)&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;(&#39;</span>, <span class="number">0</span>)));
+        <span class="macro">assert_eq!</span>(find_matching_bracket(<span class="string">&quot;..()&quot;</span>, <span class="number">3</span>, <span class="string">b&#39;)&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;(&#39;</span>, <span class="number">2</span>)));
+        <span class="macro">assert_eq!</span>(find_matching_bracket(<span class="string">&quot;(..)&quot;</span>, <span class="number">3</span>, <span class="string">b&#39;)&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;(&#39;</span>, <span class="number">0</span>)));
 
-        <span class="macro">assert_eq!</span>(<span class="ident">find_matching_bracket</span>(<span class="string">&quot;(())&quot;</span>, <span class="number">0</span>, <span class="string">b&#39;(&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;)&#39;</span>, <span class="number">3</span>)));
-        <span class="macro">assert_eq!</span>(<span class="ident">find_matching_bracket</span>(<span class="string">&quot;(())&quot;</span>, <span class="number">3</span>, <span class="string">b&#39;)&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;(&#39;</span>, <span class="number">0</span>)));
+        <span class="macro">assert_eq!</span>(find_matching_bracket(<span class="string">&quot;(())&quot;</span>, <span class="number">0</span>, <span class="string">b&#39;(&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;)&#39;</span>, <span class="number">3</span>)));
+        <span class="macro">assert_eq!</span>(find_matching_bracket(<span class="string">&quot;(())&quot;</span>, <span class="number">3</span>, <span class="string">b&#39;)&#39;</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;(&#39;</span>, <span class="number">0</span>)));
     }
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_bracket</span>() {
-        <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::check_bracket</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">check_bracket</span>(<span class="string">&quot;)...&quot;</span>, <span class="number">0</span>), <span class="prelude-val">None</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">check_bracket</span>(<span class="string">&quot;(...&quot;</span>, <span class="number">2</span>), <span class="prelude-val">None</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">check_bracket</span>(<span class="string">&quot;...(&quot;</span>, <span class="number">3</span>), <span class="prelude-val">None</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">check_bracket</span>(<span class="string">&quot;...(&quot;</span>, <span class="number">4</span>), <span class="prelude-val">None</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">check_bracket</span>(<span class="string">&quot;..).&quot;</span>, <span class="number">4</span>), <span class="prelude-val">None</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">pub fn </span>check_bracket() {
+        <span class="kw">use </span><span class="kw">super</span>::check_bracket;
+        <span class="macro">assert_eq!</span>(check_bracket(<span class="string">&quot;)...&quot;</span>, <span class="number">0</span>), <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(check_bracket(<span class="string">&quot;(...&quot;</span>, <span class="number">2</span>), <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(check_bracket(<span class="string">&quot;...(&quot;</span>, <span class="number">3</span>), <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(check_bracket(<span class="string">&quot;...(&quot;</span>, <span class="number">4</span>), <span class="prelude-val">None</span>);
+        <span class="macro">assert_eq!</span>(check_bracket(<span class="string">&quot;..).&quot;</span>, <span class="number">4</span>), <span class="prelude-val">None</span>);
 
-        <span class="macro">assert_eq!</span>(<span class="ident">check_bracket</span>(<span class="string">&quot;(...&quot;</span>, <span class="number">0</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;(&#39;</span>, <span class="number">0</span>)));
-        <span class="macro">assert_eq!</span>(<span class="ident">check_bracket</span>(<span class="string">&quot;(...&quot;</span>, <span class="number">1</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;(&#39;</span>, <span class="number">0</span>)));
-        <span class="macro">assert_eq!</span>(<span class="ident">check_bracket</span>(<span class="string">&quot;...)&quot;</span>, <span class="number">3</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;)&#39;</span>, <span class="number">3</span>)));
-        <span class="macro">assert_eq!</span>(<span class="ident">check_bracket</span>(<span class="string">&quot;...)&quot;</span>, <span class="number">4</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;)&#39;</span>, <span class="number">3</span>)));
+        <span class="macro">assert_eq!</span>(check_bracket(<span class="string">&quot;(...&quot;</span>, <span class="number">0</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;(&#39;</span>, <span class="number">0</span>)));
+        <span class="macro">assert_eq!</span>(check_bracket(<span class="string">&quot;(...&quot;</span>, <span class="number">1</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;(&#39;</span>, <span class="number">0</span>)));
+        <span class="macro">assert_eq!</span>(check_bracket(<span class="string">&quot;...)&quot;</span>, <span class="number">3</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;)&#39;</span>, <span class="number">3</span>)));
+        <span class="macro">assert_eq!</span>(check_bracket(<span class="string">&quot;...)&quot;</span>, <span class="number">4</span>), <span class="prelude-val">Some</span>((<span class="string">b&#39;)&#39;</span>, <span class="number">3</span>)));
     }
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">matching_bracket</span>() {
-        <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::matching_bracket</span>;
-        <span class="macro">assert_eq!</span>(<span class="ident">matching_bracket</span>(<span class="string">b&#39;(&#39;</span>), <span class="string">b&#39;)&#39;</span>);
-        <span class="macro">assert_eq!</span>(<span class="ident">matching_bracket</span>(<span class="string">b&#39;)&#39;</span>), <span class="string">b&#39;(&#39;</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">pub fn </span>matching_bracket() {
+        <span class="kw">use </span><span class="kw">super</span>::matching_bracket;
+        <span class="macro">assert_eq!</span>(matching_bracket(<span class="string">b&#39;(&#39;</span>), <span class="string">b&#39;)&#39;</span>);
+        <span class="macro">assert_eq!</span>(matching_bracket(<span class="string">b&#39;)&#39;</span>), <span class="string">b&#39;(&#39;</span>);
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_open_bracket</span>() {
-        <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::is_close_bracket</span>;
-        <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::is_open_bracket</span>;
-        <span class="macro">assert!</span>(<span class="ident">is_open_bracket</span>(<span class="string">b&#39;(&#39;</span>));
-        <span class="macro">assert!</span>(<span class="ident">is_close_bracket</span>(<span class="string">b&#39;)&#39;</span>));
+    <span class="attribute">#[test]
+    </span><span class="kw">pub fn </span>is_open_bracket() {
+        <span class="kw">use </span><span class="kw">super</span>::is_close_bracket;
+        <span class="kw">use </span><span class="kw">super</span>::is_open_bracket;
+        <span class="macro">assert!</span>(is_open_bracket(<span class="string">b&#39;(&#39;</span>));
+        <span class="macro">assert!</span>(is_close_bracket(<span class="string">b&#39;)&#39;</span>));
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

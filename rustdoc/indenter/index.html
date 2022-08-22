@@ -7,23 +7,23 @@ indenter = &quot;0.2&quot;</code></pre></div><h2 id="examples"><a href="#example
 <p>This type is intended primarily for writing error reporters that gracefully
 format error messages that span multiple lines.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">std::error::Error</span>;
-<span class="kw">use</span> <span class="ident">core::fmt</span>::{<span class="self">self</span>, <span class="ident">Write</span>};
-<span class="kw">use</span> <span class="ident">indenter::indented</span>;
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::error::Error;
+<span class="kw">use </span>core::fmt::{<span class="self">self</span>, Write};
+<span class="kw">use </span>indenter::indented;
 
-<span class="kw">struct</span> <span class="ident">ErrorReporter</span>&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">Error</span>);
+<span class="kw">struct </span>ErrorReporter&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw">dyn </span>Error);
 
-<span class="kw">impl</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="ident">ErrorReporter</span>&lt;<span class="lifetime">&#39;_</span>&gt; {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">source</span> = <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="number">0</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">i</span> = <span class="number">0</span>;
+<span class="kw">impl </span>fmt::Debug <span class="kw">for </span>ErrorReporter&lt;<span class="lifetime">&#39;_</span>&gt; {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">let </span><span class="kw-2">mut </span>source = <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="number">0</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>i = <span class="number">0</span>;
 
-        <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">error</span>) = <span class="ident">source</span> {
-            <span class="macro">writeln!</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
-            <span class="macro">write!</span>(<span class="ident">indented</span>(<span class="ident">f</span>).<span class="ident">ind</span>(<span class="ident">i</span>), <span class="string">&quot;{}&quot;</span>, <span class="ident">error</span>)<span class="question-mark">?</span>;
+        <span class="kw">while let </span><span class="prelude-val">Some</span>(error) = source {
+            <span class="macro">writeln!</span>(f)<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(indented(f).ind(i), <span class="string">&quot;{}&quot;</span>, error)<span class="question-mark">?</span>;
 
-            <span class="ident">source</span> = <span class="ident">error</span>.<span class="ident">source</span>();
-            <span class="ident">i</span> += <span class="number">1</span>;
+            source = error.source();
+            i += <span class="number">1</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
@@ -34,40 +34,40 @@ format error messages that span multiple lines.</p>
 generating code.</p>
 <p>This type requires the feature <code>std</code>.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use</span> <span class="ident">std::error::Error</span>;
-<span class="kw">use</span> <span class="ident">core::fmt</span>::{<span class="self">self</span>, <span class="ident">Write</span>};
-<span class="kw">use</span> <span class="ident">indenter::CodeFormatter</span>;
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="kw">use </span>std::error::Error;
+<span class="kw">use </span>core::fmt::{<span class="self">self</span>, Write};
+<span class="kw">use </span>indenter::CodeFormatter;
 
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> = <span class="ident">String::new</span>();
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> = <span class="ident">CodeFormatter::new</span>(<span class="kw-2">&amp;mut</span> <span class="ident">output</span>, <span class="string">&quot;    &quot;</span>);
+<span class="kw">let </span><span class="kw-2">mut </span>output = String::new();
+<span class="kw">let </span><span class="kw-2">mut </span>f = CodeFormatter::new(<span class="kw-2">&amp;mut </span>output, <span class="string">&quot;    &quot;</span>);
 
 <span class="macro">write!</span>(
-    <span class="ident">f</span>,
+    f,
     <span class="string">r#&quot;
     Hello
         World
     &quot;#</span>,
 );
 
-<span class="macro">assert_eq!</span>(<span class="ident">output</span>, <span class="string">&quot;Hello\n    World\n&quot;</span>);
+<span class="macro">assert_eq!</span>(output, <span class="string">&quot;Hello\n    World\n&quot;</span>);
 
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> = <span class="ident">String::new</span>();
-<span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">f</span> = <span class="ident">CodeFormatter::new</span>(<span class="kw-2">&amp;mut</span> <span class="ident">output</span>, <span class="string">&quot;    &quot;</span>);
+<span class="kw">let </span><span class="kw-2">mut </span>output = String::new();
+<span class="kw">let </span><span class="kw-2">mut </span>f = CodeFormatter::new(<span class="kw-2">&amp;mut </span>output, <span class="string">&quot;    &quot;</span>);
 
-<span class="comment">// it can also indent...</span>
-<span class="ident">f</span>.<span class="ident">indent</span>(<span class="number">2</span>);
+<span class="comment">// it can also indent...
+</span>f.indent(<span class="number">2</span>);
 
 <span class="macro">write!</span>(
-    <span class="ident">f</span>,
+    f,
     <span class="string">r#&quot;
     Hello
         World
     &quot;#</span>,
 );
 
-<span class="macro">assert_eq!</span>(<span class="ident">output</span>, <span class="string">&quot;        Hello\n            World\n&quot;</span>);</code></pre></div>
+<span class="macro">assert_eq!</span>(output, <span class="string">&quot;        Hello\n            World\n&quot;</span>);</code></pre></div>
 </div></details><h2 id="structs" class="small-section-header"><a href="#structs">Structs</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="struct" href="struct.Indented.html" title="indenter::Indented struct">Indented</a></div><div class="item-right docblock-short"><p>Helper struct for efficiently indenting multi line display implementations</p>
 </div></div></div><h2 id="enums" class="small-section-header"><a href="#enums">Enums</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="enum" href="enum.Format.html" title="indenter::Format enum">Format</a></div><div class="item-right docblock-short"><p>The set of supported formats for indentation</p>
 </div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.indented.html" title="indenter::indented fn">indented</a></div><div class="item-right docblock-short"><p>Helper function for creating a default indenter</p>
 </div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.Inserter.html" title="indenter::Inserter type">Inserter</a></div><div class="item-right docblock-short"><p>A callback for <code>Format::Custom</code> used to insert indenation after a new line</p>
-</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="indenter" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../" data-current-crate="indenter" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -326,333 +326,333 @@
 <span id="326">326</span>
 <span id="327">327</span>
 <span id="328">328</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">convert::TryFrom</span>, <span class="ident">ops::Range</span>, <span class="ident">sync::Arc</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>std::{convert::TryFrom, ops::Range, sync::Arc};
 
-<span class="kw">use</span> <span class="ident">itertools::Itertools</span>;
-<span class="kw">use</span> <span class="ident">logos</span>::{<span class="ident">Lexer</span>, <span class="ident">Logos</span>};
+<span class="kw">use </span>itertools::Itertools;
+<span class="kw">use </span>logos::{Lexer, Logos};
 
-<span class="kw">use</span> <span class="ident">calypso_ast::expr</span>::{<span class="ident">Numeral</span>, <span class="ident">Radix</span>, <span class="ident">Suffix</span>};
-<span class="kw">use</span> <span class="ident">calypso_base</span>::{
-    <span class="ident">span::Spanned</span>,
-    <span class="ident">symbol</span>::{<span class="ident">kw::Keyword</span>, <span class="ident">Symbol</span>},
+<span class="kw">use </span>calypso_ast::expr::{Numeral, Radix, Suffix};
+<span class="kw">use </span>calypso_base::{
+    span::Spanned,
+    symbol::{kw::Keyword, Symbol},
 };
-<span class="kw">use</span> <span class="ident">calypso_common::gcx::GlobalCtxt</span>;
-<span class="kw">use</span> <span class="ident">calypso_diagnostic::prelude</span>::<span class="kw-2">*</span>;
+<span class="kw">use </span>calypso_common::gcx::GlobalCtxt;
+<span class="kw">use </span>calypso_diagnostic::prelude::<span class="kw-2">*</span>;
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Lexeme</span>&lt;<span class="lifetime">&#39;lex</span>&gt; = <span class="ident">Spanned</span>&lt;(<span class="ident">Token</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;lex</span> <span class="ident">str</span>)&gt;;
+<span class="kw">pub type </span>Lexeme&lt;<span class="lifetime">&#39;lex</span>&gt; = Spanned&lt;(Token, <span class="kw-2">&amp;</span><span class="lifetime">&#39;lex </span>str)&gt;;
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Logos</span>)]</span>
-<span class="attribute">#[<span class="ident">logos</span>(<span class="ident">extras</span> = (<span class="ident">usize</span>, <span class="ident">Arc</span>&lt;<span class="ident">GlobalCtxt</span>&gt;))]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Token</span> {
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&lt;&lt;=&quot;</span>)]</span>
-    <span class="ident">LtLtEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&lt;&lt;&quot;</span>)]</span>
-    <span class="ident">LtLt</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&lt;=&quot;</span>)]</span>
-    <span class="ident">LtEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&lt;&quot;</span>)]</span>
-    <span class="ident">Lt</span>,
+<span class="attribute">#[derive(Copy, Clone, Debug, PartialEq, Eq, Logos)]
+#[logos(extras = (usize, Arc&lt;GlobalCtxt&gt;))]
+</span><span class="kw">pub enum </span>Token {
+    <span class="attribute">#[token(<span class="string">&quot;&lt;&lt;=&quot;</span>)]
+    </span>LtLtEq,
+    <span class="attribute">#[token(<span class="string">&quot;&lt;&lt;&quot;</span>)]
+    </span>LtLt,
+    <span class="attribute">#[token(<span class="string">&quot;&lt;=&quot;</span>)]
+    </span>LtEq,
+    <span class="attribute">#[token(<span class="string">&quot;&lt;&quot;</span>)]
+    </span>Lt,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&gt;&gt;=&quot;</span>)]</span>
-    <span class="ident">GtGtEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&gt;&gt;&quot;</span>)]</span>
-    <span class="ident">GtGt</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&gt;=&quot;</span>)]</span>
-    <span class="ident">GtEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&gt;&quot;</span>)]</span>
-    <span class="ident">Gt</span>,
+    <span class="attribute">#[token(<span class="string">&quot;&gt;&gt;=&quot;</span>)]
+    </span>GtGtEq,
+    <span class="attribute">#[token(<span class="string">&quot;&gt;&gt;&quot;</span>)]
+    </span>GtGt,
+    <span class="attribute">#[token(<span class="string">&quot;&gt;=&quot;</span>)]
+    </span>GtEq,
+    <span class="attribute">#[token(<span class="string">&quot;&gt;&quot;</span>)]
+    </span>Gt,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;==&quot;</span>)]</span>
-    <span class="ident">EqEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;=&quot;</span>)]</span>
-    <span class="ident">Eq</span>,
+    <span class="attribute">#[token(<span class="string">&quot;==&quot;</span>)]
+    </span>EqEq,
+    <span class="attribute">#[token(<span class="string">&quot;=&quot;</span>)]
+    </span>Eq,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;!=&quot;</span>)]</span>
-    <span class="ident">BangEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;!&quot;</span>)]</span>
-    <span class="ident">Bang</span>,
+    <span class="attribute">#[token(<span class="string">&quot;!=&quot;</span>)]
+    </span>BangEq,
+    <span class="attribute">#[token(<span class="string">&quot;!&quot;</span>)]
+    </span>Bang,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;||&quot;</span>)]</span>
-    <span class="ident">PipePipe</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;|=&quot;</span>)]</span>
-    <span class="ident">PipeEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;|&quot;</span>)]</span>
-    <span class="ident">Pipe</span>,
+    <span class="attribute">#[token(<span class="string">&quot;||&quot;</span>)]
+    </span>PipePipe,
+    <span class="attribute">#[token(<span class="string">&quot;|=&quot;</span>)]
+    </span>PipeEq,
+    <span class="attribute">#[token(<span class="string">&quot;|&quot;</span>)]
+    </span>Pipe,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&amp;&amp;&quot;</span>)]</span>
-    <span class="ident">AndAnd</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&amp;=&quot;</span>)]</span>
-    <span class="ident">AndEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;&amp;&quot;</span>)]</span>
-    <span class="ident">And</span>,
+    <span class="attribute">#[token(<span class="string">&quot;&amp;&amp;&quot;</span>)]
+    </span>AndAnd,
+    <span class="attribute">#[token(<span class="string">&quot;&amp;=&quot;</span>)]
+    </span>AndEq,
+    <span class="attribute">#[token(<span class="string">&quot;&amp;&quot;</span>)]
+    </span>And,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;+=&quot;</span>)]</span>
-    <span class="ident">PlusEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;+&quot;</span>)]</span>
-    <span class="ident">Plus</span>,
+    <span class="attribute">#[token(<span class="string">&quot;+=&quot;</span>)]
+    </span>PlusEq,
+    <span class="attribute">#[token(<span class="string">&quot;+&quot;</span>)]
+    </span>Plus,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;-&gt;&quot;</span>)]</span>
-    <span class="ident">Arrow</span>,
+    <span class="attribute">#[token(<span class="string">&quot;-&gt;&quot;</span>)]
+    </span>Arrow,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;-=&quot;</span>)]</span>
-    <span class="ident">MinusEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;-&quot;</span>)]</span>
-    <span class="ident">Minus</span>,
+    <span class="attribute">#[token(<span class="string">&quot;-=&quot;</span>)]
+    </span>MinusEq,
+    <span class="attribute">#[token(<span class="string">&quot;-&quot;</span>)]
+    </span>Minus,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;**=&quot;</span>)]</span>
-    <span class="ident">StarStarEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;**&quot;</span>)]</span>
-    <span class="ident">StarStar</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;*=&quot;</span>)]</span>
-    <span class="ident">StarEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;*&quot;</span>)]</span>
-    <span class="ident">Star</span>,
+    <span class="attribute">#[token(<span class="string">&quot;**=&quot;</span>)]
+    </span>StarStarEq,
+    <span class="attribute">#[token(<span class="string">&quot;**&quot;</span>)]
+    </span>StarStar,
+    <span class="attribute">#[token(<span class="string">&quot;*=&quot;</span>)]
+    </span>StarEq,
+    <span class="attribute">#[token(<span class="string">&quot;*&quot;</span>)]
+    </span>Star,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;/=&quot;</span>)]</span>
-    <span class="ident">SlashEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;/&quot;</span>)]</span>
-    <span class="ident">Slash</span>,
+    <span class="attribute">#[token(<span class="string">&quot;/=&quot;</span>)]
+    </span>SlashEq,
+    <span class="attribute">#[token(<span class="string">&quot;/&quot;</span>)]
+    </span>Slash,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;%=&quot;</span>)]</span>
-    <span class="ident">PercentEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;%&quot;</span>)]</span>
-    <span class="ident">Percent</span>,
+    <span class="attribute">#[token(<span class="string">&quot;%=&quot;</span>)]
+    </span>PercentEq,
+    <span class="attribute">#[token(<span class="string">&quot;%&quot;</span>)]
+    </span>Percent,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;^=&quot;</span>)]</span>
-    <span class="ident">CaretEq</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;^&quot;</span>)]</span>
-    <span class="ident">Caret</span>,
+    <span class="attribute">#[token(<span class="string">&quot;^=&quot;</span>)]
+    </span>CaretEq,
+    <span class="attribute">#[token(<span class="string">&quot;^&quot;</span>)]
+    </span>Caret,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;@!&quot;</span>)]</span>
-    <span class="ident">AtBang</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;@&quot;</span>)]</span>
-    <span class="ident">At</span>,
+    <span class="attribute">#[token(<span class="string">&quot;@!&quot;</span>)]
+    </span>AtBang,
+    <span class="attribute">#[token(<span class="string">&quot;@&quot;</span>)]
+    </span>At,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;(&quot;</span>)]</span>
-    <span class="ident">LParen</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;)&quot;</span>)]</span>
-    <span class="ident">RParen</span>,
+    <span class="attribute">#[token(<span class="string">&quot;(&quot;</span>)]
+    </span>LParen,
+    <span class="attribute">#[token(<span class="string">&quot;)&quot;</span>)]
+    </span>RParen,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;{&quot;</span>)]</span>
-    <span class="ident">LBrace</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;}&quot;</span>)]</span>
-    <span class="ident">RBrace</span>,
+    <span class="attribute">#[token(<span class="string">&quot;{&quot;</span>)]
+    </span>LBrace,
+    <span class="attribute">#[token(<span class="string">&quot;}&quot;</span>)]
+    </span>RBrace,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;[&quot;</span>)]</span>
-    <span class="ident">LBracket</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;]&quot;</span>)]</span>
-    <span class="ident">RBracket</span>,
+    <span class="attribute">#[token(<span class="string">&quot;[&quot;</span>)]
+    </span>LBracket,
+    <span class="attribute">#[token(<span class="string">&quot;]&quot;</span>)]
+    </span>RBracket,
 
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;,&quot;</span>)]</span>
-    <span class="ident">Comma</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;:&quot;</span>)]</span>
-    <span class="ident">Colon</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;;&quot;</span>)]</span>
-    <span class="ident">Semi</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;_&quot;</span>)]</span>
-    <span class="ident">Under</span>,
-    <span class="attribute">#[<span class="ident">token</span>(<span class="string">&quot;.&quot;</span>)]</span>
-    <span class="ident">Dot</span>,
+    <span class="attribute">#[token(<span class="string">&quot;,&quot;</span>)]
+    </span>Comma,
+    <span class="attribute">#[token(<span class="string">&quot;:&quot;</span>)]
+    </span>Colon,
+    <span class="attribute">#[token(<span class="string">&quot;;&quot;</span>)]
+    </span>Semi,
+    <span class="attribute">#[token(<span class="string">&quot;_&quot;</span>)]
+    </span>Under,
+    <span class="attribute">#[token(<span class="string">&quot;.&quot;</span>)]
+    </span>Dot,
 
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;_[A-Za-z0-9_]+|[A-Za-z][A-Za-z0-9_]*&quot;</span>, <span class="ident">ident</span>)]</span>
-    <span class="ident">IdentLike</span>(<span class="ident">IdentLike</span>),
+    <span class="attribute">#[regex(<span class="string">&quot;_[A-Za-z0-9_]+|[A-Za-z][A-Za-z0-9_]*&quot;</span>, ident)]
+    </span>IdentLike(IdentLike),
 
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;///(.*)\n?&quot;</span>, |<span class="kw">_</span>| <span class="ident">CommentProps::doc</span>())]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;//!(.*)\n?&quot;</span>, |<span class="kw">_</span>| <span class="ident">CommentProps::inner_doc</span>())]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;//(.*)\n?&quot;</span>,  |<span class="kw">_</span>| <span class="ident">CommentProps::default</span>())]</span>
-    <span class="ident">Comment</span>(<span class="ident">CommentProps</span>),
+    <span class="attribute">#[regex(<span class="string">&quot;///(.*)\n?&quot;</span>, |<span class="kw">_</span>| CommentProps::doc())]
+    #[regex(<span class="string">&quot;//!(.*)\n?&quot;</span>, |<span class="kw">_</span>| CommentProps::inner_doc())]
+    #[regex(<span class="string">&quot;//(.*)\n?&quot;</span>,  |<span class="kw">_</span>| CommentProps::default())]
+    </span>Comment(CommentProps),
 
-    <span class="comment">// #[regex(&quot;[\n]+&quot;, |lex| lex.span().len())]</span>
-    <span class="comment">// Nl(usize),</span>
+    <span class="comment">// #[regex(&quot;[\n]+&quot;, |lex| lex.span().len())]
+    // Nl(usize),
 
-    <span class="comment">// this hurts.</span>
-    <span class="comment">// cc https://github.com/maciejhirsz/logos/issues/126</span>
-    <span class="comment">// TODO(parse): this could probably use a raw string, and it&#39;d be slightly less ugly</span>
-    <span class="comment">// emphasis on slightly</span>
-    <span class="attribute">#[<span class="ident">regex</span>(
-        <span class="string">&quot;\&quot;([^\n\r\&quot;\\\\]|(\\\\([nrt\\\\0&#39;\&quot;]|\r\n|\n|x[0-9a-fA-F][0-9a-fA-F]|u\\{[0-9a-fA-F][0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?\\})))*\&quot;&quot;</span>
-    )]</span>
-    <span class="ident">String</span>,
+    // this hurts.
+    // cc https://github.com/maciejhirsz/logos/issues/126
+    // TODO(parse): this could probably use a raw string, and it&#39;d be slightly less ugly
+    // emphasis on slightly
+    </span><span class="attribute">#[regex(
+        <span class="string">&quot;\&quot;([^\n\r\&quot;\\\\]|(\\\\([nrt\\\\0&#39;\&quot;]|\r\n|\n|x[0-9a-fA-F][0-9a-fA-F]|u\\{[0-9a-fA-F][0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?\\})))*\&quot;&quot;
+    </span>)]
+    </span>String,
 
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;&#39;([^\n\r&#39;\\\\]|(\\\\([nrt\\\\0&#39;\&quot;]|x[0-9a-fA-F][0-9a-fA-F]|u\\{[0-9a-fA-F][0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?\\})))&#39;&quot;</span>)]</span>
-    <span class="ident">Char</span>,
+    <span class="attribute">#[regex(<span class="string">&quot;&#39;([^\n\r&#39;\\\\]|(\\\\([nrt\\\\0&#39;\&quot;]|x[0-9a-fA-F][0-9a-fA-F]|u\\{[0-9a-fA-F][0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?\\})))&#39;&quot;</span>)]
+    </span>Char,
 
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0x[0-9a-fA-F][0-9a-fA-F_]*[su]?&quot;</span>, |<span class="ident">lex</span>| <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Hexadecimal</span>))]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0o[0-7][0-7_]*[su]?&quot;</span>, |<span class="ident">lex</span>| <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Octal</span>))]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0b[01][01_]*[su]?&quot;</span>, |<span class="ident">lex</span>| <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Binary</span>))]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;0d[0-9][0-9_]*[su]?&quot;</span>, |<span class="ident">lex</span>| <span class="ident">radix_numeral</span>(<span class="ident">lex</span>, <span class="ident">Radix::Decimal</span>))]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*\\.[0-9][0-9_]*(e[+-]?[0-9][0-9_]*)?&quot;</span>, |<span class="kw">_</span>| <span class="ident">Numeral::Float</span> { <span class="ident">from_integer</span>: <span class="bool-val">false</span> })]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*e[+-]?[0-9][0-9_]*&quot;</span>, |<span class="kw">_</span>| <span class="ident">Numeral::Float</span> { <span class="ident">from_integer</span>: <span class="bool-val">false</span> })]</span>
-    <span class="attribute">#[<span class="ident">regex</span>(<span class="string">&quot;[0-9][0-9_]*[suf]?&quot;</span>, |<span class="ident">lex</span>| <span class="ident">integer_numeral</span>(<span class="ident">lex</span>))]</span>
-    <span class="ident">Numeral</span>(<span class="ident">Numeral</span>),
+    <span class="attribute">#[regex(<span class="string">&quot;0x[0-9a-fA-F][0-9a-fA-F_]*[su]?&quot;</span>, |lex| radix_numeral(lex, Radix::Hexadecimal))]
+    #[regex(<span class="string">&quot;0o[0-7][0-7_]*[su]?&quot;</span>, |lex| radix_numeral(lex, Radix::Octal))]
+    #[regex(<span class="string">&quot;0b[01][01_]*[su]?&quot;</span>, |lex| radix_numeral(lex, Radix::Binary))]
+    #[regex(<span class="string">&quot;0d[0-9][0-9_]*[su]?&quot;</span>, |lex| radix_numeral(lex, Radix::Decimal))]
+    #[regex(<span class="string">&quot;[0-9][0-9_]*\\.[0-9][0-9_]*(e[+-]?[0-9][0-9_]*)?&quot;</span>, |<span class="kw">_</span>| Numeral::Float { from_integer: <span class="bool-val">false </span>})]
+    #[regex(<span class="string">&quot;[0-9][0-9_]*e[+-]?[0-9][0-9_]*&quot;</span>, |<span class="kw">_</span>| Numeral::Float { from_integer: <span class="bool-val">false </span>})]
+    #[regex(<span class="string">&quot;[0-9][0-9_]*[suf]?&quot;</span>, |lex| integer_numeral(lex))]
+    </span>Numeral(Numeral),
 
-    <span class="attribute">#[<span class="ident">regex</span>(
+    <span class="attribute">#[regex(
         <span class="string">&quot;[\t\u{000B}\u{000C}\r \u{0085}\u{200E}\u{200F}\u{2028}\u{2029}\n]+&quot;</span>,
-        <span class="ident">logos::skip</span>
-    )]</span>
-    <span class="attribute">#[<span class="ident">error</span>]</span>
-    <span class="ident">Error</span>,
+        logos::skip
+    )]
+    #[error]
+    </span>Error,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">IdentLike</span> {
-    <span class="ident">Ident</span>(<span class="ident">Symbol</span>),
-    <span class="ident">Keyword</span>(<span class="ident">Keyword</span>),
+<span class="attribute">#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>IdentLike {
+    Ident(Symbol),
+    Keyword(Keyword),
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ident</span>(<span class="ident">lex</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Lexer</span>&lt;<span class="ident">Token</span>&gt;) -&gt; <span class="ident">IdentLike</span> {
-    <span class="kw">let</span> <span class="ident">sym</span> = <span class="ident">Symbol::intern</span>(<span class="ident">lex</span>.<span class="ident">slice</span>());
+<span class="kw">pub fn </span>ident(lex: <span class="kw-2">&amp;mut </span>Lexer&lt;Token&gt;) -&gt; IdentLike {
+    <span class="kw">let </span>sym = Symbol::intern(lex.slice());
 
-    <span class="kw">match</span> <span class="ident">Keyword::try_from</span>(<span class="ident">sym</span>) {
-        <span class="prelude-val">Ok</span>(<span class="ident">kw</span>) =&gt; <span class="ident">IdentLike::Keyword</span>(<span class="ident">kw</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">sym</span>) =&gt; <span class="ident">IdentLike::Ident</span>(<span class="ident">sym</span>),
+    <span class="kw">match </span>Keyword::try_from(sym) {
+        <span class="prelude-val">Ok</span>(kw) =&gt; IdentLike::Keyword(kw),
+        <span class="prelude-val">Err</span>(sym) =&gt; IdentLike::Ident(sym),
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CommentProps</span> {
-    <span class="kw">pub</span> <span class="ident">is_doc</span>: <span class="ident">bool</span>,
-    <span class="kw">pub</span> <span class="ident">is_inner</span>: <span class="ident">bool</span>,
+<span class="attribute">#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>CommentProps {
+    <span class="kw">pub </span>is_doc: bool,
+    <span class="kw">pub </span>is_inner: bool,
 }
 
-<span class="kw">impl</span> <span class="ident">CommentProps</span> {
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">doc</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">is_doc</span>: <span class="bool-val">true</span>,
-            <span class="ident">is_inner</span>: <span class="bool-val">false</span>,
+<span class="kw">impl </span>CommentProps {
+    <span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>doc() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            is_doc: <span class="bool-val">true</span>,
+            is_inner: <span class="bool-val">false</span>,
         }
     }
 
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inner_doc</span>() -&gt; <span class="self">Self</span> {
-        <span class="self">Self</span> {
-            <span class="ident">is_doc</span>: <span class="bool-val">true</span>,
-            <span class="ident">is_inner</span>: <span class="bool-val">true</span>,
+    <span class="attribute">#[must_use]
+    </span><span class="kw">pub fn </span>inner_doc() -&gt; <span class="self">Self </span>{
+        <span class="self">Self </span>{
+            is_doc: <span class="bool-val">true</span>,
+            is_inner: <span class="bool-val">true</span>,
         }
     }
 }
 
-<span class="kw">fn</span> <span class="ident">radix_numeral</span>(<span class="ident">lex</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Lexer</span>&lt;<span class="ident">Token</span>&gt;, <span class="ident">radix</span>: <span class="ident">Radix</span>) -&gt; <span class="ident">Numeral</span> {
-    <span class="kw">match</span> <span class="ident">lex</span>.<span class="ident">slice</span>().<span class="ident">chars</span>().<span class="ident">last</span>() {
-        <span class="prelude-val">Some</span>(<span class="string">&#39;s&#39;</span>) =&gt; <span class="ident">Numeral::Integer</span> {
-            <span class="ident">suffix</span>: <span class="prelude-val">Some</span>(<span class="ident">Suffix::Sint</span>),
-            <span class="ident">radix</span>,
+<span class="kw">fn </span>radix_numeral(lex: <span class="kw-2">&amp;mut </span>Lexer&lt;Token&gt;, radix: Radix) -&gt; Numeral {
+    <span class="kw">match </span>lex.slice().chars().last() {
+        <span class="prelude-val">Some</span>(<span class="string">&#39;s&#39;</span>) =&gt; Numeral::Integer {
+            suffix: <span class="prelude-val">Some</span>(Suffix::Sint),
+            radix,
         },
-        <span class="prelude-val">Some</span>(<span class="string">&#39;u&#39;</span>) =&gt; <span class="ident">Numeral::Integer</span> {
-            <span class="ident">suffix</span>: <span class="prelude-val">Some</span>(<span class="ident">Suffix::Uint</span>),
-            <span class="ident">radix</span>,
+        <span class="prelude-val">Some</span>(<span class="string">&#39;u&#39;</span>) =&gt; Numeral::Integer {
+            suffix: <span class="prelude-val">Some</span>(Suffix::Uint),
+            radix,
         },
-        <span class="kw">_</span> =&gt; <span class="ident">Numeral::Integer</span> {
-            <span class="ident">suffix</span>: <span class="prelude-val">None</span>,
-            <span class="ident">radix</span>,
-        },
-    }
-}
-
-<span class="kw">fn</span> <span class="ident">integer_numeral</span>(<span class="ident">lex</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Lexer</span>&lt;<span class="ident">Token</span>&gt;) -&gt; <span class="ident">Numeral</span> {
-    <span class="kw">match</span> <span class="ident">lex</span>.<span class="ident">slice</span>().<span class="ident">chars</span>().<span class="ident">last</span>() {
-        <span class="prelude-val">Some</span>(<span class="string">&#39;s&#39;</span>) =&gt; <span class="ident">Numeral::Integer</span> {
-            <span class="ident">suffix</span>: <span class="prelude-val">Some</span>(<span class="ident">Suffix::Sint</span>),
-            <span class="ident">radix</span>: <span class="ident">Radix::None</span>,
-        },
-        <span class="prelude-val">Some</span>(<span class="string">&#39;u&#39;</span>) =&gt; <span class="ident">Numeral::Integer</span> {
-            <span class="ident">suffix</span>: <span class="prelude-val">Some</span>(<span class="ident">Suffix::Uint</span>),
-            <span class="ident">radix</span>: <span class="ident">Radix::None</span>,
-        },
-        <span class="prelude-val">Some</span>(<span class="string">&#39;f&#39;</span>) =&gt; <span class="ident">Numeral::Float</span> { <span class="ident">from_integer</span>: <span class="bool-val">true</span> },
-        <span class="kw">_</span> =&gt; <span class="ident">Numeral::Integer</span> {
-            <span class="ident">suffix</span>: <span class="prelude-val">None</span>,
-            <span class="ident">radix</span>: <span class="ident">Radix::None</span>,
+        <span class="kw">_ </span>=&gt; Numeral::Integer {
+            suffix: <span class="prelude-val">None</span>,
+            radix,
         },
     }
 }
 
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::missing_panics_doc</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">tokens</span>(
-    <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">str</span>,
-    <span class="ident">file_id</span>: <span class="ident">usize</span>,
-    <span class="ident">gcx</span>: <span class="ident">Arc</span>&lt;<span class="ident">GlobalCtxt</span>&gt;,
-) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="ident">Lexeme</span>&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
-    <span class="kw">let</span> <span class="ident">lex</span> = <span class="ident">Token::lexer_with_extras</span>(<span class="ident">source</span>, (<span class="ident">file_id</span>, <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>)));
-    <span class="kw">let</span> <span class="ident">gcx2</span> = <span class="ident">Arc::clone</span>(<span class="kw-2">&amp;</span><span class="ident">gcx</span>);
-    <span class="ident">lex</span>.<span class="ident">spanned</span>()
-        .<span class="ident">map</span>(|(<span class="ident">tok</span>, <span class="ident">span</span>)| {
+<span class="kw">fn </span>integer_numeral(lex: <span class="kw-2">&amp;mut </span>Lexer&lt;Token&gt;) -&gt; Numeral {
+    <span class="kw">match </span>lex.slice().chars().last() {
+        <span class="prelude-val">Some</span>(<span class="string">&#39;s&#39;</span>) =&gt; Numeral::Integer {
+            suffix: <span class="prelude-val">Some</span>(Suffix::Sint),
+            radix: Radix::None,
+        },
+        <span class="prelude-val">Some</span>(<span class="string">&#39;u&#39;</span>) =&gt; Numeral::Integer {
+            suffix: <span class="prelude-val">Some</span>(Suffix::Uint),
+            radix: Radix::None,
+        },
+        <span class="prelude-val">Some</span>(<span class="string">&#39;f&#39;</span>) =&gt; Numeral::Float { from_integer: <span class="bool-val">true </span>},
+        <span class="kw">_ </span>=&gt; Numeral::Integer {
+            suffix: <span class="prelude-val">None</span>,
+            radix: Radix::None,
+        },
+    }
+}
+
+<span class="attribute">#[allow(clippy::missing_panics_doc)]
+</span><span class="kw">pub fn </span>tokens(
+    source: <span class="kw-2">&amp;</span><span class="lifetime">&#39;_ </span>str,
+    file_id: usize,
+    gcx: Arc&lt;GlobalCtxt&gt;,
+) -&gt; <span class="kw">impl </span>Iterator&lt;Item = Lexeme&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    <span class="kw">let </span>lex = Token::lexer_with_extras(source, (file_id, Arc::clone(<span class="kw-2">&amp;</span>gcx)));
+    <span class="kw">let </span>gcx2 = Arc::clone(<span class="kw-2">&amp;</span>gcx);
+    lex.spanned()
+        .map(|(tok, span)| {
             (
-                <span class="ident">tok</span>,
-                <span class="ident">u32::try_from</span>(<span class="ident">span</span>.<span class="ident">start</span>).<span class="ident">expect</span>(<span class="string">&quot;span.start &lt;= u32::MAX&quot;</span>)
-                    ..<span class="ident">u32::try_from</span>(<span class="ident">span</span>.<span class="ident">end</span>).<span class="ident">expect</span>(<span class="string">&quot;span.end &lt;= u32::MAX&quot;</span>),
+                tok,
+                u32::try_from(span.start).expect(<span class="string">&quot;span.start &lt;= u32::MAX&quot;</span>)
+                    ..u32::try_from(span.end).expect(<span class="string">&quot;span.end &lt;= u32::MAX&quot;</span>),
             )
         })
-        .<span class="ident">map</span>(<span class="ident">Spanned::from</span>)
-        .<span class="ident">map</span>(|<span class="ident">x</span>| (<span class="ident">x</span>, <span class="bool-val">false</span>))
-        .<span class="ident">coalesce</span>(<span class="kw">move</span> |<span class="ident">a</span>, <span class="kw-2">mut</span> <span class="ident">b</span>| {
-            <span class="kw">if</span> <span class="ident">a</span>.<span class="number">0</span>.<span class="ident">value</span>() == <span class="kw-2">&amp;</span><span class="ident">Token::Error</span> {
-                <span class="comment">// Mark errors on quotes/apostrophes as fatal, as they probably</span>
-                <span class="comment">// are. The worst case is that they aren&#39;t, and the user is</span>
-                <span class="comment">// mildly annoyed. With the current state of logos, however,</span>
-                <span class="comment">// there&#39;s not really a way to do this without backtracking or</span>
-                <span class="comment">// n-token-lookahead, which I&#39;d rather not do for this at the</span>
-                <span class="comment">// moment.</span>
-                <span class="kw">if</span> <span class="ident">source</span>
-                    .<span class="ident">get</span>(<span class="ident">Range</span>::&lt;<span class="ident">usize</span>&gt;<span class="ident">::from</span>(<span class="ident">a</span>.<span class="number">0</span>.<span class="ident">span</span>()))
-                    .<span class="ident">map_or</span>(<span class="bool-val">false</span>, |<span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>| <span class="ident">x</span> == <span class="string">&quot;\&#39;&quot;</span> || <span class="ident">x</span> == <span class="string">&quot;\&quot;&quot;</span>)
+        .map(Spanned::from)
+        .map(|x| (x, <span class="bool-val">false</span>))
+        .coalesce(<span class="kw">move </span>|a, <span class="kw-2">mut </span>b| {
+            <span class="kw">if </span>a.<span class="number">0</span>.value() == <span class="kw-2">&amp;</span>Token::Error {
+                <span class="comment">// Mark errors on quotes/apostrophes as fatal, as they probably
+                // are. The worst case is that they aren&#39;t, and the user is
+                // mildly annoyed. With the current state of logos, however,
+                // there&#39;s not really a way to do this without backtracking or
+                // n-token-lookahead, which I&#39;d rather not do for this at the
+                // moment.
+                </span><span class="kw">if </span>source
+                    .get(Range::&lt;usize&gt;::from(a.<span class="number">0</span>.span()))
+                    .map_or(<span class="bool-val">false</span>, |x: <span class="kw-2">&amp;</span>str| x == <span class="string">&quot;\&#39;&quot; </span>|| x == <span class="string">&quot;\&quot;&quot;</span>)
                 {
-                    <span class="ident">gcx2</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_fatal</span>(
-                        <span class="ident">EnsembleBuilder::new</span>()
-                            .<span class="ident">error</span>(|<span class="ident">b</span>| {
-                                <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0001&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0001</span>)).<span class="ident">label</span>(
-                                    <span class="ident">LabelStyle::Primary</span>,
+                    gcx2.grcx.write().report_fatal(
+                        EnsembleBuilder::new()
+                            .error(|b| {
+                                b.code(<span class="string">&quot;E0001&quot;</span>).short(<span class="macro">err!</span>(E0001)).label(
+                                    LabelStyle::Primary,
                                     <span class="prelude-val">None</span>,
-                                    <span class="ident">file_id</span>,
-                                    <span class="ident">a</span>.<span class="number">0</span>.<span class="ident">span</span>(),
+                                    file_id,
+                                    a.<span class="number">0</span>.span(),
                                 )
                             })
-                            .<span class="ident">build</span>(),
+                            .build(),
                     );
                 }
 
-                <span class="comment">// Don&#39;t coalesce if there is a fatal error, and mark when it happened</span>
-                <span class="comment">// (and when was after it happened, so we know where to stop)</span>
-                <span class="kw">if</span> <span class="ident">gcx2</span>.<span class="ident">grcx</span>.<span class="ident">read</span>().<span class="ident">fatal</span>().<span class="ident">is_some</span>() {
-                    <span class="ident">b</span>.<span class="number">1</span> = <span class="bool-val">true</span>;
-                    <span class="kw">return</span> <span class="prelude-val">Err</span>((<span class="ident">a</span>, <span class="ident">b</span>));
+                <span class="comment">// Don&#39;t coalesce if there is a fatal error, and mark when it happened
+                // (and when was after it happened, so we know where to stop)
+                </span><span class="kw">if </span>gcx2.grcx.read().fatal().is_some() {
+                    b.<span class="number">1 </span>= <span class="bool-val">true</span>;
+                    <span class="kw">return </span><span class="prelude-val">Err</span>((a, b));
                 }
-                <span class="kw">if</span> <span class="ident">b</span>.<span class="number">0</span>.<span class="ident">value</span>() == <span class="kw-2">&amp;</span><span class="ident">Token::Error</span> {
-                    <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="ident">Spanned::new</span>(<span class="ident">a</span>.<span class="number">0</span>.<span class="ident">span</span>().<span class="ident">to</span>(<span class="ident">b</span>.<span class="number">0</span>.<span class="ident">span</span>()), <span class="ident">Token::Error</span>), <span class="bool-val">false</span>));
+                <span class="kw">if </span>b.<span class="number">0</span>.value() == <span class="kw-2">&amp;</span>Token::Error {
+                    <span class="kw">return </span><span class="prelude-val">Ok</span>((Spanned::new(a.<span class="number">0</span>.span().to(b.<span class="number">0</span>.span()), Token::Error), <span class="bool-val">false</span>));
                 }
             }
 
-            <span class="prelude-val">Err</span>((<span class="ident">a</span>, <span class="ident">b</span>))
+            <span class="prelude-val">Err</span>((a, b))
         })
-        <span class="comment">// Stop after when there&#39;s a fatal error</span>
-        .<span class="ident">take_while</span>(<span class="kw">move</span> |(<span class="kw">_</span>, <span class="ident">end</span>)| !<span class="kw-2">*</span><span class="ident">end</span>)
-        .<span class="ident">map</span>(<span class="kw">move</span> |(<span class="ident">x</span>, <span class="ident">end</span>)| {
-            <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">value</span>() == <span class="kw-2">&amp;</span><span class="ident">Token::Error</span> &amp;&amp; !<span class="ident">end</span> {
-                <span class="comment">// Report non-fatal syntax errors</span>
-                <span class="ident">gcx</span>.<span class="ident">grcx</span>.<span class="ident">write</span>().<span class="ident">report_syncd</span>(
-                    <span class="ident">EnsembleBuilder::new</span>()
-                        .<span class="ident">error</span>(|<span class="ident">b</span>| {
-                            <span class="ident">b</span>.<span class="ident">code</span>(<span class="string">&quot;E0001&quot;</span>).<span class="ident">short</span>(<span class="macro">err!</span>(<span class="ident">E0001</span>)).<span class="ident">label</span>(
-                                <span class="ident">LabelStyle::Primary</span>,
+        <span class="comment">// Stop after when there&#39;s a fatal error
+        </span>.take_while(<span class="kw">move </span>|(<span class="kw">_</span>, end)| !<span class="kw-2">*</span>end)
+        .map(<span class="kw">move </span>|(x, end)| {
+            <span class="kw">if </span>x.value() == <span class="kw-2">&amp;</span>Token::Error &amp;&amp; !end {
+                <span class="comment">// Report non-fatal syntax errors
+                </span>gcx.grcx.write().report_syncd(
+                    EnsembleBuilder::new()
+                        .error(|b| {
+                            b.code(<span class="string">&quot;E0001&quot;</span>).short(<span class="macro">err!</span>(E0001)).label(
+                                LabelStyle::Primary,
                                 <span class="prelude-val">None</span>,
-                                <span class="ident">file_id</span>,
-                                <span class="ident">x</span>.<span class="ident">span</span>(),
+                                file_id,
+                                x.span(),
                             )
                         })
-                        .<span class="ident">build</span>(),
+                        .build(),
                 );
             }
-            <span class="ident">x</span>
+            x
         })
-        .<span class="ident">map</span>(<span class="kw">move</span> |<span class="ident">x</span>| {
-            <span class="kw">let</span> <span class="ident">tok</span> = <span class="ident">x</span>.<span class="ident">value</span>();
-            <span class="kw">let</span> <span class="ident">sp</span> = <span class="ident">x</span>.<span class="ident">span</span>();
-            <span class="comment">// Spans provided by logos will be valid except in extraordinary</span>
-            <span class="comment">// circumstances.</span>
-            <span class="kw">let</span> <span class="ident">s</span> = <span class="ident">source</span>.<span class="ident">get</span>(<span class="ident">Range</span>::&lt;<span class="ident">usize</span>&gt;<span class="ident">::from</span>(<span class="ident">sp</span>)).<span class="ident">unwrap</span>();
-            <span class="ident">Spanned::new</span>(<span class="ident">sp</span>, (<span class="kw-2">*</span><span class="ident">tok</span>, <span class="ident">s</span>))
+        .map(<span class="kw">move </span>|x| {
+            <span class="kw">let </span>tok = x.value();
+            <span class="kw">let </span>sp = x.span();
+            <span class="comment">// Spans provided by logos will be valid except in extraordinary
+            // circumstances.
+            </span><span class="kw">let </span>s = source.get(Range::&lt;usize&gt;::from(sp)).unwrap();
+            Spanned::new(sp, (<span class="kw-2">*</span>tok, s))
         })
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_parsing" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_parsing" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

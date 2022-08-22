@@ -131,138 +131,138 @@
 <span id="131">131</span>
 <span id="132">132</span>
 <span id="133">133</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Contains error type for handling I/O and Errno errors</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">use</span> <span class="ident">std::char</span>;
-<span class="kw">use</span> <span class="ident">std::error::Error</span>;
-<span class="kw">use</span> <span class="ident">std::fmt</span>;
-<span class="kw">use</span> <span class="ident">std::io</span>;
+</pre><pre class="rust"><code><span class="doccomment">//! Contains error type for handling I/O and Errno errors
+</span><span class="attribute">#[cfg(windows)]
+</span><span class="kw">use </span>std::char;
+<span class="kw">use </span>std::error::Error;
+<span class="kw">use </span>std::fmt;
+<span class="kw">use </span>std::io;
 
-<span class="doccomment">/// The error type for Rustyline errors that can arise from</span>
-<span class="doccomment">/// I/O related errors or Errno when using the nix-rust library</span>
-<span class="comment">// #[non_exhaustive]</span>
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::module_name_repetitions</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">ReadlineError</span> {
-    <span class="doccomment">/// I/O Error</span>
-    <span class="ident">Io</span>(<span class="ident">io::Error</span>),
-    <span class="doccomment">/// EOF (VEOF / Ctrl-D)</span>
-    <span class="ident">Eof</span>,
-    <span class="doccomment">/// Interrupt signal (VINTR / VQUIT / Ctrl-C)</span>
-    <span class="ident">Interrupted</span>,
-    <span class="doccomment">/// Unix Error from syscall</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-    <span class="ident">Errno</span>(<span class="ident">nix::Error</span>),
-    <span class="doccomment">/// Error generated on WINDOW_BUFFER_SIZE_EVENT / SIGWINCH signal</span>
-    <span class="ident">WindowResized</span>,
-    <span class="doccomment">/// Like Utf8Error on unix</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-    <span class="ident">Decode</span>(<span class="ident">char::DecodeUtf16Error</span>),
-    <span class="doccomment">/// Something went wrong calling a Windows API</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-    <span class="ident">SystemError</span>(<span class="ident">clipboard_win::SystemError</span>),
+<span class="doccomment">/// The error type for Rustyline errors that can arise from
+/// I/O related errors or Errno when using the nix-rust library
+</span><span class="comment">// #[non_exhaustive]
+</span><span class="attribute">#[allow(clippy::module_name_repetitions)]
+#[derive(Debug)]
+#[non_exhaustive]
+</span><span class="kw">pub enum </span>ReadlineError {
+    <span class="doccomment">/// I/O Error
+    </span>Io(io::Error),
+    <span class="doccomment">/// EOF (VEOF / Ctrl-D)
+    </span>Eof,
+    <span class="doccomment">/// Interrupt signal (VINTR / VQUIT / Ctrl-C)
+    </span>Interrupted,
+    <span class="doccomment">/// Unix Error from syscall
+    </span><span class="attribute">#[cfg(unix)]
+    </span>Errno(nix::Error),
+    <span class="doccomment">/// Error generated on WINDOW_BUFFER_SIZE_EVENT / SIGWINCH signal
+    </span>WindowResized,
+    <span class="doccomment">/// Like Utf8Error on unix
+    </span><span class="attribute">#[cfg(windows)]
+    </span>Decode(char::DecodeUtf16Error),
+    <span class="doccomment">/// Something went wrong calling a Windows API
+    </span><span class="attribute">#[cfg(windows)]
+    </span>SystemError(clipboard_win::SystemError),
 }
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">ReadlineError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">ReadlineError::Io</span>(<span class="kw-2">ref</span> <span class="ident">err</span>) =&gt; <span class="ident">err</span>.<span class="ident">fmt</span>(<span class="ident">f</span>),
-            <span class="ident">ReadlineError::Eof</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;EOF&quot;</span>),
-            <span class="ident">ReadlineError::Interrupted</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;Interrupted&quot;</span>),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            <span class="ident">ReadlineError::Errno</span>(<span class="kw-2">ref</span> <span class="ident">err</span>) =&gt; <span class="ident">err</span>.<span class="ident">fmt</span>(<span class="ident">f</span>),
-            <span class="ident">ReadlineError::WindowResized</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;WindowResized&quot;</span>),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-            <span class="ident">ReadlineError::Decode</span>(<span class="kw-2">ref</span> <span class="ident">err</span>) =&gt; <span class="ident">err</span>.<span class="ident">fmt</span>(<span class="ident">f</span>),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-            <span class="ident">ReadlineError::SystemError</span>(<span class="kw-2">ref</span> <span class="ident">err</span>) =&gt; <span class="ident">err</span>.<span class="ident">fmt</span>(<span class="ident">f</span>),
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>ReadlineError {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="kw">match </span><span class="kw-2">*</span><span class="self">self </span>{
+            ReadlineError::Io(<span class="kw-2">ref </span>err) =&gt; err.fmt(f),
+            ReadlineError::Eof =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;EOF&quot;</span>),
+            ReadlineError::Interrupted =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;Interrupted&quot;</span>),
+            <span class="attribute">#[cfg(unix)]
+            </span>ReadlineError::Errno(<span class="kw-2">ref </span>err) =&gt; err.fmt(f),
+            ReadlineError::WindowResized =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;WindowResized&quot;</span>),
+            <span class="attribute">#[cfg(windows)]
+            </span>ReadlineError::Decode(<span class="kw-2">ref </span>err) =&gt; err.fmt(f),
+            <span class="attribute">#[cfg(windows)]
+            </span>ReadlineError::SystemError(<span class="kw-2">ref </span>err) =&gt; err.fmt(f),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">ReadlineError</span> {
-    <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">Error</span> + <span class="lifetime">&#39;static</span>)&gt; {
-        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">ReadlineError::Io</span>(<span class="kw-2">ref</span> <span class="ident">err</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">err</span>),
-            <span class="ident">ReadlineError::Eof</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="ident">ReadlineError::Interrupted</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-            <span class="ident">ReadlineError::Errno</span>(<span class="kw-2">ref</span> <span class="ident">err</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">err</span>),
-            <span class="ident">ReadlineError::WindowResized</span> =&gt; <span class="prelude-val">None</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-            <span class="ident">ReadlineError::Decode</span>(<span class="kw-2">ref</span> <span class="ident">err</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">err</span>),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-            <span class="ident">ReadlineError::SystemError</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
+<span class="kw">impl </span>Error <span class="kw">for </span>ReadlineError {
+    <span class="kw">fn </span>source(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>(<span class="kw">dyn </span>Error + <span class="lifetime">&#39;static</span>)&gt; {
+        <span class="kw">match </span><span class="kw-2">*</span><span class="self">self </span>{
+            ReadlineError::Io(<span class="kw-2">ref </span>err) =&gt; <span class="prelude-val">Some</span>(err),
+            ReadlineError::Eof =&gt; <span class="prelude-val">None</span>,
+            ReadlineError::Interrupted =&gt; <span class="prelude-val">None</span>,
+            <span class="attribute">#[cfg(unix)]
+            </span>ReadlineError::Errno(<span class="kw-2">ref </span>err) =&gt; <span class="prelude-val">Some</span>(err),
+            ReadlineError::WindowResized =&gt; <span class="prelude-val">None</span>,
+            <span class="attribute">#[cfg(windows)]
+            </span>ReadlineError::Decode(<span class="kw-2">ref </span>err) =&gt; <span class="prelude-val">Some</span>(err),
+            <span class="attribute">#[cfg(windows)]
+            </span>ReadlineError::SystemError(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">WindowResizedError</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">WindowResizedError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;WindowResized&quot;</span>)
+<span class="attribute">#[cfg(unix)]
+#[derive(Debug)]
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>WindowResizedError;
+<span class="attribute">#[cfg(unix)]
+</span><span class="kw">impl </span>fmt::Display <span class="kw">for </span>WindowResizedError {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        <span class="macro">write!</span>(f, <span class="string">&quot;WindowResized&quot;</span>)
     }
 }
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">WindowResizedError</span> {}
+<span class="attribute">#[cfg(unix)]
+</span><span class="kw">impl </span>Error <span class="kw">for </span>WindowResizedError {}
 
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">io::Error</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">io::Error</span>) -&gt; <span class="self">Self</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-        <span class="kw">if</span> <span class="ident">err</span>.<span class="ident">kind</span>() == <span class="ident">io::ErrorKind::Interrupted</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">e</span>) = <span class="ident">err</span>.<span class="ident">get_ref</span>() {
-                <span class="kw">if</span> <span class="ident">e</span>.<span class="ident">downcast_ref</span>::&lt;<span class="ident">WindowResizedError</span>&gt;().<span class="ident">is_some</span>() {
-                    <span class="kw">return</span> <span class="ident">ReadlineError::WindowResized</span>;
+<span class="kw">impl </span>From&lt;io::Error&gt; <span class="kw">for </span>ReadlineError {
+    <span class="kw">fn </span>from(err: io::Error) -&gt; <span class="self">Self </span>{
+        <span class="attribute">#[cfg(unix)]
+        </span><span class="kw">if </span>err.kind() == io::ErrorKind::Interrupted {
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(e) = err.get_ref() {
+                <span class="kw">if </span>e.downcast_ref::&lt;WindowResizedError&gt;().is_some() {
+                    <span class="kw">return </span>ReadlineError::WindowResized;
                 }
             }
         }
-        <span class="ident">ReadlineError::Io</span>(<span class="ident">err</span>)
+        ReadlineError::Io(err)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">io::ErrorKind</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">kind</span>: <span class="ident">io::ErrorKind</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">ReadlineError::Io</span>(<span class="ident">io::Error::from</span>(<span class="ident">kind</span>))
+<span class="kw">impl </span>From&lt;io::ErrorKind&gt; <span class="kw">for </span>ReadlineError {
+    <span class="kw">fn </span>from(kind: io::ErrorKind) -&gt; <span class="self">Self </span>{
+        ReadlineError::Io(io::Error::from(kind))
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">nix::Error</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">nix::Error</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">ReadlineError::Errno</span>(<span class="ident">err</span>)
+<span class="attribute">#[cfg(unix)]
+</span><span class="kw">impl </span>From&lt;nix::Error&gt; <span class="kw">for </span>ReadlineError {
+    <span class="kw">fn </span>from(err: nix::Error) -&gt; <span class="self">Self </span>{
+        ReadlineError::Errno(err)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">char::DecodeUtf16Error</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">char::DecodeUtf16Error</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">ReadlineError::Io</span>(<span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::InvalidData</span>, <span class="ident">err</span>))
+<span class="attribute">#[cfg(windows)]
+</span><span class="kw">impl </span>From&lt;char::DecodeUtf16Error&gt; <span class="kw">for </span>ReadlineError {
+    <span class="kw">fn </span>from(err: char::DecodeUtf16Error) -&gt; <span class="self">Self </span>{
+        ReadlineError::Io(io::Error::new(io::ErrorKind::InvalidData, err))
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">std::string::FromUtf8Error</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">std::string::FromUtf8Error</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">ReadlineError::Io</span>(<span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::InvalidData</span>, <span class="ident">err</span>))
+<span class="attribute">#[cfg(windows)]
+</span><span class="kw">impl </span>From&lt;std::string::FromUtf8Error&gt; <span class="kw">for </span>ReadlineError {
+    <span class="kw">fn </span>from(err: std::string::FromUtf8Error) -&gt; <span class="self">Self </span>{
+        ReadlineError::Io(io::Error::new(io::ErrorKind::InvalidData, err))
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">unix</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">fmt::Error</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">fmt::Error</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">ReadlineError::Io</span>(<span class="ident">io::Error::new</span>(<span class="ident">io::ErrorKind::Other</span>, <span class="ident">err</span>))
+<span class="attribute">#[cfg(unix)]
+</span><span class="kw">impl </span>From&lt;fmt::Error&gt; <span class="kw">for </span>ReadlineError {
+    <span class="kw">fn </span>from(err: fmt::Error) -&gt; <span class="self">Self </span>{
+        ReadlineError::Io(io::Error::new(io::ErrorKind::Other, err))
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">windows</span>)]</span>
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">clipboard_win::SystemError</span>&gt; <span class="kw">for</span> <span class="ident">ReadlineError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">clipboard_win::SystemError</span>) -&gt; <span class="self">Self</span> {
-        <span class="ident">ReadlineError::SystemError</span>(<span class="ident">err</span>)
+<span class="attribute">#[cfg(windows)]
+</span><span class="kw">impl </span>From&lt;clipboard_win::SystemError&gt; <span class="kw">for </span>ReadlineError {
+    <span class="kw">fn </span>from(err: clipboard_win::SystemError) -&gt; <span class="self">Self </span>{
+        ReadlineError::SystemError(err)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

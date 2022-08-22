@@ -670,677 +670,677 @@
 <span id="670">670</span>
 <span id="671">671</span>
 <span id="672">672</span>
-</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">dead_code</span>)]</span>
+</pre><pre class="rust"><code><span class="attribute">#![allow(dead_code)]
 
-<span class="kw">use</span> <span class="ident">alloc</span>::{<span class="ident">string::String</span>, <span class="ident">vec</span>, <span class="ident">vec::Vec</span>};
-<span class="kw">use</span> <span class="ident">core::fmt::Debug</span>;
+</span><span class="kw">use </span>alloc::{string::String, vec, vec::Vec};
+<span class="kw">use </span>core::fmt::Debug;
 
-<span class="kw">const</span> <span class="ident">DEBUG_ENABLED</span>: <span class="ident">bool</span> = <span class="bool-val">false</span>;
+<span class="kw">const </span>DEBUG_ENABLED: bool = <span class="bool-val">false</span>;
 
-<span class="macro">macro_rules!</span> <span class="ident">debug</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">args</span>:<span class="ident">expr</span>),* $(,)<span class="kw-2">*</span>) =&gt; {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;std&quot;</span>)]</span>
-        <span class="kw">if</span> <span class="ident">DEBUG_ENABLED</span> {
-            <span class="macro">eprintln!</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">args</span>),<span class="kw-2">*</span>);
+<span class="macro">macro_rules! </span>debug {
+    ($(<span class="macro-nonterminal">$args</span>:expr),* $(,)<span class="kw-2">*</span>) =&gt; {
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
+        </span><span class="kw">if </span>DEBUG_ENABLED {
+            <span class="macro">eprintln!</span>($(<span class="macro-nonterminal">$args</span>),<span class="kw-2">*</span>);
         }
     }
 }
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ParserDefinition</span>: <span class="ident">Sized</span> {
-    <span class="doccomment">/// Represents a location in the input text. If you are using the</span>
-    <span class="doccomment">/// default tokenizer, this will be a `usize`.</span>
-    <span class="kw">type</span> <span class="ident">Location</span>: <span class="ident">Clone</span> + <span class="ident">Debug</span>;
+<span class="kw">pub trait </span>ParserDefinition: Sized {
+    <span class="doccomment">/// Represents a location in the input text. If you are using the
+    /// default tokenizer, this will be a `usize`.
+    </span><span class="kw">type </span>Location: Clone + Debug;
 
-    <span class="doccomment">/// Represents a &quot;user error&quot; -- this can get produced by</span>
-    <span class="doccomment">/// `reduce()` if the grammar includes `=&gt;?` actions.</span>
-    <span class="kw">type</span> <span class="ident">Error</span>;
+    <span class="doccomment">/// Represents a &quot;user error&quot; -- this can get produced by
+    /// `reduce()` if the grammar includes `=&gt;?` actions.
+    </span><span class="kw">type </span>Error;
 
-    <span class="doccomment">/// The type emitted by the user&#39;s tokenizer (excluding the</span>
-    <span class="doccomment">/// location information).</span>
-    <span class="kw">type</span> <span class="ident">Token</span>: <span class="ident">Clone</span> + <span class="ident">Debug</span>;
+    <span class="doccomment">/// The type emitted by the user&#39;s tokenizer (excluding the
+    /// location information).
+    </span><span class="kw">type </span>Token: Clone + Debug;
 
-    <span class="doccomment">/// We assign a unique index to each token in the grammar, which</span>
-    <span class="doccomment">/// we call its *index*. When we pull in a new `Token` from the</span>
-    <span class="doccomment">/// input, we then match against it to determine its index.  Note</span>
-    <span class="doccomment">/// that the actual `Token` is retained too, as it may carry</span>
-    <span class="doccomment">/// additional information (e.g., an `ID` terminal often has a</span>
-    <span class="doccomment">/// string value associated with it; this is not important to the</span>
-    <span class="doccomment">/// parser, but the semantic analyzer will want it).</span>
-    <span class="kw">type</span> <span class="ident">TokenIndex</span>: <span class="ident">Copy</span> + <span class="ident">Clone</span> + <span class="ident">Debug</span>;
+    <span class="doccomment">/// We assign a unique index to each token in the grammar, which
+    /// we call its *index*. When we pull in a new `Token` from the
+    /// input, we then match against it to determine its index.  Note
+    /// that the actual `Token` is retained too, as it may carry
+    /// additional information (e.g., an `ID` terminal often has a
+    /// string value associated with it; this is not important to the
+    /// parser, but the semantic analyzer will want it).
+    </span><span class="kw">type </span>TokenIndex: Copy + Clone + Debug;
 
-    <span class="doccomment">/// The type representing things on the LALRPOP stack. Represents</span>
-    <span class="doccomment">/// the union of terminals and nonterminals.</span>
-    <span class="kw">type</span> <span class="ident">Symbol</span>;
+    <span class="doccomment">/// The type representing things on the LALRPOP stack. Represents
+    /// the union of terminals and nonterminals.
+    </span><span class="kw">type </span>Symbol;
 
-    <span class="doccomment">/// Type produced by reducing the start symbol.</span>
-    <span class="kw">type</span> <span class="ident">Success</span>;
+    <span class="doccomment">/// Type produced by reducing the start symbol.
+    </span><span class="kw">type </span>Success;
 
-    <span class="doccomment">/// Identifies a state. Typically an i8, i16, or i32 (depending on</span>
-    <span class="doccomment">/// how many states you have).</span>
-    <span class="kw">type</span> <span class="ident">StateIndex</span>: <span class="ident">Copy</span> + <span class="ident">Clone</span> + <span class="ident">Debug</span>;
+    <span class="doccomment">/// Identifies a state. Typically an i8, i16, or i32 (depending on
+    /// how many states you have).
+    </span><span class="kw">type </span>StateIndex: Copy + Clone + Debug;
 
-    <span class="doccomment">/// Identifies an action.</span>
-    <span class="kw">type</span> <span class="ident">Action</span>: <span class="ident">ParserAction</span>&lt;<span class="self">Self</span>&gt;;
+    <span class="doccomment">/// Identifies an action.
+    </span><span class="kw">type </span>Action: ParserAction&lt;<span class="self">Self</span>&gt;;
 
-    <span class="doccomment">/// Identifies a reduction.</span>
-    <span class="kw">type</span> <span class="ident">ReduceIndex</span>: <span class="ident">Copy</span> + <span class="ident">Clone</span> + <span class="ident">Debug</span>;
+    <span class="doccomment">/// Identifies a reduction.
+    </span><span class="kw">type </span>ReduceIndex: Copy + Clone + Debug;
 
-    <span class="doccomment">/// Identifies a nonterminal.</span>
-    <span class="kw">type</span> <span class="ident">NonterminalIndex</span>: <span class="ident">Copy</span> + <span class="ident">Clone</span> + <span class="ident">Debug</span>;
+    <span class="doccomment">/// Identifies a nonterminal.
+    </span><span class="kw">type </span>NonterminalIndex: Copy + Clone + Debug;
 
-    <span class="doccomment">/// Returns a location representing the &quot;start of the input&quot;.</span>
-    <span class="kw">fn</span> <span class="ident">start_location</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Location</span>;
+    <span class="doccomment">/// Returns a location representing the &quot;start of the input&quot;.
+    </span><span class="kw">fn </span>start_location(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::Location;
 
-    <span class="doccomment">/// Returns the initial state.</span>
-    <span class="kw">fn</span> <span class="ident">start_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::StateIndex</span>;
+    <span class="doccomment">/// Returns the initial state.
+    </span><span class="kw">fn </span>start_state(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span>::StateIndex;
 
-    <span class="doccomment">/// Converts the user&#39;s tokens into an internal index; this index</span>
-    <span class="doccomment">/// is then used to index into actions and the like. When using an</span>
-    <span class="doccomment">/// internal tokenizer, these indices are directly produced. When</span>
-    <span class="doccomment">/// using an **external** tokenier, however, this function matches</span>
-    <span class="doccomment">/// against the patterns given by the user: it is fallible</span>
-    <span class="doccomment">/// therefore as these patterns may not be exhaustive. If a token</span>
-    <span class="doccomment">/// value is found that doesn&#39;t match any of the patterns the user</span>
-    <span class="doccomment">/// supplied, then this function returns `None`, which is</span>
-    <span class="doccomment">/// translated into a parse error by LALRPOP (&quot;unrecognized</span>
-    <span class="doccomment">/// token&quot;).</span>
-    <span class="kw">fn</span> <span class="ident">token_to_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">token</span>: <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Token</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident"><span class="self">Self</span>::TokenIndex</span>&gt;;
+    <span class="doccomment">/// Converts the user&#39;s tokens into an internal index; this index
+    /// is then used to index into actions and the like. When using an
+    /// internal tokenizer, these indices are directly produced. When
+    /// using an **external** tokenier, however, this function matches
+    /// against the patterns given by the user: it is fallible
+    /// therefore as these patterns may not be exhaustive. If a token
+    /// value is found that doesn&#39;t match any of the patterns the user
+    /// supplied, then this function returns `None`, which is
+    /// translated into a parse error by LALRPOP (&quot;unrecognized
+    /// token&quot;).
+    </span><span class="kw">fn </span>token_to_index(<span class="kw-2">&amp;</span><span class="self">self</span>, token: <span class="kw-2">&amp;</span><span class="self">Self</span>::Token) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="self">Self</span>::TokenIndex&gt;;
 
-    <span class="doccomment">/// Given the top-most state and the pending terminal, returns an</span>
-    <span class="doccomment">/// action. This can be either SHIFT(state), REDUCE(action), or</span>
-    <span class="doccomment">/// ERROR.</span>
-    <span class="kw">fn</span> <span class="ident">action</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="ident"><span class="self">Self</span>::StateIndex</span>, <span class="ident">token_index</span>: <span class="ident"><span class="self">Self</span>::TokenIndex</span>) -&gt; <span class="ident"><span class="self">Self</span>::Action</span>;
+    <span class="doccomment">/// Given the top-most state and the pending terminal, returns an
+    /// action. This can be either SHIFT(state), REDUCE(action), or
+    /// ERROR.
+    </span><span class="kw">fn </span>action(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="self">Self</span>::StateIndex, token_index: <span class="self">Self</span>::TokenIndex) -&gt; <span class="self">Self</span>::Action;
 
-    <span class="doccomment">/// Returns the action to take if an error occurs in the given</span>
-    <span class="doccomment">/// state. This function is the same as the ordinary `action`,</span>
-    <span class="doccomment">/// except that it applies not to the user&#39;s terminals but to the</span>
-    <span class="doccomment">/// &quot;special terminal&quot; `!`.</span>
-    <span class="kw">fn</span> <span class="ident">error_action</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="ident"><span class="self">Self</span>::StateIndex</span>) -&gt; <span class="ident"><span class="self">Self</span>::Action</span>;
+    <span class="doccomment">/// Returns the action to take if an error occurs in the given
+    /// state. This function is the same as the ordinary `action`,
+    /// except that it applies not to the user&#39;s terminals but to the
+    /// &quot;special terminal&quot; `!`.
+    </span><span class="kw">fn </span>error_action(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="self">Self</span>::StateIndex) -&gt; <span class="self">Self</span>::Action;
 
-    <span class="doccomment">/// Action to take if EOF occurs in the given state. This function</span>
-    <span class="doccomment">/// is the same as the ordinary `action`, except that it applies</span>
-    <span class="doccomment">/// not to the user&#39;s terminals but to the &quot;special terminal&quot; `$`.</span>
-    <span class="kw">fn</span> <span class="ident">eof_action</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="ident"><span class="self">Self</span>::StateIndex</span>) -&gt; <span class="ident"><span class="self">Self</span>::Action</span>;
+    <span class="doccomment">/// Action to take if EOF occurs in the given state. This function
+    /// is the same as the ordinary `action`, except that it applies
+    /// not to the user&#39;s terminals but to the &quot;special terminal&quot; `$`.
+    </span><span class="kw">fn </span>eof_action(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="self">Self</span>::StateIndex) -&gt; <span class="self">Self</span>::Action;
 
-    <span class="doccomment">/// If we reduce to a nonterminal in the given state, what state</span>
-    <span class="doccomment">/// do we go to? This is infallible due to the nature of LR(1)</span>
-    <span class="doccomment">/// grammars.</span>
-    <span class="kw">fn</span> <span class="ident">goto</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="ident"><span class="self">Self</span>::StateIndex</span>, <span class="ident">nt</span>: <span class="ident"><span class="self">Self</span>::NonterminalIndex</span>) -&gt; <span class="ident"><span class="self">Self</span>::StateIndex</span>;
+    <span class="doccomment">/// If we reduce to a nonterminal in the given state, what state
+    /// do we go to? This is infallible due to the nature of LR(1)
+    /// grammars.
+    </span><span class="kw">fn </span>goto(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="self">Self</span>::StateIndex, nt: <span class="self">Self</span>::NonterminalIndex) -&gt; <span class="self">Self</span>::StateIndex;
 
-    <span class="doccomment">/// &quot;Upcast&quot; a terminal into a symbol so we can push it onto the</span>
-    <span class="doccomment">/// parser stack.</span>
-    <span class="kw">fn</span> <span class="ident">token_to_symbol</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">token_index</span>: <span class="ident"><span class="self">Self</span>::TokenIndex</span>, <span class="ident">token</span>: <span class="ident"><span class="self">Self</span>::Token</span>) -&gt; <span class="ident"><span class="self">Self</span>::Symbol</span>;
+    <span class="doccomment">/// &quot;Upcast&quot; a terminal into a symbol so we can push it onto the
+    /// parser stack.
+    </span><span class="kw">fn </span>token_to_symbol(<span class="kw-2">&amp;</span><span class="self">self</span>, token_index: <span class="self">Self</span>::TokenIndex, token: <span class="self">Self</span>::Token) -&gt; <span class="self">Self</span>::Symbol;
 
-    <span class="doccomment">/// Returns the expected tokens in a given state. This is used for</span>
-    <span class="doccomment">/// error reporting.</span>
-    <span class="kw">fn</span> <span class="ident">expected_tokens</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="ident"><span class="self">Self</span>::StateIndex</span>) -&gt; <span class="ident">Vec</span>&lt;<span class="ident">String</span>&gt;;
+    <span class="doccomment">/// Returns the expected tokens in a given state. This is used for
+    /// error reporting.
+    </span><span class="kw">fn </span>expected_tokens(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="self">Self</span>::StateIndex) -&gt; Vec&lt;String&gt;;
 
-    <span class="doccomment">/// True if this grammar supports error recovery.</span>
-    <span class="kw">fn</span> <span class="ident">uses_error_recovery</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span>;
+    <span class="doccomment">/// True if this grammar supports error recovery.
+    </span><span class="kw">fn </span>uses_error_recovery(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool;
 
-    <span class="doccomment">/// Given error information, creates an error recovery symbol that</span>
-    <span class="doccomment">/// we push onto the stack (and supply to user actions).</span>
-    <span class="kw">fn</span> <span class="ident">error_recovery_symbol</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">recovery</span>: <span class="ident">ErrorRecovery</span>&lt;<span class="self">Self</span>&gt;) -&gt; <span class="ident"><span class="self">Self</span>::Symbol</span>;
+    <span class="doccomment">/// Given error information, creates an error recovery symbol that
+    /// we push onto the stack (and supply to user actions).
+    </span><span class="kw">fn </span>error_recovery_symbol(<span class="kw-2">&amp;</span><span class="self">self</span>, recovery: ErrorRecovery&lt;<span class="self">Self</span>&gt;) -&gt; <span class="self">Self</span>::Symbol;
 
-    <span class="doccomment">/// Execute a reduction in the given state: that is, execute user</span>
-    <span class="doccomment">/// code. The start location indicates the &quot;starting point&quot; of the</span>
-    <span class="doccomment">/// current lookahead that is triggering the reduction (it is</span>
-    <span class="doccomment">/// `None` for EOF).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The `states` and `symbols` vectors represent the internal</span>
-    <span class="doccomment">/// state machine vectors; they are given to `reduce` so that it</span>
-    <span class="doccomment">/// can pop off states that no longer apply (and consume their</span>
-    <span class="doccomment">/// symbols). At the end, it should also push the new state and</span>
-    <span class="doccomment">/// symbol produced.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Returns a `Some` if we reduced the start state and hence</span>
-    <span class="doccomment">/// parsing is complete, or if we encountered an irrecoverable</span>
-    <span class="doccomment">/// error.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// FIXME. It would be nice to not have so much logic live in</span>
-    <span class="doccomment">/// reduce.  It should just be given an iterator of popped symbols</span>
-    <span class="doccomment">/// and return the newly produced symbol (or error). We can use</span>
-    <span class="doccomment">/// `simulate_reduce` and our own information to drive the rest,</span>
-    <span class="doccomment">/// right? This would also allow us -- I think -- to extend error</span>
-    <span class="doccomment">/// recovery to cover user-produced errors.</span>
-    <span class="kw">fn</span> <span class="ident">reduce</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">reduce_index</span>: <span class="ident"><span class="self">Self</span>::ReduceIndex</span>,
-        <span class="ident">start_location</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Location</span>&gt;,
-        <span class="ident">states</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span>&lt;<span class="ident"><span class="self">Self</span>::StateIndex</span>&gt;,
-        <span class="ident">symbols</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span>&lt;<span class="ident">SymbolTriple</span>&lt;<span class="self">Self</span>&gt;&gt;,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">ParseResult</span>&lt;<span class="self">Self</span>&gt;&gt;;
+    <span class="doccomment">/// Execute a reduction in the given state: that is, execute user
+    /// code. The start location indicates the &quot;starting point&quot; of the
+    /// current lookahead that is triggering the reduction (it is
+    /// `None` for EOF).
+    ///
+    /// The `states` and `symbols` vectors represent the internal
+    /// state machine vectors; they are given to `reduce` so that it
+    /// can pop off states that no longer apply (and consume their
+    /// symbols). At the end, it should also push the new state and
+    /// symbol produced.
+    ///
+    /// Returns a `Some` if we reduced the start state and hence
+    /// parsing is complete, or if we encountered an irrecoverable
+    /// error.
+    ///
+    /// FIXME. It would be nice to not have so much logic live in
+    /// reduce.  It should just be given an iterator of popped symbols
+    /// and return the newly produced symbol (or error). We can use
+    /// `simulate_reduce` and our own information to drive the rest,
+    /// right? This would also allow us -- I think -- to extend error
+    /// recovery to cover user-produced errors.
+    </span><span class="kw">fn </span>reduce(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        reduce_index: <span class="self">Self</span>::ReduceIndex,
+        start_location: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="self">Self</span>::Location&gt;,
+        states: <span class="kw-2">&amp;mut </span>Vec&lt;<span class="self">Self</span>::StateIndex&gt;,
+        symbols: <span class="kw-2">&amp;mut </span>Vec&lt;SymbolTriple&lt;<span class="self">Self</span>&gt;&gt;,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;ParseResult&lt;<span class="self">Self</span>&gt;&gt;;
 
-    <span class="doccomment">/// Returns information about how many states will be popped</span>
-    <span class="doccomment">/// during a reduction, and what nonterminal would be produced as</span>
-    <span class="doccomment">/// a result.</span>
-    <span class="kw">fn</span> <span class="ident">simulate_reduce</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">action</span>: <span class="ident"><span class="self">Self</span>::ReduceIndex</span>) -&gt; <span class="ident">SimulatedReduce</span>&lt;<span class="self">Self</span>&gt;;
+    <span class="doccomment">/// Returns information about how many states will be popped
+    /// during a reduction, and what nonterminal would be produced as
+    /// a result.
+    </span><span class="kw">fn </span>simulate_reduce(<span class="kw-2">&amp;</span><span class="self">self</span>, action: <span class="self">Self</span>::ReduceIndex) -&gt; SimulatedReduce&lt;<span class="self">Self</span>&gt;;
 }
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ParserAction</span>&lt;<span class="ident">D</span>: <span class="ident">ParserDefinition</span>&gt;: <span class="ident">Copy</span> + <span class="ident">Clone</span> + <span class="ident">Debug</span> {
-    <span class="kw">fn</span> <span class="ident">as_shift</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">D::StateIndex</span>&gt;;
-    <span class="kw">fn</span> <span class="ident">as_reduce</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">D::ReduceIndex</span>&gt;;
-    <span class="kw">fn</span> <span class="ident">is_shift</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span>;
-    <span class="kw">fn</span> <span class="ident">is_reduce</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span>;
-    <span class="kw">fn</span> <span class="ident">is_error</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span>;
+<span class="kw">pub trait </span>ParserAction&lt;D: ParserDefinition&gt;: Copy + Clone + Debug {
+    <span class="kw">fn </span>as_shift(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;D::StateIndex&gt;;
+    <span class="kw">fn </span>as_reduce(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;D::ReduceIndex&gt;;
+    <span class="kw">fn </span>is_shift(<span class="self">self</span>) -&gt; bool;
+    <span class="kw">fn </span>is_reduce(<span class="self">self</span>) -&gt; bool;
+    <span class="kw">fn </span>is_error(<span class="self">self</span>) -&gt; bool;
 }
 
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">SimulatedReduce</span>&lt;<span class="ident">D</span>: <span class="ident">ParserDefinition</span>&gt; {
-    <span class="ident">Reduce</span> {
-        <span class="ident">states_to_pop</span>: <span class="ident">usize</span>,
-        <span class="ident">nonterminal_produced</span>: <span class="ident">D::NonterminalIndex</span>,
+<span class="kw">pub enum </span>SimulatedReduce&lt;D: ParserDefinition&gt; {
+    Reduce {
+        states_to_pop: usize,
+        nonterminal_produced: D::NonterminalIndex,
     },
 
-    <span class="comment">// This reduce is the &quot;start&quot; fn, so the parse is done.</span>
-    <span class="ident">Accept</span>,
+    <span class="comment">// This reduce is the &quot;start&quot; fn, so the parse is done.
+    </span>Accept,
 }
 
-<span class="comment">// These aliases are an elaborate hack to get around</span>
-<span class="comment">// the warnings when you define a type alias like `type Foo&lt;D: Trait&gt;`</span>
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Location</span>&lt;<span class="ident">D</span>&gt; = &lt;<span class="ident">D</span> <span class="kw">as</span> <span class="ident">ParserDefinition</span>&gt;<span class="ident">::Location</span>;
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Token</span>&lt;<span class="ident">D</span>&gt; = &lt;<span class="ident">D</span> <span class="kw">as</span> <span class="ident">ParserDefinition</span>&gt;<span class="ident">::Token</span>;
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Error</span>&lt;<span class="ident">D</span>&gt; = &lt;<span class="ident">D</span> <span class="kw">as</span> <span class="ident">ParserDefinition</span>&gt;<span class="ident">::Error</span>;
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Success</span>&lt;<span class="ident">D</span>&gt; = &lt;<span class="ident">D</span> <span class="kw">as</span> <span class="ident">ParserDefinition</span>&gt;<span class="ident">::Success</span>;
-<span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">Symbol</span>&lt;<span class="ident">D</span>&gt; = &lt;<span class="ident">D</span> <span class="kw">as</span> <span class="ident">ParserDefinition</span>&gt;<span class="ident">::Symbol</span>;
+<span class="comment">// These aliases are an elaborate hack to get around
+// the warnings when you define a type alias like `type Foo&lt;D: Trait&gt;`
+</span><span class="attribute">#[doc(hidden)]
+</span><span class="kw">pub type </span>Location&lt;D&gt; = &lt;D <span class="kw">as </span>ParserDefinition&gt;::Location;
+<span class="attribute">#[doc(hidden)]
+</span><span class="kw">pub type </span>Token&lt;D&gt; = &lt;D <span class="kw">as </span>ParserDefinition&gt;::Token;
+<span class="attribute">#[doc(hidden)]
+</span><span class="kw">pub type </span>Error&lt;D&gt; = &lt;D <span class="kw">as </span>ParserDefinition&gt;::Error;
+<span class="attribute">#[doc(hidden)]
+</span><span class="kw">pub type </span>Success&lt;D&gt; = &lt;D <span class="kw">as </span>ParserDefinition&gt;::Success;
+<span class="attribute">#[doc(hidden)]
+</span><span class="kw">pub type </span>Symbol&lt;D&gt; = &lt;D <span class="kw">as </span>ParserDefinition&gt;::Symbol;
 
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ParseError</span>&lt;<span class="ident">D</span>&gt; = <span class="ident"><span class="kw">crate</span>::ParseError</span>&lt;<span class="ident">Location</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">Token</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">Error</span>&lt;<span class="ident">D</span>&gt;&gt;;
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ParseResult</span>&lt;<span class="ident">D</span>&gt; = <span class="prelude-ty">Result</span>&lt;<span class="ident">Success</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">ParseError</span>&lt;<span class="ident">D</span>&gt;&gt;;
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">TokenTriple</span>&lt;<span class="ident">D</span>&gt; = (<span class="ident">Location</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">Token</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">Location</span>&lt;<span class="ident">D</span>&gt;);
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">SymbolTriple</span>&lt;<span class="ident">D</span>&gt; = (<span class="ident">Location</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">Symbol</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">Location</span>&lt;<span class="ident">D</span>&gt;);
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ErrorRecovery</span>&lt;<span class="ident">D</span>&gt; = <span class="ident"><span class="kw">crate</span>::ErrorRecovery</span>&lt;<span class="ident">Location</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">Token</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">Error</span>&lt;<span class="ident">D</span>&gt;&gt;;
+<span class="kw">pub type </span>ParseError&lt;D&gt; = <span class="kw">crate</span>::ParseError&lt;Location&lt;D&gt;, Token&lt;D&gt;, Error&lt;D&gt;&gt;;
+<span class="kw">pub type </span>ParseResult&lt;D&gt; = <span class="prelude-ty">Result</span>&lt;Success&lt;D&gt;, ParseError&lt;D&gt;&gt;;
+<span class="kw">pub type </span>TokenTriple&lt;D&gt; = (Location&lt;D&gt;, Token&lt;D&gt;, Location&lt;D&gt;);
+<span class="kw">pub type </span>SymbolTriple&lt;D&gt; = (Location&lt;D&gt;, Symbol&lt;D&gt;, Location&lt;D&gt;);
+<span class="kw">pub type </span>ErrorRecovery&lt;D&gt; = <span class="kw">crate</span>::ErrorRecovery&lt;Location&lt;D&gt;, Token&lt;D&gt;, Error&lt;D&gt;&gt;;
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Parser</span>&lt;<span class="ident">D</span>, <span class="ident">I</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">D</span>: <span class="ident">ParserDefinition</span>,
-    <span class="ident">I</span>: <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;<span class="ident">TokenTriple</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">ParseError</span>&lt;<span class="ident">D</span>&gt;&gt;&gt;,
+<span class="kw">pub struct </span>Parser&lt;D, I&gt;
+<span class="kw">where
+    </span>D: ParserDefinition,
+    I: Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;TokenTriple&lt;D&gt;, ParseError&lt;D&gt;&gt;&gt;,
 {
-    <span class="ident">definition</span>: <span class="ident">D</span>,
-    <span class="ident">tokens</span>: <span class="ident">I</span>,
-    <span class="ident">states</span>: <span class="ident">Vec</span>&lt;<span class="ident">D::StateIndex</span>&gt;,
-    <span class="ident">symbols</span>: <span class="ident">Vec</span>&lt;<span class="ident">SymbolTriple</span>&lt;<span class="ident">D</span>&gt;&gt;,
-    <span class="ident">last_location</span>: <span class="ident">D::Location</span>,
+    definition: D,
+    tokens: I,
+    states: Vec&lt;D::StateIndex&gt;,
+    symbols: Vec&lt;SymbolTriple&lt;D&gt;&gt;,
+    last_location: D::Location,
 }
 
-<span class="kw">enum</span> <span class="ident">NextToken</span>&lt;<span class="ident">D</span>: <span class="ident">ParserDefinition</span>&gt; {
-    <span class="ident">FoundToken</span>(<span class="ident">TokenTriple</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">D::TokenIndex</span>),
-    <span class="ident">EOF</span>,
-    <span class="ident">Done</span>(<span class="ident">ParseResult</span>&lt;<span class="ident">D</span>&gt;),
+<span class="kw">enum </span>NextToken&lt;D: ParserDefinition&gt; {
+    FoundToken(TokenTriple&lt;D&gt;, D::TokenIndex),
+    EOF,
+    Done(ParseResult&lt;D&gt;),
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">D</span>, <span class="ident">I</span>&gt; <span class="ident">Parser</span>&lt;<span class="ident">D</span>, <span class="ident">I</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">D</span>: <span class="ident">ParserDefinition</span>,
-    <span class="ident">I</span>: <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="prelude-ty">Result</span>&lt;<span class="ident">TokenTriple</span>&lt;<span class="ident">D</span>&gt;, <span class="ident">ParseError</span>&lt;<span class="ident">D</span>&gt;&gt;&gt;,
+<span class="kw">impl</span>&lt;D, I&gt; Parser&lt;D, I&gt;
+<span class="kw">where
+    </span>D: ParserDefinition,
+    I: Iterator&lt;Item = <span class="prelude-ty">Result</span>&lt;TokenTriple&lt;D&gt;, ParseError&lt;D&gt;&gt;&gt;,
 {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">drive</span>(<span class="ident">definition</span>: <span class="ident">D</span>, <span class="ident">tokens</span>: <span class="ident">I</span>) -&gt; <span class="ident">ParseResult</span>&lt;<span class="ident">D</span>&gt; {
-        <span class="kw">let</span> <span class="ident">last_location</span> = <span class="ident">definition</span>.<span class="ident">start_location</span>();
-        <span class="kw">let</span> <span class="ident">start_state</span> = <span class="ident">definition</span>.<span class="ident">start_state</span>();
-        <span class="ident">Parser</span> {
-            <span class="ident">definition</span>,
-            <span class="ident">tokens</span>,
-            <span class="ident">states</span>: <span class="macro">vec!</span>[<span class="ident">start_state</span>],
-            <span class="ident">symbols</span>: <span class="macro">vec!</span>[],
-            <span class="ident">last_location</span>,
+    <span class="kw">pub fn </span>drive(definition: D, tokens: I) -&gt; ParseResult&lt;D&gt; {
+        <span class="kw">let </span>last_location = definition.start_location();
+        <span class="kw">let </span>start_state = definition.start_state();
+        Parser {
+            definition,
+            tokens,
+            states: <span class="macro">vec!</span>[start_state],
+            symbols: <span class="macro">vec!</span>[],
+            last_location,
         }
-        .<span class="ident">parse</span>()
+        .parse()
     }
 
-    <span class="kw">fn</span> <span class="ident">top_state</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">D::StateIndex</span> {
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">states</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>()
+    <span class="kw">fn </span>top_state(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; D::StateIndex {
+        <span class="kw-2">*</span><span class="self">self</span>.states.last().unwrap()
     }
 
-    <span class="kw">fn</span> <span class="ident">parse</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">ParseResult</span>&lt;<span class="ident">D</span>&gt; {
-        <span class="comment">// Outer loop: each time we continue around this loop, we</span>
-        <span class="comment">// shift a new token from the input. We break from the loop</span>
-        <span class="comment">// when the end of the input is reached (we return early if an</span>
-        <span class="comment">// error occurs).</span>
-        <span class="lifetime">&#39;shift</span>: <span class="kw">loop</span> {
-            <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">lookahead</span>, <span class="kw-2">mut</span> <span class="ident">token_index</span>) = <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next_token</span>() {
-                <span class="ident">NextToken::FoundToken</span>(<span class="ident">l</span>, <span class="ident">i</span>) =&gt; (<span class="ident">l</span>, <span class="ident">i</span>),
-                <span class="ident">NextToken::EOF</span> =&gt; <span class="kw">return</span> <span class="self">self</span>.<span class="ident">parse_eof</span>(),
-                <span class="ident">NextToken::Done</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">e</span>,
+    <span class="kw">fn </span>parse(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; ParseResult&lt;D&gt; {
+        <span class="comment">// Outer loop: each time we continue around this loop, we
+        // shift a new token from the input. We break from the loop
+        // when the end of the input is reached (we return early if an
+        // error occurs).
+        </span><span class="lifetime">&#39;shift</span>: <span class="kw">loop </span>{
+            <span class="kw">let </span>(<span class="kw-2">mut </span>lookahead, <span class="kw-2">mut </span>token_index) = <span class="kw">match </span><span class="self">self</span>.next_token() {
+                NextToken::FoundToken(l, i) =&gt; (l, i),
+                NextToken::EOF =&gt; <span class="kw">return </span><span class="self">self</span>.parse_eof(),
+                NextToken::Done(e) =&gt; <span class="kw">return </span>e,
             };
 
-            <span class="macro">debug!</span>(<span class="string">&quot;+ SHIFT: {:?}&quot;</span>, <span class="ident">lookahead</span>);
+            <span class="macro">debug!</span>(<span class="string">&quot;+ SHIFT: {:?}&quot;</span>, lookahead);
 
-            <span class="macro">debug!</span>(<span class="string">&quot;\\ token_index: {:?}&quot;</span>, <span class="ident">token_index</span>);
+            <span class="macro">debug!</span>(<span class="string">&quot;\\ token_index: {:?}&quot;</span>, token_index);
 
-            <span class="lifetime">&#39;inner</span>: <span class="kw">loop</span> {
-                <span class="kw">let</span> <span class="ident">top_state</span> = <span class="self">self</span>.<span class="ident">top_state</span>();
-                <span class="kw">let</span> <span class="ident">action</span> = <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">action</span>(<span class="ident">top_state</span>, <span class="ident">token_index</span>);
-                <span class="macro">debug!</span>(<span class="string">&quot;\\ action: {:?}&quot;</span>, <span class="ident">action</span>);
+            <span class="lifetime">&#39;inner</span>: <span class="kw">loop </span>{
+                <span class="kw">let </span>top_state = <span class="self">self</span>.top_state();
+                <span class="kw">let </span>action = <span class="self">self</span>.definition.action(top_state, token_index);
+                <span class="macro">debug!</span>(<span class="string">&quot;\\ action: {:?}&quot;</span>, action);
 
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">target_state</span>) = <span class="ident">action</span>.<span class="ident">as_shift</span>() {
-                    <span class="macro">debug!</span>(<span class="string">&quot;\\ shift to: {:?}&quot;</span>, <span class="ident">target_state</span>);
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(target_state) = action.as_shift() {
+                    <span class="macro">debug!</span>(<span class="string">&quot;\\ shift to: {:?}&quot;</span>, target_state);
 
-                    <span class="comment">// Shift and transition to state `action - 1`</span>
-                    <span class="kw">let</span> <span class="ident">symbol</span> = <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">token_to_symbol</span>(<span class="ident">token_index</span>, <span class="ident">lookahead</span>.<span class="number">1</span>);
-                    <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">push</span>(<span class="ident">target_state</span>);
-                    <span class="self">self</span>.<span class="ident">symbols</span>.<span class="ident">push</span>((<span class="ident">lookahead</span>.<span class="number">0</span>, <span class="ident">symbol</span>, <span class="ident">lookahead</span>.<span class="number">2</span>));
-                    <span class="kw">continue</span> <span class="lifetime">&#39;shift</span>;
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">reduce_index</span>) = <span class="ident">action</span>.<span class="ident">as_reduce</span>() {
-                    <span class="macro">debug!</span>(<span class="string">&quot;\\ reduce to: {:?}&quot;</span>, <span class="ident">reduce_index</span>);
+                    <span class="comment">// Shift and transition to state `action - 1`
+                    </span><span class="kw">let </span>symbol = <span class="self">self</span>.definition.token_to_symbol(token_index, lookahead.<span class="number">1</span>);
+                    <span class="self">self</span>.states.push(target_state);
+                    <span class="self">self</span>.symbols.push((lookahead.<span class="number">0</span>, symbol, lookahead.<span class="number">2</span>));
+                    <span class="kw">continue </span><span class="lifetime">&#39;shift</span>;
+                } <span class="kw">else if let </span><span class="prelude-val">Some</span>(reduce_index) = action.as_reduce() {
+                    <span class="macro">debug!</span>(<span class="string">&quot;\\ reduce to: {:?}&quot;</span>, reduce_index);
 
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">r</span>) = <span class="self">self</span>.<span class="ident">reduce</span>(<span class="ident">reduce_index</span>, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="ident">lookahead</span>.<span class="number">0</span>)) {
-                        <span class="kw">return</span> <span class="kw">match</span> <span class="ident">r</span> {
-                            <span class="comment">// we reached eof, but still have lookahead</span>
-                            <span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident"><span class="kw">crate</span>::ParseError::ExtraToken</span> { <span class="ident">token</span>: <span class="ident">lookahead</span> }),
-                            <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="prelude-val">Err</span>(<span class="ident">e</span>),
+                    <span class="kw">if let </span><span class="prelude-val">Some</span>(r) = <span class="self">self</span>.reduce(reduce_index, <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>lookahead.<span class="number">0</span>)) {
+                        <span class="kw">return match </span>r {
+                            <span class="comment">// we reached eof, but still have lookahead
+                            </span><span class="prelude-val">Ok</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(<span class="kw">crate</span>::ParseError::ExtraToken { token: lookahead }),
+                            <span class="prelude-val">Err</span>(e) =&gt; <span class="prelude-val">Err</span>(e),
                         };
                     }
-                } <span class="kw">else</span> {
+                } <span class="kw">else </span>{
                     <span class="macro">debug!</span>(<span class="string">&quot;\\ error -- initiating error recovery!&quot;</span>);
 
-                    <span class="kw">match</span> <span class="self">self</span>.<span class="ident">error_recovery</span>(<span class="prelude-val">Some</span>(<span class="ident">lookahead</span>), <span class="prelude-val">Some</span>(<span class="ident">token_index</span>)) {
-                        <span class="ident">NextToken::FoundToken</span>(<span class="ident">l</span>, <span class="ident">i</span>) =&gt; {
-                            <span class="ident">lookahead</span> = <span class="ident">l</span>;
-                            <span class="ident">token_index</span> = <span class="ident">i</span>;
-                            <span class="kw">continue</span> <span class="lifetime">&#39;inner</span>;
+                    <span class="kw">match </span><span class="self">self</span>.error_recovery(<span class="prelude-val">Some</span>(lookahead), <span class="prelude-val">Some</span>(token_index)) {
+                        NextToken::FoundToken(l, i) =&gt; {
+                            lookahead = l;
+                            token_index = i;
+                            <span class="kw">continue </span><span class="lifetime">&#39;inner</span>;
                         }
-                        <span class="ident">NextToken::EOF</span> =&gt; <span class="kw">return</span> <span class="self">self</span>.<span class="ident">parse_eof</span>(),
-                        <span class="ident">NextToken::Done</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">e</span>,
+                        NextToken::EOF =&gt; <span class="kw">return </span><span class="self">self</span>.parse_eof(),
+                        NextToken::Done(e) =&gt; <span class="kw">return </span>e,
                     }
                 }
             }
         }
     }
 
-    <span class="doccomment">/// Invoked when we have no more tokens to consume.</span>
-    <span class="kw">fn</span> <span class="ident">parse_eof</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">ParseResult</span>&lt;<span class="ident">D</span>&gt; {
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">top_state</span> = <span class="self">self</span>.<span class="ident">top_state</span>();
-            <span class="kw">let</span> <span class="ident">action</span> = <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">eof_action</span>(<span class="ident">top_state</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">reduce_index</span>) = <span class="ident">action</span>.<span class="ident">as_reduce</span>() {
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">result</span>) =
-                    <span class="self">self</span>.<span class="ident">definition</span>
-                        .<span class="ident">reduce</span>(<span class="ident">reduce_index</span>, <span class="prelude-val">None</span>, <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">states</span>, <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">symbols</span>)
+    <span class="doccomment">/// Invoked when we have no more tokens to consume.
+    </span><span class="kw">fn </span>parse_eof(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; ParseResult&lt;D&gt; {
+        <span class="kw">loop </span>{
+            <span class="kw">let </span>top_state = <span class="self">self</span>.top_state();
+            <span class="kw">let </span>action = <span class="self">self</span>.definition.eof_action(top_state);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(reduce_index) = action.as_reduce() {
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(result) =
+                    <span class="self">self</span>.definition
+                        .reduce(reduce_index, <span class="prelude-val">None</span>, <span class="kw-2">&amp;mut </span><span class="self">self</span>.states, <span class="kw-2">&amp;mut </span><span class="self">self</span>.symbols)
                 {
-                    <span class="kw">return</span> <span class="ident">result</span>;
+                    <span class="kw">return </span>result;
                 }
-            } <span class="kw">else</span> {
-                <span class="kw">match</span> <span class="self">self</span>.<span class="ident">error_recovery</span>(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) {
-                    <span class="ident">NextToken::FoundToken</span>(..) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;cannot find token at EOF&quot;</span>),
-                    <span class="ident">NextToken::Done</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">e</span>,
-                    <span class="ident">NextToken::EOF</span> =&gt; <span class="kw">continue</span>,
+            } <span class="kw">else </span>{
+                <span class="kw">match </span><span class="self">self</span>.error_recovery(<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) {
+                    NextToken::FoundToken(..) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;cannot find token at EOF&quot;</span>),
+                    NextToken::Done(e) =&gt; <span class="kw">return </span>e,
+                    NextToken::EOF =&gt; <span class="kw">continue</span>,
                 }
             }
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">error_recovery</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="kw-2">mut</span> <span class="ident">opt_lookahead</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">TokenTriple</span>&lt;<span class="ident">D</span>&gt;&gt;,
-        <span class="kw-2">mut</span> <span class="ident">opt_token_index</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">D::TokenIndex</span>&gt;,
-    ) -&gt; <span class="ident">NextToken</span>&lt;<span class="ident">D</span>&gt; {
+    <span class="kw">fn </span>error_recovery(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        <span class="kw-2">mut </span>opt_lookahead: <span class="prelude-ty">Option</span>&lt;TokenTriple&lt;D&gt;&gt;,
+        <span class="kw-2">mut </span>opt_token_index: <span class="prelude-ty">Option</span>&lt;D::TokenIndex&gt;,
+    ) -&gt; NextToken&lt;D&gt; {
         <span class="macro">debug!</span>(
             <span class="string">&quot;\\+ error_recovery(opt_lookahead={:?}, opt_token_index={:?})&quot;</span>,
-            <span class="ident">opt_lookahead</span>, <span class="ident">opt_token_index</span>,
+            opt_lookahead, opt_token_index,
         );
 
-        <span class="kw">if</span> !<span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">uses_error_recovery</span>() {
+        <span class="kw">if </span>!<span class="self">self</span>.definition.uses_error_recovery() {
             <span class="macro">debug!</span>(<span class="string">&quot;\\ error -- no error recovery!&quot;</span>);
 
-            <span class="kw">return</span> <span class="ident">NextToken::Done</span>(<span class="prelude-val">Err</span>(
-                <span class="self">self</span>.<span class="ident">unrecognized_token_error</span>(<span class="ident">opt_lookahead</span>, <span class="self">self</span>.<span class="ident">top_state</span>())
+            <span class="kw">return </span>NextToken::Done(<span class="prelude-val">Err</span>(
+                <span class="self">self</span>.unrecognized_token_error(opt_lookahead, <span class="self">self</span>.top_state())
             ));
         }
 
-        <span class="kw">let</span> <span class="ident">error</span> = <span class="self">self</span>.<span class="ident">unrecognized_token_error</span>(<span class="ident">opt_lookahead</span>.<span class="ident">clone</span>(), <span class="self">self</span>.<span class="ident">top_state</span>());
+        <span class="kw">let </span>error = <span class="self">self</span>.unrecognized_token_error(opt_lookahead.clone(), <span class="self">self</span>.top_state());
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dropped_tokens</span> = <span class="macro">vec!</span>[];
+        <span class="kw">let </span><span class="kw-2">mut </span>dropped_tokens = <span class="macro">vec!</span>[];
 
-        <span class="comment">// We are going to insert ERROR into the lookahead. So, first,</span>
-        <span class="comment">// perform all reductions from current state triggered by having</span>
-        <span class="comment">// ERROR in the lookahead.</span>
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="ident">state</span> = <span class="self">self</span>.<span class="ident">top_state</span>();
-            <span class="kw">let</span> <span class="ident">action</span> = <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">error_action</span>(<span class="ident">state</span>);
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">reduce_index</span>) = <span class="ident">action</span>.<span class="ident">as_reduce</span>() {
-                <span class="macro">debug!</span>(<span class="string">&quot;\\\\ reducing: {:?}&quot;</span>, <span class="ident">reduce_index</span>);
+        <span class="comment">// We are going to insert ERROR into the lookahead. So, first,
+        // perform all reductions from current state triggered by having
+        // ERROR in the lookahead.
+        </span><span class="kw">loop </span>{
+            <span class="kw">let </span>state = <span class="self">self</span>.top_state();
+            <span class="kw">let </span>action = <span class="self">self</span>.definition.error_action(state);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(reduce_index) = action.as_reduce() {
+                <span class="macro">debug!</span>(<span class="string">&quot;\\\\ reducing: {:?}&quot;</span>, reduce_index);
 
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">result</span>) =
-                    <span class="self">self</span>.<span class="ident">reduce</span>(<span class="ident">reduce_index</span>, <span class="ident">opt_lookahead</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(|<span class="ident">l</span>| <span class="kw-2">&amp;</span><span class="ident">l</span>.<span class="number">0</span>))
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(result) =
+                    <span class="self">self</span>.reduce(reduce_index, opt_lookahead.as_ref().map(|l| <span class="kw-2">&amp;</span>l.<span class="number">0</span>))
                 {
                     <span class="macro">debug!</span>(<span class="string">&quot;\\\\ reduced to a result&quot;</span>);
 
-                    <span class="kw">return</span> <span class="ident">NextToken::Done</span>(<span class="ident">result</span>);
+                    <span class="kw">return </span>NextToken::Done(result);
                 }
-            } <span class="kw">else</span> {
+            } <span class="kw">else </span>{
                 <span class="kw">break</span>;
             }
         }
 
-        <span class="comment">// Now try to find the recovery state.</span>
-        <span class="kw">let</span> <span class="ident">states_len</span> = <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">len</span>();
-        <span class="kw">let</span> <span class="ident">top</span> = <span class="lifetime">&#39;find_state</span>: <span class="kw">loop</span> {
-            <span class="comment">// Go backwards through the states...</span>
-            <span class="macro">debug!</span>(
+        <span class="comment">// Now try to find the recovery state.
+        </span><span class="kw">let </span>states_len = <span class="self">self</span>.states.len();
+        <span class="kw">let </span>top = <span class="lifetime">&#39;find_state</span>: <span class="kw">loop </span>{
+            <span class="comment">// Go backwards through the states...
+            </span><span class="macro">debug!</span>(
                 <span class="string">&quot;\\\\+ error_recovery: find_state loop, {:?} states = {:?}&quot;</span>,
-                <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">len</span>(),
-                <span class="self">self</span>.<span class="ident">states</span>,
+                <span class="self">self</span>.states.len(),
+                <span class="self">self</span>.states,
             );
 
-            <span class="kw">for</span> <span class="ident">top</span> <span class="kw">in</span> (<span class="number">0</span>..<span class="ident">states_len</span>).<span class="ident">rev</span>() {
-                <span class="kw">let</span> <span class="ident">state</span> = <span class="self">self</span>.<span class="ident">states</span>[<span class="ident">top</span>];
-                <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\ top = {:?}, state = {:?}&quot;</span>, <span class="ident">top</span>, <span class="ident">state</span>);
+            <span class="kw">for </span>top <span class="kw">in </span>(<span class="number">0</span>..states_len).rev() {
+                <span class="kw">let </span>state = <span class="self">self</span>.states[top];
+                <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\ top = {:?}, state = {:?}&quot;</span>, top, state);
 
-                <span class="comment">// ...fetch action for error token...</span>
-                <span class="kw">let</span> <span class="ident">action</span> = <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">error_action</span>(<span class="ident">state</span>);
-                <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\ action = {:?}&quot;</span>, <span class="ident">action</span>);
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">error_state</span>) = <span class="ident">action</span>.<span class="ident">as_shift</span>() {
-                    <span class="comment">// If action is a shift that takes us into `error_state`,</span>
-                    <span class="comment">// and `error_state` can accept this lookahead, we are done.</span>
-                    <span class="kw">if</span> <span class="self">self</span>.<span class="ident">accepts</span>(<span class="ident">error_state</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">states</span>[..=<span class="ident">top</span>], <span class="ident">opt_token_index</span>) {
+                <span class="comment">// ...fetch action for error token...
+                </span><span class="kw">let </span>action = <span class="self">self</span>.definition.error_action(state);
+                <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\ action = {:?}&quot;</span>, action);
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(error_state) = action.as_shift() {
+                    <span class="comment">// If action is a shift that takes us into `error_state`,
+                    // and `error_state` can accept this lookahead, we are done.
+                    </span><span class="kw">if </span><span class="self">self</span>.accepts(error_state, <span class="kw-2">&amp;</span><span class="self">self</span>.states[..=top], opt_token_index) {
                         <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\ accepted!&quot;</span>);
-                        <span class="kw">break</span> <span class="lifetime">&#39;find_state</span> <span class="ident">top</span>;
+                        <span class="kw">break </span><span class="lifetime">&#39;find_state </span>top;
                     }
-                } <span class="kw">else</span> {
-                    <span class="comment">// ...else, if action is error or reduce, go to next state.</span>
-                    <span class="kw">continue</span>;
+                } <span class="kw">else </span>{
+                    <span class="comment">// ...else, if action is error or reduce, go to next state.
+                    </span><span class="kw">continue</span>;
                 }
             }
 
-            <span class="comment">// Otherwise, if we couldn&#39;t find a state that would --</span>
-            <span class="comment">// after shifting the error token -- accept the lookahead,</span>
-            <span class="comment">// then drop the lookahead and advance to next token in</span>
-            <span class="comment">// the input.</span>
-            <span class="kw">match</span> <span class="ident">opt_lookahead</span>.<span class="ident">take</span>() {
-                <span class="comment">// If the lookahead is EOF, we can&#39;t drop any more</span>
-                <span class="comment">// tokens, abort error recovery and just report the</span>
-                <span class="comment">// original error (it might be nice if we would</span>
-                <span class="comment">// propagate back the dropped tokens, though).</span>
-                <span class="prelude-val">None</span> =&gt; {
+            <span class="comment">// Otherwise, if we couldn&#39;t find a state that would --
+            // after shifting the error token -- accept the lookahead,
+            // then drop the lookahead and advance to next token in
+            // the input.
+            </span><span class="kw">match </span>opt_lookahead.take() {
+                <span class="comment">// If the lookahead is EOF, we can&#39;t drop any more
+                // tokens, abort error recovery and just report the
+                // original error (it might be nice if we would
+                // propagate back the dropped tokens, though).
+                </span><span class="prelude-val">None </span>=&gt; {
                     <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\ no more lookahead, report error&quot;</span>);
-                    <span class="kw">return</span> <span class="ident">NextToken::Done</span>(<span class="prelude-val">Err</span>(<span class="ident">error</span>));
+                    <span class="kw">return </span>NextToken::Done(<span class="prelude-val">Err</span>(error));
                 }
 
-                <span class="comment">// Else, drop the current token and shift to the</span>
-                <span class="comment">// next. If there is a next token, we will `continue`</span>
-                <span class="comment">// to the start of the `&#39;find_state` loop.</span>
-                <span class="prelude-val">Some</span>(<span class="ident">lookahead</span>) =&gt; {
+                <span class="comment">// Else, drop the current token and shift to the
+                // next. If there is a next token, we will `continue`
+                // to the start of the `&#39;find_state` loop.
+                </span><span class="prelude-val">Some</span>(lookahead) =&gt; {
                     <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\ dropping lookahead token&quot;</span>);
 
-                    <span class="ident">dropped_tokens</span>.<span class="ident">push</span>(<span class="ident">lookahead</span>);
-                    <span class="kw">match</span> <span class="self">self</span>.<span class="ident">next_token</span>() {
-                        <span class="ident">NextToken::FoundToken</span>(<span class="ident">next_lookahead</span>, <span class="ident">next_token_index</span>) =&gt; {
-                            <span class="ident">opt_lookahead</span> = <span class="prelude-val">Some</span>(<span class="ident">next_lookahead</span>);
-                            <span class="ident">opt_token_index</span> = <span class="prelude-val">Some</span>(<span class="ident">next_token_index</span>);
+                    dropped_tokens.push(lookahead);
+                    <span class="kw">match </span><span class="self">self</span>.next_token() {
+                        NextToken::FoundToken(next_lookahead, next_token_index) =&gt; {
+                            opt_lookahead = <span class="prelude-val">Some</span>(next_lookahead);
+                            opt_token_index = <span class="prelude-val">Some</span>(next_token_index);
                         }
-                        <span class="ident">NextToken::EOF</span> =&gt; {
+                        NextToken::EOF =&gt; {
                             <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\ reached EOF&quot;</span>);
-                            <span class="ident">opt_lookahead</span> = <span class="prelude-val">None</span>;
-                            <span class="ident">opt_token_index</span> = <span class="prelude-val">None</span>;
+                            opt_lookahead = <span class="prelude-val">None</span>;
+                            opt_token_index = <span class="prelude-val">None</span>;
                         }
-                        <span class="ident">NextToken::Done</span>(<span class="ident">e</span>) =&gt; {
+                        NextToken::Done(e) =&gt; {
                             <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\ no more tokens&quot;</span>);
-                            <span class="kw">return</span> <span class="ident">NextToken::Done</span>(<span class="ident">e</span>);
+                            <span class="kw">return </span>NextToken::Done(e);
                         }
                     }
                 }
             }
         };
 
-        <span class="comment">// If we get here, we are ready to push the error recovery state.</span>
+        <span class="comment">// If we get here, we are ready to push the error recovery state.
 
-        <span class="comment">// We have to compute the span for the error recovery</span>
-        <span class="comment">// token. We do this first, before we pop any symbols off the</span>
-        <span class="comment">// stack. There are several possibilities, in order of</span>
-        <span class="comment">// preference.</span>
-        <span class="comment">//</span>
-        <span class="comment">// For the **start** of the message, we prefer to use the start of any</span>
-        <span class="comment">// popped states. This represents parts of the input we had consumed but</span>
-        <span class="comment">// had to roll back and ignore.</span>
-        <span class="comment">//</span>
-        <span class="comment">// Example:</span>
-        <span class="comment">//</span>
-        <span class="comment">//       a + (b + /)</span>
-        <span class="comment">//              ^ start point is here, since this `+` will be popped off</span>
-        <span class="comment">//</span>
-        <span class="comment">// If there are no popped states, but there *are* dropped tokens, we can use</span>
-        <span class="comment">// the start of those.</span>
-        <span class="comment">//</span>
-        <span class="comment">// Example:</span>
-        <span class="comment">//</span>
-        <span class="comment">//       a + (b + c e)</span>
-        <span class="comment">//                  ^ start point would be here</span>
-        <span class="comment">//</span>
-        <span class="comment">// Finally, if there are no popped states *nor* dropped tokens, we can use</span>
-        <span class="comment">// the end of the top-most state.</span>
+        // We have to compute the span for the error recovery
+        // token. We do this first, before we pop any symbols off the
+        // stack. There are several possibilities, in order of
+        // preference.
+        //
+        // For the **start** of the message, we prefer to use the start of any
+        // popped states. This represents parts of the input we had consumed but
+        // had to roll back and ignore.
+        //
+        // Example:
+        //
+        //       a + (b + /)
+        //              ^ start point is here, since this `+` will be popped off
+        //
+        // If there are no popped states, but there *are* dropped tokens, we can use
+        // the start of those.
+        //
+        // Example:
+        //
+        //       a + (b + c e)
+        //                  ^ start point would be here
+        //
+        // Finally, if there are no popped states *nor* dropped tokens, we can use
+        // the end of the top-most state.
 
-        <span class="kw">let</span> <span class="ident">start</span> = <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">popped_sym</span>) = <span class="self">self</span>.<span class="ident">symbols</span>.<span class="ident">get</span>(<span class="ident">top</span>) {
-            <span class="ident">popped_sym</span>.<span class="number">0</span>.<span class="ident">clone</span>()
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">dropped_token</span>) = <span class="ident">dropped_tokens</span>.<span class="ident">first</span>() {
-            <span class="ident">dropped_token</span>.<span class="number">0</span>.<span class="ident">clone</span>()
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">top</span> &gt; <span class="number">0</span> {
-            <span class="self">self</span>.<span class="ident">symbols</span>[<span class="ident">top</span> - <span class="number">1</span>].<span class="number">2</span>.<span class="ident">clone</span>()
-        } <span class="kw">else</span> {
-            <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">start_location</span>()
+        </span><span class="kw">let </span>start = <span class="kw">if let </span><span class="prelude-val">Some</span>(popped_sym) = <span class="self">self</span>.symbols.get(top) {
+            popped_sym.<span class="number">0</span>.clone()
+        } <span class="kw">else if let </span><span class="prelude-val">Some</span>(dropped_token) = dropped_tokens.first() {
+            dropped_token.<span class="number">0</span>.clone()
+        } <span class="kw">else if </span>top &gt; <span class="number">0 </span>{
+            <span class="self">self</span>.symbols[top - <span class="number">1</span>].<span class="number">2</span>.clone()
+        } <span class="kw">else </span>{
+            <span class="self">self</span>.definition.start_location()
         };
 
-        <span class="comment">// For the end span, here are the possibilities:</span>
-        <span class="comment">//</span>
-        <span class="comment">// We prefer to use the end of the last dropped token.</span>
-        <span class="comment">//</span>
-        <span class="comment">// Examples:</span>
-        <span class="comment">//</span>
-        <span class="comment">//       a + (b + /)</span>
-        <span class="comment">//              ---</span>
-        <span class="comment">//       a + (b c)</span>
-        <span class="comment">//              -</span>
-        <span class="comment">//</span>
-        <span class="comment">// But, if there are no dropped tokens, we will use the end of the popped states,</span>
-        <span class="comment">// if any:</span>
-        <span class="comment">//</span>
-        <span class="comment">//       a + /</span>
-        <span class="comment">//         -</span>
-        <span class="comment">//</span>
-        <span class="comment">// If there are neither dropped tokens *or* popped states,</span>
-        <span class="comment">// then the user is simulating insertion of an operator. In</span>
-        <span class="comment">// this case, we prefer the start of the lookahead, but</span>
-        <span class="comment">// fallback to the start if we are at EOF.</span>
-        <span class="comment">//</span>
-        <span class="comment">// Examples:</span>
-        <span class="comment">//</span>
-        <span class="comment">//       a + (b c)</span>
-        <span class="comment">//             -</span>
+        <span class="comment">// For the end span, here are the possibilities:
+        //
+        // We prefer to use the end of the last dropped token.
+        //
+        // Examples:
+        //
+        //       a + (b + /)
+        //              ---
+        //       a + (b c)
+        //              -
+        //
+        // But, if there are no dropped tokens, we will use the end of the popped states,
+        // if any:
+        //
+        //       a + /
+        //         -
+        //
+        // If there are neither dropped tokens *or* popped states,
+        // then the user is simulating insertion of an operator. In
+        // this case, we prefer the start of the lookahead, but
+        // fallback to the start if we are at EOF.
+        //
+        // Examples:
+        //
+        //       a + (b c)
+        //             -
 
-        <span class="kw">let</span> <span class="ident">end</span> = <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">dropped_token</span>) = <span class="ident">dropped_tokens</span>.<span class="ident">last</span>() {
-            <span class="ident">dropped_token</span>.<span class="number">2</span>.<span class="ident">clone</span>()
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">states_len</span> - <span class="number">1</span> &gt; <span class="ident">top</span> {
-            <span class="self">self</span>.<span class="ident">symbols</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>().<span class="number">2</span>.<span class="ident">clone</span>()
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">lookahead</span>) = <span class="ident">opt_lookahead</span>.<span class="ident">as_ref</span>() {
-            <span class="ident">lookahead</span>.<span class="number">0</span>.<span class="ident">clone</span>()
-        } <span class="kw">else</span> {
-            <span class="ident">start</span>.<span class="ident">clone</span>()
+        </span><span class="kw">let </span>end = <span class="kw">if let </span><span class="prelude-val">Some</span>(dropped_token) = dropped_tokens.last() {
+            dropped_token.<span class="number">2</span>.clone()
+        } <span class="kw">else if </span>states_len - <span class="number">1 </span>&gt; top {
+            <span class="self">self</span>.symbols.last().unwrap().<span class="number">2</span>.clone()
+        } <span class="kw">else if let </span><span class="prelude-val">Some</span>(lookahead) = opt_lookahead.as_ref() {
+            lookahead.<span class="number">0</span>.clone()
+        } <span class="kw">else </span>{
+            start.clone()
         };
 
-        <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">truncate</span>(<span class="ident">top</span> + <span class="number">1</span>);
-        <span class="self">self</span>.<span class="ident">symbols</span>.<span class="ident">truncate</span>(<span class="ident">top</span>);
+        <span class="self">self</span>.states.truncate(top + <span class="number">1</span>);
+        <span class="self">self</span>.symbols.truncate(top);
 
-        <span class="kw">let</span> <span class="ident">recover_state</span> = <span class="self">self</span>.<span class="ident">states</span>[<span class="ident">top</span>];
-        <span class="kw">let</span> <span class="ident">error_action</span> = <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">error_action</span>(<span class="ident">recover_state</span>);
-        <span class="kw">let</span> <span class="ident">error_state</span> = <span class="ident">error_action</span>.<span class="ident">as_shift</span>().<span class="ident">unwrap</span>();
-        <span class="self">self</span>.<span class="ident">states</span>.<span class="ident">push</span>(<span class="ident">error_state</span>);
-        <span class="kw">let</span> <span class="ident">recovery</span> = <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">error_recovery_symbol</span>(<span class="ident"><span class="kw">crate</span>::ErrorRecovery</span> {
-            <span class="ident">error</span>,
-            <span class="ident">dropped_tokens</span>,
+        <span class="kw">let </span>recover_state = <span class="self">self</span>.states[top];
+        <span class="kw">let </span>error_action = <span class="self">self</span>.definition.error_action(recover_state);
+        <span class="kw">let </span>error_state = error_action.as_shift().unwrap();
+        <span class="self">self</span>.states.push(error_state);
+        <span class="kw">let </span>recovery = <span class="self">self</span>.definition.error_recovery_symbol(<span class="kw">crate</span>::ErrorRecovery {
+            error,
+            dropped_tokens,
         });
-        <span class="self">self</span>.<span class="ident">symbols</span>.<span class="ident">push</span>((<span class="ident">start</span>, <span class="ident">recovery</span>, <span class="ident">end</span>));
+        <span class="self">self</span>.symbols.push((start, recovery, end));
 
-        <span class="kw">match</span> (<span class="ident">opt_lookahead</span>, <span class="ident">opt_token_index</span>) {
-            (<span class="prelude-val">Some</span>(<span class="ident">l</span>), <span class="prelude-val">Some</span>(<span class="ident">i</span>)) =&gt; <span class="ident">NextToken::FoundToken</span>(<span class="ident">l</span>, <span class="ident">i</span>),
-            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; <span class="ident">NextToken::EOF</span>,
-            (<span class="ident">l</span>, <span class="ident">i</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;lookahead and token_index mismatched: {:?}, {:?}&quot;</span>, <span class="ident">l</span>, <span class="ident">i</span>),
+        <span class="kw">match </span>(opt_lookahead, opt_token_index) {
+            (<span class="prelude-val">Some</span>(l), <span class="prelude-val">Some</span>(i)) =&gt; NextToken::FoundToken(l, i),
+            (<span class="prelude-val">None</span>, <span class="prelude-val">None</span>) =&gt; NextToken::EOF,
+            (l, i) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;lookahead and token_index mismatched: {:?}, {:?}&quot;</span>, l, i),
         }
     }
 
-    <span class="doccomment">/// The `accepts` function has the job of figuring out whether the</span>
-    <span class="doccomment">/// given error state would &quot;accept&quot; the given lookahead. We</span>
-    <span class="doccomment">/// basically trace through the LR automaton looking for one of</span>
-    <span class="doccomment">/// two outcomes:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - the lookahead is eventually shifted</span>
-    <span class="doccomment">/// - we reduce to the end state successfully (in the case of EOF).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If we used the pure LR(1) algorithm, we wouldn&#39;t need this</span>
-    <span class="doccomment">/// function, because we would be guaranteed to error immediately</span>
-    <span class="doccomment">/// (and not after some number of reductions). But with an LALR</span>
-    <span class="doccomment">/// (or Lane Table) generated automaton, it is possible to reduce</span>
-    <span class="doccomment">/// some number of times before encountering an error. Failing to</span>
-    <span class="doccomment">/// take this into account can lead error recovery into an</span>
-    <span class="doccomment">/// infinite loop (see the `error_recovery_lalr_loop` test) or</span>
-    <span class="doccomment">/// produce crappy results (see `error_recovery_lock_in`).</span>
-    <span class="kw">fn</span> <span class="ident">accepts</span>(
+    <span class="doccomment">/// The `accepts` function has the job of figuring out whether the
+    /// given error state would &quot;accept&quot; the given lookahead. We
+    /// basically trace through the LR automaton looking for one of
+    /// two outcomes:
+    ///
+    /// - the lookahead is eventually shifted
+    /// - we reduce to the end state successfully (in the case of EOF).
+    ///
+    /// If we used the pure LR(1) algorithm, we wouldn&#39;t need this
+    /// function, because we would be guaranteed to error immediately
+    /// (and not after some number of reductions). But with an LALR
+    /// (or Lane Table) generated automaton, it is possible to reduce
+    /// some number of times before encountering an error. Failing to
+    /// take this into account can lead error recovery into an
+    /// infinite loop (see the `error_recovery_lalr_loop` test) or
+    /// produce crappy results (see `error_recovery_lock_in`).
+    </span><span class="kw">fn </span>accepts(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">error_state</span>: <span class="ident">D::StateIndex</span>,
-        <span class="ident">states</span>: <span class="kw-2">&amp;</span>[<span class="ident">D::StateIndex</span>],
-        <span class="ident">opt_token_index</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">D::TokenIndex</span>&gt;,
-    ) -&gt; <span class="ident">bool</span> {
+        error_state: D::StateIndex,
+        states: <span class="kw-2">&amp;</span>[D::StateIndex],
+        opt_token_index: <span class="prelude-ty">Option</span>&lt;D::TokenIndex&gt;,
+    ) -&gt; bool {
         <span class="macro">debug!</span>(
             <span class="string">&quot;\\\\\\+ accepts(error_state={:?}, states={:?}, opt_token_index={:?})&quot;</span>,
-            <span class="ident">error_state</span>, <span class="ident">states</span>, <span class="ident">opt_token_index</span>,
+            error_state, states, opt_token_index,
         );
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">states</span> = <span class="ident">states</span>.<span class="ident">to_vec</span>();
-        <span class="ident">states</span>.<span class="ident">push</span>(<span class="ident">error_state</span>);
-        <span class="kw">loop</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">states_len</span> = <span class="ident">states</span>.<span class="ident">len</span>();
-            <span class="kw">let</span> <span class="ident">top</span> = <span class="ident">states</span>[<span class="ident">states_len</span> - <span class="number">1</span>];
-            <span class="kw">let</span> <span class="ident">action</span> = <span class="kw">match</span> <span class="ident">opt_token_index</span> {
-                <span class="prelude-val">None</span> =&gt; <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">eof_action</span>(<span class="ident">top</span>),
-                <span class="prelude-val">Some</span>(<span class="ident">i</span>) =&gt; <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">action</span>(<span class="ident">top</span>, <span class="ident">i</span>),
+        <span class="kw">let </span><span class="kw-2">mut </span>states = states.to_vec();
+        states.push(error_state);
+        <span class="kw">loop </span>{
+            <span class="kw">let </span><span class="kw-2">mut </span>states_len = states.len();
+            <span class="kw">let </span>top = states[states_len - <span class="number">1</span>];
+            <span class="kw">let </span>action = <span class="kw">match </span>opt_token_index {
+                <span class="prelude-val">None </span>=&gt; <span class="self">self</span>.definition.eof_action(top),
+                <span class="prelude-val">Some</span>(i) =&gt; <span class="self">self</span>.definition.action(top, i),
             };
 
-            <span class="comment">// If we encounter an error action, we do **not** accept.</span>
-            <span class="kw">if</span> <span class="ident">action</span>.<span class="ident">is_error</span>() {
+            <span class="comment">// If we encounter an error action, we do **not** accept.
+            </span><span class="kw">if </span>action.is_error() {
                 <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\\\ accepts: error&quot;</span>);
-                <span class="kw">return</span> <span class="bool-val">false</span>;
+                <span class="kw">return </span><span class="bool-val">false</span>;
             }
 
-            <span class="comment">// If we encounter a reduce action, we need to simulate its</span>
-            <span class="comment">// effect on the state stack.</span>
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">reduce_action</span>) = <span class="ident">action</span>.<span class="ident">as_reduce</span>() {
-                <span class="kw">match</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">simulate_reduce</span>(<span class="ident">reduce_action</span>) {
-                    <span class="ident">SimulatedReduce::Reduce</span> {
-                        <span class="ident">states_to_pop</span>,
-                        <span class="ident">nonterminal_produced</span>,
+            <span class="comment">// If we encounter a reduce action, we need to simulate its
+            // effect on the state stack.
+            </span><span class="kw">if let </span><span class="prelude-val">Some</span>(reduce_action) = action.as_reduce() {
+                <span class="kw">match </span><span class="self">self</span>.definition.simulate_reduce(reduce_action) {
+                    SimulatedReduce::Reduce {
+                        states_to_pop,
+                        nonterminal_produced,
                     } =&gt; {
-                        <span class="ident">states_len</span> -= <span class="ident">states_to_pop</span>;
-                        <span class="ident">states</span>.<span class="ident">truncate</span>(<span class="ident">states_len</span>);
-                        <span class="kw">let</span> <span class="ident">top</span> = <span class="ident">states</span>[<span class="ident">states_len</span> - <span class="number">1</span>];
-                        <span class="kw">let</span> <span class="ident">next_state</span> = <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">goto</span>(<span class="ident">top</span>, <span class="ident">nonterminal_produced</span>);
-                        <span class="ident">states</span>.<span class="ident">push</span>(<span class="ident">next_state</span>);
+                        states_len -= states_to_pop;
+                        states.truncate(states_len);
+                        <span class="kw">let </span>top = states[states_len - <span class="number">1</span>];
+                        <span class="kw">let </span>next_state = <span class="self">self</span>.definition.goto(top, nonterminal_produced);
+                        states.push(next_state);
                     }
 
-                    <span class="ident">SimulatedReduce::Accept</span> =&gt; {
+                    SimulatedReduce::Accept =&gt; {
                         <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\\\ accepts: reduce accepts!&quot;</span>);
-                        <span class="kw">return</span> <span class="bool-val">true</span>;
+                        <span class="kw">return </span><span class="bool-val">true</span>;
                     }
                 }
-            } <span class="kw">else</span> {
-                <span class="comment">// If we encounter a shift action, we DO accept.</span>
-                <span class="macro">debug!</span>(<span class="string">&quot;\\\\\\\\ accepts: shift accepts!&quot;</span>);
-                <span class="macro">assert!</span>(<span class="ident">action</span>.<span class="ident">is_shift</span>());
-                <span class="kw">return</span> <span class="bool-val">true</span>;
+            } <span class="kw">else </span>{
+                <span class="comment">// If we encounter a shift action, we DO accept.
+                </span><span class="macro">debug!</span>(<span class="string">&quot;\\\\\\\\ accepts: shift accepts!&quot;</span>);
+                <span class="macro">assert!</span>(action.is_shift());
+                <span class="kw">return </span><span class="bool-val">true</span>;
             }
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">reduce</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">action</span>: <span class="ident">D::ReduceIndex</span>,
-        <span class="ident">lookahead_start</span>: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="ident">D::Location</span>&gt;,
-    ) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">ParseResult</span>&lt;<span class="ident">D</span>&gt;&gt; {
-        <span class="self">self</span>.<span class="ident">definition</span>
-            .<span class="ident">reduce</span>(<span class="ident">action</span>, <span class="ident">lookahead_start</span>, <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">states</span>, <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">symbols</span>)
+    <span class="kw">fn </span>reduce(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        action: D::ReduceIndex,
+        lookahead_start: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>D::Location&gt;,
+    ) -&gt; <span class="prelude-ty">Option</span>&lt;ParseResult&lt;D&gt;&gt; {
+        <span class="self">self</span>.definition
+            .reduce(action, lookahead_start, <span class="kw-2">&amp;mut </span><span class="self">self</span>.states, <span class="kw-2">&amp;mut </span><span class="self">self</span>.symbols)
     }
 
-    <span class="kw">fn</span> <span class="ident">unrecognized_token_error</span>(
+    <span class="kw">fn </span>unrecognized_token_error(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">token</span>: <span class="prelude-ty">Option</span>&lt;<span class="ident">TokenTriple</span>&lt;<span class="ident">D</span>&gt;&gt;,
-        <span class="ident">top_state</span>: <span class="ident">D::StateIndex</span>,
-    ) -&gt; <span class="ident">ParseError</span>&lt;<span class="ident">D</span>&gt; {
-        <span class="kw">match</span> <span class="ident">token</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">token</span>) =&gt; <span class="ident"><span class="kw">crate</span>::ParseError::UnrecognizedToken</span> {
-                <span class="ident">token</span>,
-                <span class="ident">expected</span>: <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">expected_tokens</span>(<span class="ident">top_state</span>),
+        token: <span class="prelude-ty">Option</span>&lt;TokenTriple&lt;D&gt;&gt;,
+        top_state: D::StateIndex,
+    ) -&gt; ParseError&lt;D&gt; {
+        <span class="kw">match </span>token {
+            <span class="prelude-val">Some</span>(token) =&gt; <span class="kw">crate</span>::ParseError::UnrecognizedToken {
+                token,
+                expected: <span class="self">self</span>.definition.expected_tokens(top_state),
             },
-            <span class="prelude-val">None</span> =&gt; <span class="ident"><span class="kw">crate</span>::ParseError::UnrecognizedEOF</span> {
-                <span class="ident">location</span>: <span class="self">self</span>.<span class="ident">last_location</span>.<span class="ident">clone</span>(),
-                <span class="ident">expected</span>: <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">expected_tokens</span>(<span class="ident">top_state</span>),
+            <span class="prelude-val">None </span>=&gt; <span class="kw">crate</span>::ParseError::UnrecognizedEOF {
+                location: <span class="self">self</span>.last_location.clone(),
+                expected: <span class="self">self</span>.definition.expected_tokens(top_state),
             },
         }
     }
 
-    <span class="doccomment">/// Consume the next token from the input and classify it into a</span>
-    <span class="doccomment">/// token index. Classification can fail with an error. If there</span>
-    <span class="doccomment">/// are no more tokens, signal EOF.</span>
-    <span class="kw">fn</span> <span class="ident">next_token</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="ident">NextToken</span>&lt;<span class="ident">D</span>&gt; {
-        <span class="kw">let</span> <span class="ident">token</span> = <span class="kw">match</span> <span class="self">self</span>.<span class="ident">tokens</span>.<span class="ident">next</span>() {
-            <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(<span class="ident">v</span>)) =&gt; <span class="ident">v</span>,
-            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(<span class="ident">e</span>)) =&gt; <span class="kw">return</span> <span class="ident">NextToken::Done</span>(<span class="prelude-val">Err</span>(<span class="ident">e</span>)),
-            <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="ident">NextToken::EOF</span>,
+    <span class="doccomment">/// Consume the next token from the input and classify it into a
+    /// token index. Classification can fail with an error. If there
+    /// are no more tokens, signal EOF.
+    </span><span class="kw">fn </span>next_token(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; NextToken&lt;D&gt; {
+        <span class="kw">let </span>token = <span class="kw">match </span><span class="self">self</span>.tokens.next() {
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>(v)) =&gt; v,
+            <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(e)) =&gt; <span class="kw">return </span>NextToken::Done(<span class="prelude-val">Err</span>(e)),
+            <span class="prelude-val">None </span>=&gt; <span class="kw">return </span>NextToken::EOF,
         };
 
-        <span class="self">self</span>.<span class="ident">last_location</span> = <span class="ident">token</span>.<span class="number">2</span>.<span class="ident">clone</span>();
+        <span class="self">self</span>.last_location = token.<span class="number">2</span>.clone();
 
-        <span class="kw">let</span> <span class="ident">token_index</span> = <span class="kw">match</span> <span class="self">self</span>.<span class="ident">definition</span>.<span class="ident">token_to_index</span>(<span class="kw-2">&amp;</span><span class="ident">token</span>.<span class="number">1</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">i</span>) =&gt; <span class="ident">i</span>,
-            <span class="prelude-val">None</span> =&gt; {
-                <span class="kw">return</span> <span class="ident">NextToken::Done</span>(<span class="prelude-val">Err</span>(
-                    <span class="self">self</span>.<span class="ident">unrecognized_token_error</span>(<span class="prelude-val">Some</span>(<span class="ident">token</span>), <span class="self">self</span>.<span class="ident">top_state</span>())
+        <span class="kw">let </span>token_index = <span class="kw">match </span><span class="self">self</span>.definition.token_to_index(<span class="kw-2">&amp;</span>token.<span class="number">1</span>) {
+            <span class="prelude-val">Some</span>(i) =&gt; i,
+            <span class="prelude-val">None </span>=&gt; {
+                <span class="kw">return </span>NextToken::Done(<span class="prelude-val">Err</span>(
+                    <span class="self">self</span>.unrecognized_token_error(<span class="prelude-val">Some</span>(token), <span class="self">self</span>.top_state())
                 ))
             }
         };
 
-        <span class="ident">NextToken::FoundToken</span>(<span class="ident">token</span>, <span class="ident">token_index</span>)
+        NextToken::FoundToken(token, token_index)
     }
 }
 
-<span class="doccomment">/// In LALRPOP generated rules, we actually use `i32`, `i16`, or `i8`</span>
-<span class="doccomment">/// to represent all of the various indices (we use the smallest one</span>
-<span class="doccomment">/// that will fit). So implement `ParserAction` for each of those.</span>
-<span class="macro">macro_rules!</span> <span class="ident">integral_indices</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">ty</span>) =&gt; {
-        <span class="kw">impl</span>&lt;<span class="ident">D</span>: <span class="ident">ParserDefinition</span>&lt;<span class="ident">StateIndex</span> = <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>, <span class="ident">ReduceIndex</span> = <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>&gt;&gt; <span class="ident">ParserAction</span>&lt;<span class="ident">D</span>&gt; <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span> {
-            <span class="kw">fn</span> <span class="ident">as_shift</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">D::StateIndex</span>&gt; {
-                <span class="kw">if</span> <span class="self">self</span> &gt; <span class="number">0</span> {
-                    <span class="prelude-val">Some</span>(<span class="self">self</span> - <span class="number">1</span>)
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                }
+<span class="doccomment">/// In LALRPOP generated rules, we actually use `i32`, `i16`, or `i8`
+/// to represent all of the various indices (we use the smallest one
+/// that will fit). So implement `ParserAction` for each of those.
+</span><span class="macro">macro_rules! </span>integral_indices {
+    (<span class="macro-nonterminal">$t</span>:ty) =&gt; {
+        <span class="kw">impl</span>&lt;D: ParserDefinition&lt;StateIndex = <span class="macro-nonterminal">$t</span>, ReduceIndex = <span class="macro-nonterminal">$t</span>&gt;&gt; ParserAction&lt;D&gt; <span class="kw">for </span><span class="macro-nonterminal">$t </span>{
+            <span class="kw">fn </span>as_shift(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;D::StateIndex&gt; {
+                <span class="kw">if </span><span class="self">self </span>&gt; <span class="number">0 </span>{
+                    <span class="prelude-val">Some</span>(<span class="self">self </span>- <span class="number">1</span>)
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">None
+                </span>}
             }
 
-            <span class="kw">fn</span> <span class="ident">as_reduce</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">D::ReduceIndex</span>&gt; {
-                <span class="kw">if</span> <span class="self">self</span> &lt; <span class="number">0</span> {
-                    <span class="prelude-val">Some</span>(-(<span class="self">self</span> + <span class="number">1</span>))
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                }
+            <span class="kw">fn </span>as_reduce(<span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;D::ReduceIndex&gt; {
+                <span class="kw">if </span><span class="self">self </span>&lt; <span class="number">0 </span>{
+                    <span class="prelude-val">Some</span>(-(<span class="self">self </span>+ <span class="number">1</span>))
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">None
+                </span>}
             }
 
-            <span class="kw">fn</span> <span class="ident">is_shift</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-                <span class="self">self</span> &gt; <span class="number">0</span>
-            }
+            <span class="kw">fn </span>is_shift(<span class="self">self</span>) -&gt; bool {
+                <span class="self">self </span>&gt; <span class="number">0
+            </span>}
 
-            <span class="kw">fn</span> <span class="ident">is_reduce</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-                <span class="self">self</span> &lt; <span class="number">0</span>
-            }
+            <span class="kw">fn </span>is_reduce(<span class="self">self</span>) -&gt; bool {
+                <span class="self">self </span>&lt; <span class="number">0
+            </span>}
 
-            <span class="kw">fn</span> <span class="ident">is_error</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-                <span class="self">self</span> == <span class="number">0</span>
-            }
+            <span class="kw">fn </span>is_error(<span class="self">self</span>) -&gt; bool {
+                <span class="self">self </span>== <span class="number">0
+            </span>}
         }
     };
 }
 
-<span class="macro">integral_indices!</span>(<span class="ident">i32</span>);
-<span class="macro">integral_indices!</span>(<span class="ident">i16</span>);
-<span class="macro">integral_indices!</span>(<span class="ident">i8</span>);
+<span class="macro">integral_indices!</span>(i32);
+<span class="macro">integral_indices!</span>(i16);
+<span class="macro">integral_indices!</span>(i8);
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lalrpop_util" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lalrpop_util" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

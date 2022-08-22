@@ -150,157 +150,157 @@
 <span id="150">150</span>
 <span id="151">151</span>
 <span id="152">152</span>
-</pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">boxed</span>;
-<span class="kw">mod</span> <span class="ident">rodeo</span>;
-<span class="kw">mod</span> <span class="ident">rodeo_reader</span>;
-<span class="kw">mod</span> <span class="ident">rodeo_resolver</span>;
-<span class="kw">mod</span> <span class="ident">tests</span>;
-<span class="kw">mod</span> <span class="ident">threaded_ref</span>;
-<span class="kw">mod</span> <span class="ident">threaded_rodeo</span>;
+</pre><pre class="rust"><code><span class="kw">mod </span>boxed;
+<span class="kw">mod </span>rodeo;
+<span class="kw">mod </span>rodeo_reader;
+<span class="kw">mod </span>rodeo_resolver;
+<span class="kw">mod </span>tests;
+<span class="kw">mod </span>threaded_ref;
+<span class="kw">mod </span>threaded_rodeo;
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Key</span>, <span class="ident">LassoResult</span>, <span class="ident">Spur</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> = <span class="string">&quot;no-std&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">alloc::boxed::Box</span>;
+<span class="kw">use crate</span>::{Key, LassoResult, Spur};
+<span class="attribute">#[cfg(feature = <span class="string">&quot;no-std&quot;</span>)]
+</span><span class="kw">use </span>alloc::boxed::Box;
 
-<span class="doccomment">/// A generic interface over any underlying interner, allowing storing and accessing</span>
-<span class="doccomment">/// interned strings</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Note that because single-threaded [`Rodeo`](crate::Rodeo)s require mutable access to use, this</span>
-<span class="doccomment">/// trait does so as well. For use with [`ThreadedRodeo`](crate::ThreadedRodeo), the trait is</span>
-<span class="doccomment">/// implemented for `&amp;ThreadedRodeo` as well to allow access through shared references.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Interner</span>&lt;<span class="ident">K</span> = <span class="ident">Spur</span>&gt;: <span class="ident">Reader</span>&lt;<span class="ident">K</span>&gt; + <span class="ident">Resolver</span>&lt;<span class="ident">K</span>&gt; {
-    <span class="doccomment">/// Get the key for a string, interning it if it does not yet exist</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Panics if the key&#39;s [`try_from_usize`](Key::try_from_usize) function fails. With the default</span>
-    <span class="doccomment">/// keys, this means that you&#39;ve interned more strings than it can handle. (For [`Spur`] this</span>
-    <span class="doccomment">/// means that `u32::MAX - 1` unique strings were interned)</span>
-    <span class="doccomment">///</span>
-    <span class="kw">fn</span> <span class="ident">get_or_intern</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">K</span>;
+<span class="doccomment">/// A generic interface over any underlying interner, allowing storing and accessing
+/// interned strings
+///
+/// Note that because single-threaded [`Rodeo`](crate::Rodeo)s require mutable access to use, this
+/// trait does so as well. For use with [`ThreadedRodeo`](crate::ThreadedRodeo), the trait is
+/// implemented for `&amp;ThreadedRodeo` as well to allow access through shared references.
+</span><span class="kw">pub trait </span>Interner&lt;K = Spur&gt;: Reader&lt;K&gt; + Resolver&lt;K&gt; {
+    <span class="doccomment">/// Get the key for a string, interning it if it does not yet exist
+    ///
+    /// # Panics
+    ///
+    /// Panics if the key&#39;s [`try_from_usize`](Key::try_from_usize) function fails. With the default
+    /// keys, this means that you&#39;ve interned more strings than it can handle. (For [`Spur`] this
+    /// means that `u32::MAX - 1` unique strings were interned)
+    ///
+    </span><span class="kw">fn </span>get_or_intern(<span class="kw-2">&amp;mut </span><span class="self">self</span>, val: <span class="kw-2">&amp;</span>str) -&gt; K;
 
-    <span class="doccomment">/// Get the key for a string, interning it if it does not yet exist</span>
-    <span class="kw">fn</span> <span class="ident">try_get_or_intern</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">LassoResult</span>&lt;<span class="ident">K</span>&gt;;
+    <span class="doccomment">/// Get the key for a string, interning it if it does not yet exist
+    </span><span class="kw">fn </span>try_get_or_intern(<span class="kw-2">&amp;mut </span><span class="self">self</span>, val: <span class="kw-2">&amp;</span>str) -&gt; LassoResult&lt;K&gt;;
 
-    <span class="doccomment">/// Get the key for a static string, interning it if it does not yet exist</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will not reallocate or copy the given string</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Panics if the key&#39;s [`try_from_usize`](Key::try_from_usize) function fails. With the default</span>
-    <span class="doccomment">/// keys, this means that you&#39;ve interned more strings than it can handle. (For [`Spur`] this</span>
-    <span class="doccomment">/// means that `u32::MAX - 1` unique strings were interned)</span>
-    <span class="doccomment">///</span>
-    <span class="kw">fn</span> <span class="ident">get_or_intern_static</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) -&gt; <span class="ident">K</span>;
+    <span class="doccomment">/// Get the key for a static string, interning it if it does not yet exist
+    ///
+    /// This will not reallocate or copy the given string
+    ///
+    /// # Panics
+    ///
+    /// Panics if the key&#39;s [`try_from_usize`](Key::try_from_usize) function fails. With the default
+    /// keys, this means that you&#39;ve interned more strings than it can handle. (For [`Spur`] this
+    /// means that `u32::MAX - 1` unique strings were interned)
+    ///
+    </span><span class="kw">fn </span>get_or_intern_static(<span class="kw-2">&amp;mut </span><span class="self">self</span>, val: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; K;
 
-    <span class="doccomment">/// Get the key for a static string, interning it if it does not yet exist</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This will not reallocate or copy the given string</span>
-    <span class="kw">fn</span> <span class="ident">try_get_or_intern_static</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) -&gt; <span class="ident">LassoResult</span>&lt;<span class="ident">K</span>&gt;;
+    <span class="doccomment">/// Get the key for a static string, interning it if it does not yet exist
+    ///
+    /// This will not reallocate or copy the given string
+    </span><span class="kw">fn </span>try_get_or_intern_static(<span class="kw-2">&amp;mut </span><span class="self">self</span>, val: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; LassoResult&lt;K&gt;;
 }
 
-<span class="doccomment">/// A generic interface over interners that can be turned into both a [`Reader`] and a [`Resolver`]</span>
-<span class="doccomment">/// directly.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">IntoReaderAndResolver</span>&lt;<span class="ident">K</span> = <span class="ident">Spur</span>&gt;: <span class="ident">IntoReader</span>&lt;<span class="ident">K</span>&gt; + <span class="ident">IntoResolver</span>&lt;<span class="ident">K</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Key</span>,
+<span class="doccomment">/// A generic interface over interners that can be turned into both a [`Reader`] and a [`Resolver`]
+/// directly.
+</span><span class="kw">pub trait </span>IntoReaderAndResolver&lt;K = Spur&gt;: IntoReader&lt;K&gt; + IntoResolver&lt;K&gt;
+<span class="kw">where
+    </span>K: Key,
 {
 }
 
-<span class="doccomment">/// A generic interface over interners that can be turned into a [`Reader`].</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">IntoReader</span>&lt;<span class="ident">K</span> = <span class="ident">Spur</span>&gt;: <span class="ident">Interner</span>&lt;<span class="ident">K</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Key</span>,
+<span class="doccomment">/// A generic interface over interners that can be turned into a [`Reader`].
+</span><span class="kw">pub trait </span>IntoReader&lt;K = Spur&gt;: Interner&lt;K&gt;
+<span class="kw">where
+    </span>K: Key,
 {
-    <span class="doccomment">/// The type of [`Reader`] the interner will be converted into</span>
-    <span class="kw">type</span> <span class="ident">Reader</span>: <span class="ident">Reader</span>&lt;<span class="ident">K</span>&gt;;
+    <span class="doccomment">/// The type of [`Reader`] the interner will be converted into
+    </span><span class="kw">type </span>Reader: Reader&lt;K&gt;;
 
-    <span class="doccomment">/// Consumes the current [`Interner`] and converts it into a [`Reader`] to allow</span>
-    <span class="doccomment">/// contention-free access of the interner from multiple threads</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">fn</span> <span class="ident">into_reader</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Reader</span>
-    <span class="kw">where</span>
-        <span class="self">Self</span>: <span class="lifetime">&#39;static</span>;
+    <span class="doccomment">/// Consumes the current [`Interner`] and converts it into a [`Reader`] to allow
+    /// contention-free access of the interner from multiple threads
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">fn </span>into_reader(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Reader
+    <span class="kw">where
+        </span><span class="self">Self</span>: <span class="lifetime">&#39;static</span>;
 
-    <span class="doccomment">/// An implementation detail to allow calling [`Interner::into_reader()`] on dynamically</span>
-    <span class="doccomment">/// dispatched interners</span>
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">fn</span> <span class="ident">into_reader_boxed</span>(<span class="self">self</span>: <span class="ident">Box</span>&lt;<span class="self">Self</span>&gt;) -&gt; <span class="ident"><span class="self">Self</span>::Reader</span>
-    <span class="kw">where</span>
-        <span class="self">Self</span>: <span class="lifetime">&#39;static</span>;
+    <span class="doccomment">/// An implementation detail to allow calling [`Interner::into_reader()`] on dynamically
+    /// dispatched interners
+    </span><span class="attribute">#[doc(hidden)]
+    #[must_use]
+    </span><span class="kw">fn </span>into_reader_boxed(<span class="self">self</span>: Box&lt;<span class="self">Self</span>&gt;) -&gt; <span class="self">Self</span>::Reader
+    <span class="kw">where
+        </span><span class="self">Self</span>: <span class="lifetime">&#39;static</span>;
 }
 
-<span class="doccomment">/// A generic interface that allows using any underlying interner for</span>
-<span class="doccomment">/// both its reading and resolution capabilities, allowing both</span>
-<span class="doccomment">/// `str -&gt; key` and `key -&gt; str` lookups</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Reader</span>&lt;<span class="ident">K</span> = <span class="ident">Spur</span>&gt;: <span class="ident">Resolver</span>&lt;<span class="ident">K</span>&gt; {
-    <span class="doccomment">/// Get a key for the given string value if it exists</span>
-    <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="ident">K</span>&gt;;
+<span class="doccomment">/// A generic interface that allows using any underlying interner for
+/// both its reading and resolution capabilities, allowing both
+/// `str -&gt; key` and `key -&gt; str` lookups
+</span><span class="kw">pub trait </span>Reader&lt;K = Spur&gt;: Resolver&lt;K&gt; {
+    <span class="doccomment">/// Get a key for the given string value if it exists
+    </span><span class="kw">fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, val: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;K&gt;;
 
-    <span class="doccomment">/// Returns `true` if the current interner contains the given string</span>
-    <span class="kw">fn</span> <span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">bool</span>;
+    <span class="doccomment">/// Returns `true` if the current interner contains the given string
+    </span><span class="kw">fn </span>contains(<span class="kw-2">&amp;</span><span class="self">self</span>, val: <span class="kw-2">&amp;</span>str) -&gt; bool;
 }
 
-<span class="doccomment">/// A generic interface over [`Reader`]s that can be turned into a [`Resolver`].</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">IntoResolver</span>&lt;<span class="ident">K</span> = <span class="ident">Spur</span>&gt;: <span class="ident">Reader</span>&lt;<span class="ident">K</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">K</span>: <span class="ident">Key</span>,
+<span class="doccomment">/// A generic interface over [`Reader`]s that can be turned into a [`Resolver`].
+</span><span class="kw">pub trait </span>IntoResolver&lt;K = Spur&gt;: Reader&lt;K&gt;
+<span class="kw">where
+    </span>K: Key,
 {
-    <span class="doccomment">/// The type of [`Resolver`] the reader will be converted into</span>
-    <span class="kw">type</span> <span class="ident">Resolver</span>: <span class="ident">Resolver</span>&lt;<span class="ident">K</span>&gt;;
+    <span class="doccomment">/// The type of [`Resolver`] the reader will be converted into
+    </span><span class="kw">type </span>Resolver: Resolver&lt;K&gt;;
 
-    <span class="doccomment">/// Consumes the current [`Reader`] and makes it into a [`Resolver`], allowing</span>
-    <span class="doccomment">/// contention-free access from multiple threads with the lowest possible memory consumption</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">fn</span> <span class="ident">into_resolver</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Resolver</span>
-    <span class="kw">where</span>
-        <span class="self">Self</span>: <span class="lifetime">&#39;static</span>;
+    <span class="doccomment">/// Consumes the current [`Reader`] and makes it into a [`Resolver`], allowing
+    /// contention-free access from multiple threads with the lowest possible memory consumption
+    </span><span class="attribute">#[must_use]
+    </span><span class="kw">fn </span>into_resolver(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Resolver
+    <span class="kw">where
+        </span><span class="self">Self</span>: <span class="lifetime">&#39;static</span>;
 
-    <span class="doccomment">/// An implementation detail to allow calling [`Reader::into_resolver()`] on dynamically</span>
-    <span class="doccomment">/// dispatched readers</span>
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="attribute">#[<span class="ident">must_use</span>]</span>
-    <span class="kw">fn</span> <span class="ident">into_resolver_boxed</span>(<span class="self">self</span>: <span class="ident">Box</span>&lt;<span class="self">Self</span>&gt;) -&gt; <span class="ident"><span class="self">Self</span>::Resolver</span>
-    <span class="kw">where</span>
-        <span class="self">Self</span>: <span class="lifetime">&#39;static</span>;
+    <span class="doccomment">/// An implementation detail to allow calling [`Reader::into_resolver()`] on dynamically
+    /// dispatched readers
+    </span><span class="attribute">#[doc(hidden)]
+    #[must_use]
+    </span><span class="kw">fn </span>into_resolver_boxed(<span class="self">self</span>: Box&lt;<span class="self">Self</span>&gt;) -&gt; <span class="self">Self</span>::Resolver
+    <span class="kw">where
+        </span><span class="self">Self</span>: <span class="lifetime">&#39;static</span>;
 }
 
-<span class="doccomment">/// A generic interface that allows using any underlying interner only</span>
-<span class="doccomment">/// for its resolution capabilities, allowing only `key -&gt; str` lookups</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Resolver</span>&lt;<span class="ident">K</span> = <span class="ident">Spur</span>&gt; {
-    <span class="doccomment">/// Resolves the given key into a string</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Panics</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Panics if the key is not contained in the current [`Resolver`]</span>
-    <span class="doccomment">///</span>
-    <span class="kw">fn</span> <span class="ident">resolve</span>&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">K</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>;
+<span class="doccomment">/// A generic interface that allows using any underlying interner only
+/// for its resolution capabilities, allowing only `key -&gt; str` lookups
+</span><span class="kw">pub trait </span>Resolver&lt;K = Spur&gt; {
+    <span class="doccomment">/// Resolves the given key into a string
+    ///
+    /// # Panics
+    ///
+    /// Panics if the key is not contained in the current [`Resolver`]
+    ///
+    </span><span class="kw">fn </span>resolve&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str;
 
-    <span class="doccomment">/// Attempts to resolve the given key into a string, returning `None`</span>
-    <span class="doccomment">/// if it cannot be found</span>
-    <span class="kw">fn</span> <span class="ident">try_resolve</span>&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">K</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>&gt;;
+    <span class="doccomment">/// Attempts to resolve the given key into a string, returning `None`
+    /// if it cannot be found
+    </span><span class="kw">fn </span>try_resolve&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;;
 
-    <span class="doccomment">/// Resolves a string by its key without preforming bounds checks</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Safety</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The key must be valid for the current [`Resolver`]</span>
-    <span class="doccomment">///</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">resolve_unchecked</span>&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">K</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>;
+    <span class="doccomment">/// Resolves a string by its key without preforming bounds checks
+    ///
+    /// # Safety
+    ///
+    /// The key must be valid for the current [`Resolver`]
+    ///
+    </span><span class="kw">unsafe fn </span>resolve_unchecked&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str;
 
-    <span class="doccomment">/// Returns `true` if the current interner contains the given key</span>
-    <span class="kw">fn</span> <span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">K</span>) -&gt; <span class="ident">bool</span>;
+    <span class="doccomment">/// Returns `true` if the current interner contains the given key
+    </span><span class="kw">fn </span>contains_key(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; bool;
 
-    <span class="doccomment">/// Gets the number of currently interned strings</span>
-    <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">usize</span>;
+    <span class="doccomment">/// Gets the number of currently interned strings
+    </span><span class="kw">fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize;
 
-    <span class="doccomment">/// Returns `true` if there are no currently interned strings</span>
-    <span class="attribute">#[<span class="ident">cfg_attr</span>(<span class="ident">feature</span> = <span class="string">&quot;inline-more&quot;</span>, <span class="ident">inline</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">len</span>() == <span class="number">0</span>
-    }
+    <span class="doccomment">/// Returns `true` if there are no currently interned strings
+    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="kw">fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.len() == <span class="number">0
+    </span>}
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

@@ -441,448 +441,448 @@
 <span id="441">441</span>
 <span id="442">442</span>
 <span id="443">443</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Source file support for diagnostic reporting.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! The main trait defined in this module is the [`Files`] trait, which provides</span>
-<span class="doccomment">//! provides the minimum amount of functionality required for printing [`Diagnostics`]</span>
-<span class="doccomment">//! with the [`term::emit`] function.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Simple implementations of this trait are implemented:</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! - [`SimpleFile`]: For single-file use-cases</span>
-<span class="doccomment">//! - [`SimpleFiles`]: For multi-file use-cases</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! These data structures provide a pretty minimal API, however,</span>
-<span class="doccomment">//! so end-users are encouraged to create their own implementations for their</span>
-<span class="doccomment">//! own specific use-cases, such as an implementation that accesses the file</span>
-<span class="doccomment">//! system directly (and caches the line start locations), or an implementation</span>
-<span class="doccomment">//! using an incremental compilation library like [`salsa`].</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [`term::emit`]: crate::term::emit</span>
-<span class="doccomment">//! [`Diagnostics`]: crate::diagnostic::Diagnostic</span>
-<span class="doccomment">//! [`Files`]: Files</span>
-<span class="doccomment">//! [`SimpleFile`]: SimpleFile</span>
-<span class="doccomment">//! [`SimpleFiles`]: SimpleFiles</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! [`salsa`]: https://crates.io/crates/salsa</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Source file support for diagnostic reporting.
+//!
+//! The main trait defined in this module is the [`Files`] trait, which provides
+//! provides the minimum amount of functionality required for printing [`Diagnostics`]
+//! with the [`term::emit`] function.
+//!
+//! Simple implementations of this trait are implemented:
+//!
+//! - [`SimpleFile`]: For single-file use-cases
+//! - [`SimpleFiles`]: For multi-file use-cases
+//!
+//! These data structures provide a pretty minimal API, however,
+//! so end-users are encouraged to create their own implementations for their
+//! own specific use-cases, such as an implementation that accesses the file
+//! system directly (and caches the line start locations), or an implementation
+//! using an incremental compilation library like [`salsa`].
+//!
+//! [`term::emit`]: crate::term::emit
+//! [`Diagnostics`]: crate::diagnostic::Diagnostic
+//! [`Files`]: Files
+//! [`SimpleFile`]: SimpleFile
+//! [`SimpleFiles`]: SimpleFiles
+//!
+//! [`salsa`]: https://crates.io/crates/salsa
 
-<span class="kw">use</span> <span class="ident">std::ops::Range</span>;
+</span><span class="kw">use </span>std::ops::Range;
 
-<span class="doccomment">/// An enum representing an error that happened while looking up a file or a piece of content in that file.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">Error</span> {
-    <span class="doccomment">/// A required file is not in the file database.</span>
-    <span class="ident">FileMissing</span>,
-    <span class="doccomment">/// The file is present, but does not contain the specified byte index.</span>
-    <span class="ident">IndexTooLarge</span> { <span class="ident">given</span>: <span class="ident">usize</span>, <span class="ident">max</span>: <span class="ident">usize</span> },
-    <span class="doccomment">/// The file is present, but does not contain the specified line index.</span>
-    <span class="ident">LineTooLarge</span> { <span class="ident">given</span>: <span class="ident">usize</span>, <span class="ident">max</span>: <span class="ident">usize</span> },
-    <span class="doccomment">/// The file is present and contains the specified line index, but the line does not contain the specified column index.</span>
-    <span class="ident">ColumnTooLarge</span> { <span class="ident">given</span>: <span class="ident">usize</span>, <span class="ident">max</span>: <span class="ident">usize</span> },
-    <span class="doccomment">/// The given index is contained in the file, but is not a boundary of a UTF-8 code point.</span>
-    <span class="ident">InvalidCharBoundary</span> { <span class="ident">given</span>: <span class="ident">usize</span> },
-    <span class="doccomment">/// There was a error while doing IO.</span>
-    <span class="ident">Io</span>(<span class="ident">std::io::Error</span>),
+<span class="doccomment">/// An enum representing an error that happened while looking up a file or a piece of content in that file.
+</span><span class="attribute">#[derive(Debug)]
+#[non_exhaustive]
+</span><span class="kw">pub enum </span>Error {
+    <span class="doccomment">/// A required file is not in the file database.
+    </span>FileMissing,
+    <span class="doccomment">/// The file is present, but does not contain the specified byte index.
+    </span>IndexTooLarge { given: usize, max: usize },
+    <span class="doccomment">/// The file is present, but does not contain the specified line index.
+    </span>LineTooLarge { given: usize, max: usize },
+    <span class="doccomment">/// The file is present and contains the specified line index, but the line does not contain the specified column index.
+    </span>ColumnTooLarge { given: usize, max: usize },
+    <span class="doccomment">/// The given index is contained in the file, but is not a boundary of a UTF-8 code point.
+    </span>InvalidCharBoundary { given: usize },
+    <span class="doccomment">/// There was a error while doing IO.
+    </span>Io(std::io::Error),
 }
 
-<span class="kw">impl</span> <span class="ident">From</span>&lt;<span class="ident">std::io::Error</span>&gt; <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">std::io::Error</span>) -&gt; <span class="ident">Error</span> {
-        <span class="ident">Error::Io</span>(<span class="ident">err</span>)
+<span class="kw">impl </span>From&lt;std::io::Error&gt; <span class="kw">for </span>Error {
+    <span class="kw">fn </span>from(err: std::io::Error) -&gt; Error {
+        Error::Io(err)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::fmt::Display</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span>&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="ident">std::fmt::Result</span> {
-        <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Error::FileMissing</span> =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;file missing&quot;</span>),
-            <span class="ident">Error::IndexTooLarge</span> { <span class="ident">given</span>, <span class="ident">max</span> } =&gt; {
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid index {}, maximum index is {}&quot;</span>, <span class="ident">given</span>, <span class="ident">max</span>)
+<span class="kw">impl </span>std::fmt::Display <span class="kw">for </span>Error {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>std::fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; std::fmt::Result {
+        <span class="kw">match </span><span class="self">self </span>{
+            Error::FileMissing =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;file missing&quot;</span>),
+            Error::IndexTooLarge { given, max } =&gt; {
+                <span class="macro">write!</span>(f, <span class="string">&quot;invalid index {}, maximum index is {}&quot;</span>, given, max)
             }
-            <span class="ident">Error::LineTooLarge</span> { <span class="ident">given</span>, <span class="ident">max</span> } =&gt; {
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid line {}, maximum line is {}&quot;</span>, <span class="ident">given</span>, <span class="ident">max</span>)
+            Error::LineTooLarge { given, max } =&gt; {
+                <span class="macro">write!</span>(f, <span class="string">&quot;invalid line {}, maximum line is {}&quot;</span>, given, max)
             }
-            <span class="ident">Error::ColumnTooLarge</span> { <span class="ident">given</span>, <span class="ident">max</span> } =&gt; {
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;invalid column {}, maximum column {}&quot;</span>, <span class="ident">given</span>, <span class="ident">max</span>)
+            Error::ColumnTooLarge { given, max } =&gt; {
+                <span class="macro">write!</span>(f, <span class="string">&quot;invalid column {}, maximum column {}&quot;</span>, given, max)
             }
-            <span class="ident">Error::InvalidCharBoundary</span> { .. } =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;index is not a code point boundary&quot;</span>),
-            <span class="ident">Error::Io</span>(<span class="ident">err</span>) =&gt; <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">err</span>),
+            Error::InvalidCharBoundary { .. } =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;index is not a code point boundary&quot;</span>),
+            Error::Io(err) =&gt; <span class="macro">write!</span>(f, <span class="string">&quot;{}&quot;</span>, err),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">std::error::Error</span> <span class="kw">for</span> <span class="ident">Error</span> {
-    <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>(<span class="kw">dyn</span> <span class="ident">std::error::Error</span> + <span class="lifetime">&#39;static</span>)&gt; {
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span> {
-            <span class="ident">Error::Io</span>(<span class="ident">err</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">err</span>),
-            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
+<span class="kw">impl </span>std::error::Error <span class="kw">for </span>Error {
+    <span class="kw">fn </span>source(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>(<span class="kw">dyn </span>std::error::Error + <span class="lifetime">&#39;static</span>)&gt; {
+        <span class="kw">match </span><span class="kw-2">&amp;</span><span class="self">self </span>{
+            Error::Io(err) =&gt; <span class="prelude-val">Some</span>(err),
+            <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         }
     }
 }
 
-<span class="doccomment">/// A minimal interface for accessing source files when rendering diagnostics.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// A lifetime parameter `&#39;a` is provided to allow any of the returned values to returned by reference.</span>
-<span class="doccomment">/// This is to workaround the lack of higher kinded lifetime parameters.</span>
-<span class="doccomment">/// This can be ignored if this is not needed, however.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Files</span>&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="doccomment">/// A unique identifier for files in the file provider. This will be used</span>
-    <span class="doccomment">/// for rendering `diagnostic::Label`s in the corresponding source files.</span>
-    <span class="kw">type</span> <span class="ident">FileId</span>: <span class="lifetime">&#39;a</span> + <span class="ident">Copy</span> + <span class="ident">PartialEq</span>;
-    <span class="doccomment">/// The user-facing name of a file, to be displayed in diagnostics.</span>
-    <span class="kw">type</span> <span class="ident">Name</span>: <span class="lifetime">&#39;a</span> + <span class="ident">std::fmt::Display</span>;
-    <span class="doccomment">/// The source code of a file.</span>
-    <span class="kw">type</span> <span class="ident">Source</span>: <span class="lifetime">&#39;a</span> + <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt;;
+<span class="doccomment">/// A minimal interface for accessing source files when rendering diagnostics.
+///
+/// A lifetime parameter `&#39;a` is provided to allow any of the returned values to returned by reference.
+/// This is to workaround the lack of higher kinded lifetime parameters.
+/// This can be ignored if this is not needed, however.
+</span><span class="kw">pub trait </span>Files&lt;<span class="lifetime">&#39;a</span>&gt; {
+    <span class="doccomment">/// A unique identifier for files in the file provider. This will be used
+    /// for rendering `diagnostic::Label`s in the corresponding source files.
+    </span><span class="kw">type </span>FileId: <span class="lifetime">&#39;a </span>+ Copy + PartialEq;
+    <span class="doccomment">/// The user-facing name of a file, to be displayed in diagnostics.
+    </span><span class="kw">type </span>Name: <span class="lifetime">&#39;a </span>+ std::fmt::Display;
+    <span class="doccomment">/// The source code of a file.
+    </span><span class="kw">type </span>Source: <span class="lifetime">&#39;a </span>+ AsRef&lt;str&gt;;
 
-    <span class="doccomment">/// The user-facing name of a file.</span>
-    <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident"><span class="self">Self</span>::FileId</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident"><span class="self">Self</span>::Name</span>, <span class="ident">Error</span>&gt;;
+    <span class="doccomment">/// The user-facing name of a file.
+    </span><span class="kw">fn </span>name(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, id: <span class="self">Self</span>::FileId) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Name, Error&gt;;
 
-    <span class="doccomment">/// The source code of a file.</span>
-    <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident"><span class="self">Self</span>::FileId</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident"><span class="self">Self</span>::Source</span>, <span class="ident">Error</span>&gt;;
+    <span class="doccomment">/// The source code of a file.
+    </span><span class="kw">fn </span>source(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, id: <span class="self">Self</span>::FileId) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Source, Error&gt;;
 
-    <span class="doccomment">/// The index of the line at the given byte index.</span>
-    <span class="doccomment">/// If the byte index is past the end of the file, returns the maximum line index in the file.</span>
-    <span class="doccomment">/// This means that this function only fails if the file is not present.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Note for trait implementors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This can be implemented efficiently by performing a binary search over</span>
-    <span class="doccomment">/// a list of line starts that was computed by calling the [`line_starts`]</span>
-    <span class="doccomment">/// function that is exported from the [`files`] module. It might be useful</span>
-    <span class="doccomment">/// to pre-compute and cache these line starts.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`line_starts`]: crate::files::line_starts</span>
-    <span class="doccomment">/// [`files`]: crate::files</span>
-    <span class="kw">fn</span> <span class="ident">line_index</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident"><span class="self">Self</span>::FileId</span>, <span class="ident">byte_index</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">usize</span>, <span class="ident">Error</span>&gt;;
+    <span class="doccomment">/// The index of the line at the given byte index.
+    /// If the byte index is past the end of the file, returns the maximum line index in the file.
+    /// This means that this function only fails if the file is not present.
+    ///
+    /// # Note for trait implementors
+    ///
+    /// This can be implemented efficiently by performing a binary search over
+    /// a list of line starts that was computed by calling the [`line_starts`]
+    /// function that is exported from the [`files`] module. It might be useful
+    /// to pre-compute and cache these line starts.
+    ///
+    /// [`line_starts`]: crate::files::line_starts
+    /// [`files`]: crate::files
+    </span><span class="kw">fn </span>line_index(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, id: <span class="self">Self</span>::FileId, byte_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;usize, Error&gt;;
 
-    <span class="doccomment">/// The user-facing line number at the given line index.</span>
-    <span class="doccomment">/// It is not necessarily checked that the specified line index</span>
-    <span class="doccomment">/// is actually in the file.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Note for trait implementors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is usually 1-indexed from the beginning of the file, but</span>
-    <span class="doccomment">/// can be useful for implementing something like the</span>
-    <span class="doccomment">/// [C preprocessor&#39;s `#line` macro][line-macro].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [line-macro]: https://en.cppreference.com/w/c/preprocessor/line</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_variables</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">line_number</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident"><span class="self">Self</span>::FileId</span>, <span class="ident">line_index</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">usize</span>, <span class="ident">Error</span>&gt; {
-        <span class="prelude-val">Ok</span>(<span class="ident">line_index</span> + <span class="number">1</span>)
+    <span class="doccomment">/// The user-facing line number at the given line index.
+    /// It is not necessarily checked that the specified line index
+    /// is actually in the file.
+    ///
+    /// # Note for trait implementors
+    ///
+    /// This is usually 1-indexed from the beginning of the file, but
+    /// can be useful for implementing something like the
+    /// [C preprocessor&#39;s `#line` macro][line-macro].
+    ///
+    /// [line-macro]: https://en.cppreference.com/w/c/preprocessor/line
+    </span><span class="attribute">#[allow(unused_variables)]
+    </span><span class="kw">fn </span>line_number(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, id: <span class="self">Self</span>::FileId, line_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;usize, Error&gt; {
+        <span class="prelude-val">Ok</span>(line_index + <span class="number">1</span>)
     }
 
-    <span class="doccomment">/// The user-facing column number at the given line index and byte index.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Note for trait implementors</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is usually 1-indexed from the the start of the line.</span>
-    <span class="doccomment">/// A default implementation is provided, based on the [`column_index`]</span>
-    <span class="doccomment">/// function that is exported from the [`files`] module.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`files`]: crate::files</span>
-    <span class="doccomment">/// [`column_index`]: crate::files::column_index</span>
-    <span class="kw">fn</span> <span class="ident">column_number</span>(
-        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>,
-        <span class="ident">id</span>: <span class="ident"><span class="self">Self</span>::FileId</span>,
-        <span class="ident">line_index</span>: <span class="ident">usize</span>,
-        <span class="ident">byte_index</span>: <span class="ident">usize</span>,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">usize</span>, <span class="ident">Error</span>&gt; {
-        <span class="kw">let</span> <span class="ident">source</span> = <span class="self">self</span>.<span class="ident">source</span>(<span class="ident">id</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">line_range</span> = <span class="self">self</span>.<span class="ident">line_range</span>(<span class="ident">id</span>, <span class="ident">line_index</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">column_index</span> = <span class="ident">column_index</span>(<span class="ident">source</span>.<span class="ident">as_ref</span>(), <span class="ident">line_range</span>, <span class="ident">byte_index</span>);
+    <span class="doccomment">/// The user-facing column number at the given line index and byte index.
+    ///
+    /// # Note for trait implementors
+    ///
+    /// This is usually 1-indexed from the the start of the line.
+    /// A default implementation is provided, based on the [`column_index`]
+    /// function that is exported from the [`files`] module.
+    ///
+    /// [`files`]: crate::files
+    /// [`column_index`]: crate::files::column_index
+    </span><span class="kw">fn </span>column_number(
+        <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>,
+        id: <span class="self">Self</span>::FileId,
+        line_index: usize,
+        byte_index: usize,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;usize, Error&gt; {
+        <span class="kw">let </span>source = <span class="self">self</span>.source(id)<span class="question-mark">?</span>;
+        <span class="kw">let </span>line_range = <span class="self">self</span>.line_range(id, line_index)<span class="question-mark">?</span>;
+        <span class="kw">let </span>column_index = column_index(source.as_ref(), line_range, byte_index);
 
-        <span class="prelude-val">Ok</span>(<span class="ident">column_index</span> + <span class="number">1</span>)
+        <span class="prelude-val">Ok</span>(column_index + <span class="number">1</span>)
     }
 
-    <span class="doccomment">/// Convenience method for returning line and column number at the given</span>
-    <span class="doccomment">/// byte index in the file.</span>
-    <span class="kw">fn</span> <span class="ident">location</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident"><span class="self">Self</span>::FileId</span>, <span class="ident">byte_index</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">Location</span>, <span class="ident">Error</span>&gt; {
-        <span class="kw">let</span> <span class="ident">line_index</span> = <span class="self">self</span>.<span class="ident">line_index</span>(<span class="ident">id</span>, <span class="ident">byte_index</span>)<span class="question-mark">?</span>;
+    <span class="doccomment">/// Convenience method for returning line and column number at the given
+    /// byte index in the file.
+    </span><span class="kw">fn </span>location(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, id: <span class="self">Self</span>::FileId, byte_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;Location, Error&gt; {
+        <span class="kw">let </span>line_index = <span class="self">self</span>.line_index(id, byte_index)<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(<span class="ident">Location</span> {
-            <span class="ident">line_number</span>: <span class="self">self</span>.<span class="ident">line_number</span>(<span class="ident">id</span>, <span class="ident">line_index</span>)<span class="question-mark">?</span>,
-            <span class="ident">column_number</span>: <span class="self">self</span>.<span class="ident">column_number</span>(<span class="ident">id</span>, <span class="ident">line_index</span>, <span class="ident">byte_index</span>)<span class="question-mark">?</span>,
+        <span class="prelude-val">Ok</span>(Location {
+            line_number: <span class="self">self</span>.line_number(id, line_index)<span class="question-mark">?</span>,
+            column_number: <span class="self">self</span>.column_number(id, line_index, byte_index)<span class="question-mark">?</span>,
         })
     }
 
-    <span class="doccomment">/// The byte range of line in the source of the file.</span>
-    <span class="kw">fn</span> <span class="ident">line_range</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="self">self</span>, <span class="ident">id</span>: <span class="ident"><span class="self">Self</span>::FileId</span>, <span class="ident">line_index</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">Range</span>&lt;<span class="ident">usize</span>&gt;, <span class="ident">Error</span>&gt;;
+    <span class="doccomment">/// The byte range of line in the source of the file.
+    </span><span class="kw">fn </span>line_range(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, id: <span class="self">Self</span>::FileId, line_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;Range&lt;usize&gt;, Error&gt;;
 }
 
-<span class="doccomment">/// A user-facing location in a source file.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Returned by [`Files::location`].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`Files::location`]: Files::location</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Location</span> {
-    <span class="doccomment">/// The user-facing line number.</span>
-    <span class="kw">pub</span> <span class="ident">line_number</span>: <span class="ident">usize</span>,
-    <span class="doccomment">/// The user-facing column number.</span>
-    <span class="kw">pub</span> <span class="ident">column_number</span>: <span class="ident">usize</span>,
+<span class="doccomment">/// A user-facing location in a source file.
+///
+/// Returned by [`Files::location`].
+///
+/// [`Files::location`]: Files::location
+</span><span class="attribute">#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+</span><span class="kw">pub struct </span>Location {
+    <span class="doccomment">/// The user-facing line number.
+    </span><span class="kw">pub </span>line_number: usize,
+    <span class="doccomment">/// The user-facing column number.
+    </span><span class="kw">pub </span>column_number: usize,
 }
 
-<span class="doccomment">/// The column index at the given byte index in the source file.</span>
-<span class="doccomment">/// This is the number of characters to the given byte index.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If the byte index is smaller than the start of the line, then `0` is returned.</span>
-<span class="doccomment">/// If the byte index is past the end of the line, the column index of the last</span>
-<span class="doccomment">/// character `+ 1` is returned.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Example</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust</span>
-<span class="doccomment">/// use codespan_reporting::files;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let source = &quot;\n\n🗻∈🌏\n\n&quot;;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(files::column_index(source, 0..1, 0), 0);</span>
-<span class="doccomment">/// assert_eq!(files::column_index(source, 2..13, 0), 0);</span>
-<span class="doccomment">/// assert_eq!(files::column_index(source, 2..13, 2 + 0), 0);</span>
-<span class="doccomment">/// assert_eq!(files::column_index(source, 2..13, 2 + 1), 0);</span>
-<span class="doccomment">/// assert_eq!(files::column_index(source, 2..13, 2 + 4), 1);</span>
-<span class="doccomment">/// assert_eq!(files::column_index(source, 2..13, 2 + 8), 2);</span>
-<span class="doccomment">/// assert_eq!(files::column_index(source, 2..13, 2 + 10), 2);</span>
-<span class="doccomment">/// assert_eq!(files::column_index(source, 2..13, 2 + 11), 3);</span>
-<span class="doccomment">/// assert_eq!(files::column_index(source, 2..13, 2 + 12), 3);</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">column_index</span>(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">line_range</span>: <span class="ident">Range</span>&lt;<span class="ident">usize</span>&gt;, <span class="ident">byte_index</span>: <span class="ident">usize</span>) -&gt; <span class="ident">usize</span> {
-    <span class="kw">let</span> <span class="ident">end_index</span> = <span class="ident">std::cmp::min</span>(<span class="ident">byte_index</span>, <span class="ident">std::cmp::min</span>(<span class="ident">line_range</span>.<span class="ident">end</span>, <span class="ident">source</span>.<span class="ident">len</span>()));
+<span class="doccomment">/// The column index at the given byte index in the source file.
+/// This is the number of characters to the given byte index.
+///
+/// If the byte index is smaller than the start of the line, then `0` is returned.
+/// If the byte index is past the end of the line, the column index of the last
+/// character `+ 1` is returned.
+///
+/// # Example
+///
+/// ```rust
+/// use codespan_reporting::files;
+///
+/// let source = &quot;\n\n🗻∈🌏\n\n&quot;;
+///
+/// assert_eq!(files::column_index(source, 0..1, 0), 0);
+/// assert_eq!(files::column_index(source, 2..13, 0), 0);
+/// assert_eq!(files::column_index(source, 2..13, 2 + 0), 0);
+/// assert_eq!(files::column_index(source, 2..13, 2 + 1), 0);
+/// assert_eq!(files::column_index(source, 2..13, 2 + 4), 1);
+/// assert_eq!(files::column_index(source, 2..13, 2 + 8), 2);
+/// assert_eq!(files::column_index(source, 2..13, 2 + 10), 2);
+/// assert_eq!(files::column_index(source, 2..13, 2 + 11), 3);
+/// assert_eq!(files::column_index(source, 2..13, 2 + 12), 3);
+/// ```
+</span><span class="kw">pub fn </span>column_index(source: <span class="kw-2">&amp;</span>str, line_range: Range&lt;usize&gt;, byte_index: usize) -&gt; usize {
+    <span class="kw">let </span>end_index = std::cmp::min(byte_index, std::cmp::min(line_range.end, source.len()));
 
-    (<span class="ident">line_range</span>.<span class="ident">start</span>..<span class="ident">end_index</span>)
-        .<span class="ident">filter</span>(|<span class="ident">byte_index</span>| <span class="ident">source</span>.<span class="ident">is_char_boundary</span>(<span class="ident">byte_index</span> + <span class="number">1</span>))
-        .<span class="ident">count</span>()
+    (line_range.start..end_index)
+        .filter(|byte_index| source.is_char_boundary(byte_index + <span class="number">1</span>))
+        .count()
 }
 
-<span class="doccomment">/// Return the starting byte index of each line in the source string.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This can make it easier to implement [`Files::line_index`] by allowing</span>
-<span class="doccomment">/// implementors of [`Files`] to pre-compute the line starts, then search for</span>
-<span class="doccomment">/// the corresponding line range, as shown in the example below.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`Files`]: Files</span>
-<span class="doccomment">/// [`Files::line_index`]: Files::line_index</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Example</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust</span>
-<span class="doccomment">/// use codespan_reporting::files;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let source = &quot;foo\nbar\r\n\nbaz&quot;;</span>
-<span class="doccomment">/// let line_starts: Vec&lt;_&gt; = files::line_starts(source).collect();</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(</span>
-<span class="doccomment">///     line_starts,</span>
-<span class="doccomment">///     [</span>
-<span class="doccomment">///         0,  // &quot;foo\n&quot;</span>
-<span class="doccomment">///         4,  // &quot;bar\r\n&quot;</span>
-<span class="doccomment">///         9,  // &quot;&quot;</span>
-<span class="doccomment">///         10, // &quot;baz&quot;</span>
-<span class="doccomment">///     ],</span>
-<span class="doccomment">/// );</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// fn line_index(line_starts: &amp;[usize], byte_index: usize) -&gt; Option&lt;usize&gt; {</span>
-<span class="doccomment">///     match line_starts.binary_search(&amp;byte_index) {</span>
-<span class="doccomment">///         Ok(line) =&gt; Some(line),</span>
-<span class="doccomment">///         Err(next_line) =&gt; Some(next_line - 1),</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(line_index(&amp;line_starts, 5), Some(1));</span>
-<span class="doccomment">/// ```</span>
-<span class="comment">// NOTE: this is copied in `codespan::file::line_starts` and should be kept in sync.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">line_starts</span>&lt;<span class="lifetime">&#39;source</span>&gt;(<span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source</span> <span class="ident">str</span>) -&gt; <span class="kw">impl</span> <span class="lifetime">&#39;source</span> + <span class="ident">Iterator</span>&lt;<span class="ident">Item</span> = <span class="ident">usize</span>&gt; {
-    <span class="ident">std::iter::once</span>(<span class="number">0</span>).<span class="ident">chain</span>(<span class="ident">source</span>.<span class="ident">match_indices</span>(<span class="string">&#39;\n&#39;</span>).<span class="ident">map</span>(|(<span class="ident">i</span>, <span class="kw">_</span>)| <span class="ident">i</span> + <span class="number">1</span>))
+<span class="doccomment">/// Return the starting byte index of each line in the source string.
+///
+/// This can make it easier to implement [`Files::line_index`] by allowing
+/// implementors of [`Files`] to pre-compute the line starts, then search for
+/// the corresponding line range, as shown in the example below.
+///
+/// [`Files`]: Files
+/// [`Files::line_index`]: Files::line_index
+///
+/// # Example
+///
+/// ```rust
+/// use codespan_reporting::files;
+///
+/// let source = &quot;foo\nbar\r\n\nbaz&quot;;
+/// let line_starts: Vec&lt;_&gt; = files::line_starts(source).collect();
+///
+/// assert_eq!(
+///     line_starts,
+///     [
+///         0,  // &quot;foo\n&quot;
+///         4,  // &quot;bar\r\n&quot;
+///         9,  // &quot;&quot;
+///         10, // &quot;baz&quot;
+///     ],
+/// );
+///
+/// fn line_index(line_starts: &amp;[usize], byte_index: usize) -&gt; Option&lt;usize&gt; {
+///     match line_starts.binary_search(&amp;byte_index) {
+///         Ok(line) =&gt; Some(line),
+///         Err(next_line) =&gt; Some(next_line - 1),
+///     }
+/// }
+///
+/// assert_eq!(line_index(&amp;line_starts, 5), Some(1));
+/// ```
+</span><span class="comment">// NOTE: this is copied in `codespan::file::line_starts` and should be kept in sync.
+</span><span class="kw">pub fn </span>line_starts&lt;<span class="lifetime">&#39;source</span>&gt;(source: <span class="kw-2">&amp;</span><span class="lifetime">&#39;source </span>str) -&gt; <span class="kw">impl </span><span class="lifetime">&#39;source </span>+ Iterator&lt;Item = usize&gt; {
+    std::iter::once(<span class="number">0</span>).chain(source.match_indices(<span class="string">&#39;\n&#39;</span>).map(|(i, <span class="kw">_</span>)| i + <span class="number">1</span>))
 }
 
-<span class="doccomment">/// A file database that contains a single source file.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Because there is only single file in this database we use `()` as a [`FileId`].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is useful for simple language tests, but it might be worth creating a</span>
-<span class="doccomment">/// custom implementation when a language scales beyond a certain size.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`FileId`]: Files::FileId</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SimpleFile</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt; {
-    <span class="doccomment">/// The name of the file.</span>
-    <span class="ident">name</span>: <span class="ident">Name</span>,
-    <span class="doccomment">/// The source code of the file.</span>
-    <span class="ident">source</span>: <span class="ident">Source</span>,
-    <span class="doccomment">/// The starting byte indices in the source code.</span>
-    <span class="ident">line_starts</span>: <span class="ident">Vec</span>&lt;<span class="ident">usize</span>&gt;,
+<span class="doccomment">/// A file database that contains a single source file.
+///
+/// Because there is only single file in this database we use `()` as a [`FileId`].
+///
+/// This is useful for simple language tests, but it might be worth creating a
+/// custom implementation when a language scales beyond a certain size.
+///
+/// [`FileId`]: Files::FileId
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>SimpleFile&lt;Name, Source&gt; {
+    <span class="doccomment">/// The name of the file.
+    </span>name: Name,
+    <span class="doccomment">/// The source code of the file.
+    </span>source: Source,
+    <span class="doccomment">/// The starting byte indices in the source code.
+    </span>line_starts: Vec&lt;usize&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt; <span class="ident">SimpleFile</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">Name</span>: <span class="ident">std::fmt::Display</span>,
-    <span class="ident">Source</span>: <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt;,
+<span class="kw">impl</span>&lt;Name, Source&gt; SimpleFile&lt;Name, Source&gt;
+<span class="kw">where
+    </span>Name: std::fmt::Display,
+    Source: AsRef&lt;str&gt;,
 {
-    <span class="doccomment">/// Create a new source file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">name</span>: <span class="ident">Name</span>, <span class="ident">source</span>: <span class="ident">Source</span>) -&gt; <span class="ident">SimpleFile</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt; {
-        <span class="ident">SimpleFile</span> {
-            <span class="ident">name</span>,
-            <span class="ident">line_starts</span>: <span class="ident">line_starts</span>(<span class="ident">source</span>.<span class="ident">as_ref</span>()).<span class="ident">collect</span>(),
-            <span class="ident">source</span>,
+    <span class="doccomment">/// Create a new source file.
+    </span><span class="kw">pub fn </span>new(name: Name, source: Source) -&gt; SimpleFile&lt;Name, Source&gt; {
+        SimpleFile {
+            name,
+            line_starts: line_starts(source.as_ref()).collect(),
+            source,
         }
     }
 
-    <span class="doccomment">/// Return the name of the file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Name</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>
+    <span class="doccomment">/// Return the name of the file.
+    </span><span class="kw">pub fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Name {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.name
     }
 
-    <span class="doccomment">/// Return the source of the file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident">Source</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">source</span>
+    <span class="doccomment">/// Return the source of the file.
+    </span><span class="kw">pub fn </span>source(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Source {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.source
     }
 
-    <span class="doccomment">/// Return the starting byte index of the line with the specified line index.</span>
-    <span class="doccomment">/// Convenience method that already generates errors if necessary.</span>
-    <span class="kw">fn</span> <span class="ident">line_start</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">line_index</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">usize</span>, <span class="ident">Error</span>&gt; {
-        <span class="kw">use</span> <span class="ident">std::cmp::Ordering</span>;
+    <span class="doccomment">/// Return the starting byte index of the line with the specified line index.
+    /// Convenience method that already generates errors if necessary.
+    </span><span class="kw">fn </span>line_start(<span class="kw-2">&amp;</span><span class="self">self</span>, line_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;usize, Error&gt; {
+        <span class="kw">use </span>std::cmp::Ordering;
 
-        <span class="kw">match</span> <span class="ident">line_index</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">line_starts</span>.<span class="ident">len</span>()) {
-            <span class="ident">Ordering::Less</span> =&gt; <span class="prelude-val">Ok</span>(<span class="self">self</span>
-                .<span class="ident">line_starts</span>
-                .<span class="ident">get</span>(<span class="ident">line_index</span>)
-                .<span class="ident">cloned</span>()
-                .<span class="ident">expect</span>(<span class="string">&quot;failed despite previous check&quot;</span>)),
-            <span class="ident">Ordering::Equal</span> =&gt; <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">source</span>.<span class="ident">as_ref</span>().<span class="ident">len</span>()),
-            <span class="ident">Ordering::Greater</span> =&gt; <span class="prelude-val">Err</span>(<span class="ident">Error::LineTooLarge</span> {
-                <span class="ident">given</span>: <span class="ident">line_index</span>,
-                <span class="ident">max</span>: <span class="self">self</span>.<span class="ident">line_starts</span>.<span class="ident">len</span>() - <span class="number">1</span>,
+        <span class="kw">match </span>line_index.cmp(<span class="kw-2">&amp;</span><span class="self">self</span>.line_starts.len()) {
+            Ordering::Less =&gt; <span class="prelude-val">Ok</span>(<span class="self">self
+                </span>.line_starts
+                .get(line_index)
+                .cloned()
+                .expect(<span class="string">&quot;failed despite previous check&quot;</span>)),
+            Ordering::Equal =&gt; <span class="prelude-val">Ok</span>(<span class="self">self</span>.source.as_ref().len()),
+            Ordering::Greater =&gt; <span class="prelude-val">Err</span>(Error::LineTooLarge {
+                given: line_index,
+                max: <span class="self">self</span>.line_starts.len() - <span class="number">1</span>,
             }),
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">Name</span>, <span class="ident">Source</span>&gt; <span class="ident">Files</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">SimpleFile</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">Name</span>: <span class="lifetime">&#39;a</span> + <span class="ident">std::fmt::Display</span> + <span class="ident">Clone</span>,
-    <span class="ident">Source</span>: <span class="lifetime">&#39;a</span> + <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt;,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, Name, Source&gt; Files&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for </span>SimpleFile&lt;Name, Source&gt;
+<span class="kw">where
+    </span>Name: <span class="lifetime">&#39;a </span>+ std::fmt::Display + Clone,
+    Source: <span class="lifetime">&#39;a </span>+ AsRef&lt;str&gt;,
 {
-    <span class="kw">type</span> <span class="ident">FileId</span> = ();
-    <span class="kw">type</span> <span class="ident">Name</span> = <span class="ident">Name</span>;
-    <span class="kw">type</span> <span class="ident">Source</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>;
+    <span class="kw">type </span>FileId = ();
+    <span class="kw">type </span>Name = Name;
+    <span class="kw">type </span>Source = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str;
 
-    <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, (): ()) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">Name</span>, <span class="ident">Error</span>&gt; {
-        <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>())
+    <span class="kw">fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>, (): ()) -&gt; <span class="prelude-ty">Result</span>&lt;Name, Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.name.clone())
     }
 
-    <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, (): ()) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">Error</span>&gt; {
-        <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">source</span>.<span class="ident">as_ref</span>())
+    <span class="kw">fn </span>source(<span class="kw-2">&amp;</span><span class="self">self</span>, (): ()) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>str, Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.source.as_ref())
     }
 
-    <span class="kw">fn</span> <span class="ident">line_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, (): (), <span class="ident">byte_index</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">usize</span>, <span class="ident">Error</span>&gt; {
-        <span class="prelude-val">Ok</span>(<span class="self">self</span>
-            .<span class="ident">line_starts</span>
-            .<span class="ident">binary_search</span>(<span class="kw-2">&amp;</span><span class="ident">byte_index</span>)
-            .<span class="ident">unwrap_or_else</span>(|<span class="ident">next_line</span>| <span class="ident">next_line</span> - <span class="number">1</span>))
+    <span class="kw">fn </span>line_index(<span class="kw-2">&amp;</span><span class="self">self</span>, (): (), byte_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;usize, Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">self
+            </span>.line_starts
+            .binary_search(<span class="kw-2">&amp;</span>byte_index)
+            .unwrap_or_else(|next_line| next_line - <span class="number">1</span>))
     }
 
-    <span class="kw">fn</span> <span class="ident">line_range</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, (): (), <span class="ident">line_index</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">Range</span>&lt;<span class="ident">usize</span>&gt;, <span class="ident">Error</span>&gt; {
-        <span class="kw">let</span> <span class="ident">line_start</span> = <span class="self">self</span>.<span class="ident">line_start</span>(<span class="ident">line_index</span>)<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">next_line_start</span> = <span class="self">self</span>.<span class="ident">line_start</span>(<span class="ident">line_index</span> + <span class="number">1</span>)<span class="question-mark">?</span>;
+    <span class="kw">fn </span>line_range(<span class="kw-2">&amp;</span><span class="self">self</span>, (): (), line_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;Range&lt;usize&gt;, Error&gt; {
+        <span class="kw">let </span>line_start = <span class="self">self</span>.line_start(line_index)<span class="question-mark">?</span>;
+        <span class="kw">let </span>next_line_start = <span class="self">self</span>.line_start(line_index + <span class="number">1</span>)<span class="question-mark">?</span>;
 
-        <span class="prelude-val">Ok</span>(<span class="ident">line_start</span>..<span class="ident">next_line_start</span>)
+        <span class="prelude-val">Ok</span>(line_start..next_line_start)
     }
 }
 
-<span class="doccomment">/// A file database that can store multiple source files.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is useful for simple language tests, but it might be worth creating a</span>
-<span class="doccomment">/// custom implementation when a language scales beyond a certain size.</span>
-<span class="doccomment">/// It is a glorified `Vec&lt;SimpleFile&gt;` that implements the `Files` trait.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SimpleFiles</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt; {
-    <span class="ident">files</span>: <span class="ident">Vec</span>&lt;<span class="ident">SimpleFile</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt;&gt;,
+<span class="doccomment">/// A file database that can store multiple source files.
+///
+/// This is useful for simple language tests, but it might be worth creating a
+/// custom implementation when a language scales beyond a certain size.
+/// It is a glorified `Vec&lt;SimpleFile&gt;` that implements the `Files` trait.
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>SimpleFiles&lt;Name, Source&gt; {
+    files: Vec&lt;SimpleFile&lt;Name, Source&gt;&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt; <span class="ident">SimpleFiles</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">Name</span>: <span class="ident">std::fmt::Display</span>,
-    <span class="ident">Source</span>: <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt;,
+<span class="kw">impl</span>&lt;Name, Source&gt; SimpleFiles&lt;Name, Source&gt;
+<span class="kw">where
+    </span>Name: std::fmt::Display,
+    Source: AsRef&lt;str&gt;,
 {
-    <span class="doccomment">/// Create a new files database.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() -&gt; <span class="ident">SimpleFiles</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt; {
-        <span class="ident">SimpleFiles</span> { <span class="ident">files</span>: <span class="ident">Vec::new</span>() }
+    <span class="doccomment">/// Create a new files database.
+    </span><span class="kw">pub fn </span>new() -&gt; SimpleFiles&lt;Name, Source&gt; {
+        SimpleFiles { files: Vec::new() }
     }
 
-    <span class="doccomment">/// Add a file to the database, returning the handle that can be used to</span>
-    <span class="doccomment">/// refer to it again.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="ident">Name</span>, <span class="ident">source</span>: <span class="ident">Source</span>) -&gt; <span class="ident">usize</span> {
-        <span class="kw">let</span> <span class="ident">file_id</span> = <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">len</span>();
-        <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">push</span>(<span class="ident">SimpleFile::new</span>(<span class="ident">name</span>, <span class="ident">source</span>));
-        <span class="ident">file_id</span>
+    <span class="doccomment">/// Add a file to the database, returning the handle that can be used to
+    /// refer to it again.
+    </span><span class="kw">pub fn </span>add(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: Name, source: Source) -&gt; usize {
+        <span class="kw">let </span>file_id = <span class="self">self</span>.files.len();
+        <span class="self">self</span>.files.push(SimpleFile::new(name, source));
+        file_id
     }
 
-    <span class="doccomment">/// Get the file corresponding to the given id.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">file_id</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span><span class="ident">SimpleFile</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt;, <span class="ident">Error</span>&gt; {
-        <span class="self">self</span>.<span class="ident">files</span>.<span class="ident">get</span>(<span class="ident">file_id</span>).<span class="ident">ok_or</span>(<span class="ident">Error::FileMissing</span>)
+    <span class="doccomment">/// Get the file corresponding to the given id.
+    </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, file_id: usize) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>SimpleFile&lt;Name, Source&gt;, Error&gt; {
+        <span class="self">self</span>.files.get(file_id).ok_or(Error::FileMissing)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="ident">Name</span>, <span class="ident">Source</span>&gt; <span class="ident">Files</span>&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for</span> <span class="ident">SimpleFiles</span>&lt;<span class="ident">Name</span>, <span class="ident">Source</span>&gt;
-<span class="kw">where</span>
-    <span class="ident">Name</span>: <span class="lifetime">&#39;a</span> + <span class="ident">std::fmt::Display</span> + <span class="ident">Clone</span>,
-    <span class="ident">Source</span>: <span class="lifetime">&#39;a</span> + <span class="ident">AsRef</span>&lt;<span class="ident">str</span>&gt;,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, Name, Source&gt; Files&lt;<span class="lifetime">&#39;a</span>&gt; <span class="kw">for </span>SimpleFiles&lt;Name, Source&gt;
+<span class="kw">where
+    </span>Name: <span class="lifetime">&#39;a </span>+ std::fmt::Display + Clone,
+    Source: <span class="lifetime">&#39;a </span>+ AsRef&lt;str&gt;,
 {
-    <span class="kw">type</span> <span class="ident">FileId</span> = <span class="ident">usize</span>;
-    <span class="kw">type</span> <span class="ident">Name</span> = <span class="ident">Name</span>;
-    <span class="kw">type</span> <span class="ident">Source</span> = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>;
+    <span class="kw">type </span>FileId = usize;
+    <span class="kw">type </span>Name = Name;
+    <span class="kw">type </span>Source = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str;
 
-    <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">file_id</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">Name</span>, <span class="ident">Error</span>&gt; {
-        <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">get</span>(<span class="ident">file_id</span>)<span class="question-mark">?</span>.<span class="ident">name</span>().<span class="ident">clone</span>())
+    <span class="kw">fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>, file_id: usize) -&gt; <span class="prelude-ty">Result</span>&lt;Name, Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.get(file_id)<span class="question-mark">?</span>.name().clone())
     }
 
-    <span class="kw">fn</span> <span class="ident">source</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">file_id</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">Error</span>&gt; {
-        <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">get</span>(<span class="ident">file_id</span>)<span class="question-mark">?</span>.<span class="ident">source</span>().<span class="ident">as_ref</span>())
+    <span class="kw">fn </span>source(<span class="kw-2">&amp;</span><span class="self">self</span>, file_id: usize) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;</span>str, Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.get(file_id)<span class="question-mark">?</span>.source().as_ref())
     }
 
-    <span class="kw">fn</span> <span class="ident">line_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">file_id</span>: <span class="ident">usize</span>, <span class="ident">byte_index</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">usize</span>, <span class="ident">Error</span>&gt; {
-        <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">file_id</span>)<span class="question-mark">?</span>.<span class="ident">line_index</span>((), <span class="ident">byte_index</span>)
+    <span class="kw">fn </span>line_index(<span class="kw-2">&amp;</span><span class="self">self</span>, file_id: usize, byte_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;usize, Error&gt; {
+        <span class="self">self</span>.get(file_id)<span class="question-mark">?</span>.line_index((), byte_index)
     }
 
-    <span class="kw">fn</span> <span class="ident">line_range</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">file_id</span>: <span class="ident">usize</span>, <span class="ident">line_index</span>: <span class="ident">usize</span>) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="ident">Range</span>&lt;<span class="ident">usize</span>&gt;, <span class="ident">Error</span>&gt; {
-        <span class="self">self</span>.<span class="ident">get</span>(<span class="ident">file_id</span>)<span class="question-mark">?</span>.<span class="ident">line_range</span>((), <span class="ident">line_index</span>)
+    <span class="kw">fn </span>line_range(<span class="kw-2">&amp;</span><span class="self">self</span>, file_id: usize, line_index: usize) -&gt; <span class="prelude-ty">Result</span>&lt;Range&lt;usize&gt;, Error&gt; {
+        <span class="self">self</span>.get(file_id)<span class="question-mark">?</span>.line_range((), line_index)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="kw">mod</span> <span class="ident">test</span> {
-    <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
+<span class="attribute">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">const</span> <span class="ident">TEST_SOURCE</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> = <span class="string">&quot;foo\nbar\r\n\nbaz&quot;</span>;
+    <span class="kw">const </span>TEST_SOURCE: <span class="kw-2">&amp;</span>str = <span class="string">&quot;foo\nbar\r\n\nbaz&quot;</span>;
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">line_starts</span>() {
-        <span class="kw">let</span> <span class="ident">file</span> = <span class="ident">SimpleFile::new</span>(<span class="string">&quot;test&quot;</span>, <span class="ident">TEST_SOURCE</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>line_starts() {
+        <span class="kw">let </span>file = SimpleFile::new(<span class="string">&quot;test&quot;</span>, TEST_SOURCE);
 
         <span class="macro">assert_eq!</span>(
-            <span class="ident">file</span>.<span class="ident">line_starts</span>,
+            file.line_starts,
             [
-                <span class="number">0</span>,  <span class="comment">// &quot;foo\n&quot;</span>
-                <span class="number">4</span>,  <span class="comment">// &quot;bar\r\n&quot;</span>
-                <span class="number">9</span>,  <span class="comment">// &quot;&quot;</span>
-                <span class="number">10</span>, <span class="comment">// &quot;baz&quot;</span>
-            ],
+                <span class="number">0</span>,  <span class="comment">// &quot;foo\n&quot;
+                </span><span class="number">4</span>,  <span class="comment">// &quot;bar\r\n&quot;
+                </span><span class="number">9</span>,  <span class="comment">// &quot;&quot;
+                </span><span class="number">10</span>, <span class="comment">// &quot;baz&quot;
+            </span>],
         );
     }
 
-    <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="kw">fn</span> <span class="ident">line_span_sources</span>() {
-        <span class="kw">let</span> <span class="ident">file</span> = <span class="ident">SimpleFile::new</span>(<span class="string">&quot;test&quot;</span>, <span class="ident">TEST_SOURCE</span>);
+    <span class="attribute">#[test]
+    </span><span class="kw">fn </span>line_span_sources() {
+        <span class="kw">let </span>file = SimpleFile::new(<span class="string">&quot;test&quot;</span>, TEST_SOURCE);
 
-        <span class="kw">let</span> <span class="ident">line_sources</span> = (<span class="number">0</span>..<span class="number">4</span>)
-            .<span class="ident">map</span>(|<span class="ident">line</span>| {
-                <span class="kw">let</span> <span class="ident">line_range</span> = <span class="ident">file</span>.<span class="ident">line_range</span>((), <span class="ident">line</span>).<span class="ident">unwrap</span>();
-                <span class="kw-2">&amp;</span><span class="ident">file</span>.<span class="ident">source</span>[<span class="ident">line_range</span>]
+        <span class="kw">let </span>line_sources = (<span class="number">0</span>..<span class="number">4</span>)
+            .map(|line| {
+                <span class="kw">let </span>line_range = file.line_range((), line).unwrap();
+                <span class="kw-2">&amp;</span>file.source[line_range]
             })
-            .<span class="ident">collect</span>::&lt;<span class="ident">Vec</span>&lt;<span class="kw">_</span>&gt;&gt;();
+            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
-        <span class="macro">assert_eq!</span>(<span class="ident">line_sources</span>, [<span class="string">&quot;foo\n&quot;</span>, <span class="string">&quot;bar\r\n&quot;</span>, <span class="string">&quot;\n&quot;</span>, <span class="string">&quot;baz&quot;</span>]);
+        <span class="macro">assert_eq!</span>(line_sources, [<span class="string">&quot;foo\n&quot;</span>, <span class="string">&quot;bar\r\n&quot;</span>, <span class="string">&quot;\n&quot;</span>, <span class="string">&quot;baz&quot;</span>]);
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="codespan_reporting" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (f22819bcc 2022-08-12)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="codespan_reporting" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (c0941dfb5 2022-08-21)" ></div></body></html>

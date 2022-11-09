@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/crossbeam-epoch-0.9.9/src/atomic.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>atomic.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><a class="sidebar-logo" href="../../crossbeam_epoch/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../crossbeam_epoch/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/crossbeam-epoch-0.9.9/src/atomic.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>atomic.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ef244fc9943488f7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-c11f492748536797.css"><link rel="stylesheet" disabled href="../../static.files/dark-a78f946771c40031.css"><link rel="stylesheet" disabled href="../../static.files/ayu-70b683d68cb31790.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0dede64717b247ca.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-201a7e04dc4c6fce.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../crossbeam_epoch/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -1633,7 +1633,7 @@
 
 <span class="doccomment">/// Given ordering for the success case in a compare-exchange operation, returns the strongest
 /// appropriate ordering for the failure case.
-</span><span class="attribute">#[inline]
+</span><span class="attr">#[inline]
 </span><span class="kw">fn </span>strongest_failure_ordering(ord: Ordering) -&gt; Ordering {
     <span class="kw">use </span><span class="self">self</span>::Ordering::<span class="kw-2">*</span>;
     <span class="kw">match </span>ord {
@@ -1645,7 +1645,7 @@
 
 <span class="doccomment">/// The error returned on failed compare-and-set operation.
 </span><span class="comment">// TODO: remove in the next major version.
-</span><span class="attribute">#[deprecated(note = <span class="string">&quot;Use `CompareExchangeError` instead&quot;</span>)]
+</span><span class="attr">#[deprecated(note = <span class="string">&quot;Use `CompareExchangeError` instead&quot;</span>)]
 </span><span class="kw">pub type </span>CompareAndSetError&lt;<span class="lifetime">&#39;g</span>, T, P&gt; = CompareExchangeError&lt;<span class="lifetime">&#39;g</span>, T, P&gt;;
 
 <span class="doccomment">/// The error returned on failed compare-and-swap operation.
@@ -1678,7 +1678,7 @@
 /// 2. A pair of `Ordering`s. The first one is for the success case, while the second one is
 ///    for the failure case.
 </span><span class="comment">// TODO: remove in the next major version.
-</span><span class="attribute">#[deprecated(
+</span><span class="attr">#[deprecated(
     note = <span class="string">&quot;`compare_and_set` and `compare_and_set_weak` that use this trait are deprecated, \
             use `compare_exchange` or `compare_exchange_weak instead`&quot;
 </span>)]
@@ -1693,40 +1693,40 @@
     </span><span class="kw">fn </span>failure(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ordering;
 }
 
-<span class="attribute">#[allow(deprecated)]
+<span class="attr">#[allow(deprecated)]
 </span><span class="kw">impl </span>CompareAndSetOrdering <span class="kw">for </span>Ordering {
-    <span class="attribute">#[inline]
+    <span class="attr">#[inline]
     </span><span class="kw">fn </span>success(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ordering {
         <span class="kw-2">*</span><span class="self">self
     </span>}
 
-    <span class="attribute">#[inline]
+    <span class="attr">#[inline]
     </span><span class="kw">fn </span>failure(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ordering {
         strongest_failure_ordering(<span class="kw-2">*</span><span class="self">self</span>)
     }
 }
 
-<span class="attribute">#[allow(deprecated)]
+<span class="attr">#[allow(deprecated)]
 </span><span class="kw">impl </span>CompareAndSetOrdering <span class="kw">for </span>(Ordering, Ordering) {
-    <span class="attribute">#[inline]
+    <span class="attr">#[inline]
     </span><span class="kw">fn </span>success(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ordering {
         <span class="self">self</span>.<span class="number">0
     </span>}
 
-    <span class="attribute">#[inline]
+    <span class="attr">#[inline]
     </span><span class="kw">fn </span>failure(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Ordering {
         <span class="self">self</span>.<span class="number">1
     </span>}
 }
 
 <span class="doccomment">/// Returns a bitmask containing the unused least significant bits of an aligned pointer to `T`.
-</span><span class="attribute">#[inline]
+</span><span class="attr">#[inline]
 </span><span class="kw">fn </span>low_bits&lt;T: <span class="question-mark">?</span>Sized + Pointable&gt;() -&gt; usize {
     (<span class="number">1 </span>&lt;&lt; T::ALIGN.trailing_zeros()) - <span class="number">1
 </span>}
 
 <span class="doccomment">/// Panics if the pointer is not properly unaligned.
-</span><span class="attribute">#[inline]
+</span><span class="attr">#[inline]
 </span><span class="kw">fn </span>ensure_aligned&lt;T: <span class="question-mark">?</span>Sized + Pointable&gt;(raw: usize) {
     <span class="macro">assert_eq!</span>(raw &amp; low_bits::&lt;T&gt;(), <span class="number">0</span>, <span class="string">&quot;unaligned pointer&quot;</span>);
 }
@@ -1734,13 +1734,13 @@
 <span class="doccomment">/// Given a tagged pointer `data`, returns the same pointer, but tagged with `tag`.
 ///
 /// `tag` is truncated to fit into the unused bits of the pointer to `T`.
-</span><span class="attribute">#[inline]
+</span><span class="attr">#[inline]
 </span><span class="kw">fn </span>compose_tag&lt;T: <span class="question-mark">?</span>Sized + Pointable&gt;(data: usize, tag: usize) -&gt; usize {
     (data &amp; !low_bits::&lt;T&gt;()) | (tag &amp; low_bits::&lt;T&gt;())
 }
 
 <span class="doccomment">/// Decomposes a tagged pointer `data` into the pointer and the tag.
-</span><span class="attribute">#[inline]
+</span><span class="attr">#[inline]
 </span><span class="kw">fn </span>decompose_tag&lt;T: <span class="question-mark">?</span>Sized + Pointable&gt;(data: usize) -&gt; (usize, usize) {
     (data &amp; !low_bits::&lt;T&gt;(), data &amp; low_bits::&lt;T&gt;())
 }
@@ -1854,7 +1854,7 @@
 ///
 </span><span class="comment">// TODO(@jeehoonkang): once we bump the minimum required Rust version to 1.44 or newer, use
 // [`alloc::alloc::Layout::extend`] instead.
-</span><span class="attribute">#[repr(C)]
+</span><span class="attr">#[repr(C)]
 </span><span class="kw">struct </span>Array&lt;T&gt; {
     <span class="doccomment">/// The number of elements (not the number of bytes).
     </span>len: usize,
@@ -1960,7 +1960,7 @@
     ///
     /// let a = Atomic::&lt;i32&gt;::null();
     /// ```
-    </span><span class="attribute">#[cfg(all(crossbeam_const_fn_trait_bound, not(crossbeam_loom)))]
+    </span><span class="attr">#[cfg(all(crossbeam_const_fn_trait_bound, not(crossbeam_loom)))]
     </span><span class="kw">pub const fn </span>null() -&gt; Atomic&lt;T&gt; {
         <span class="self">Self </span>{
             data: AtomicUsize::new(<span class="number">0</span>),
@@ -1969,7 +1969,7 @@
     }
 
     <span class="doccomment">/// Returns a new null atomic pointer.
-    </span><span class="attribute">#[cfg(not(all(crossbeam_const_fn_trait_bound, not(crossbeam_loom))))]
+    </span><span class="attr">#[cfg(not(all(crossbeam_const_fn_trait_bound, not(crossbeam_loom))))]
     </span><span class="kw">pub fn </span>null() -&gt; Atomic&lt;T&gt; {
         <span class="self">Self </span>{
             data: AtomicUsize::new(<span class="number">0</span>),
@@ -2286,7 +2286,7 @@
     /// let res2 = a.compare_and_set(curr, Owned::new(5678), SeqCst, guard);
     /// ```
     </span><span class="comment">// TODO: remove in the next major version.
-    </span><span class="attribute">#[allow(deprecated)]
+    </span><span class="attr">#[allow(deprecated)]
     #[deprecated(note = <span class="string">&quot;Use `compare_exchange` instead&quot;</span>)]
     </span><span class="kw">pub fn </span>compare_and_set&lt;<span class="lifetime">&#39;g</span>, O, P&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -2363,7 +2363,7 @@
     /// }
     /// ```
     </span><span class="comment">// TODO: remove in the next major version.
-    </span><span class="attribute">#[allow(deprecated)]
+    </span><span class="attr">#[allow(deprecated)]
     #[deprecated(note = <span class="string">&quot;Use `compare_exchange_weak` instead&quot;</span>)]
     </span><span class="kw">pub fn </span>compare_and_set_weak&lt;<span class="lifetime">&#39;g</span>, O, P&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -2483,14 +2483,14 @@
     /// }
     /// ```
     </span><span class="kw">pub unsafe fn </span>into_owned(<span class="self">self</span>) -&gt; Owned&lt;T&gt; {
-        <span class="attribute">#[cfg(crossbeam_loom)]
+        <span class="attr">#[cfg(crossbeam_loom)]
         </span>{
             <span class="comment">// FIXME: loom does not yet support into_inner, so we use unsync_load for now,
             // which should have the same synchronization properties:
             // https://github.com/tokio-rs/loom/issues/117
             </span>Owned::from_usize(<span class="self">self</span>.data.unsync_load())
         }
-        <span class="attribute">#[cfg(not(crossbeam_loom))]
+        <span class="attr">#[cfg(not(crossbeam_loom))]
         </span>{
             Owned::from_usize(<span class="self">self</span>.data.into_inner())
         }
@@ -2620,7 +2620,7 @@
 }
 
 <span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized + Pointable&gt; Pointer&lt;T&gt; <span class="kw">for </span>Owned&lt;T&gt; {
-    <span class="attribute">#[inline]
+    <span class="attr">#[inline]
     </span><span class="kw">fn </span>into_usize(<span class="self">self</span>) -&gt; usize {
         <span class="kw">let </span>data = <span class="self">self</span>.data;
         mem::forget(<span class="self">self</span>);
@@ -2632,7 +2632,7 @@
     /// # Panics
     ///
     /// Panics if the data is zero in debug mode.
-    </span><span class="attribute">#[inline]
+    </span><span class="attr">#[inline]
     </span><span class="kw">unsafe fn </span>from_usize(data: usize) -&gt; <span class="self">Self </span>{
         <span class="macro">debug_assert!</span>(data != <span class="number">0</span>, <span class="string">&quot;converting zero into `Owned`&quot;</span>);
         Owned {
@@ -2727,7 +2727,7 @@
     /// let guard = &amp;epoch::pin();
     /// let p = o.into_shared(guard);
     /// ```
-    </span><span class="attribute">#[allow(clippy::needless_lifetimes)]
+    </span><span class="attr">#[allow(clippy::needless_lifetimes)]
     </span><span class="kw">pub fn </span>into_shared&lt;<span class="lifetime">&#39;g</span>&gt;(<span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;g </span>Guard) -&gt; Shared&lt;<span class="lifetime">&#39;g</span>, T&gt; {
         <span class="kw">unsafe </span>{ Shared::from_usize(<span class="self">self</span>.into_usize()) }
     }
@@ -2879,12 +2879,12 @@
 <span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized + Pointable&gt; Copy <span class="kw">for </span>Shared&lt;<span class="lifetime">&#39;_</span>, T&gt; {}
 
 <span class="kw">impl</span>&lt;T: <span class="question-mark">?</span>Sized + Pointable&gt; Pointer&lt;T&gt; <span class="kw">for </span>Shared&lt;<span class="lifetime">&#39;_</span>, T&gt; {
-    <span class="attribute">#[inline]
+    <span class="attr">#[inline]
     </span><span class="kw">fn </span>into_usize(<span class="self">self</span>) -&gt; usize {
         <span class="self">self</span>.data
     }
 
-    <span class="attribute">#[inline]
+    <span class="attr">#[inline]
     </span><span class="kw">unsafe fn </span>from_usize(data: usize) -&gt; <span class="self">Self </span>{
         Shared {
             data,
@@ -3205,29 +3205,29 @@
     }
 }
 
-<span class="attribute">#[cfg(all(test, not(crossbeam_loom)))]
+<span class="attr">#[cfg(all(test, not(crossbeam_loom)))]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::{Owned, Shared};
     <span class="kw">use </span>std::mem::MaybeUninit;
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>valid_tag_i8() {
         Shared::&lt;i8&gt;::null().with_tag(<span class="number">0</span>);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>valid_tag_i64() {
         Shared::&lt;i64&gt;::null().with_tag(<span class="number">7</span>);
     }
 
-    <span class="attribute">#[rustversion::since(<span class="number">1.61</span>)]
+    <span class="attr">#[rustversion::since(<span class="number">1.61</span>)]
     #[test]
     </span><span class="kw">fn </span>const_atomic_null() {
         <span class="kw">use </span><span class="kw">super</span>::Atomic;
         <span class="kw">static </span>_U: Atomic&lt;u8&gt; = Atomic::&lt;u8&gt;::null();
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>array_init() {
         <span class="kw">let </span>owned = Owned::&lt;[MaybeUninit&lt;usize&gt;]&gt;::init(<span class="number">10</span>);
         <span class="kw">let </span>arr: <span class="kw-2">&amp;</span>[MaybeUninit&lt;usize&gt;] = <span class="kw-2">&amp;*</span>owned;
@@ -3235,4 +3235,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="crossbeam_epoch" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (6e95b6da8 2022-10-22)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="crossbeam_epoch" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (85f4f41de 2022-11-08)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

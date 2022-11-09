@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustyline-10.0.0/src/history.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>history.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><a class="sidebar-logo" href="../../rustyline/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../rustyline/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustyline-10.0.0/src/history.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>history.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ef244fc9943488f7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-c11f492748536797.css"><link rel="stylesheet" disabled href="../../static.files/dark-a78f946771c40031.css"><link rel="stylesheet" disabled href="../../static.files/ayu-70b683d68cb31790.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0dede64717b247ca.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-201a7e04dc4c6fce.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../rustyline/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -817,7 +817,7 @@
 <span class="kw">use </span><span class="kw">crate</span>::config::{Config, HistoryDuplicates};
 
 <span class="doccomment">/// Search direction
-</span><span class="attribute">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+</span><span class="attr">#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>SearchDirection {
     <span class="doccomment">/// Search history forward
     </span>Forward,
@@ -826,7 +826,7 @@
 }
 
 <span class="doccomment">/// History search result
-</span><span class="attribute">#[derive(Debug, Clone, Eq, PartialEq)]
+</span><span class="attr">#[derive(Debug, Clone, Eq, PartialEq)]
 </span><span class="kw">pub struct </span>SearchResult&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// history entry
     </span><span class="kw">pub </span>entry: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
@@ -843,7 +843,7 @@
 // See https://python-prompt-toolkit.readthedocs.io/en/master/pages/reference.html#prompt_toolkit.history.History abstract methods
 
 </span><span class="doccomment">/// Current state of the history.
-</span><span class="attribute">#[derive(Default)]
+</span><span class="attr">#[derive(Default)]
 </span><span class="kw">pub struct </span>History {
     entries: VecDeque&lt;String&gt;,
     max_len: usize,
@@ -864,7 +864,7 @@
     </span><span class="kw">const </span>FILE_VERSION_V2: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str = <span class="string">&quot;#V2&quot;</span>;
 
     <span class="doccomment">/// Default constructor
-    </span><span class="attribute">#[must_use]
+    </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::with_config(Config::default())
     }
@@ -873,7 +873,7 @@
     /// - `Config::max_history_size()`,
     /// - `Config::history_ignore_space()`,
     /// - `Config::history_duplicates()`.
-    </span><span class="attribute">#[must_use]
+    </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>with_config(config: Config) -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             entries: VecDeque::new(),
@@ -886,13 +886,13 @@
     }
 
     <span class="doccomment">/// Return the history entry at position `index`, starting from 0.
-    </span><span class="attribute">#[must_use]
+    </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, index: usize) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>String&gt; {
         <span class="self">self</span>.entries.get(index)
     }
 
     <span class="doccomment">/// Return the last history entry (i.e. previous command)
-    </span><span class="attribute">#[must_use]
+    </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>last(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>String&gt; {
         <span class="self">self</span>.entries.back()
     }
@@ -928,13 +928,13 @@
     </span>}
 
     <span class="doccomment">/// Return the number of entries in the history.
-    </span><span class="attribute">#[must_use]
+    </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
         <span class="self">self</span>.entries.len()
     }
 
     <span class="doccomment">/// Return true if the history has no entry.
-    </span><span class="attribute">#[must_use]
+    </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.entries.is_empty()
     }
@@ -1197,14 +1197,14 @@
     /// Return None if no entry contains `term` between [start, len -1] for
     /// forward search
     /// or between [0, start] for reverse search.
-    </span><span class="attribute">#[must_use]
+    </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>search(<span class="kw-2">&amp;</span><span class="self">self</span>, term: <span class="kw-2">&amp;</span>str, start: usize, dir: SearchDirection) -&gt; <span class="prelude-ty">Option</span>&lt;SearchResult&gt; {
-        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;case_insensitive_history_search&quot;</span>))]
+        <span class="attr">#[cfg(not(feature = <span class="string">&quot;case_insensitive_history_search&quot;</span>))]
         </span>{
             <span class="kw">let </span>test = |entry: <span class="kw-2">&amp;</span>str| entry.find(term);
             <span class="self">self</span>.search_match(term, start, dir, test)
         }
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;case_insensitive_history_search&quot;</span>)]
+        <span class="attr">#[cfg(feature = <span class="string">&quot;case_insensitive_history_search&quot;</span>)]
         </span>{
             <span class="kw">use </span>regex::{escape, RegexBuilder};
             <span class="kw">if let </span><span class="prelude-val">Ok</span>(re) = RegexBuilder::new(<span class="kw-2">&amp;</span>escape(term))
@@ -1220,14 +1220,14 @@
     }
 
     <span class="doccomment">/// Anchored search
-    </span><span class="attribute">#[must_use]
+    </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>starts_with(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         term: <span class="kw-2">&amp;</span>str,
         start: usize,
         dir: SearchDirection,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;SearchResult&gt; {
-        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;case_insensitive_history_search&quot;</span>))]
+        <span class="attr">#[cfg(not(feature = <span class="string">&quot;case_insensitive_history_search&quot;</span>))]
         </span>{
             <span class="kw">let </span>test = |entry: <span class="kw-2">&amp;</span>str| {
                 <span class="kw">if </span>entry.starts_with(term) {
@@ -1238,7 +1238,7 @@
             };
             <span class="self">self</span>.search_match(term, start, dir, test)
         }
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;case_insensitive_history_search&quot;</span>)]
+        <span class="attr">#[cfg(feature = <span class="string">&quot;case_insensitive_history_search&quot;</span>)]
         </span>{
             <span class="kw">use </span>regex::{escape, RegexBuilder};
             <span class="kw">if let </span><span class="prelude-val">Ok</span>(re) = RegexBuilder::new(<span class="kw-2">&amp;</span>escape(term))
@@ -1305,7 +1305,7 @@
     }
 
     <span class="doccomment">/// Return a forward iterator.
-    </span><span class="attribute">#[must_use]
+    </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>iter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Iter&lt;<span class="lifetime">&#39;_</span>&gt; {
         Iter(<span class="self">self</span>.entries.iter())
     }
@@ -1350,7 +1350,7 @@
 }
 
 <span class="macro">cfg_if::cfg_if! </span>{
-    <span class="kw">if </span><span class="attribute">#[cfg(any(windows, target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>{
+    <span class="kw">if </span><span class="attr">#[cfg(any(windows, target_arch = <span class="string">&quot;wasm32&quot;</span>))] </span>{
         <span class="kw">fn </span>umask() -&gt; u16 {
             <span class="number">0
         </span>}
@@ -1358,7 +1358,7 @@
         <span class="kw">fn </span>restore_umask(<span class="kw">_</span>: u16) {}
 
         <span class="kw">fn </span>fix_perm(<span class="kw">_</span>: <span class="kw-2">&amp;</span>File) {}
-    } <span class="kw">else if </span><span class="attribute">#[cfg(unix)] </span>{
+    } <span class="kw">else if </span><span class="attr">#[cfg(unix)] </span>{
         <span class="kw">use </span>nix::sys::stat::{<span class="self">self</span>, Mode, fchmod};
         <span class="kw">fn </span>umask() -&gt; Mode {
             stat::umask(Mode::S_IXUSR | Mode::S_IRWXG | Mode::S_IRWXO)
@@ -1375,7 +1375,7 @@
     }
 }
 
-<span class="attribute">#[cfg(test)]
+<span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use super</span>::{History, SearchDirection, SearchResult};
     <span class="kw">use </span><span class="kw">crate</span>::config::Config;
@@ -1389,13 +1389,13 @@
         history
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>new() {
         <span class="kw">let </span>history = History::new();
         <span class="macro">assert_eq!</span>(<span class="number">0</span>, history.entries.len());
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>add() {
         <span class="kw">let </span>config = Config::builder().history_ignore_space(<span class="bool-val">true</span>).build();
         <span class="kw">let </span><span class="kw-2">mut </span>history = History::with_config(config);
@@ -1407,7 +1407,7 @@
         <span class="macro">assert!</span>(!history.add(<span class="string">&quot; line3&quot;</span>));
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>set_max_len() {
         <span class="kw">let </span><span class="kw-2">mut </span>history = init();
         history.set_max_len(<span class="number">1</span>);
@@ -1415,13 +1415,13 @@
         <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="string">&quot;line3&quot;</span>.to_owned()), history.last());
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     #[cfg_attr(miri, ignore)] </span><span class="comment">// unsupported operation: `getcwd` not available when isolation is enabled
     </span><span class="kw">fn </span>save() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         check_save(<span class="string">&quot;line\nfour \\ abc&quot;</span>)
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     #[cfg_attr(miri, ignore)] </span><span class="comment">// unsupported operation: `open` not available when isolation is enabled
     </span><span class="kw">fn </span>save_windows_path() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span>path = <span class="string">&quot;cd source\\repos\\forks\\nushell\\&quot;</span>;
@@ -1443,7 +1443,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     #[cfg_attr(miri, ignore)] </span><span class="comment">// unsupported operation: `getcwd` not available when isolation is enabled
     </span><span class="kw">fn </span>load_legacy() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">use </span>std::io::Write;
@@ -1469,7 +1469,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     #[cfg_attr(miri, ignore)] </span><span class="comment">// unsupported operation: `getcwd` not available when isolation is enabled
     </span><span class="kw">fn </span>append() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>history = init();
@@ -1493,7 +1493,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     #[cfg_attr(miri, ignore)] </span><span class="comment">// unsupported operation: `getcwd` not available when isolation is enabled
     </span><span class="kw">fn </span>truncate() -&gt; <span class="prelude-ty">Result</span>&lt;()&gt; {
         <span class="kw">let </span>tf = tempfile::NamedTempFile::new()<span class="question-mark">?</span>;
@@ -1518,7 +1518,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>search() {
         <span class="kw">let </span>history = init();
         <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, history.search(<span class="string">&quot;&quot;</span>, <span class="number">0</span>, SearchDirection::Forward));
@@ -1551,7 +1551,7 @@
         );
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>reverse_search() {
         <span class="kw">let </span>history = init();
         <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, history.search(<span class="string">&quot;&quot;</span>, <span class="number">2</span>, SearchDirection::Reverse));
@@ -1584,7 +1584,7 @@
         );
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     #[cfg(feature = <span class="string">&quot;case_insensitive_history_search&quot;</span>)]
     </span><span class="kw">fn </span>anchored_search() {
         <span class="kw">let </span>history = init();
@@ -1603,4 +1603,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (6e95b6da8 2022-10-22)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="rustyline" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (85f4f41de 2022-11-08)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

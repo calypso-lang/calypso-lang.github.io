@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustyline-10.0.0/src/completion.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>completion.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><a class="sidebar-logo" href="../../rustyline/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../rustyline/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustyline-10.0.0/src/completion.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>completion.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ef244fc9943488f7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-c11f492748536797.css"><link rel="stylesheet" disabled href="../../static.files/dark-a78f946771c40031.css"><link rel="stylesheet" disabled href="../../static.files/ayu-70b683d68cb31790.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0dede64717b247ca.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-201a7e04dc4c6fce.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../rustyline/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -789,7 +789,7 @@
 <span class="kw">const </span>DOUBLE_QUOTES_ESCAPE_CHAR: <span class="prelude-ty">Option</span>&lt;char&gt; = <span class="prelude-val">Some</span>(<span class="string">&#39;\\&#39;</span>);
 
 <span class="macro">cfg_if::cfg_if! </span>{
-    <span class="kw">if </span><span class="attribute">#[cfg(unix)] </span>{
+    <span class="kw">if </span><span class="attr">#[cfg(unix)] </span>{
         <span class="comment">// rl_basic_word_break_characters, rl_completer_word_break_characters
         </span><span class="kw">const </span>DEFAULT_BREAK_CHARS: [u8; <span class="number">18</span>] = [
             <span class="string">b&#39; &#39;</span>, <span class="string">b&#39;\t&#39;</span>, <span class="string">b&#39;\n&#39;</span>, <span class="string">b&#39;&quot;&#39;</span>, <span class="string">b&#39;\\&#39;</span>, <span class="string">b&#39;\&#39;&#39;</span>, <span class="string">b&#39;`&#39;</span>, <span class="string">b&#39;@&#39;</span>, <span class="string">b&#39;$&#39;</span>, <span class="string">b&#39;&gt;&#39;</span>, <span class="string">b&#39;&lt;&#39;</span>, <span class="string">b&#39;=&#39;</span>, <span class="string">b&#39;;&#39;</span>, <span class="string">b&#39;|&#39;</span>, <span class="string">b&#39;&amp;&#39;</span>,
@@ -799,7 +799,7 @@
         <span class="comment">// In double quotes, not all break_chars need to be escaped
         // https://www.gnu.org/software/bash/manual/html_node/Double-Quotes.html
         </span><span class="kw">const </span>DOUBLE_QUOTES_SPECIAL_CHARS: [u8; <span class="number">4</span>] = [<span class="string">b&#39;&quot;&#39;</span>, <span class="string">b&#39;$&#39;</span>, <span class="string">b&#39;\\&#39;</span>, <span class="string">b&#39;`&#39;</span>];
-    } <span class="kw">else if </span><span class="attribute">#[cfg(windows)] </span>{
+    } <span class="kw">else if </span><span class="attr">#[cfg(windows)] </span>{
         <span class="comment">// Remove \ to make file completion works on windows
         </span><span class="kw">const </span>DEFAULT_BREAK_CHARS: [u8; <span class="number">17</span>] = [
             <span class="string">b&#39; &#39;</span>, <span class="string">b&#39;\t&#39;</span>, <span class="string">b&#39;\n&#39;</span>, <span class="string">b&#39;&quot;&#39;</span>, <span class="string">b&#39;\&#39;&#39;</span>, <span class="string">b&#39;`&#39;</span>, <span class="string">b&#39;@&#39;</span>, <span class="string">b&#39;$&#39;</span>, <span class="string">b&#39;&gt;&#39;</span>, <span class="string">b&#39;&lt;&#39;</span>, <span class="string">b&#39;=&#39;</span>, <span class="string">b&#39;;&#39;</span>, <span class="string">b&#39;|&#39;</span>, <span class="string">b&#39;&amp;&#39;</span>, <span class="string">b&#39;{&#39;</span>,
@@ -807,7 +807,7 @@
         ];
         <span class="kw">const </span>ESCAPE_CHAR: <span class="prelude-ty">Option</span>&lt;char&gt; = <span class="prelude-val">None</span>;
         <span class="kw">const </span>DOUBLE_QUOTES_SPECIAL_CHARS: [u8; <span class="number">1</span>] = [<span class="string">b&#39;&quot;&#39;</span>]; <span class="comment">// TODO Validate: only &#39;&quot;&#39; ?
-    </span>} <span class="kw">else if </span><span class="attribute">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)] </span>{
+    </span>} <span class="kw">else if </span><span class="attr">#[cfg(target_arch = <span class="string">&quot;wasm32&quot;</span>)] </span>{
         <span class="kw">const </span>DEFAULT_BREAK_CHARS: [u8; <span class="number">0</span>] = [];
         <span class="kw">const </span>ESCAPE_CHAR: <span class="prelude-ty">Option</span>&lt;char&gt; = <span class="prelude-val">None</span>;
         <span class="kw">const </span>DOUBLE_QUOTES_SPECIAL_CHARS: [u8; <span class="number">0</span>] = [];
@@ -815,7 +815,7 @@
 }
 
 <span class="doccomment">/// Kind of quote.
-</span><span class="attribute">#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+</span><span class="attr">#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 </span><span class="kw">pub enum </span>Quote {
     <span class="doccomment">/// Double quote: `&quot;`
     </span>Double,
@@ -827,7 +827,7 @@
 
 <span class="kw">impl </span>FilenameCompleter {
     <span class="doccomment">/// Constructor
-    </span><span class="attribute">#[must_use]
+    </span><span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             break_chars: <span class="kw-2">&amp;</span>DEFAULT_BREAK_CHARS,
@@ -865,7 +865,7 @@
                 (start, path, ESCAPE_CHAR, <span class="kw-2">&amp;</span><span class="self">self</span>.break_chars, Quote::None)
             };
         <span class="kw">let </span><span class="kw-2">mut </span>matches = filename_complete(<span class="kw-2">&amp;</span>path, esc_char, break_chars, quote);
-        <span class="attribute">#[allow(clippy::unnecessary_sort_by)]
+        <span class="attr">#[allow(clippy::unnecessary_sort_by)]
         </span>matches.sort_by(|a, b| a.display().cmp(b.display()));
         <span class="prelude-val">Ok</span>((start, matches))
     }
@@ -886,7 +886,7 @@
 }
 
 <span class="doccomment">/// Remove escape char
-</span><span class="attribute">#[must_use]
+</span><span class="attr">#[must_use]
 </span><span class="kw">pub fn </span>unescape(input: <span class="kw-2">&amp;</span>str, esc_char: <span class="prelude-ty">Option</span>&lt;char&gt;) -&gt; Cow&lt;<span class="lifetime">&#39;_</span>, str&gt; {
     <span class="kw">let </span>esc_char = <span class="kw">if let </span><span class="prelude-val">Some</span>(c) = esc_char {
         c
@@ -919,7 +919,7 @@
 <span class="doccomment">/// Escape any `break_chars` in `input` string with `esc_char`.
 /// For example, &#39;/User Information&#39; becomes &#39;/User\ Information&#39;
 /// when space is a breaking char and &#39;\\&#39; the escape char.
-</span><span class="attribute">#[must_use]
+</span><span class="attr">#[must_use]
 </span><span class="kw">pub fn </span>escape(
     <span class="kw-2">mut </span>input: String,
     esc_char: <span class="prelude-ty">Option</span>&lt;char&gt;,
@@ -962,7 +962,7 @@
     break_chars: <span class="kw-2">&amp;</span>[u8],
     quote: Quote,
 ) -&gt; Vec&lt;Pair&gt; {
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;with-dirs&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">&quot;with-dirs&quot;</span>)]
     </span><span class="kw">use </span>dirs_next::home_dir;
     <span class="kw">use </span>std::env::current_dir;
 
@@ -975,7 +975,7 @@
     <span class="kw">let </span>dir_path = Path::new(dir_name);
     <span class="kw">let </span>dir = <span class="kw">if </span>dir_path.starts_with(<span class="string">&quot;~&quot;</span>) {
         <span class="comment">// ~[/...]
-        </span><span class="attribute">#[cfg(feature = <span class="string">&quot;with-dirs&quot;</span>)]
+        </span><span class="attr">#[cfg(feature = <span class="string">&quot;with-dirs&quot;</span>)]
         </span>{
             <span class="kw">if let </span><span class="prelude-val">Some</span>(home) = home_dir() {
                 <span class="kw">match </span>dir_path.strip_prefix(<span class="string">&quot;~&quot;</span>) {
@@ -986,7 +986,7 @@
                 dir_path.to_path_buf()
             }
         }
-        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;with-dirs&quot;</span>))]
+        <span class="attr">#[cfg(not(feature = <span class="string">&quot;with-dirs&quot;</span>))]
         </span>{
             dir_path.to_path_buf()
         }
@@ -1032,13 +1032,13 @@
     entries
 }
 
-<span class="attribute">#[cfg(any(windows, target_os = <span class="string">&quot;macos&quot;</span>))]
+<span class="attr">#[cfg(any(windows, target_os = <span class="string">&quot;macos&quot;</span>))]
 </span><span class="kw">fn </span>normalize(s: <span class="kw-2">&amp;</span>str) -&gt; Cow&lt;str&gt; {
     <span class="comment">// case insensitive
     </span>Owned(s.to_lowercase())
 }
 
-<span class="attribute">#[cfg(not(any(windows, target_os = <span class="string">&quot;macos&quot;</span>)))]
+<span class="attr">#[cfg(not(any(windows, target_os = <span class="string">&quot;macos&quot;</span>)))]
 </span><span class="kw">fn </span>normalize(s: <span class="kw-2">&amp;</span>str) -&gt; Cow&lt;str&gt; {
     Cow::Borrowed(s)
 }
@@ -1047,7 +1047,7 @@
 /// try to find backward the start of a word.
 /// Return (0, `line[..pos]`) if no break char has been found.
 /// Return the word and its start position (idx, `line[idx..pos]`) otherwise.
-</span><span class="attribute">#[must_use]
+</span><span class="attr">#[must_use]
 </span><span class="kw">pub fn </span>extract_word&lt;<span class="lifetime">&#39;l</span>&gt;(
     line: <span class="kw-2">&amp;</span><span class="lifetime">&#39;l </span>str,
     pos: usize,
@@ -1113,7 +1113,7 @@
     <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span>candidate[<span class="number">0</span>..longest_common_prefix])
 }
 
-<span class="attribute">#[derive(Eq, PartialEq)]
+<span class="attr">#[derive(Eq, PartialEq)]
 </span><span class="kw">enum </span>ScanMode {
     DoubleQuote,
     Escape,
@@ -1171,9 +1171,9 @@
     <span class="prelude-val">None
 </span>}
 
-<span class="attribute">#[cfg(test)]
+<span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">pub fn </span>extract_word() {
         <span class="kw">let </span>break_chars: <span class="kw-2">&amp;</span>[u8] = <span class="kw-2">&amp;</span><span class="kw">super</span>::DEFAULT_BREAK_CHARS;
         <span class="kw">let </span>line = <span class="string">&quot;ls &#39;/usr/local/b&quot;</span>;
@@ -1188,7 +1188,7 @@
         );
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">pub fn </span>unescape() {
         <span class="kw">use </span>std::borrow::Cow::{<span class="self">self</span>, Borrowed, Owned};
         <span class="kw">let </span>input = <span class="string">&quot;/usr/local/b&quot;</span>;
@@ -1204,7 +1204,7 @@
         }
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">pub fn </span>escape() {
         <span class="kw">let </span>break_chars: <span class="kw-2">&amp;</span>[u8] = <span class="kw-2">&amp;</span><span class="kw">super</span>::DEFAULT_BREAK_CHARS;
         <span class="kw">let </span>input = String::from(<span class="string">&quot;/usr/local/b&quot;</span>);
@@ -1220,7 +1220,7 @@
         );
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">pub fn </span>longest_common_prefix() {
         <span class="kw">let </span><span class="kw-2">mut </span>candidates = <span class="macro">vec!</span>[];
         {
@@ -1255,7 +1255,7 @@
         <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(<span class="string">&quot;f&quot;</span>), lcp);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">pub fn </span>find_unclosed_quote() {
         <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, <span class="kw">super</span>::find_unclosed_quote(<span class="string">&quot;ls /etc&quot;</span>));
         <span class="macro">assert_eq!</span>(
@@ -1272,11 +1272,11 @@
         )
     }
 
-    <span class="attribute">#[cfg(windows)]
+    <span class="attr">#[cfg(windows)]
     #[test]
     </span><span class="kw">pub fn </span>normalize() {
         <span class="macro">assert_eq!</span>(<span class="kw">super</span>::normalize(<span class="string">&quot;Windows&quot;</span>), <span class="string">&quot;windows&quot;</span>)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="rustyline" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (6e95b6da8 2022-10-22)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="rustyline" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (85f4f41de 2022-11-08)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

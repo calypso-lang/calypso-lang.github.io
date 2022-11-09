@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/lasso-0.6.0/src/single_threaded.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>single_threaded.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><a class="sidebar-logo" href="../../lasso/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../lasso/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/lasso-0.6.0/src/single_threaded.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>single_threaded.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ef244fc9943488f7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-c11f492748536797.css"><link rel="stylesheet" disabled href="../../static.files/dark-a78f946771c40031.css"><link rel="stylesheet" disabled href="../../static.files/ayu-70b683d68cb31790.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0dede64717b247ca.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-201a7e04dc4c6fce.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../lasso/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -1620,7 +1620,7 @@
 <span class="kw">use </span>hashbrown::{hash_map::RawEntryMut, HashMap};
 
 <span class="macro">compile! </span>{
-    <span class="kw">if </span><span class="attribute">#[feature = <span class="string">&quot;no-std&quot;</span>] </span>{
+    <span class="kw">if </span><span class="attr">#[feature = <span class="string">&quot;no-std&quot;</span>] </span>{
         <span class="kw">use </span>alloc::vec::Vec;
     }
 }
@@ -1632,7 +1632,7 @@
 ///
 /// [`Spur`]: crate::Spur
 /// [`RandomState`]: https://doc.rust-lang.org/std/collections/hash_map/struct.RandomState.html
-</span><span class="attribute">#[derive(Debug)]
+</span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>Rodeo&lt;K = Spur, S = RandomState&gt; {
     <span class="doccomment">/// Map that allows `str` -&gt; `key` resolution
     ///
@@ -1677,7 +1677,7 @@
     /// assert_eq!(&quot;World!&quot;, rodeo.resolve(&amp;world));
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::with_capacity_memory_limits_and_hasher(
             Capacity::default(),
@@ -1700,7 +1700,7 @@
     /// ```
     ///
     /// [`Capacity`]: crate::Capacity
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>with_capacity(capacity: Capacity) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::with_capacity_memory_limits_and_hasher(
             capacity,
@@ -1727,7 +1727,7 @@
     /// ```
     ///
     /// [`MemoryLimits`]: crate::MemoryLimits
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>with_memory_limits(memory_limits: MemoryLimits) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::with_capacity_memory_limits_and_hasher(
             Capacity::default(),
@@ -1755,7 +1755,7 @@
     ///
     /// [`Capacity`]: crate::Capacity
     /// [`MemoryLimits`]: crate::MemoryLimits
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>with_capacity_and_memory_limits(
         capacity: Capacity,
         memory_limits: MemoryLimits,
@@ -1780,7 +1780,7 @@
     /// let rodeo: Rodeo&lt;Spur, RandomState&gt; = Rodeo::with_hasher(RandomState::new());
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>with_hasher(hash_builder: S) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::with_capacity_memory_limits_and_hasher(
             Capacity::default(),
@@ -1803,7 +1803,7 @@
     /// ```
     ///
     /// [`Capacity`]: crate::Capacity
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>with_capacity_and_hasher(capacity: Capacity, hash_builder: S) -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::with_capacity_memory_limits_and_hasher(
             capacity,
@@ -1831,7 +1831,7 @@
     ///
     /// [`Capacity`]: crate::Capacity
     /// [`MemoryLimits`]: crate::MemoryLimits
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>with_capacity_memory_limits_and_hasher(
         capacity: Capacity,
         memory_limits: MemoryLimits,
@@ -1874,7 +1874,7 @@
     /// ```
     ///
     /// [`Spur`]: crate::Spur
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>get_or_intern&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, val: T) -&gt; K
     <span class="kw">where
         </span>T: AsRef&lt;str&gt;,
@@ -1901,7 +1901,7 @@
     /// assert_eq!(&quot;Strings of things with wings and dings&quot;, rodeo.resolve(&amp;key));
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>try_get_or_intern&lt;T&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, val: T) -&gt; LassoResult&lt;K&gt;
     <span class="kw">where
         </span>T: AsRef&lt;str&gt;,
@@ -1992,7 +1992,7 @@
     /// assert_eq!(&quot;Strings of things with wings and dings&quot;, rodeo.resolve(&amp;key));
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>get_or_intern_static(<span class="kw-2">&amp;mut </span><span class="self">self</span>, string: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; K {
         <span class="self">self</span>.try_get_or_intern_static(string)
             .expect(<span class="string">&quot;Failed to get or intern static string&quot;</span>)
@@ -2018,7 +2018,7 @@
     /// assert_eq!(&quot;Strings of things with wings and dings&quot;, rodeo.resolve(&amp;key));
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>try_get_or_intern_static(<span class="kw-2">&amp;mut </span><span class="self">self</span>, string: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str) -&gt; LassoResult&lt;K&gt; {
         <span class="kw">let </span><span class="self">Self </span>{
             map,
@@ -2089,7 +2089,7 @@
     /// assert_eq!(None, rodeo.get(&quot;This string isn&#39;t interned&quot;));
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>get&lt;T&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, val: T) -&gt; <span class="prelude-ty">Option</span>&lt;K&gt;
     <span class="kw">where
         </span>T: AsRef&lt;str&gt;,
@@ -2131,7 +2131,7 @@
     /// assert!(!rodeo.contains(&quot;This string isn&#39;t interned&quot;));
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>contains&lt;T&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, val: T) -&gt; bool
     <span class="kw">where
         </span>T: AsRef&lt;str&gt;,
@@ -2161,7 +2161,7 @@
     /// assert!(!rodeo.contains_key(&amp;key_that_doesnt_exist));
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>contains_key(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; bool {
         key.into_usize() &lt; <span class="self">self</span>.strings.len()
     }
@@ -2183,7 +2183,7 @@
     /// assert_eq!(&quot;Strings of things with wings and dings&quot;, rodeo.resolve(&amp;key));
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>resolve&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str {
         <span class="comment">// Safety: The call to get_unchecked&#39;s safety relies on the Key::into_usize impl
         // being symmetric and the caller having not fabricated a key. If the impl is sound
@@ -2209,7 +2209,7 @@
     /// assert_eq!(Some(&quot;Strings of things with wings and dings&quot;), rodeo.try_resolve(&amp;key));
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>try_resolve&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt; {
         <span class="comment">// Safety: The call to get_unchecked&#39;s safety relies on the Key::into_usize impl
         // being symmetric and the caller having not fabricated a key. If the impl is sound
@@ -2243,7 +2243,7 @@
     /// }
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub unsafe fn </span>resolve_unchecked&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str {
         <span class="self">self</span>.strings.get_unchecked(key.into_usize())
     }
@@ -2263,7 +2263,7 @@
     /// assert_eq!(rodeo.len(), 1);
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
         <span class="self">self</span>.strings.len()
     }
@@ -2279,7 +2279,7 @@
     /// assert!(rodeo.is_empty());
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.len() == <span class="number">0
     </span>}
@@ -2295,7 +2295,7 @@
     /// assert_eq!(rodeo.capacity(), 10);
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>capacity(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
         <span class="self">self</span>.strings.capacity()
     }
@@ -2303,13 +2303,13 @@
     <span class="comment">// TODO: Examples here
 
     </span><span class="doccomment">/// Returns an iterator over the interned strings and their key values
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>iter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Iter&lt;<span class="lifetime">&#39;_</span>, K&gt; {
         Iter::from_rodeo(<span class="self">self</span>)
     }
 
     <span class="doccomment">/// Returns an iterator over the interned strings
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>strings(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Strings&lt;<span class="lifetime">&#39;_</span>, K&gt; {
         Strings::from_rodeo(<span class="self">self</span>)
     }
@@ -2318,19 +2318,19 @@
     ///
     /// Note that setting the maximum memory usage to below the currently allocated
     /// memory will do nothing
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>set_memory_limits(<span class="kw-2">&amp;mut </span><span class="self">self</span>, memory_limits: MemoryLimits) {
         <span class="self">self</span>.arena.max_memory_usage = memory_limits.max_memory_usage;
     }
 
     <span class="doccomment">/// Get the `Rodeo`&#39;s currently allocated memory
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>current_memory_usage(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
         <span class="self">self</span>.arena.memory_usage()
     }
 
     <span class="doccomment">/// Get the `Rodeo`&#39;s current maximum of allocated memory
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>max_memory_usage(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
         <span class="self">self</span>.arena.max_memory_usage
     }
@@ -2356,7 +2356,7 @@
     /// ```
     ///
     /// [`RodeoReader`]: crate::RodeoReader
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     #[must_use]
     </span><span class="kw">pub fn </span>into_reader(<span class="self">self</span>) -&gt; RodeoReader&lt;K, S&gt; {
         <span class="kw">let </span><span class="self">Self </span>{
@@ -2389,7 +2389,7 @@
     /// ```
     ///
     /// [`RodeoResolver`]: crate::RodeoResolver
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     #[must_use]
     </span><span class="kw">pub fn </span>into_resolver(<span class="self">self</span>) -&gt; RodeoResolver&lt;K&gt; {
         <span class="kw">let </span>Rodeo { strings, arena, .. } = <span class="self">self</span>;
@@ -2404,7 +2404,7 @@
 /// [`Spur`]: crate::Spur
 /// [`RandomState`]: index.html#cargo-features
 </span><span class="kw">impl </span>Default <span class="kw">for </span>Rodeo&lt;Spur, RandomState&gt; {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="self">Self</span>::new()
     }
@@ -2418,7 +2418,7 @@
     K: Key,
     S: BuildHasher + Default,
 {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>from_iter&lt;T&gt;(iter: T) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span>T: IntoIterator&lt;Item = Str&gt;,
@@ -2445,7 +2445,7 @@
 {
     <span class="kw">type </span>Output = str;
 
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>index(<span class="kw-2">&amp;</span><span class="self">self</span>, idx: K) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Output {
         <span class="self">self</span>.resolve(<span class="kw-2">&amp;</span>idx)
     }
@@ -2457,7 +2457,7 @@
     S: BuildHasher,
     T: AsRef&lt;str&gt;,
 {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>extend&lt;I&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, iter: I)
     <span class="kw">where
         </span>I: IntoIterator&lt;Item = T&gt;,
@@ -2472,7 +2472,7 @@
     <span class="kw">type </span>Item = (K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str);
     <span class="kw">type </span>IntoIter = Iter&lt;<span class="lifetime">&#39;a</span>, K&gt;;
 
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>into_iter(<span class="self">self</span>) -&gt; <span class="self">Self</span>::IntoIter {
         <span class="self">self</span>.iter()
     }
@@ -2481,28 +2481,28 @@
 <span class="kw">impl</span>&lt;K, S&gt; Eq <span class="kw">for </span>Rodeo&lt;K, S&gt; {}
 
 <span class="kw">impl</span>&lt;K, S&gt; PartialEq&lt;<span class="self">Self</span>&gt; <span class="kw">for </span>Rodeo&lt;K, S&gt; {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
         <span class="self">self</span>.strings == other.strings
     }
 }
 
 <span class="kw">impl</span>&lt;K, S&gt; PartialEq&lt;RodeoReader&lt;K, S&gt;&gt; <span class="kw">for </span>Rodeo&lt;K, S&gt; {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>RodeoReader&lt;K, S&gt;) -&gt; bool {
         <span class="self">self</span>.strings == other.strings
     }
 }
 
 <span class="kw">impl</span>&lt;K, S&gt; PartialEq&lt;RodeoResolver&lt;K&gt;&gt; <span class="kw">for </span>Rodeo&lt;K, S&gt; {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>RodeoResolver&lt;K&gt;) -&gt; bool {
         <span class="self">self</span>.strings == other.strings
     }
 }
 
 <span class="macro">compile! </span>{
-    <span class="kw">if </span><span class="attribute">#[feature = <span class="string">&quot;serialize&quot;</span>] </span>{
+    <span class="kw">if </span><span class="attr">#[feature = <span class="string">&quot;serialize&quot;</span>] </span>{
         <span class="kw">use </span>core::num::NonZeroUsize;
         <span class="kw">use </span>serde::{
             de::{Deserialize, Deserializer},
@@ -2511,9 +2511,9 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
 </span><span class="kw">impl</span>&lt;K, H&gt; Serialize <span class="kw">for </span>Rodeo&lt;K, H&gt; {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
     <span class="kw">where
         </span>S: Serializer,
@@ -2523,9 +2523,9 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
 </span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>, K: Key, S: BuildHasher + Default&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>Rodeo&lt;K, S&gt; {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
     <span class="kw">where
         </span>D: Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
@@ -2603,24 +2603,24 @@
     }
 }
 
-<span class="attribute">#[cfg(test)]
+<span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use crate</span>::{hasher::RandomState, keys::MicroSpur, Capacity, Key, MemoryLimits, Rodeo, Spur};
     <span class="kw">use </span>core::num::NonZeroUsize;
 
     <span class="macro">compile! </span>{
-        <span class="kw">if </span><span class="attribute">#[feature = <span class="string">&quot;no-std&quot;</span>] </span>{
+        <span class="kw">if </span><span class="attr">#[feature = <span class="string">&quot;no-std&quot;</span>] </span>{
             <span class="kw">use </span>alloc::string::ToString;
         }
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>new() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur&gt; = Rodeo::new();
         rodeo.get_or_intern(<span class="string">&quot;Test&quot;</span>);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>with_capacity() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur&gt; = Rodeo::with_capacity(Capacity::for_strings(<span class="number">10</span>));
         <span class="macro">assert_eq!</span>(rodeo.capacity(), <span class="number">10</span>);
@@ -2639,13 +2639,13 @@
         <span class="macro">assert_eq!</span>(rodeo.len(), rodeo.capacity());
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>with_hasher() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur, RandomState&gt; = Rodeo::with_hasher(RandomState::new());
         <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;Test&quot;</span>);
         <span class="macro">assert_eq!</span>(<span class="string">&quot;Test&quot;</span>, rodeo.resolve(<span class="kw-2">&amp;</span>key));
 
-        <span class="attribute">#[cfg(not(miri))]
+        <span class="attr">#[cfg(not(miri))]
         </span>{
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur, ahash::RandomState&gt; =
                 Rodeo::with_hasher(ahash::RandomState::new());
@@ -2654,7 +2654,7 @@
         }
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>with_capacity_and_hasher() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur, RandomState&gt; =
             Rodeo::with_capacity_and_hasher(Capacity::for_strings(<span class="number">10</span>), RandomState::new());
@@ -2673,7 +2673,7 @@
 
         <span class="macro">assert_eq!</span>(rodeo.len(), rodeo.capacity());
 
-        <span class="attribute">#[cfg(not(miri))]
+        <span class="attr">#[cfg(not(miri))]
         </span>{
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur, ahash::RandomState&gt; = Rodeo::with_capacity_and_hasher(
                 Capacity::for_strings(<span class="number">10</span>),
@@ -2696,7 +2696,7 @@
         }
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>get_or_intern() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
         <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -2709,7 +2709,7 @@
         <span class="macro">assert_eq!</span>(c, rodeo.get_or_intern(<span class="string">&quot;C&quot;</span>));
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>try_get_or_intern() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;MicroSpur&gt; = Rodeo::new();
 
@@ -2724,7 +2724,7 @@
         <span class="macro">assert!</span>(rodeo.try_get_or_intern(<span class="string">&quot;C&quot;</span>).is_err());
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>get_or_intern_static() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
         <span class="kw">let </span>a = rodeo.get_or_intern_static(<span class="string">&quot;A&quot;</span>);
@@ -2737,11 +2737,11 @@
         <span class="macro">assert_eq!</span>(c, rodeo.get_or_intern_static(<span class="string">&quot;C&quot;</span>));
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>try_get_or_intern_static() {
         <span class="kw">use </span>core::pin::Pin;
         <span class="macro">compile! </span>{
-            <span class="kw">if </span><span class="attribute">#[feature = <span class="string">&quot;no-std&quot;</span>] </span>{
+            <span class="kw">if </span><span class="attr">#[feature = <span class="string">&quot;no-std&quot;</span>] </span>{
                 <span class="kw">use </span>alloc::vec::Vec;
             }
         }
@@ -2764,7 +2764,7 @@
         <span class="macro">assert!</span>(rodeo.try_get_or_intern_static(<span class="string">&quot;C&quot;</span>).is_err());
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>get() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
         <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -2772,7 +2772,7 @@
         <span class="macro">assert_eq!</span>(<span class="prelude-val">Some</span>(key), rodeo.get(<span class="string">&quot;A&quot;</span>));
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>resolve() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
         <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -2780,7 +2780,7 @@
         <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, rodeo.resolve(<span class="kw-2">&amp;</span>key));
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     #[should_panic]
     #[cfg(not(miri))]
     </span><span class="kw">fn </span>resolve_panics() {
@@ -2788,7 +2788,7 @@
         rodeo.resolve(<span class="kw-2">&amp;</span>Spur::try_from_usize(<span class="number">100</span>).unwrap());
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>try_resolve() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
         <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -2797,7 +2797,7 @@
         <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, rodeo.try_resolve(<span class="kw-2">&amp;</span>Spur::try_from_usize(<span class="number">100</span>).unwrap()));
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>resolve_unchecked() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
         <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -2807,7 +2807,7 @@
         }
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>len() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
         rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -2817,7 +2817,7 @@
         <span class="macro">assert_eq!</span>(rodeo.len(), <span class="number">3</span>);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>empty() {
         <span class="kw">let </span>rodeo = Rodeo::default();
 
@@ -2839,12 +2839,12 @@
     //     assert_eq!(&quot;Test&quot;, cloned.resolve(&amp;key));
     // }
 
-    </span><span class="attribute">#[test]
+    </span><span class="attr">#[test]
     </span><span class="kw">fn </span>drop_rodeo() {
         <span class="kw">let _ </span>= Rodeo::default();
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>iter() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
         <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
@@ -2858,7 +2858,7 @@
         <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, rodeo.next());
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>strings() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
         rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
@@ -2872,7 +2872,7 @@
         <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, rodeo.next());
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     #[cfg(not(any(feature = <span class="string">&quot;no-std&quot;</span>, feature = <span class="string">&quot;ahasher&quot;</span>)))]
     </span><span class="kw">fn </span>debug() {
         <span class="kw">let </span>rodeo = Rodeo::default();
@@ -2880,7 +2880,7 @@
     }
 
     <span class="comment">// Regression test for https://github.com/Kixiron/lasso/issues/7
-    </span><span class="attribute">#[test]
+    </span><span class="attr">#[test]
     </span><span class="kw">fn </span>wrong_keys() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
 
@@ -2948,7 +2948,7 @@
         <span class="macro">assert_eq!</span>(var, var2);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>memory_exhausted() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur&gt; = Rodeo::with_capacity_and_memory_limits(
             Capacity::for_bytes(NonZeroUsize::new(<span class="number">10</span>).unwrap()),
@@ -2966,7 +2966,7 @@
     }
 
     <span class="comment">// TODO: Add a reason for should_panic once `Result`s are used
-    </span><span class="attribute">#[test]
+    </span><span class="attr">#[test]
     #[should_panic]
     </span><span class="kw">fn </span>memory_exhausted_panics() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur&gt; = Rodeo::with_capacity_and_memory_limits(
@@ -2980,7 +2980,7 @@
         rodeo.get_or_intern(<span class="string">&quot;&quot;</span>);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>with_capacity_memory_limits_and_hasher() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur, RandomState&gt; = Rodeo::with_capacity_memory_limits_and_hasher(
             Capacity::default(),
@@ -2991,7 +2991,7 @@
         rodeo.get_or_intern(<span class="string">&quot;Test&quot;</span>);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>with_capacity_and_memory_limits() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur&gt; =
             Rodeo::with_capacity_and_memory_limits(Capacity::default(), MemoryLimits::default());
@@ -2999,7 +2999,7 @@
         rodeo.get_or_intern(<span class="string">&quot;Test&quot;</span>);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>set_memory_limits() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur&gt; = Rodeo::with_capacity_and_memory_limits(
             Capacity::for_bytes(NonZeroUsize::new(<span class="number">10</span>).unwrap()),
@@ -3028,7 +3028,7 @@
         <span class="macro">assert_eq!</span>(rodeo.resolve(<span class="kw-2">&amp;</span>string2), <span class="string">&quot;9876543210&quot;</span>);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>memory_usage_stats() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo: Rodeo&lt;Spur&gt; = Rodeo::with_capacity_and_memory_limits(
             Capacity::for_bytes(NonZeroUsize::new(<span class="number">10</span>).unwrap()),
@@ -3041,7 +3041,7 @@
         <span class="macro">assert_eq!</span>(rodeo.max_memory_usage(), <span class="number">10</span>);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>contains() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
 
@@ -3052,7 +3052,7 @@
         <span class="macro">assert!</span>(rodeo.contains(<span class="string">&quot;&quot;</span>));
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>contains_key() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
 
@@ -3065,7 +3065,7 @@
         <span class="macro">assert!</span>(!rodeo.contains_key(<span class="kw-2">&amp;</span>Spur::try_from_usize(<span class="number">10000</span>).unwrap()));
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>from_iter() {
         <span class="kw">let </span>rodeo: Rodeo = [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;d&quot;</span>, <span class="string">&quot;e&quot;</span>].iter().collect();
 
@@ -3076,7 +3076,7 @@
         <span class="macro">assert!</span>(rodeo.contains(<span class="string">&quot;e&quot;</span>));
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>index() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
         <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -3084,7 +3084,7 @@
         <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="kw-2">&amp;</span>rodeo[key]);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>extend() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
         <span class="macro">assert!</span>(rodeo.is_empty());
@@ -3097,7 +3097,7 @@
         <span class="macro">assert!</span>(rodeo.contains(<span class="string">&quot;e&quot;</span>));
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>into_iterator() {
         <span class="kw">let </span>rodeo: Rodeo = [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;d&quot;</span>, <span class="string">&quot;e&quot;</span>].iter().collect();
 
@@ -3111,7 +3111,7 @@
         }
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     #[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
     </span><span class="kw">fn </span>empty_serialize() {
         <span class="kw">let </span>rodeo = Rodeo::default();
@@ -3126,7 +3126,7 @@
         <span class="macro">assert!</span>(deser2.is_empty());
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     #[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
     </span><span class="kw">fn </span>filled_serialize() {
         <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
@@ -3157,7 +3157,7 @@
         }
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>rodeo_eq() {
         <span class="kw">let </span>a = Rodeo::default();
         <span class="kw">let </span>b = Rodeo::default();
@@ -3174,7 +3174,7 @@
         <span class="macro">assert_eq!</span>(a, b);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>resolver_eq() {
         <span class="kw">let </span>a = Rodeo::default();
         <span class="kw">let </span>b = Rodeo::default().into_resolver();
@@ -3191,7 +3191,7 @@
         <span class="macro">assert_eq!</span>(a, b.into_resolver());
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>reader_eq() {
         <span class="kw">let </span>a = Rodeo::default();
         <span class="kw">let </span>b = Rodeo::default().into_reader();
@@ -3209,4 +3209,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (6e95b6da8 2022-10-22)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lasso" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (85f4f41de 2022-11-08)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

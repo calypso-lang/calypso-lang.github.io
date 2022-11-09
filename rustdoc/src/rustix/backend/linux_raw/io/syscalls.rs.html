@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustix-0.35.7/src/backend/linux_raw/io/syscalls.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>syscalls.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../../normalize.css"><link rel="stylesheet" href="../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../../dark.css" disabled><link rel="stylesheet" href="../../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../../storage.js"></script><script defer src="../../../../../source-script.js"></script><script defer src="../../../../../source-files.js"></script><script defer src="../../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><a class="sidebar-logo" href="../../../../../rustix/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../../rustix/index.html"><img class="rust-logo" src="../../../../../rust-logo.svg" alt="logo"></a><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../wheel.svg"></a></div></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustix-0.35.7/src/backend/linux_raw/io/syscalls.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>syscalls.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../../static.files/rustdoc-ef244fc9943488f7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../../static.files/light-c11f492748536797.css"><link rel="stylesheet" disabled href="../../../../../static.files/dark-a78f946771c40031.css"><link rel="stylesheet" disabled href="../../../../../static.files/ayu-70b683d68cb31790.css"><script id="default-settings" ></script><script src="../../../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../../../../source-files.js"></script><script defer src="../../../../../static.files/main-0dede64717b247ca.js"></script><noscript><link rel="stylesheet" href="../../../../../static.files/noscript-201a7e04dc4c6fce.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../../rustix/index.html"><img class="rust-logo" src="../../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -563,24 +563,24 @@
 //! # Safety
 //!
 //! See the `rustix::backend` module documentation for details.
-</span><span class="attribute">#![allow(unsafe_code)]
+</span><span class="attr">#![allow(unsafe_code)]
 #![allow(clippy::undocumented_unsafe_blocks)]
 
 </span><span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::c;
-<span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+<span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
 </span><span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::conv::loff_t_from_u64;
 <span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::conv::{
     by_ref, c_int, c_uint, pass_usize, raw_fd, ret, ret_discarded_fd, ret_owned_fd, ret_usize,
     slice, slice_mut, zero,
 };
-<span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
+<span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
 </span><span class="kw">use </span><span class="kw">super</span>::<span class="kw">super</span>::conv::{hi, lo};
 <span class="kw">use </span><span class="kw">crate</span>::fd::{AsFd, BorrowedFd, RawFd};
 <span class="kw">use </span><span class="kw">crate</span>::io::{
     <span class="self">self</span>, epoll, DupFlags, EventfdFlags, IoSlice, IoSliceMut, OwnedFd, PipeFlags, PollFd,
     ReadWriteFlags,
 };
-<span class="attribute">#[cfg(feature = <span class="string">&quot;net&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;net&quot;</span>)]
 </span><span class="kw">use </span><span class="kw">crate</span>::net::{RecvFlags, SendFlags};
 <span class="kw">use </span>core::cmp;
 <span class="kw">use </span>core::mem::MaybeUninit;
@@ -588,25 +588,25 @@
     epoll_event, EPOLL_CTL_ADD, EPOLL_CTL_DEL, EPOLL_CTL_MOD, UIO_MAXIOV,
 };
 <span class="kw">use </span>linux_raw_sys::ioctl::{BLKPBSZGET, BLKSSZGET, FIONBIO, FIONREAD, TIOCEXCL, TIOCNXCL};
-<span class="attribute">#[cfg(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>))]
+<span class="attr">#[cfg(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>))]
 </span><span class="kw">use </span>{
     <span class="kw">super</span>::<span class="kw">super</span>::conv::{opt_ref, size_of},
     linux_raw_sys::general::{__kernel_timespec, sigset_t},
 };
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>read(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;, buf: <span class="kw-2">&amp;mut </span>[u8]) -&gt; io::Result&lt;usize&gt; {
     <span class="kw">let </span>(buf_addr_mut, buf_len) = slice_mut(buf);
 
     <span class="kw">unsafe </span>{ ret_usize(<span class="macro">syscall!</span>(__NR_read, fd, buf_addr_mut, buf_len)) }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>pread(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;, buf: <span class="kw-2">&amp;mut </span>[u8], pos: u64) -&gt; io::Result&lt;usize&gt; {
     <span class="kw">let </span>(buf_addr_mut, buf_len) = slice_mut(buf);
 
     <span class="comment">// &lt;https://github.com/torvalds/linux/blob/fcadab740480e0e0e9fa9bd272acd409884d431a/arch/arm64/kernel/sys32.c#L75&gt;
-    </span><span class="attribute">#[cfg(all(
+    </span><span class="attr">#[cfg(all(
         target_pointer_width = <span class="string">&quot;32&quot;</span>,
         any(target_arch = <span class="string">&quot;arm&quot;</span>, target_arch = <span class="string">&quot;mips&quot;</span>, target_arch = <span class="string">&quot;power&quot;</span>),
     ))]
@@ -621,7 +621,7 @@
             lo(pos)
         ))
     }
-    <span class="attribute">#[cfg(all(
+    <span class="attr">#[cfg(all(
         target_pointer_width = <span class="string">&quot;32&quot;</span>,
         not(any(target_arch = <span class="string">&quot;arm&quot;</span>, target_arch = <span class="string">&quot;mips&quot;</span>, target_arch = <span class="string">&quot;power&quot;</span>)),
     ))]
@@ -635,7 +635,7 @@
             lo(pos)
         ))
     }
-    <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall!</span>(
             __NR_pread64,
@@ -647,14 +647,14 @@
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>readv(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;, bufs: <span class="kw-2">&amp;mut </span>[IoSliceMut&lt;<span class="lifetime">&#39;_</span>&gt;]) -&gt; io::Result&lt;usize&gt; {
     <span class="kw">let </span>(bufs_addr, bufs_len) = slice(<span class="kw-2">&amp;</span>bufs[..cmp::min(bufs.len(), max_iov())]);
 
     <span class="kw">unsafe </span>{ ret_usize(<span class="macro">syscall!</span>(__NR_readv, fd, bufs_addr, bufs_len)) }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>preadv(
     fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;,
     bufs: <span class="kw-2">&amp;mut </span>[IoSliceMut&lt;<span class="lifetime">&#39;_</span>&gt;],
@@ -662,7 +662,7 @@
 ) -&gt; io::Result&lt;usize&gt; {
     <span class="kw">let </span>(bufs_addr, bufs_len) = slice(<span class="kw-2">&amp;</span>bufs[..cmp::min(bufs.len(), max_iov())]);
 
-    <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall!</span>(
             __NR_preadv,
@@ -673,7 +673,7 @@
             lo(pos)
         ))
     }
-    <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall!</span>(
             __NR_preadv,
@@ -685,7 +685,7 @@
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>preadv2(
     fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;,
     bufs: <span class="kw-2">&amp;mut </span>[IoSliceMut&lt;<span class="lifetime">&#39;_</span>&gt;],
@@ -694,7 +694,7 @@
 ) -&gt; io::Result&lt;usize&gt; {
     <span class="kw">let </span>(bufs_addr, bufs_len) = slice(<span class="kw-2">&amp;</span>bufs[..cmp::min(bufs.len(), max_iov())]);
 
-    <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall!</span>(
             __NR_preadv2,
@@ -706,7 +706,7 @@
             flags
         ))
     }
-    <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall!</span>(
             __NR_preadv2,
@@ -719,19 +719,19 @@
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>write(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;, buf: <span class="kw-2">&amp;</span>[u8]) -&gt; io::Result&lt;usize&gt; {
     <span class="kw">let </span>(buf_addr, buf_len) = slice(buf);
 
     <span class="kw">unsafe </span>{ ret_usize(<span class="macro">syscall_readonly!</span>(__NR_write, fd, buf_addr, buf_len)) }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>pwrite(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;, buf: <span class="kw-2">&amp;</span>[u8], pos: u64) -&gt; io::Result&lt;usize&gt; {
     <span class="kw">let </span>(buf_addr, buf_len) = slice(buf);
 
     <span class="comment">// &lt;https://github.com/torvalds/linux/blob/fcadab740480e0e0e9fa9bd272acd409884d431a/arch/arm64/kernel/sys32.c#L81-L83&gt;
-    </span><span class="attribute">#[cfg(all(
+    </span><span class="attr">#[cfg(all(
         target_pointer_width = <span class="string">&quot;32&quot;</span>,
         any(target_arch = <span class="string">&quot;arm&quot;</span>, target_arch = <span class="string">&quot;mips&quot;</span>, target_arch = <span class="string">&quot;power&quot;</span>),
     ))]
@@ -746,7 +746,7 @@
             lo(pos)
         ))
     }
-    <span class="attribute">#[cfg(all(
+    <span class="attr">#[cfg(all(
         target_pointer_width = <span class="string">&quot;32&quot;</span>,
         not(any(target_arch = <span class="string">&quot;arm&quot;</span>, target_arch = <span class="string">&quot;mips&quot;</span>, target_arch = <span class="string">&quot;power&quot;</span>)),
     ))]
@@ -760,7 +760,7 @@
             lo(pos)
         ))
     }
-    <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall_readonly!</span>(
             __NR_pwrite64,
@@ -772,18 +772,18 @@
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>writev(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;, bufs: <span class="kw-2">&amp;</span>[IoSlice&lt;<span class="lifetime">&#39;_</span>&gt;]) -&gt; io::Result&lt;usize&gt; {
     <span class="kw">let </span>(bufs_addr, bufs_len) = slice(<span class="kw-2">&amp;</span>bufs[..cmp::min(bufs.len(), max_iov())]);
 
     <span class="kw">unsafe </span>{ ret_usize(<span class="macro">syscall_readonly!</span>(__NR_writev, fd, bufs_addr, bufs_len)) }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>pwritev(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;, bufs: <span class="kw-2">&amp;</span>[IoSlice&lt;<span class="lifetime">&#39;_</span>&gt;], pos: u64) -&gt; io::Result&lt;usize&gt; {
     <span class="kw">let </span>(bufs_addr, bufs_len) = slice(<span class="kw-2">&amp;</span>bufs[..cmp::min(bufs.len(), max_iov())]);
 
-    <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall_readonly!</span>(
             __NR_pwritev,
@@ -794,7 +794,7 @@
             lo(pos)
         ))
     }
-    <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall_readonly!</span>(
             __NR_pwritev,
@@ -806,7 +806,7 @@
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>pwritev2(
     fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;,
     bufs: <span class="kw-2">&amp;</span>[IoSlice&lt;<span class="lifetime">&#39;_</span>&gt;],
@@ -815,7 +815,7 @@
 ) -&gt; io::Result&lt;usize&gt; {
     <span class="kw">let </span>(bufs_addr, bufs_len) = slice(<span class="kw-2">&amp;</span>bufs[..cmp::min(bufs.len(), max_iov())]);
 
-    <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;32&quot;</span>)]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall_readonly!</span>(
             __NR_pwritev2,
@@ -827,7 +827,7 @@
             flags
         ))
     }
-    <span class="attribute">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
+    <span class="attr">#[cfg(target_pointer_width = <span class="string">&quot;64&quot;</span>)]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall_readonly!</span>(
             __NR_pwritev2,
@@ -846,18 +846,18 @@
     UIO_MAXIOV <span class="kw">as </span>usize
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>close(fd: RawFd) {
     <span class="comment">// See the documentation for [`io::close`] for why errors are ignored.
     </span><span class="macro">syscall_readonly!</span>(__NR_close, raw_fd(fd)).decode_void();
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>eventfd(initval: u32, flags: EventfdFlags) -&gt; io::Result&lt;OwnedFd&gt; {
     <span class="kw">unsafe </span>{ ret_owned_fd(<span class="macro">syscall_readonly!</span>(__NR_eventfd2, c_uint(initval), flags)) }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ioctl_fionread(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; io::Result&lt;u64&gt; {
     <span class="kw">unsafe </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>result = MaybeUninit::&lt;c::c_int&gt;::uninit();
@@ -866,7 +866,7 @@
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ioctl_fionbio(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;, value: bool) -&gt; io::Result&lt;()&gt; {
     <span class="kw">unsafe </span>{
         <span class="kw">let </span>data = c::c_int::from(value);
@@ -879,17 +879,17 @@
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ioctl_tiocexcl(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; io::Result&lt;()&gt; {
     <span class="kw">unsafe </span>{ ret(<span class="macro">syscall_readonly!</span>(__NR_ioctl, fd, c_uint(TIOCEXCL))) }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ioctl_tiocnxcl(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; io::Result&lt;()&gt; {
     <span class="kw">unsafe </span>{ ret(<span class="macro">syscall_readonly!</span>(__NR_ioctl, fd, c_uint(TIOCNXCL))) }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ioctl_blksszget(fd: BorrowedFd) -&gt; io::Result&lt;u32&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>result = MaybeUninit::&lt;c::c_uint&gt;::uninit();
     <span class="kw">unsafe </span>{
@@ -898,7 +898,7 @@
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>ioctl_blkpbszget(fd: BorrowedFd) -&gt; io::Result&lt;u32&gt; {
     <span class="kw">let </span><span class="kw-2">mut </span>result = MaybeUninit::&lt;c::c_uint&gt;::uninit();
     <span class="kw">unsafe </span>{
@@ -907,7 +907,7 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;net&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;net&quot;</span>)]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>is_read_write(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; io::Result&lt;(bool, bool)&gt; {
     <span class="kw">let </span>(<span class="kw-2">mut </span>read, <span class="kw-2">mut </span>write) = <span class="kw">crate</span>::fs::fd::_is_file_read_write(fd)<span class="question-mark">?</span>;
     <span class="kw">let </span><span class="kw-2">mut </span>not_socket = <span class="bool-val">false</span>;
@@ -923,7 +923,7 @@
         {
             <span class="prelude-val">Ok</span>(<span class="number">0</span>) =&gt; read = <span class="bool-val">false</span>,
             <span class="prelude-val">Err</span>(err) =&gt; {
-                <span class="attribute">#[allow(unreachable_patterns)] </span><span class="comment">// `EAGAIN` may equal `EWOULDBLOCK`
+                <span class="attr">#[allow(unreachable_patterns)] </span><span class="comment">// `EAGAIN` may equal `EWOULDBLOCK`
                 </span><span class="kw">match </span>err {
                     io::Errno::AGAIN | io::Errno::WOULDBLOCK =&gt; (),
                     io::Errno::NOTSOCK =&gt; not_socket = <span class="bool-val">true</span>,
@@ -936,7 +936,7 @@
     <span class="kw">if </span>write &amp;&amp; !not_socket {
         <span class="comment">// Do a `send` with `DONTWAIT` for 0 bytes. An `EPIPE` indicates
         // the write side is shut down.
-        </span><span class="attribute">#[allow(unreachable_patterns)] </span><span class="comment">// `EAGAIN` equals `EWOULDBLOCK`
+        </span><span class="attr">#[allow(unreachable_patterns)] </span><span class="comment">// `EAGAIN` equals `EWOULDBLOCK`
         </span><span class="kw">match </span><span class="kw">super</span>::<span class="kw">super</span>::net::syscalls::send(fd, <span class="kw-2">&amp;</span>[], SendFlags::DONTWAIT) {
             <span class="comment">// TODO or-patterns when we don&#39;t need 1.51
             </span><span class="prelude-val">Err</span>(io::Errno::AGAIN) =&gt; (),
@@ -950,14 +950,14 @@
     <span class="prelude-val">Ok</span>((read, write))
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>dup(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; io::Result&lt;OwnedFd&gt; {
     <span class="kw">unsafe </span>{ ret_owned_fd(<span class="macro">syscall_readonly!</span>(__NR_dup, fd)) }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>dup2(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;, new: <span class="kw-2">&amp;mut </span>OwnedFd) -&gt; io::Result&lt;()&gt; {
-    <span class="attribute">#[cfg(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>))]
+    <span class="attr">#[cfg(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>))]
     </span>{
         <span class="comment">// We don&#39;t need to worry about the difference between `dup2` and
         // `dup3` when the file descriptors are equal because we have an
@@ -965,18 +965,18 @@
         </span>dup3(fd, new, DupFlags::empty())
     }
 
-    <span class="attribute">#[cfg(not(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>)))]
+    <span class="attr">#[cfg(not(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>)))]
     </span><span class="kw">unsafe </span>{
         ret_discarded_fd(<span class="macro">syscall_readonly!</span>(__NR_dup2, fd, new.as_fd()))
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>dup3(fd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;, new: <span class="kw-2">&amp;mut </span>OwnedFd, flags: DupFlags) -&gt; io::Result&lt;()&gt; {
     <span class="kw">unsafe </span>{ ret_discarded_fd(<span class="macro">syscall_readonly!</span>(__NR_dup3, fd, new.as_fd(), flags)) }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>pipe_with(flags: PipeFlags) -&gt; io::Result&lt;(OwnedFd, OwnedFd)&gt; {
     <span class="kw">unsafe </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>result = MaybeUninit::&lt;[OwnedFd; <span class="number">2</span>]&gt;::uninit();
@@ -986,12 +986,12 @@
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>pipe() -&gt; io::Result&lt;(OwnedFd, OwnedFd)&gt; {
     <span class="comment">// aarch64 and risc64 omit `__NR_pipe`. On mips, `__NR_pipe` uses a special
     // calling convention, but using it is not worth complicating our syscall
     // wrapping infrastructure at this time.
-    </span><span class="attribute">#[cfg(any(
+    </span><span class="attr">#[cfg(any(
         target_arch = <span class="string">&quot;aarch64&quot;</span>,
         target_arch = <span class="string">&quot;mips&quot;</span>,
         target_arch = <span class="string">&quot;mips64&quot;</span>,
@@ -1000,7 +1000,7 @@
     </span>{
         pipe_with(PipeFlags::empty())
     }
-    <span class="attribute">#[cfg(not(any(
+    <span class="attr">#[cfg(not(any(
         target_arch = <span class="string">&quot;aarch64&quot;</span>,
         target_arch = <span class="string">&quot;mips&quot;</span>,
         target_arch = <span class="string">&quot;mips64&quot;</span>,
@@ -1014,11 +1014,11 @@
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>poll(fds: <span class="kw-2">&amp;mut </span>[PollFd&lt;<span class="lifetime">&#39;_</span>&gt;], timeout: c::c_int) -&gt; io::Result&lt;usize&gt; {
     <span class="kw">let </span>(fds_addr_mut, fds_len) = slice_mut(fds);
 
-    <span class="attribute">#[cfg(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>))]
+    <span class="attr">#[cfg(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>))]
     </span><span class="kw">unsafe </span>{
         <span class="kw">let </span>timeout = <span class="kw">if </span>timeout &gt;= <span class="number">0 </span>{
             <span class="prelude-val">Some</span>(__kernel_timespec {
@@ -1037,18 +1037,18 @@
             size_of::&lt;sigset_t, <span class="kw">_</span>&gt;()
         ))
     }
-    <span class="attribute">#[cfg(not(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>)))]
+    <span class="attr">#[cfg(not(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>)))]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall!</span>(__NR_poll, fds_addr_mut, fds_len, c_int(timeout)))
     }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>epoll_create(flags: epoll::CreateFlags) -&gt; io::Result&lt;OwnedFd&gt; {
     <span class="kw">unsafe </span>{ ret_owned_fd(<span class="macro">syscall_readonly!</span>(__NR_epoll_create1, flags)) }
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>epoll_add(
     epfd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;,
     fd: c::c_int,
@@ -1063,7 +1063,7 @@
     ))
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>epoll_mod(
     epfd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;,
     fd: c::c_int,
@@ -1078,7 +1078,7 @@
     ))
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe fn </span>epoll_del(epfd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;, fd: c::c_int) -&gt; io::Result&lt;()&gt; {
     ret(<span class="macro">syscall_readonly!</span>(
         __NR_epoll_ctl,
@@ -1089,14 +1089,14 @@
     ))
 }
 
-<span class="attribute">#[inline]
+<span class="attr">#[inline]
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>epoll_wait(
     epfd: BorrowedFd&lt;<span class="lifetime">&#39;_</span>&gt;,
     events: <span class="kw-2">*mut </span>epoll_event,
     num_events: usize,
     timeout: c::c_int,
 ) -&gt; io::Result&lt;usize&gt; {
-    <span class="attribute">#[cfg(not(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>)))]
+    <span class="attr">#[cfg(not(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>)))]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall!</span>(
             __NR_epoll_wait,
@@ -1106,7 +1106,7 @@
             c_int(timeout)
         ))
     }
-    <span class="attribute">#[cfg(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>))]
+    <span class="attr">#[cfg(any(target_arch = <span class="string">&quot;aarch64&quot;</span>, target_arch = <span class="string">&quot;riscv64&quot;</span>))]
     </span><span class="kw">unsafe </span>{
         ret_usize(<span class="macro">syscall!</span>(
             __NR_epoll_pwait,
@@ -1119,4 +1119,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-current-crate="rustix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (6e95b6da8 2022-10-22)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../../" data-static-root-path="../../../../../static.files/" data-current-crate="rustix" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (85f4f41de 2022-11-08)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

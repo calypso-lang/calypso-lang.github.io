@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/lasso-0.6.0/src/resolver.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>resolver.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><a class="sidebar-logo" href="../../lasso/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../lasso/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/lasso-0.6.0/src/resolver.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>resolver.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ef244fc9943488f7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-c11f492748536797.css"><link rel="stylesheet" disabled href="../../static.files/dark-a78f946771c40031.css"><link rel="stylesheet" disabled href="../../static.files/ayu-70b683d68cb31790.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0dede64717b247ca.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-201a7e04dc4c6fce.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../lasso/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -844,7 +844,7 @@
 <span class="kw">use </span>core::{marker::PhantomData, ops::Index};
 
 <span class="macro">compile! </span>{
-    <span class="kw">if </span><span class="attribute">#[feature = <span class="string">&quot;no-std&quot;</span>] </span>{
+    <span class="kw">if </span><span class="attr">#[feature = <span class="string">&quot;no-std&quot;</span>] </span>{
         <span class="kw">use </span>alloc::vec::Vec;
     }
 }
@@ -856,7 +856,7 @@
 ///
 /// [`Rodeo`]: crate::Rodeo
 /// [`ThreadedRodeo`]: crate::ThreadedRodeo
-</span><span class="attribute">#[derive(Debug)]
+</span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>RodeoResolver&lt;K = Spur&gt; {
     <span class="doccomment">/// Vector of strings mapped to key indexes that allows key to string resolution
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) strings: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt;,
@@ -906,7 +906,7 @@
     /// ```
     ///
     /// [`Key`]: crate::Key
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>resolve&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str
     <span class="kw">where
         </span>K: Key,
@@ -939,7 +939,7 @@
     /// ```
     ///
     /// [`Key`]: crate::Key
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>try_resolve&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;
     <span class="kw">where
         </span>K: Key,
@@ -979,7 +979,7 @@
     /// ```
     ///
     /// [`Key`]: crate::Key
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub unsafe fn </span>resolve_unchecked&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str
     <span class="kw">where
         </span>K: Key,
@@ -1004,7 +1004,7 @@
     /// assert!(!rodeo.contains_key(&amp;key_that_doesnt_exist));
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>contains_key(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>K) -&gt; bool
     <span class="kw">where
         </span>K: Key,
@@ -1027,7 +1027,7 @@
     /// assert_eq!(rodeo.len(), 1);
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
         <span class="self">self</span>.strings.len()
     }
@@ -1046,19 +1046,19 @@
     /// assert!(rodeo.is_empty());
     /// ```
     ///
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>is_empty(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.len() == <span class="number">0
     </span>}
 
     <span class="doccomment">/// Returns an iterator over the interned strings and their key values
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>iter(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Iter&lt;<span class="lifetime">&#39;_</span>, K&gt; {
         Iter::from_resolver(<span class="self">self</span>)
     }
 
     <span class="doccomment">/// Returns an iterator over the interned strings
-    </span><span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    </span><span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">pub fn </span>strings(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Strings&lt;<span class="lifetime">&#39;_</span>, K&gt; {
         Strings::from_resolver(<span class="self">self</span>)
     }
@@ -1071,7 +1071,7 @@
     <span class="kw">type </span>Item = (K, <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str);
     <span class="kw">type </span>IntoIter = Iter&lt;<span class="lifetime">&#39;a</span>, K&gt;;
 
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>into_iter(<span class="self">self</span>) -&gt; <span class="self">Self</span>::IntoIter {
         <span class="self">self</span>.iter()
     }
@@ -1080,7 +1080,7 @@
 <span class="kw">impl</span>&lt;K: Key&gt; Index&lt;K&gt; <span class="kw">for </span>RodeoResolver&lt;K&gt; {
     <span class="kw">type </span>Output = str;
 
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>index(<span class="kw-2">&amp;</span><span class="self">self</span>, idx: K) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Output {
         <span class="self">self</span>.resolve(<span class="kw-2">&amp;</span>idx)
     }
@@ -1089,28 +1089,28 @@
 <span class="kw">impl</span>&lt;K&gt; Eq <span class="kw">for </span>RodeoResolver&lt;K&gt; {}
 
 <span class="kw">impl</span>&lt;K&gt; PartialEq&lt;<span class="self">Self</span>&gt; <span class="kw">for </span>RodeoResolver&lt;K&gt; {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
         <span class="self">self</span>.strings == other.strings
     }
 }
 
 <span class="kw">impl</span>&lt;K, S&gt; PartialEq&lt;RodeoReader&lt;K, S&gt;&gt; <span class="kw">for </span>RodeoResolver&lt;K&gt; {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>RodeoReader&lt;K, S&gt;) -&gt; bool {
         <span class="self">self</span>.strings == other.strings
     }
 }
 
 <span class="kw">impl</span>&lt;K, S&gt; PartialEq&lt;Rodeo&lt;K, S&gt;&gt; <span class="kw">for </span>RodeoResolver&lt;K&gt; {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>Rodeo&lt;K, S&gt;) -&gt; bool {
         <span class="self">self</span>.strings == other.strings
     }
 }
 
 <span class="macro">compile! </span>{
-    <span class="kw">if </span><span class="attribute">#[feature = <span class="string">&quot;serialize&quot;</span>] </span>{
+    <span class="kw">if </span><span class="attr">#[feature = <span class="string">&quot;serialize&quot;</span>] </span>{
         <span class="kw">use </span><span class="kw">crate</span>::Capacity;
         <span class="kw">use </span>core::num::NonZeroUsize;
         <span class="kw">use </span>serde::{
@@ -1120,9 +1120,9 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
 </span><span class="kw">impl</span>&lt;K&gt; Serialize <span class="kw">for </span>RodeoResolver&lt;K&gt; {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
     <span class="kw">where
         </span>S: Serializer,
@@ -1132,9 +1132,9 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
 </span><span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>, K: Key&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>RodeoResolver&lt;K&gt; {
-    <span class="attribute">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
+    <span class="attr">#[cfg_attr(feature = <span class="string">&quot;inline-more&quot;</span>, inline)]
     </span><span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
     <span class="kw">where
         </span>D: Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
@@ -1170,14 +1170,14 @@
     }
 }
 
-<span class="attribute">#[cfg(test)]
+<span class="attr">#[cfg(test)]
 </span><span class="kw">mod </span>tests {
     <span class="kw">mod </span>single_threaded {
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
+        <span class="attr">#[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
         </span><span class="kw">use </span><span class="kw">crate</span>::RodeoResolver;
         <span class="kw">use crate</span>::{Key, Rodeo, Spur};
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>resolve() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
             <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -1186,7 +1186,7 @@
             <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, resolver.resolve(<span class="kw-2">&amp;</span>key));
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         #[should_panic]
         #[cfg(not(miri))]
         </span><span class="kw">fn </span>resolve_out_of_bounds() {
@@ -1194,7 +1194,7 @@
             resolver.resolve(<span class="kw-2">&amp;</span>Spur::try_from_usize(<span class="number">10</span>).unwrap());
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>try_resolve() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
             <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -1207,7 +1207,7 @@
             );
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>resolve_unchecked() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
             <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -1218,7 +1218,7 @@
             }
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>len() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
             rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -1229,7 +1229,7 @@
             <span class="macro">assert_eq!</span>(resolver.len(), <span class="number">3</span>);
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>empty() {
             <span class="kw">let </span>rodeo = Rodeo::default();
             <span class="kw">let </span>read_only = rodeo.into_resolver();
@@ -1237,13 +1237,13 @@
             <span class="macro">assert!</span>(read_only.is_empty());
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>drops() {
             <span class="kw">let </span>rodeo = Rodeo::default();
             <span class="kw">let _ </span>= rodeo.into_resolver();
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>iter() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
             <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
@@ -1259,7 +1259,7 @@
             <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>strings() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
             rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
@@ -1275,14 +1275,14 @@
             <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         #[cfg(not(feature = <span class="string">&quot;no-std&quot;</span>))]
         </span><span class="kw">fn </span>debug() {
             <span class="kw">let </span>resolver = Rodeo::default().into_resolver();
             <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, resolver);
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>contains_key() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
             <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;&quot;</span>);
@@ -1292,7 +1292,7 @@
             <span class="macro">assert!</span>(!resolver.contains_key(<span class="kw-2">&amp;</span>Spur::try_from_usize(<span class="number">10000</span>).unwrap()));
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>into_iterator() {
             <span class="kw">let </span>rodeo = [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;d&quot;</span>, <span class="string">&quot;e&quot;</span>]
                 .iter()
@@ -1309,7 +1309,7 @@
             }
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>index() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
             <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -1318,7 +1318,7 @@
             <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="kw-2">&amp;</span>resolver[key]);
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         #[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
         </span><span class="kw">fn </span>empty_serialize() {
             <span class="kw">let </span>rodeo = Rodeo::default().into_resolver();
@@ -1333,7 +1333,7 @@
             <span class="macro">assert!</span>(deser2.is_empty());
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         #[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
         </span><span class="kw">fn </span>filled_serialize() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = Rodeo::default();
@@ -1365,7 +1365,7 @@
             }
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>resolver_eq() {
             <span class="kw">let </span>a = Rodeo::default();
             <span class="kw">let </span>b = Rodeo::default();
@@ -1382,7 +1382,7 @@
             <span class="macro">assert_eq!</span>(a.into_resolver(), b.into_resolver());
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>reader_eq() {
             <span class="kw">let </span>a = Rodeo::default();
             <span class="kw">let </span>b = Rodeo::default();
@@ -1400,12 +1400,12 @@
         }
     }
 
-    <span class="attribute">#[cfg(all(not(any(miri, feature = <span class="string">&quot;no-std&quot;</span>)), features = <span class="string">&quot;multi-threaded&quot;</span>))]
+    <span class="attr">#[cfg(all(not(any(miri, feature = <span class="string">&quot;no-std&quot;</span>)), features = <span class="string">&quot;multi-threaded&quot;</span>))]
     </span><span class="kw">mod </span>multi_threaded {
         <span class="kw">use crate</span>::{locks::Arc, ThreadedRodeo};
         <span class="kw">use </span>std::thread;
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>resolve() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
             <span class="kw">let </span>key = rodeo.intern(<span class="string">&quot;A&quot;</span>);
@@ -1414,7 +1414,7 @@
             <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, resolver.resolve(<span class="kw-2">&amp;</span>key));
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>try_resolve() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = ThreadedRodeo::default();
             <span class="kw">let </span>key = rodeo.intern(<span class="string">&quot;A&quot;</span>);
@@ -1427,7 +1427,7 @@
             );
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         #[cfg(not(miri))]
         </span><span class="kw">fn </span>try_resolve_threaded() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
@@ -1451,7 +1451,7 @@
             );
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>resolve_unchecked() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = ThreadedRodeo::default();
             <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;A&quot;</span>);
@@ -1462,7 +1462,7 @@
             }
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         #[cfg(not(miri))]
         </span><span class="kw">fn </span>resolve_unchecked_threaded() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
@@ -1480,7 +1480,7 @@
             }
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         #[cfg(not(miri))]
         </span><span class="kw">fn </span>resolve_threaded() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
@@ -1496,7 +1496,7 @@
             <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, resolver.resolve(<span class="kw-2">&amp;</span>key));
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>len() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
             rodeo.intern(<span class="string">&quot;A&quot;</span>);
@@ -1507,7 +1507,7 @@
             <span class="macro">assert_eq!</span>(resolver.len(), <span class="number">3</span>);
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>empty() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
             <span class="kw">let </span>read_only = rodeo.into_resolver();
@@ -1515,7 +1515,7 @@
             <span class="macro">assert!</span>(read_only.is_empty());
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>iter() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
             <span class="kw">let </span>a = rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
@@ -1531,7 +1531,7 @@
             <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>strings() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
             rodeo.get_or_intern(<span class="string">&quot;a&quot;</span>);
@@ -1547,7 +1547,7 @@
             <span class="macro">assert_eq!</span>(<span class="prelude-val">None</span>, iter.next());
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>clone() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
             <span class="kw">let </span>key = rodeo.intern(<span class="string">&quot;Test&quot;</span>);
@@ -1563,13 +1563,13 @@
             <span class="macro">assert_eq!</span>(<span class="string">&quot;Test&quot;</span>, cloned.resolve(<span class="kw-2">&amp;</span>key));
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>drops() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
             <span class="kw">let _ </span>= rodeo.into_resolver();
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         #[cfg(not(miri))]
         </span><span class="kw">fn </span>drop_threaded() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
@@ -1581,14 +1581,14 @@
             });
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         #[cfg(not(feature = <span class="string">&quot;no-std&quot;</span>))]
         </span><span class="kw">fn </span>debug() {
             <span class="kw">let </span>resolver = ThreadedRodeo::default().into_resolver();
             <span class="macro">println!</span>(<span class="string">&quot;{:?}&quot;</span>, resolver);
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>contains_key() {
             <span class="kw">let </span><span class="kw-2">mut </span>rodeo = ThreadedRodeo::default();
             <span class="kw">let </span>key = rodeo.get_or_intern(<span class="string">&quot;&quot;</span>);
@@ -1598,7 +1598,7 @@
             <span class="macro">assert!</span>(!resolver.contains_key(<span class="kw-2">&amp;</span>Spur::try_from_usize(<span class="number">10000</span>).unwrap()));
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>into_iterator() {
             <span class="kw">let </span>rodeo = [<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;d&quot;</span>, <span class="string">&quot;e&quot;</span>]
                 .iter()
@@ -1615,7 +1615,7 @@
             }
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         </span><span class="kw">fn </span>index() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
             <span class="kw">let </span>key = rodeo.intern(<span class="string">&quot;A&quot;</span>);
@@ -1624,7 +1624,7 @@
             <span class="macro">assert_eq!</span>(<span class="string">&quot;A&quot;</span>, <span class="kw-2">&amp;</span>resolver[key]);
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         #[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
         </span><span class="kw">fn </span>empty_serialize() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default().into_resolver();
@@ -1639,7 +1639,7 @@
             <span class="macro">assert!</span>(deser2.is_empty());
         }
 
-        <span class="attribute">#[test]
+        <span class="attr">#[test]
         #[cfg(feature = <span class="string">&quot;serialize&quot;</span>)]
         </span><span class="kw">fn </span>filled_serialize() {
             <span class="kw">let </span>rodeo = ThreadedRodeo::default();
@@ -1673,4 +1673,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="lasso" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (6e95b6da8 2022-10-22)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="lasso" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (85f4f41de 2022-11-08)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

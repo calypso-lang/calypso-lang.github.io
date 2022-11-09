@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `libs/calypso_parsing/src/lexer.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lexer.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><a class="sidebar-logo" href="../../calypso_parsing/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../calypso_parsing/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `libs/calypso_parsing/src/lexer.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lexer.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ef244fc9943488f7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-c11f492748536797.css"><link rel="stylesheet" disabled href="../../static.files/dark-a78f946771c40031.css"><link rel="stylesheet" disabled href="../../static.files/ayu-70b683d68cb31790.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0dede64717b247ca.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-201a7e04dc4c6fce.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../calypso_parsing/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -341,123 +341,123 @@
 
 <span class="kw">pub type </span>Lexeme&lt;<span class="lifetime">&#39;lex</span>&gt; = Spanned&lt;(Token, <span class="kw-2">&amp;</span><span class="lifetime">&#39;lex </span>str)&gt;;
 
-<span class="attribute">#[derive(Copy, Clone, Debug, PartialEq, Eq, Logos)]
+<span class="attr">#[derive(Copy, Clone, Debug, PartialEq, Eq, Logos)]
 #[logos(extras = (usize, Arc&lt;GlobalCtxt&gt;))]
 </span><span class="kw">pub enum </span>Token {
-    <span class="attribute">#[token(<span class="string">&quot;&lt;&lt;=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;&lt;&lt;=&quot;</span>)]
     </span>LtLtEq,
-    <span class="attribute">#[token(<span class="string">&quot;&lt;&lt;&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;&lt;&lt;&quot;</span>)]
     </span>LtLt,
-    <span class="attribute">#[token(<span class="string">&quot;&lt;=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;&lt;=&quot;</span>)]
     </span>LtEq,
-    <span class="attribute">#[token(<span class="string">&quot;&lt;&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;&lt;&quot;</span>)]
     </span>Lt,
 
-    <span class="attribute">#[token(<span class="string">&quot;&gt;&gt;=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;&gt;&gt;=&quot;</span>)]
     </span>GtGtEq,
-    <span class="attribute">#[token(<span class="string">&quot;&gt;&gt;&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;&gt;&gt;&quot;</span>)]
     </span>GtGt,
-    <span class="attribute">#[token(<span class="string">&quot;&gt;=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;&gt;=&quot;</span>)]
     </span>GtEq,
-    <span class="attribute">#[token(<span class="string">&quot;&gt;&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;&gt;&quot;</span>)]
     </span>Gt,
 
-    <span class="attribute">#[token(<span class="string">&quot;==&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;==&quot;</span>)]
     </span>EqEq,
-    <span class="attribute">#[token(<span class="string">&quot;=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;=&quot;</span>)]
     </span>Eq,
 
-    <span class="attribute">#[token(<span class="string">&quot;!=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;!=&quot;</span>)]
     </span>BangEq,
-    <span class="attribute">#[token(<span class="string">&quot;!&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;!&quot;</span>)]
     </span>Bang,
 
-    <span class="attribute">#[token(<span class="string">&quot;||&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;||&quot;</span>)]
     </span>PipePipe,
-    <span class="attribute">#[token(<span class="string">&quot;|=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;|=&quot;</span>)]
     </span>PipeEq,
-    <span class="attribute">#[token(<span class="string">&quot;|&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;|&quot;</span>)]
     </span>Pipe,
 
-    <span class="attribute">#[token(<span class="string">&quot;&amp;&amp;&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;&amp;&amp;&quot;</span>)]
     </span>AndAnd,
-    <span class="attribute">#[token(<span class="string">&quot;&amp;=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;&amp;=&quot;</span>)]
     </span>AndEq,
-    <span class="attribute">#[token(<span class="string">&quot;&amp;&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;&amp;&quot;</span>)]
     </span>And,
 
-    <span class="attribute">#[token(<span class="string">&quot;+=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;+=&quot;</span>)]
     </span>PlusEq,
-    <span class="attribute">#[token(<span class="string">&quot;+&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;+&quot;</span>)]
     </span>Plus,
 
-    <span class="attribute">#[token(<span class="string">&quot;-&gt;&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;-&gt;&quot;</span>)]
     </span>Arrow,
 
-    <span class="attribute">#[token(<span class="string">&quot;-=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;-=&quot;</span>)]
     </span>MinusEq,
-    <span class="attribute">#[token(<span class="string">&quot;-&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;-&quot;</span>)]
     </span>Minus,
 
-    <span class="attribute">#[token(<span class="string">&quot;**=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;**=&quot;</span>)]
     </span>StarStarEq,
-    <span class="attribute">#[token(<span class="string">&quot;**&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;**&quot;</span>)]
     </span>StarStar,
-    <span class="attribute">#[token(<span class="string">&quot;*=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;*=&quot;</span>)]
     </span>StarEq,
-    <span class="attribute">#[token(<span class="string">&quot;*&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;*&quot;</span>)]
     </span>Star,
 
-    <span class="attribute">#[token(<span class="string">&quot;/=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;/=&quot;</span>)]
     </span>SlashEq,
-    <span class="attribute">#[token(<span class="string">&quot;/&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;/&quot;</span>)]
     </span>Slash,
 
-    <span class="attribute">#[token(<span class="string">&quot;%=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;%=&quot;</span>)]
     </span>PercentEq,
-    <span class="attribute">#[token(<span class="string">&quot;%&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;%&quot;</span>)]
     </span>Percent,
 
-    <span class="attribute">#[token(<span class="string">&quot;^=&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;^=&quot;</span>)]
     </span>CaretEq,
-    <span class="attribute">#[token(<span class="string">&quot;^&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;^&quot;</span>)]
     </span>Caret,
 
-    <span class="attribute">#[token(<span class="string">&quot;@!&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;@!&quot;</span>)]
     </span>AtBang,
-    <span class="attribute">#[token(<span class="string">&quot;@&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;@&quot;</span>)]
     </span>At,
 
-    <span class="attribute">#[token(<span class="string">&quot;(&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;(&quot;</span>)]
     </span>LParen,
-    <span class="attribute">#[token(<span class="string">&quot;)&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;)&quot;</span>)]
     </span>RParen,
 
-    <span class="attribute">#[token(<span class="string">&quot;{&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;{&quot;</span>)]
     </span>LBrace,
-    <span class="attribute">#[token(<span class="string">&quot;}&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;}&quot;</span>)]
     </span>RBrace,
 
-    <span class="attribute">#[token(<span class="string">&quot;[&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;[&quot;</span>)]
     </span>LBracket,
-    <span class="attribute">#[token(<span class="string">&quot;]&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;]&quot;</span>)]
     </span>RBracket,
 
-    <span class="attribute">#[token(<span class="string">&quot;,&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;,&quot;</span>)]
     </span>Comma,
-    <span class="attribute">#[token(<span class="string">&quot;:&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;:&quot;</span>)]
     </span>Colon,
-    <span class="attribute">#[token(<span class="string">&quot;;&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;;&quot;</span>)]
     </span>Semi,
-    <span class="attribute">#[token(<span class="string">&quot;_&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;_&quot;</span>)]
     </span>Under,
-    <span class="attribute">#[token(<span class="string">&quot;.&quot;</span>)]
+    <span class="attr">#[token(<span class="string">&quot;.&quot;</span>)]
     </span>Dot,
 
-    <span class="attribute">#[regex(<span class="string">&quot;_[A-Za-z0-9_]+|[A-Za-z][A-Za-z0-9_]*&quot;</span>, ident)]
+    <span class="attr">#[regex(<span class="string">&quot;_[A-Za-z0-9_]+|[A-Za-z][A-Za-z0-9_]*&quot;</span>, ident)]
     </span>IdentLike(IdentLike),
 
-    <span class="attribute">#[regex(<span class="string">&quot;///(.*)\n?&quot;</span>, |<span class="kw">_</span>| CommentProps::doc())]
+    <span class="attr">#[regex(<span class="string">&quot;///(.*)\n?&quot;</span>, |<span class="kw">_</span>| CommentProps::doc())]
     #[regex(<span class="string">&quot;//!(.*)\n?&quot;</span>, |<span class="kw">_</span>| CommentProps::inner_doc())]
     #[regex(<span class="string">&quot;//(.*)\n?&quot;</span>,  |<span class="kw">_</span>| CommentProps::default())]
     </span>Comment(CommentProps),
@@ -469,15 +469,15 @@
     // cc https://github.com/maciejhirsz/logos/issues/126
     // TODO(parse): this could probably use a raw string, and it&#39;d be slightly less ugly
     // emphasis on slightly
-    </span><span class="attribute">#[regex(
+    </span><span class="attr">#[regex(
         <span class="string">&quot;\&quot;([^\n\r\&quot;\\\\]|(\\\\([nrt\\\\0&#39;\&quot;]|\r\n|\n|x[0-9a-fA-F][0-9a-fA-F]|u\\{[0-9a-fA-F][0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?\\})))*\&quot;&quot;
     </span>)]
     </span>String,
 
-    <span class="attribute">#[regex(<span class="string">&quot;&#39;([^\n\r&#39;\\\\]|(\\\\([nrt\\\\0&#39;\&quot;]|x[0-9a-fA-F][0-9a-fA-F]|u\\{[0-9a-fA-F][0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?\\})))&#39;&quot;</span>)]
+    <span class="attr">#[regex(<span class="string">&quot;&#39;([^\n\r&#39;\\\\]|(\\\\([nrt\\\\0&#39;\&quot;]|x[0-9a-fA-F][0-9a-fA-F]|u\\{[0-9a-fA-F][0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?[0-9a-fA-F]?\\})))&#39;&quot;</span>)]
     </span>Char,
 
-    <span class="attribute">#[regex(<span class="string">&quot;0x[0-9a-fA-F][0-9a-fA-F_]*[su]?&quot;</span>, |lex| radix_numeral(lex, Radix::Hexadecimal))]
+    <span class="attr">#[regex(<span class="string">&quot;0x[0-9a-fA-F][0-9a-fA-F_]*[su]?&quot;</span>, |lex| radix_numeral(lex, Radix::Hexadecimal))]
     #[regex(<span class="string">&quot;0o[0-7][0-7_]*[su]?&quot;</span>, |lex| radix_numeral(lex, Radix::Octal))]
     #[regex(<span class="string">&quot;0b[01][01_]*[su]?&quot;</span>, |lex| radix_numeral(lex, Radix::Binary))]
     #[regex(<span class="string">&quot;0d[0-9][0-9_]*[su]?&quot;</span>, |lex| radix_numeral(lex, Radix::Decimal))]
@@ -486,7 +486,7 @@
     #[regex(<span class="string">&quot;[0-9][0-9_]*[suf]?&quot;</span>, |lex| integer_numeral(lex))]
     </span>Numeral(Numeral),
 
-    <span class="attribute">#[regex(
+    <span class="attr">#[regex(
         <span class="string">&quot;[\t\u{000B}\u{000C}\r \u{0085}\u{200E}\u{200F}\u{2028}\u{2029}\n]+&quot;</span>,
         logos::skip
     )]
@@ -494,7 +494,7 @@
     </span>Error,
 }
 
-<span class="attribute">#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+<span class="attr">#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 </span><span class="kw">pub enum </span>IdentLike {
     Ident(Symbol),
     Keyword(Keyword),
@@ -509,14 +509,14 @@
     }
 }
 
-<span class="attribute">#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
+<span class="attr">#[derive(Copy, Clone, Debug, Default, PartialEq, Eq)]
 </span><span class="kw">pub struct </span>CommentProps {
     <span class="kw">pub </span>is_doc: bool,
     <span class="kw">pub </span>is_inner: bool,
 }
 
 <span class="kw">impl </span>CommentProps {
-    <span class="attribute">#[must_use]
+    <span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>doc() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             is_doc: <span class="bool-val">true</span>,
@@ -524,7 +524,7 @@
         }
     }
 
-    <span class="attribute">#[must_use]
+    <span class="attr">#[must_use]
     </span><span class="kw">pub fn </span>inner_doc() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             is_doc: <span class="bool-val">true</span>,
@@ -568,7 +568,7 @@
     }
 }
 
-<span class="attribute">#[allow(clippy::missing_panics_doc)]
+<span class="attr">#[allow(clippy::missing_panics_doc)]
 </span><span class="kw">pub fn </span>tokens(
     source: <span class="kw-2">&amp;</span><span class="lifetime">&#39;_ </span>str,
     file_id: usize,
@@ -655,4 +655,4 @@
         })
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="calypso_parsing" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (6e95b6da8 2022-10-22)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="calypso_parsing" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (85f4f41de 2022-11-08)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

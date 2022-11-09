@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/crossbeam-epoch-0.9.9/src/internal.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>internal.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><a class="sidebar-logo" href="../../crossbeam_epoch/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../crossbeam_epoch/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/crossbeam-epoch-0.9.9/src/internal.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>internal.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-ef244fc9943488f7.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-c11f492748536797.css"><link rel="stylesheet" disabled href="../../static.files/dark-a78f946771c40031.css"><link rel="stylesheet" disabled href="../../static.files/ayu-70b683d68cb31790.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0dede64717b247ca.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-201a7e04dc4c6fce.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../crossbeam_epoch/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -727,9 +727,9 @@
 <span class="kw">use </span><span class="kw">crate</span>::sync::queue::Queue;
 
 <span class="doccomment">/// Maximum number of objects a bag can contain.
-</span><span class="attribute">#[cfg(not(crossbeam_sanitize))]
+</span><span class="attr">#[cfg(not(crossbeam_sanitize))]
 </span><span class="kw">const </span>MAX_OBJECTS: usize = <span class="number">62</span>;
-<span class="attribute">#[cfg(crossbeam_sanitize)]
+<span class="attr">#[cfg(crossbeam_sanitize)]
 </span><span class="kw">const </span>MAX_OBJECTS: usize = <span class="number">4</span>;
 
 <span class="doccomment">/// A bag of deferred functions.
@@ -778,10 +778,10 @@
 }
 
 <span class="kw">impl </span>Default <span class="kw">for </span>Bag {
-    <span class="attribute">#[rustfmt::skip]
+    <span class="attr">#[rustfmt::skip]
     </span><span class="kw">fn </span>default() -&gt; <span class="self">Self </span>{
         <span class="comment">// TODO: [no_op; MAX_OBJECTS] syntax blocked by https://github.com/rust-lang/rust/issues/49147
-        </span><span class="attribute">#[cfg(not(crossbeam_sanitize))]
+        </span><span class="attr">#[cfg(not(crossbeam_sanitize))]
         </span><span class="kw">return </span>Bag {
             len: <span class="number">0</span>,
             deferreds: [
@@ -849,7 +849,7 @@
                 Deferred::new(no_op_func),
             ],
         };
-        <span class="attribute">#[cfg(crossbeam_sanitize)]
+        <span class="attr">#[cfg(crossbeam_sanitize)]
         </span><span class="kw">return </span>Bag {
             len: <span class="number">0</span>,
             deferreds: [
@@ -885,7 +885,7 @@
 <span class="kw">fn </span>no_op_func() {}
 
 <span class="doccomment">/// A pair of an epoch and a bag.
-</span><span class="attribute">#[derive(Default, Debug)]
+</span><span class="attr">#[derive(Default, Debug)]
 </span><span class="kw">struct </span>SealedBag {
     epoch: Epoch,
     _bag: Bag,
@@ -920,7 +920,7 @@
     </span><span class="kw">const </span>COLLECT_STEPS: usize = <span class="number">8</span>;
 
     <span class="doccomment">/// Creates a new global data for garbage collection.
-    </span><span class="attribute">#[inline]
+    </span><span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>new() -&gt; <span class="self">Self </span>{
         <span class="self">Self </span>{
             locals: List::new(),
@@ -946,7 +946,7 @@
     /// `pin()` rarely calls `collect()`, so we want the compiler to place that call on a cold
     /// path. In other words, we want the compiler to optimize branching for the case when
     /// `collect()` is not called.
-    </span><span class="attribute">#[cold]
+    </span><span class="attr">#[cold]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>collect(<span class="kw-2">&amp;</span><span class="self">self</span>, guard: <span class="kw-2">&amp;</span>Guard) {
         <span class="kw">let </span>global_epoch = <span class="self">self</span>.try_advance(guard);
 
@@ -975,7 +975,7 @@
     /// Returns the current global epoch.
     ///
     /// `try_advance()` is annotated `#[cold]` because it is rarely called.
-    </span><span class="attribute">#[cold]
+    </span><span class="attr">#[cold]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>try_advance(<span class="kw-2">&amp;</span><span class="self">self</span>, guard: <span class="kw-2">&amp;</span>Guard) -&gt; Epoch {
         <span class="kw">let </span>global_epoch = <span class="self">self</span>.epoch.load(Ordering::Relaxed);
         atomic::fence(Ordering::SeqCst);
@@ -1047,8 +1047,8 @@
 
 <span class="comment">// Make sure `Local` is less than or equal to 2048 bytes.
 // https://github.com/crossbeam-rs/crossbeam/issues/551
-</span><span class="attribute">#[cfg(not(crossbeam_sanitize))] </span><span class="comment">// `crossbeam_sanitize` reduces the size of `Local`
-</span><span class="attribute">#[test]
+</span><span class="attr">#[cfg(not(crossbeam_sanitize))] </span><span class="comment">// `crossbeam_sanitize` reduces the size of `Local`
+</span><span class="attr">#[test]
 </span><span class="kw">fn </span>local_size() {
     <span class="macro">assert!</span>(
         core::mem::size_of::&lt;Local&gt;() &lt;= <span class="number">2048</span>,
@@ -1084,19 +1084,19 @@
     }
 
     <span class="doccomment">/// Returns a reference to the `Global` in which this `Local` resides.
-    </span><span class="attribute">#[inline]
+    </span><span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>global(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Global {
         <span class="kw-2">&amp;</span><span class="self">self</span>.collector().global
     }
 
     <span class="doccomment">/// Returns a reference to the `Collector` in which this `Local` resides.
-    </span><span class="attribute">#[inline]
+    </span><span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>collector(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Collector {
         <span class="self">self</span>.collector.with(|c| <span class="kw">unsafe </span>{ <span class="kw-2">&amp;**</span>c })
     }
 
     <span class="doccomment">/// Returns `true` if the current participant is pinned.
-    </span><span class="attribute">#[inline]
+    </span><span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>is_pinned(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.guard_count.get() &gt; <span class="number">0
     </span>}
@@ -1126,7 +1126,7 @@
     }
 
     <span class="doccomment">/// Pins the `Local`.
-    </span><span class="attribute">#[inline]
+    </span><span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>pin(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Guard {
         <span class="kw">let </span>guard = Guard { local: <span class="self">self </span>};
 
@@ -1186,7 +1186,7 @@
     }
 
     <span class="doccomment">/// Unpins the `Local`.
-    </span><span class="attribute">#[inline]
+    </span><span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>unpin(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="kw">let </span>guard_count = <span class="self">self</span>.guard_count.get();
         <span class="self">self</span>.guard_count.set(guard_count - <span class="number">1</span>);
@@ -1201,7 +1201,7 @@
     }
 
     <span class="doccomment">/// Unpins and then pins the `Local`.
-    </span><span class="attribute">#[inline]
+    </span><span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>repin(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="kw">let </span>guard_count = <span class="self">self</span>.guard_count.get();
 
@@ -1224,7 +1224,7 @@
     }
 
     <span class="doccomment">/// Increments the handle count.
-    </span><span class="attribute">#[inline]
+    </span><span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>acquire_handle(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="kw">let </span>handle_count = <span class="self">self</span>.handle_count.get();
         <span class="macro">debug_assert!</span>(handle_count &gt;= <span class="number">1</span>);
@@ -1232,7 +1232,7 @@
     }
 
     <span class="doccomment">/// Decrements the handle count.
-    </span><span class="attribute">#[inline]
+    </span><span class="attr">#[inline]
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>release_handle(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="kw">let </span>guard_count = <span class="self">self</span>.guard_count.get();
         <span class="kw">let </span>handle_count = <span class="self">self</span>.handle_count.get();
@@ -1245,7 +1245,7 @@
     }
 
     <span class="doccomment">/// Removes the `Local` from the global linked list.
-    </span><span class="attribute">#[cold]
+    </span><span class="attr">#[cold]
     </span><span class="kw">fn </span>finalize(<span class="kw-2">&amp;</span><span class="self">self</span>) {
         <span class="macro">debug_assert_eq!</span>(<span class="self">self</span>.guard_count.get(), <span class="number">0</span>);
         <span class="macro">debug_assert_eq!</span>(<span class="self">self</span>.handle_count.get(), <span class="number">0</span>);
@@ -1288,7 +1288,7 @@
 
     <span class="kw">unsafe fn </span>element_of(entry: <span class="kw-2">&amp;</span>Entry) -&gt; <span class="kw-2">&amp;</span>Local {
         <span class="comment">// offset_of! macro uses unsafe, but it&#39;s unnecessary in this context.
-        </span><span class="attribute">#[allow(unused_unsafe)]
+        </span><span class="attr">#[allow(unused_unsafe)]
         </span><span class="kw">let </span>local_ptr = (entry <span class="kw">as </span><span class="kw-2">*const </span>Entry <span class="kw">as </span>usize - <span class="macro">offset_of!</span>(Local, entry)) <span class="kw">as </span><span class="kw-2">*const </span>Local;
         <span class="kw-2">&amp;*</span>local_ptr
     }
@@ -1298,13 +1298,13 @@
     }
 }
 
-<span class="attribute">#[cfg(all(test, not(crossbeam_loom)))]
+<span class="attr">#[cfg(all(test, not(crossbeam_loom)))]
 </span><span class="kw">mod </span>tests {
     <span class="kw">use </span>std::sync::atomic::{AtomicUsize, Ordering};
 
     <span class="kw">use super</span>::<span class="kw-2">*</span>;
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>check_defer() {
         <span class="kw">static </span>FLAG: AtomicUsize = AtomicUsize::new(<span class="number">0</span>);
         <span class="kw">fn </span>set() {
@@ -1317,7 +1317,7 @@
         <span class="macro">assert_eq!</span>(FLAG.load(Ordering::Relaxed), <span class="number">42</span>);
     }
 
-    <span class="attribute">#[test]
+    <span class="attr">#[test]
     </span><span class="kw">fn </span>check_bag() {
         <span class="kw">static </span>FLAG: AtomicUsize = AtomicUsize::new(<span class="number">0</span>);
         <span class="kw">fn </span>incr() {
@@ -1343,4 +1343,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="crossbeam_epoch" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (6e95b6da8 2022-10-22)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="crossbeam_epoch" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (85f4f41de 2022-11-08)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

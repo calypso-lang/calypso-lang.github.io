@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["normalize_lines","Normalize line endings"],["normalize_text","“Smart” text normalization"]],"struct":[["LinesWithTerminator",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["normalize_lines","Normalize line endings"],["normalize_paths","Normalize path separators"],["normalize_text","“Smart” text normalization"]],"struct":[["LinesWithTerminator",""]]};

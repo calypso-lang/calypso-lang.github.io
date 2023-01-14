@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustix-0.35.7/src/path/arg.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>arg.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c722f88035d2892e.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-bc1b32400f872ddb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../rustix/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rustix-0.36.6/src/path/arg.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>arg.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c722f88035d2892e.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-bc1b32400f872ddb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../rustix/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -961,6 +961,24 @@
 <a href="#961" id="961">961</a>
 <a href="#962" id="962">962</a>
 <a href="#963" id="963">963</a>
+<a href="#964" id="964">964</a>
+<a href="#965" id="965">965</a>
+<a href="#966" id="966">966</a>
+<a href="#967" id="967">967</a>
+<a href="#968" id="968">968</a>
+<a href="#969" id="969">969</a>
+<a href="#970" id="970">970</a>
+<a href="#971" id="971">971</a>
+<a href="#972" id="972">972</a>
+<a href="#973" id="973">973</a>
+<a href="#974" id="974">974</a>
+<a href="#975" id="975">975</a>
+<a href="#976" id="976">976</a>
+<a href="#977" id="977">977</a>
+<a href="#978" id="978">978</a>
+<a href="#979" id="979">979</a>
+<a href="#980" id="980">980</a>
+<a href="#981" id="981">981</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Convenient and efficient string argument passing.
 //!
 //! This module defines the `Arg` trait and implements it for several common
@@ -978,7 +996,8 @@
 </span><span class="kw">use </span>alloc::borrow::ToOwned;
 <span class="kw">use </span>alloc::string::String;
 <span class="kw">use </span>alloc::vec::Vec;
-<span class="kw">use </span>core::str;
+<span class="kw">use </span>core::mem::MaybeUninit;
+<span class="kw">use </span>core::{ptr, slice, str};
 <span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
 </span><span class="kw">use </span>std::ffi::{OsStr, OsString};
 <span class="attr">#[cfg(feature = <span class="string">&quot;std&quot;</span>)]
@@ -1894,7 +1913,8 @@
 }
 
 <span class="doccomment">/// Runs a closure with `bytes` passed in as a `&amp;CStr`.
-</span><span class="attr">#[inline]
+</span><span class="attr">#[allow(unsafe_code, clippy::int_plus_one)]
+#[inline]
 </span><span class="kw">fn </span>with_c_str&lt;T, F&gt;(bytes: <span class="kw-2">&amp;</span>[u8], f: F) -&gt; io::Result&lt;T&gt;
 <span class="kw">where
     </span>F: FnOnce(<span class="kw-2">&amp;</span>CStr) -&gt; io::Result&lt;T&gt;,
@@ -1909,10 +1929,26 @@
     </span><span class="kw">if </span>bytes.len() &gt;= SMALL_PATH_BUFFER_SIZE {
         <span class="kw">return </span>with_c_str_slow_path(bytes, f);
     }
-    <span class="kw">let </span><span class="kw-2">mut </span>buffer: [u8; SMALL_PATH_BUFFER_SIZE] = [<span class="number">0_u8</span>; SMALL_PATH_BUFFER_SIZE];
-    <span class="comment">// Copy the bytes in; the buffer already has zeros for the trailing NUL.
-    </span>buffer[..bytes.len()].copy_from_slice(bytes);
-    f(CStr::from_bytes_with_nul(<span class="kw-2">&amp;</span>buffer[..=bytes.len()]).map_err(|_cstr_err| io::Errno::INVAL)<span class="question-mark">?</span>)
+
+    <span class="comment">// Taken from
+    // https://github.com/rust-lang/rust/blob/a00f8ba7fcac1b27341679c51bf5a3271fa82df3/library/std/src/sys/common/small_c_string.rs
+    </span><span class="kw">let </span><span class="kw-2">mut </span>buf = MaybeUninit::&lt;[u8; SMALL_PATH_BUFFER_SIZE]&gt;::uninit();
+    <span class="kw">let </span>buf_ptr = buf.as_mut_ptr() <span class="kw">as </span><span class="kw-2">*mut </span>u8;
+
+    <span class="comment">// SAFETY: bytes.len() &lt; SMALL_PATH_BUFFER_SIZE which means we have space for
+    // bytes.len() + 1 u8s:
+    </span><span class="macro">debug_assert!</span>(bytes.len() + <span class="number">1 </span>&lt;= SMALL_PATH_BUFFER_SIZE);
+    <span class="kw">unsafe </span>{
+        ptr::copy_nonoverlapping(bytes.as_ptr(), buf_ptr, bytes.len());
+        buf_ptr.add(bytes.len()).write(<span class="number">0</span>);
+    }
+
+    <span class="comment">// SAFETY: we just wrote the bytes above and they will remain valid for the
+    // duration of f b/c buf doesn&#39;t get dropped until the end of the function.
+    </span><span class="kw">match </span>CStr::from_bytes_with_nul(<span class="kw">unsafe </span>{ slice::from_raw_parts(buf_ptr, bytes.len() + <span class="number">1</span>) }) {
+        <span class="prelude-val">Ok</span>(s) =&gt; f(s),
+        <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">Err</span>(io::Errno::INVAL),
+    }
 }
 
 <span class="doccomment">/// The slow path which handles any length. In theory OS&#39;s only support up

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/hashbrown-0.12.2/src/map.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>map.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c722f88035d2892e.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-bc1b32400f872ddb.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../hashbrown/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/hashbrown-0.12.3/src/map.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>map.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c722f88035d2892e.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-bc1b32400f872ddb.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../hashbrown/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -8362,6 +8362,50 @@
 <a href="#8362" id="8362">8362</a>
 <a href="#8363" id="8363">8363</a>
 <a href="#8364" id="8364">8364</a>
+<a href="#8365" id="8365">8365</a>
+<a href="#8366" id="8366">8366</a>
+<a href="#8367" id="8367">8367</a>
+<a href="#8368" id="8368">8368</a>
+<a href="#8369" id="8369">8369</a>
+<a href="#8370" id="8370">8370</a>
+<a href="#8371" id="8371">8371</a>
+<a href="#8372" id="8372">8372</a>
+<a href="#8373" id="8373">8373</a>
+<a href="#8374" id="8374">8374</a>
+<a href="#8375" id="8375">8375</a>
+<a href="#8376" id="8376">8376</a>
+<a href="#8377" id="8377">8377</a>
+<a href="#8378" id="8378">8378</a>
+<a href="#8379" id="8379">8379</a>
+<a href="#8380" id="8380">8380</a>
+<a href="#8381" id="8381">8381</a>
+<a href="#8382" id="8382">8382</a>
+<a href="#8383" id="8383">8383</a>
+<a href="#8384" id="8384">8384</a>
+<a href="#8385" id="8385">8385</a>
+<a href="#8386" id="8386">8386</a>
+<a href="#8387" id="8387">8387</a>
+<a href="#8388" id="8388">8388</a>
+<a href="#8389" id="8389">8389</a>
+<a href="#8390" id="8390">8390</a>
+<a href="#8391" id="8391">8391</a>
+<a href="#8392" id="8392">8392</a>
+<a href="#8393" id="8393">8393</a>
+<a href="#8394" id="8394">8394</a>
+<a href="#8395" id="8395">8395</a>
+<a href="#8396" id="8396">8396</a>
+<a href="#8397" id="8397">8397</a>
+<a href="#8398" id="8398">8398</a>
+<a href="#8399" id="8399">8399</a>
+<a href="#8400" id="8400">8400</a>
+<a href="#8401" id="8401">8401</a>
+<a href="#8402" id="8402">8402</a>
+<a href="#8403" id="8403">8403</a>
+<a href="#8404" id="8404">8404</a>
+<a href="#8405" id="8405">8405</a>
+<a href="#8406" id="8406">8406</a>
+<a href="#8407" id="8407">8407</a>
+<a href="#8408" id="8408">8408</a>
 </pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::raw::{Allocator, Bucket, Global, RawDrain, RawIntoIter, RawIter, RawTable};
 <span class="kw">use </span><span class="kw">crate</span>::TryReserveError;
 <span class="kw">use </span>core::borrow::Borrow;
@@ -16724,6 +16768,50 @@
 
         <span class="kw">let </span>ys = map.get_many_key_value_mut([<span class="string">&quot;baz&quot;</span>, <span class="string">&quot;baz&quot;</span>]);
         <span class="macro">assert_eq!</span>(ys, <span class="prelude-val">None</span>);
+    }
+
+    <span class="attr">#[test]
+    #[should_panic = <span class="string">&quot;panic in drop&quot;</span>]
+    </span><span class="kw">fn </span>test_clone_from_double_drop() {
+        <span class="attr">#[derive(Clone)]
+        </span><span class="kw">struct </span>CheckedDrop {
+            panic_in_drop: bool,
+            dropped: bool,
+        }
+        <span class="kw">impl </span>Drop <span class="kw">for </span>CheckedDrop {
+            <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+                <span class="kw">if </span><span class="self">self</span>.panic_in_drop {
+                    <span class="self">self</span>.dropped = <span class="bool-val">true</span>;
+                    <span class="macro">panic!</span>(<span class="string">&quot;panic in drop&quot;</span>);
+                }
+                <span class="kw">if </span><span class="self">self</span>.dropped {
+                    <span class="macro">panic!</span>(<span class="string">&quot;double drop&quot;</span>);
+                }
+                <span class="self">self</span>.dropped = <span class="bool-val">true</span>;
+            }
+        }
+        <span class="kw">const </span>DISARMED: CheckedDrop = CheckedDrop {
+            panic_in_drop: <span class="bool-val">false</span>,
+            dropped: <span class="bool-val">false</span>,
+        };
+        <span class="kw">const </span>ARMED: CheckedDrop = CheckedDrop {
+            panic_in_drop: <span class="bool-val">true</span>,
+            dropped: <span class="bool-val">false</span>,
+        };
+
+        <span class="kw">let </span><span class="kw-2">mut </span>map1 = HashMap::new();
+        map1.insert(<span class="number">1</span>, DISARMED);
+        map1.insert(<span class="number">2</span>, DISARMED);
+        map1.insert(<span class="number">3</span>, DISARMED);
+        map1.insert(<span class="number">4</span>, DISARMED);
+
+        <span class="kw">let </span><span class="kw-2">mut </span>map2 = HashMap::new();
+        map2.insert(<span class="number">1</span>, DISARMED);
+        map2.insert(<span class="number">2</span>, ARMED);
+        map2.insert(<span class="number">3</span>, DISARMED);
+        map2.insert(<span class="number">4</span>, DISARMED);
+
+        map2.clone_from(<span class="kw-2">&amp;</span>map1);
     }
 }
 </code></pre></div>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rayon-core-1.9.3/src/thread_pool/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c722f88035d2892e.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-bc1b32400f872ddb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../rayon_core/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/rayon-core-1.10.1/src/thread_pool/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c722f88035d2892e.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-bc1b32400f872ddb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../rayon_core/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -338,17 +338,78 @@
 <a href="#338" id="338">338</a>
 <a href="#339" id="339">339</a>
 <a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Contains support for user-managed thread pools, represented by the
 //! the [`ThreadPool`] type (see that struct for details).
 //!
 //! [`ThreadPool`]: struct.ThreadPool.html
 
-</span><span class="kw">use </span><span class="kw">crate</span>::join;
+</span><span class="kw">use </span><span class="kw">crate</span>::broadcast::{<span class="self">self</span>, BroadcastContext};
+<span class="kw">use </span><span class="kw">crate</span>::join;
 <span class="kw">use </span><span class="kw">crate</span>::registry::{Registry, ThreadSpawn, WorkerThread};
 <span class="kw">use </span><span class="kw">crate</span>::scope::{do_in_place_scope, do_in_place_scope_fifo};
 <span class="kw">use </span><span class="kw">crate</span>::spawn;
-<span class="attr">#[allow(deprecated)]
-</span><span class="kw">use </span><span class="kw">crate</span>::Configuration;
 <span class="kw">use crate</span>::{scope, Scope};
 <span class="kw">use crate</span>::{scope_fifo, ScopeFifo};
 <span class="kw">use crate</span>::{ThreadPoolBuildError, ThreadPoolBuilder};
@@ -397,7 +458,7 @@
     <span class="attr">#[deprecated(note = <span class="string">&quot;Use `ThreadPoolBuilder::build`&quot;</span>)]
     #[allow(deprecated)]
     </span><span class="doccomment">/// Deprecated in favor of `ThreadPoolBuilder::build`.
-    </span><span class="kw">pub fn </span>new(configuration: Configuration) -&gt; <span class="prelude-ty">Result</span>&lt;ThreadPool, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
+    </span><span class="kw">pub fn </span>new(configuration: <span class="kw">crate</span>::Configuration) -&gt; <span class="prelude-ty">Result</span>&lt;ThreadPool, Box&lt;<span class="kw">dyn </span>Error&gt;&gt; {
         <span class="self">Self</span>::build(configuration.into_builder()).map_err(Box::from)
     }
 
@@ -449,6 +510,57 @@
         R: Send,
     {
         <span class="self">self</span>.registry.in_worker(|<span class="kw">_</span>, <span class="kw">_</span>| op())
+    }
+
+    <span class="doccomment">/// Executes `op` within every thread in the threadpool. Any attempts to use
+    /// `join`, `scope`, or parallel iterators will then operate within that
+    /// threadpool.
+    ///
+    /// Broadcasts are executed on each thread after they have exhausted their
+    /// local work queue, before they attempt work-stealing from other threads.
+    /// The goal of that strategy is to run everywhere in a timely manner
+    /// *without* being too disruptive to current work. There may be alternative
+    /// broadcast styles added in the future for more or less aggressive
+    /// injection, if the need arises.
+    ///
+    /// # Warning: thread-local data
+    ///
+    /// Because `op` is executing within the Rayon thread-pool,
+    /// thread-local data from the current thread will not be
+    /// accessible.
+    ///
+    /// # Panics
+    ///
+    /// If `op` should panic on one or more threads, exactly one panic
+    /// will be propagated, only after all threads have completed
+    /// (or panicked) their own `op`.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    ///    # use rayon_core as rayon;
+    ///    use std::sync::atomic::{AtomicUsize, Ordering};
+    ///
+    ///    fn main() {
+    ///         let pool = rayon::ThreadPoolBuilder::new().num_threads(5).build().unwrap();
+    ///
+    ///         // The argument gives context, including the index of each thread.
+    ///         let v: Vec&lt;usize&gt; = pool.broadcast(|ctx| ctx.index() * ctx.index());
+    ///         assert_eq!(v, &amp;[0, 1, 4, 9, 16]);
+    ///
+    ///         // The closure can reference the local stack
+    ///         let count = AtomicUsize::new(0);
+    ///         pool.broadcast(|_| count.fetch_add(1, Ordering::Relaxed));
+    ///         assert_eq!(count.into_inner(), 5);
+    ///    }
+    /// ```
+    </span><span class="kw">pub fn </span>broadcast&lt;OP, R&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, op: OP) -&gt; Vec&lt;R&gt;
+    <span class="kw">where
+        </span>OP: Fn(BroadcastContext&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; R + Sync,
+        R: Send,
+    {
+        <span class="comment">// We assert that `self.registry` has not terminated.
+        </span><span class="kw">unsafe </span>{ broadcast::broadcast_in(op, <span class="kw-2">&amp;</span><span class="self">self</span>.registry) }
     }
 
     <span class="doccomment">/// Returns the (current) number of threads in the thread pool.
@@ -616,6 +728,18 @@
     {
         <span class="comment">// We assert that `self.registry` has not terminated.
         </span><span class="kw">unsafe </span>{ spawn::spawn_fifo_in(op, <span class="kw-2">&amp;</span><span class="self">self</span>.registry) }
+    }
+
+    <span class="doccomment">/// Spawns an asynchronous task on every thread in this thread-pool. This task
+    /// will run in the implicit, global scope, which means that it may outlast the
+    /// current stack frame -- therefore, it cannot capture any references onto the
+    /// stack (you will likely need a `move` closure).
+    </span><span class="kw">pub fn </span>spawn_broadcast&lt;OP&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, op: OP)
+    <span class="kw">where
+        </span>OP: Fn(BroadcastContext&lt;<span class="lifetime">&#39;_</span>&gt;) + Send + Sync + <span class="lifetime">&#39;static</span>,
+    {
+        <span class="comment">// We assert that `self.registry` has not terminated.
+        </span><span class="kw">unsafe </span>{ broadcast::spawn_broadcast_in(op, <span class="kw-2">&amp;</span><span class="self">self</span>.registry) }
     }
 }
 

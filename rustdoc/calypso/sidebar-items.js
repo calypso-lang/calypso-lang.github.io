@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":[["BUG_REPORT_URL",""]],"fn":[["init_panic_hook",""],["main",""],["report_ice",""]],"mod":[["buildinfo",""],["cli",""],["commands",""]],"static":[["DEFAULT_HOOK",""],["GLOBAL",""]]};
+window.SIDEBAR_ITEMS = {"constant":[["BUG_REPORT_URL",""]],"fn":[["__rg_alloc",""],["__rg_alloc_zeroed",""],["__rg_dealloc",""],["__rg_realloc",""],["init_panic_hook",""],["main",""],["report_ice",""]],"mod":[["buildinfo",""],["cli",""],["commands",""]],"static":[["DEFAULT_HOOK",""],["GLOBAL",""]]};

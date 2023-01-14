@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":[["run_repl",""],["unpretty",""]],"mod":[["ast",""],["toks",""]]};
+window.SIDEBAR_ITEMS = {"fn":[["run_repl",""],["unpretty",""]],"mod":[["ast",""],["toks",""]],"struct":[["ReplCtx",""]]};

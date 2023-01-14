@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"macro":[["register_diagnostics","A helper macro to generate a list of diagnostics."]],"struct":[["DIAGNOSTICS","A map from error codes to optional extended information."]]};
+window.SIDEBAR_ITEMS = {"fn":[["__stability",""],["__static_ref_initialize",""]],"macro":[["register_diagnostics","A helper macro to generate a list of diagnostics."]],"static":[["LAZY",""]],"struct":[["DIAGNOSTICS","A map from error codes to optional extended information."]]};

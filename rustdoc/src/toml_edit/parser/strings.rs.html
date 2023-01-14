@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/toml_edit-0.14.4/src/parser/strings.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>strings.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c722f88035d2892e.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-bc1b32400f872ddb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../toml_edit/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/toml_edit-0.17.1/src/parser/strings.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>strings.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c722f88035d2892e.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-bc1b32400f872ddb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../toml_edit/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -292,70 +292,264 @@
 <a href="#292" id="292">292</a>
 <a href="#293" id="293">293</a>
 <a href="#294" id="294">294</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::parser::errors::CustomError;
-<span class="kw">use </span><span class="kw">crate</span>::parser::trivia::{
-    from_utf8_unchecked, is_non_ascii, is_wschar, newline, ws, ws_newlines,
-};
-<span class="kw">use </span>combine::error::Commit;
-<span class="kw">use </span>combine::parser::byte::{byte, bytes, hex_digit};
-<span class="kw">use </span>combine::parser::range::{range, recognize, take_while, take_while1};
-<span class="kw">use </span>combine::stream::RangeStream;
-<span class="kw">use </span>combine::<span class="kw-2">*</span>;
-<span class="kw">use </span>std::borrow::Cow;
+<a href="#295" id="295">295</a>
+<a href="#296" id="296">296</a>
+<a href="#297" id="297">297</a>
+<a href="#298" id="298">298</a>
+<a href="#299" id="299">299</a>
+<a href="#300" id="300">300</a>
+<a href="#301" id="301">301</a>
+<a href="#302" id="302">302</a>
+<a href="#303" id="303">303</a>
+<a href="#304" id="304">304</a>
+<a href="#305" id="305">305</a>
+<a href="#306" id="306">306</a>
+<a href="#307" id="307">307</a>
+<a href="#308" id="308">308</a>
+<a href="#309" id="309">309</a>
+<a href="#310" id="310">310</a>
+<a href="#311" id="311">311</a>
+<a href="#312" id="312">312</a>
+<a href="#313" id="313">313</a>
+<a href="#314" id="314">314</a>
+<a href="#315" id="315">315</a>
+<a href="#316" id="316">316</a>
+<a href="#317" id="317">317</a>
+<a href="#318" id="318">318</a>
+<a href="#319" id="319">319</a>
+<a href="#320" id="320">320</a>
+<a href="#321" id="321">321</a>
+<a href="#322" id="322">322</a>
+<a href="#323" id="323">323</a>
+<a href="#324" id="324">324</a>
+<a href="#325" id="325">325</a>
+<a href="#326" id="326">326</a>
+<a href="#327" id="327">327</a>
+<a href="#328" id="328">328</a>
+<a href="#329" id="329">329</a>
+<a href="#330" id="330">330</a>
+<a href="#331" id="331">331</a>
+<a href="#332" id="332">332</a>
+<a href="#333" id="333">333</a>
+<a href="#334" id="334">334</a>
+<a href="#335" id="335">335</a>
+<a href="#336" id="336">336</a>
+<a href="#337" id="337">337</a>
+<a href="#338" id="338">338</a>
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a>
+<a href="#356" id="356">356</a>
+<a href="#357" id="357">357</a>
+<a href="#358" id="358">358</a>
+<a href="#359" id="359">359</a>
+<a href="#360" id="360">360</a>
+<a href="#361" id="361">361</a>
+<a href="#362" id="362">362</a>
+<a href="#363" id="363">363</a>
+<a href="#364" id="364">364</a>
+<a href="#365" id="365">365</a>
+<a href="#366" id="366">366</a>
+<a href="#367" id="367">367</a>
+<a href="#368" id="368">368</a>
+<a href="#369" id="369">369</a>
+<a href="#370" id="370">370</a>
+<a href="#371" id="371">371</a>
+<a href="#372" id="372">372</a>
+<a href="#373" id="373">373</a>
+<a href="#374" id="374">374</a>
+<a href="#375" id="375">375</a>
+<a href="#376" id="376">376</a>
+<a href="#377" id="377">377</a>
+<a href="#378" id="378">378</a>
+<a href="#379" id="379">379</a>
+<a href="#380" id="380">380</a>
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+<a href="#402" id="402">402</a>
+<a href="#403" id="403">403</a>
+<a href="#404" id="404">404</a>
+<a href="#405" id="405">405</a>
+<a href="#406" id="406">406</a>
+<a href="#407" id="407">407</a>
+<a href="#408" id="408">408</a>
+<a href="#409" id="409">409</a>
+<a href="#410" id="410">410</a>
+<a href="#411" id="411">411</a>
+<a href="#412" id="412">412</a>
+<a href="#413" id="413">413</a>
+<a href="#414" id="414">414</a>
+<a href="#415" id="415">415</a>
+<a href="#416" id="416">416</a>
+<a href="#417" id="417">417</a>
+<a href="#418" id="418">418</a>
+<a href="#419" id="419">419</a>
+<a href="#420" id="420">420</a>
+<a href="#421" id="421">421</a>
+<a href="#422" id="422">422</a>
+<a href="#423" id="423">423</a>
+<a href="#424" id="424">424</a>
+<a href="#425" id="425">425</a>
+<a href="#426" id="426">426</a>
+<a href="#427" id="427">427</a>
+<a href="#428" id="428">428</a>
+<a href="#429" id="429">429</a>
+<a href="#430" id="430">430</a>
+<a href="#431" id="431">431</a>
+<a href="#432" id="432">432</a>
+<a href="#433" id="433">433</a>
+<a href="#434" id="434">434</a>
+<a href="#435" id="435">435</a>
+<a href="#436" id="436">436</a>
+<a href="#437" id="437">437</a>
+<a href="#438" id="438">438</a>
+<a href="#439" id="439">439</a>
+<a href="#440" id="440">440</a>
+<a href="#441" id="441">441</a>
+<a href="#442" id="442">442</a>
+<a href="#443" id="443">443</a>
+<a href="#444" id="444">444</a>
+<a href="#445" id="445">445</a>
+<a href="#446" id="446">446</a>
+<a href="#447" id="447">447</a>
+<a href="#448" id="448">448</a>
+<a href="#449" id="449">449</a>
+<a href="#450" id="450">450</a>
+<a href="#451" id="451">451</a>
+<a href="#452" id="452">452</a>
+<a href="#453" id="453">453</a>
+<a href="#454" id="454">454</a>
+<a href="#455" id="455">455</a>
+<a href="#456" id="456">456</a>
+</pre><pre class="rust"><code><span class="kw">use </span>std::borrow::Cow;
 <span class="kw">use </span>std::char;
+<span class="kw">use </span>std::ops::RangeInclusive;
+
+<span class="kw">use </span>nom8::branch::alt;
+<span class="kw">use </span>nom8::bytes::any;
+<span class="kw">use </span>nom8::bytes::none_of;
+<span class="kw">use </span>nom8::bytes::one_of;
+<span class="kw">use </span>nom8::bytes::tag;
+<span class="kw">use </span>nom8::bytes::take_while;
+<span class="kw">use </span>nom8::bytes::take_while1;
+<span class="kw">use </span>nom8::bytes::take_while_m_n;
+<span class="kw">use </span>nom8::combinator::cut;
+<span class="kw">use </span>nom8::combinator::fail;
+<span class="kw">use </span>nom8::combinator::opt;
+<span class="kw">use </span>nom8::combinator::peek;
+<span class="kw">use </span>nom8::combinator::success;
+<span class="kw">use </span>nom8::multi::many0_count;
+<span class="kw">use </span>nom8::multi::many1_count;
+<span class="kw">use </span>nom8::sequence::delimited;
+<span class="kw">use </span>nom8::sequence::preceded;
+<span class="kw">use </span>nom8::sequence::terminated;
+
+<span class="kw">use </span><span class="kw">crate</span>::parser::errors::CustomError;
+<span class="kw">use </span><span class="kw">crate</span>::parser::numbers::HEXDIG;
+<span class="kw">use </span><span class="kw">crate</span>::parser::prelude::<span class="kw-2">*</span>;
+<span class="kw">use </span><span class="kw">crate</span>::parser::trivia::{from_utf8_unchecked, newline, ws, ws_newlines, NON_ASCII, WSCHAR};
 
 <span class="comment">// ;; String
 
 // string = ml-basic-string / basic-string / ml-literal-string / literal-string
-</span><span class="macro">parse!</span>(string() -&gt; String, {
-    choice((
-        ml_basic_string(),
-        basic_string(),
-        ml_literal_string(),
-        literal_string().map(|s: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str| s.into()),
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>string(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, Cow&lt;<span class="lifetime">&#39;_</span>, str&gt;, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    alt((
+        ml_basic_string,
+        basic_string,
+        ml_literal_string,
+        literal_string.map(Cow::Borrowed),
     ))
-});
+    .parse(input)
+}
 
 <span class="comment">// ;; Basic String
 
 // basic-string = quotation-mark *basic-char quotation-mark
-</span><span class="macro">parse!</span>(basic_string() -&gt; String, {
-    between(
-        byte(QUOTATION_MARK), byte(QUOTATION_MARK),
-        many(basic_chars())
-    )
-    .message(<span class="string">&quot;While parsing a Basic String&quot;</span>)
-});
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>basic_string(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, Cow&lt;<span class="lifetime">&#39;_</span>, str&gt;, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    <span class="kw">let </span>(<span class="kw-2">mut </span>input, <span class="kw">_</span>) = one_of(QUOTATION_MARK).parse(input)<span class="question-mark">?</span>;
+
+    <span class="kw">let </span><span class="kw-2">mut </span>c = Cow::Borrowed(<span class="string">&quot;&quot;</span>);
+    <span class="kw">if let </span><span class="prelude-val">Some</span>((i, ci)) = ok_error(basic_chars.parse(input))<span class="question-mark">? </span>{
+        input = i;
+        c = ci;
+    }
+    <span class="kw">while let </span><span class="prelude-val">Some</span>((i, ci)) = ok_error(basic_chars.parse(input))<span class="question-mark">? </span>{
+        input = i;
+        c.to_mut().push_str(<span class="kw-2">&amp;</span>ci);
+    }
+
+    <span class="kw">let </span>(input, <span class="kw">_</span>) = cut(one_of(QUOTATION_MARK))
+        .context(Context::Expression(<span class="string">&quot;basic string&quot;</span>))
+        .parse(input)<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>((input, c))
+}
 
 <span class="comment">// quotation-mark = %x22            ; &quot;
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>QUOTATION_MARK: u8 = <span class="string">b&#39;&quot;&#39;</span>;
 
 <span class="comment">// basic-char = basic-unescaped / escaped
-</span><span class="macro">parse!</span>(basic_chars() -&gt; Cow&lt;<span class="lifetime">&#39;a</span>, str&gt;, {
-    choice((
+</span><span class="kw">fn </span>basic_chars(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, Cow&lt;<span class="lifetime">&#39;_</span>, str&gt;, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    alt((
         <span class="comment">// Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
-        </span>take_while1(is_basic_unescaped).and_then(std::str::from_utf8).map(Cow::Borrowed),
-        escaped().map(|c| Cow::Owned(String::from(c))),
+        </span>take_while1(BASIC_UNESCAPED)
+            .map_res(std::str::from_utf8)
+            .map(Cow::Borrowed),
+        escaped.map(|c| Cow::Owned(String::from(c))),
     ))
-});
-
-<span class="comment">// basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
-</span><span class="attr">#[inline]
-</span><span class="kw">fn </span>is_basic_unescaped(c: u8) -&gt; bool {
-    is_wschar(c) | <span class="macro">matches!</span>(c, <span class="number">0x21 </span>| <span class="number">0x23</span>..=<span class="number">0x5B </span>| <span class="number">0x5D</span>..=<span class="number">0x7E</span>) | is_non_ascii(c)
+    .parse(input)
 }
 
+<span class="comment">// basic-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>BASIC_UNESCAPED: (
+    (u8, u8),
+    u8,
+    RangeInclusive&lt;u8&gt;,
+    RangeInclusive&lt;u8&gt;,
+    RangeInclusive&lt;u8&gt;,
+) = (WSCHAR, <span class="number">0x21</span>, <span class="number">0x23</span>..=<span class="number">0x5B</span>, <span class="number">0x5D</span>..=<span class="number">0x7E</span>, NON_ASCII);
+
 <span class="comment">// escaped = escape escape-seq-char
-</span><span class="macro">parse!</span>(escaped() -&gt; char, {
-    satisfy(|c| c == ESCAPE)
-        .then(|<span class="kw">_</span>| parser(<span class="kw">move </span>|input| {
-            escape_seq_char().parse_stream(input).into_result()
-        }))
-});
+</span><span class="kw">fn </span>escaped(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, char, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    preceded(ESCAPE, escape_seq_char).parse(input)
+}
 
 <span class="comment">// escape = %x5C                    ; \
-</span><span class="kw">const </span>ESCAPE: u8 = <span class="string">b&#39;\\&#39;</span>;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>ESCAPE: u8 = <span class="string">b&#39;\\&#39;</span>;
 
 <span class="comment">// escape-seq-char =  %x22         ; &quot;    quotation mark  U+0022
 // escape-seq-char =/ %x5C         ; \    reverse solidus U+005C
@@ -366,225 +560,355 @@
 // escape-seq-char =/ %x74         ; t    tab             U+0009
 // escape-seq-char =/ %x75 4HEXDIG ; uXXXX                U+XXXX
 // escape-seq-char =/ %x55 8HEXDIG ; UXXXXXXXX            U+XXXXXXXX
-</span><span class="macro">parse!</span>(escape_seq_char() -&gt; char, {
-    satisfy(is_escape_seq_char)
-        .message(<span class="string">&quot;While parsing escape sequence&quot;</span>)
-        .then(|c| {
-            parser(<span class="kw">move </span>|input| {
-                <span class="kw">match </span>c {
-                    <span class="string">b&#39;b&#39;  </span>=&gt; <span class="prelude-val">Ok</span>((<span class="string">&#39;\u{8}&#39;</span>, Commit::Peek(()))),
-                    <span class="string">b&#39;f&#39;  </span>=&gt; <span class="prelude-val">Ok</span>((<span class="string">&#39;\u{c}&#39;</span>, Commit::Peek(()))),
-                    <span class="string">b&#39;n&#39;  </span>=&gt; <span class="prelude-val">Ok</span>((<span class="string">&#39;\n&#39;</span>,    Commit::Peek(()))),
-                    <span class="string">b&#39;r&#39;  </span>=&gt; <span class="prelude-val">Ok</span>((<span class="string">&#39;\r&#39;</span>,    Commit::Peek(()))),
-                    <span class="string">b&#39;t&#39;  </span>=&gt; <span class="prelude-val">Ok</span>((<span class="string">&#39;\t&#39;</span>,    Commit::Peek(()))),
-                    <span class="string">b&#39;u&#39;  </span>=&gt; hexescape(<span class="number">4</span>).parse_stream(input).into_result(),
-                    <span class="string">b&#39;U&#39;  </span>=&gt; hexescape(<span class="number">8</span>).parse_stream(input).into_result(),
-                    <span class="string">b&#39;\\&#39; </span>=&gt; <span class="prelude-val">Ok</span>((<span class="string">&#39;\\&#39;</span>,    Commit::Peek(()))),
-                    <span class="string">b&#39;&quot;&#39;  </span>=&gt; <span class="prelude-val">Ok</span>((<span class="string">&#39;&quot;&#39;</span>,     Commit::Peek(()))),
-                    <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;{:?} filtered out by is_escape_seq_char&quot;</span>, c),
-                }
-            })
-        })
-});
-
-<span class="attr">#[inline]
-</span><span class="kw">fn </span>is_escape_seq_char(c: u8) -&gt; bool {
-    <span class="macro">matches!</span>(
-        c,
-        <span class="string">b&#39;&quot;&#39; </span>| <span class="string">b&#39;\\&#39; </span>| <span class="string">b&#39;b&#39; </span>| <span class="string">b&#39;f&#39; </span>| <span class="string">b&#39;n&#39; </span>| <span class="string">b&#39;r&#39; </span>| <span class="string">b&#39;t&#39; </span>| <span class="string">b&#39;u&#39; </span>| <span class="string">b&#39;U&#39;
-    </span>)
+</span><span class="kw">fn </span>escape_seq_char(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, char, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    <span class="macro">dispatch! </span>{any;
+        <span class="string">b&#39;b&#39; </span>=&gt; success(<span class="string">&#39;\u{8}&#39;</span>),
+        <span class="string">b&#39;f&#39; </span>=&gt; success(<span class="string">&#39;\u{c}&#39;</span>),
+        <span class="string">b&#39;n&#39; </span>=&gt; success(<span class="string">&#39;\n&#39;</span>),
+        <span class="string">b&#39;r&#39; </span>=&gt; success(<span class="string">&#39;\r&#39;</span>),
+        <span class="string">b&#39;t&#39; </span>=&gt; success(<span class="string">&#39;\t&#39;</span>),
+        <span class="string">b&#39;u&#39; </span>=&gt; cut(hexescape::&lt;<span class="number">4</span>&gt;).context(Context::Expression(<span class="string">&quot;unicode 4-digit hex code&quot;</span>)),
+        <span class="string">b&#39;U&#39; </span>=&gt; cut(hexescape::&lt;<span class="number">8</span>&gt;).context(Context::Expression(<span class="string">&quot;unicode 8-digit hex code&quot;</span>)),
+        <span class="string">b&#39;\\&#39; </span>=&gt; success(<span class="string">&#39;\\&#39;</span>),
+        <span class="string">b&#39;&quot;&#39; </span>=&gt; success(<span class="string">&#39;&quot;&#39;</span>),
+        <span class="kw">_ </span>=&gt; {
+            cut(fail::&lt;<span class="kw">_</span>, char, <span class="kw">_</span>&gt;)
+            .context(Context::Expression(<span class="string">&quot;escape sequence&quot;</span>))
+            .context(Context::Expected(ParserValue::CharLiteral(<span class="string">&#39;b&#39;</span>)))
+            .context(Context::Expected(ParserValue::CharLiteral(<span class="string">&#39;f&#39;</span>)))
+            .context(Context::Expected(ParserValue::CharLiteral(<span class="string">&#39;n&#39;</span>)))
+            .context(Context::Expected(ParserValue::CharLiteral(<span class="string">&#39;r&#39;</span>)))
+            .context(Context::Expected(ParserValue::CharLiteral(<span class="string">&#39;t&#39;</span>)))
+            .context(Context::Expected(ParserValue::CharLiteral(<span class="string">&#39;u&#39;</span>)))
+            .context(Context::Expected(ParserValue::CharLiteral(<span class="string">&#39;U&#39;</span>)))
+            .context(Context::Expected(ParserValue::CharLiteral(<span class="string">&#39;\\&#39;</span>)))
+            .context(Context::Expected(ParserValue::CharLiteral(<span class="string">&#39;&quot;&#39;</span>)))
+        }
+    }
+    .parse(input)
 }
 
-<span class="macro">parse!</span>(hexescape(n: usize) -&gt; char, {
-    recognize(skip_count_min_max(
-        <span class="kw-2">*</span>n, <span class="kw-2">*</span>n,
-        hex_digit(),
-    ))
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>hexescape&lt;<span class="kw">const </span>N: usize&gt;(
+    input: Input&lt;<span class="lifetime">&#39;_</span>&gt;,
+) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, char, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    take_while_m_n(<span class="number">0</span>, N, HEXDIG)
+        .verify(|b: <span class="kw-2">&amp;</span>[u8]| b.len() == N)
         .map(|b: <span class="kw-2">&amp;</span>[u8]| <span class="kw">unsafe </span>{ from_utf8_unchecked(b, <span class="string">&quot;`is_ascii_digit` filters out on-ASCII&quot;</span>) })
-        .and_then(|s| u32::from_str_radix(s, <span class="number">16</span>))
-        .and_then(|h| char::from_u32(h).ok_or(CustomError::InvalidHexEscape(h)))
-});
+        .map_opt(|s| u32::from_str_radix(s, <span class="number">16</span>).ok())
+        .map_res(|h| char::from_u32(h).ok_or(CustomError::OutOfRange))
+        .parse(input)
+}
 
 <span class="comment">// ;; Multiline Basic String
 
 // ml-basic-string = ml-basic-string-delim [ newline ] ml-basic-body
 //                   ml-basic-string-delim
-</span><span class="macro">parse!</span>(ml_basic_string() -&gt; String, {
-    (
-        range(ML_BASIC_STRING_DELIM),
-        (
-            optional(newline()),
-            ml_basic_body(),
-        ).map(|t| t.<span class="number">1</span>),
-        <span class="comment">// Deviate from grammar by pulling mll_quotes into here so we can handle the confusion with
-        // it and the closing delim
-        </span>choice((
-            attempt((
-                bytes(<span class="string">b&quot;\&quot;\&quot;&quot;</span>), range(ML_BASIC_STRING_DELIM)
-            )).map(|<span class="kw">_</span>| <span class="prelude-val">Some</span>(<span class="string">&quot;\&quot;\&quot;&quot;</span>)),
-            attempt((
-                bytes(<span class="string">b&quot;\&quot;&quot;</span>), range(ML_BASIC_STRING_DELIM)
-            )).map(|<span class="kw">_</span>| <span class="prelude-val">Some</span>(<span class="string">&quot;\&quot;&quot;</span>)),
-            range(ML_BASIC_STRING_DELIM).map(|<span class="kw">_</span>| <span class="prelude-val">None</span>),
-        )),
-    ).map(|(<span class="kw">_</span>, <span class="kw-2">mut </span>b, q)| {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(q) = q {
-            b.push_str(q);
-        }
-        b
-    }).message(<span class="string">&quot;While parsing a Multiline Basic String&quot;</span>)
-});
+</span><span class="kw">fn </span>ml_basic_string(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, Cow&lt;<span class="lifetime">&#39;_</span>, str&gt;, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    delimited(
+        ML_BASIC_STRING_DELIM,
+        preceded(opt(newline), cut(ml_basic_body)),
+        cut(ML_BASIC_STRING_DELIM),
+    )
+    .context(Context::Expression(<span class="string">&quot;multiline basic string&quot;</span>))
+    .parse(input)
+}
 
 <span class="comment">// ml-basic-string-delim = 3quotation-mark
-</span><span class="kw">const </span>ML_BASIC_STRING_DELIM: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;\&quot;\&quot;\&quot;&quot;</span>;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>ML_BASIC_STRING_DELIM: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;\&quot;\&quot;\&quot;&quot;</span>;
 
 <span class="comment">// ml-basic-body = *mlb-content *( mlb-quotes 1*mlb-content ) [ mlb-quotes ]
-</span><span class="macro">parse!</span>(ml_basic_body() -&gt; String, {
-    (
-        many(mlb_content()),
-        many(attempt((
-            mlb_quotes(),
-            many1(mlb_content()),
-        ).map(|(q, c): (<span class="kw-2">&amp;</span>str, String)| {
-            <span class="kw">let </span><span class="kw-2">mut </span>total = q.to_owned();
-            total.push_str(<span class="kw-2">&amp;</span>c);
-            total
-        }))),
-        <span class="comment">// Deviate: see `ml_basic_string`
-        //optional(mll_quotes()),
-    </span>).map(|(<span class="kw-2">mut </span>c, qc): (String, String)| {
-        c.push_str(<span class="kw-2">&amp;</span>qc);
-        c
-    })
-});
+</span><span class="kw">fn </span>ml_basic_body(<span class="kw-2">mut </span>input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, Cow&lt;<span class="lifetime">&#39;_</span>, str&gt;, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    <span class="kw">let </span><span class="kw-2">mut </span>c = Cow::Borrowed(<span class="string">&quot;&quot;</span>);
+    <span class="kw">if let </span><span class="prelude-val">Some</span>((i, ci)) = ok_error(mlb_content.parse(input))<span class="question-mark">? </span>{
+        input = i;
+        c = ci;
+    }
+    <span class="kw">while let </span><span class="prelude-val">Some</span>((i, ci)) = ok_error(mlb_content.parse(input))<span class="question-mark">? </span>{
+        input = i;
+        c.to_mut().push_str(<span class="kw-2">&amp;</span>ci);
+    }
+
+    <span class="kw">while let </span><span class="prelude-val">Some</span>((i, qi)) = ok_error(mlb_quotes(none_of(<span class="string">b&#39;\&quot;&#39;</span>).value(())).parse(input))<span class="question-mark">? </span>{
+        <span class="kw">if let </span><span class="prelude-val">Some</span>((i, ci)) = ok_error(mlb_content.parse(i))<span class="question-mark">? </span>{
+            input = i;
+            c.to_mut().push_str(qi);
+            c.to_mut().push_str(<span class="kw-2">&amp;</span>ci);
+            <span class="kw">while let </span><span class="prelude-val">Some</span>((i, ci)) = ok_error(mlb_content.parse(input))<span class="question-mark">? </span>{
+                input = i;
+                c.to_mut().push_str(<span class="kw-2">&amp;</span>ci);
+            }
+        } <span class="kw">else </span>{
+            <span class="kw">break</span>;
+        }
+    }
+
+    <span class="kw">if let </span><span class="prelude-val">Some</span>((i, qi)) = ok_error(mlb_quotes(tag(ML_BASIC_STRING_DELIM).value(())).parse(input))<span class="question-mark">?
+    </span>{
+        input = i;
+        c.to_mut().push_str(qi);
+    }
+
+    <span class="prelude-val">Ok</span>((input, c))
+}
 
 <span class="comment">// mlb-content = mlb-char / newline / mlb-escaped-nl
 // mlb-char = mlb-unescaped / escaped
-</span><span class="macro">parse!</span>(mlb_content() -&gt; Cow&lt;<span class="lifetime">&#39;a</span>, str&gt;, {
-    choice((
+</span><span class="kw">fn </span>mlb_content(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, Cow&lt;<span class="lifetime">&#39;_</span>, str&gt;, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    alt((
         <span class="comment">// Deviate from the official grammar by batching the unescaped chars so we build a string a
         // chunk at a time, rather than a `char` at a time.
-        </span>take_while1(is_mlb_unescaped).and_then(std::str::from_utf8).map(Cow::Borrowed),
-        attempt(escaped().map(|c| Cow::Owned(String::from(c)))),
-        newline().map(|<span class="kw">_</span>| Cow::Borrowed(<span class="string">&quot;\n&quot;</span>)),
-        mlb_escaped_nl().map(|<span class="kw">_</span>| Cow::Borrowed(<span class="string">&quot;&quot;</span>)),
+        </span>take_while1(MLB_UNESCAPED)
+            .map_res(std::str::from_utf8)
+            .map(Cow::Borrowed),
+        <span class="comment">// Order changed fromg grammar so `escaped` can more easily `cut` on bad escape sequences
+        </span>mlb_escaped_nl.map(|<span class="kw">_</span>| Cow::Borrowed(<span class="string">&quot;&quot;</span>)),
+        escaped.map(|c| Cow::Owned(String::from(c))),
+        newline.map(|<span class="kw">_</span>| Cow::Borrowed(<span class="string">&quot;\n&quot;</span>)),
     ))
-});
+    .parse(input)
+}
 
 <span class="comment">// mlb-quotes = 1*2quotation-mark
-</span><span class="macro">parse!</span>(mlb_quotes() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, {
-    choice((
-        attempt(bytes(<span class="string">b&quot;\&quot;\&quot;&quot;</span>)),
-        attempt(bytes(<span class="string">b&quot;\&quot;&quot;</span>)),
-    )).map(|b: <span class="kw-2">&amp;</span>[u8]| {
-        <span class="kw">unsafe </span>{ from_utf8_unchecked(b, <span class="string">&quot;`bytes` out npn-ASCII&quot;</span>) }
-    })
-});
+</span><span class="kw">fn </span>mlb_quotes&lt;<span class="lifetime">&#39;i</span>&gt;(
+    <span class="kw-2">mut </span>term: <span class="kw">impl </span>nom8::Parser&lt;Input&lt;<span class="lifetime">&#39;i</span>&gt;, (), ParserError&lt;<span class="lifetime">&#39;i</span>&gt;&gt;,
+) -&gt; <span class="kw">impl </span>FnMut(Input&lt;<span class="lifetime">&#39;i</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;i</span>&gt;, <span class="kw-2">&amp;</span>str, ParserError&lt;<span class="lifetime">&#39;i</span>&gt;&gt; {
+    <span class="kw">move </span>|input| {
+        <span class="kw">let </span>res = terminated(<span class="string">b&quot;\&quot;\&quot;&quot;</span>, peek(term.by_ref()))
+            .map(|b| <span class="kw">unsafe </span>{ from_utf8_unchecked(b, <span class="string">&quot;`bytes` out non-ASCII&quot;</span>) })
+            .parse(input);
+
+        <span class="kw">match </span>res {
+            <span class="prelude-val">Err</span>(nom8::Err::Error(<span class="kw">_</span>)) =&gt; terminated(<span class="string">b&quot;\&quot;&quot;</span>, peek(term.by_ref()))
+                .map(|b| <span class="kw">unsafe </span>{ from_utf8_unchecked(b, <span class="string">&quot;`bytes` out non-ASCII&quot;</span>) })
+                .parse(input),
+            res =&gt; res,
+        }
+    }
+}
 
 <span class="comment">// mlb-unescaped = wschar / %x21 / %x23-5B / %x5D-7E / non-ascii
-</span><span class="attr">#[inline]
-</span><span class="kw">fn </span>is_mlb_unescaped(c: u8) -&gt; bool {
-    is_wschar(c) | <span class="macro">matches!</span>(c, <span class="number">0x21 </span>| <span class="number">0x23</span>..=<span class="number">0x5B </span>| <span class="number">0x5D</span>..=<span class="number">0x7E</span>) | is_non_ascii(c)
-}
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>MLB_UNESCAPED: (
+    (u8, u8),
+    u8,
+    RangeInclusive&lt;u8&gt;,
+    RangeInclusive&lt;u8&gt;,
+    RangeInclusive&lt;u8&gt;,
+) = (WSCHAR, <span class="number">0x21</span>, <span class="number">0x23</span>..=<span class="number">0x5B</span>, <span class="number">0x5D</span>..=<span class="number">0x7E</span>, NON_ASCII);
 
 <span class="comment">// mlb-escaped-nl = escape ws newline *( wschar / newline
 // When the last non-whitespace character on a line is a \,
 // it will be trimmed along with all whitespace
 // (including newlines) up to the next non-whitespace
 // character or closing delimiter.
-</span><span class="macro">parse!</span>(mlb_escaped_nl() -&gt; (), {
-    skip_many1(attempt((
-        byte(ESCAPE),
-        ws(),
-        ws_newlines(),
-    )))
-});
+</span><span class="kw">fn </span>mlb_escaped_nl(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, (), ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    many1_count((ESCAPE, ws, ws_newlines))
+        .value(())
+        .parse(input)
+}
 
 <span class="comment">// ;; Literal String
 
 // literal-string = apostrophe *literal-char apostrophe
-</span><span class="macro">parse!</span>(literal_string() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, {
-    between(
-        byte(APOSTROPHE), byte(APOSTROPHE),
-        take_while(is_literal_char)
-    ).and_then(std::str::from_utf8)
-        .message(<span class="string">&quot;While parsing a Literal String&quot;</span>)
-});
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>literal_string(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, <span class="kw-2">&amp;</span>str, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    delimited(APOSTROPHE, cut(take_while(LITERAL_CHAR)), cut(APOSTROPHE))
+        .map_res(std::str::from_utf8)
+        .context(Context::Expression(<span class="string">&quot;literal string&quot;</span>))
+        .parse(input)
+}
 
 <span class="comment">// apostrophe = %x27 ; &#39; apostrophe
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>APOSTROPHE: u8 = <span class="string">b&#39;\&#39;&#39;</span>;
 
 <span class="comment">// literal-char = %x09 / %x20-26 / %x28-7E / non-ascii
-</span><span class="attr">#[inline]
-</span><span class="kw">fn </span>is_literal_char(c: u8) -&gt; bool {
-    <span class="macro">matches!</span>(c, <span class="number">0x09 </span>| <span class="number">0x20</span>..=<span class="number">0x26 </span>| <span class="number">0x28</span>..=<span class="number">0x7E</span>) | is_non_ascii(c)
-}
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>LITERAL_CHAR: (
+    u8,
+    RangeInclusive&lt;u8&gt;,
+    RangeInclusive&lt;u8&gt;,
+    RangeInclusive&lt;u8&gt;,
+) = (<span class="number">0x9</span>, <span class="number">0x20</span>..=<span class="number">0x26</span>, <span class="number">0x28</span>..=<span class="number">0x7E</span>, NON_ASCII);
 
 <span class="comment">// ;; Multiline Literal String
 
 // ml-literal-string = ml-literal-string-delim [ newline ] ml-literal-body
 //                     ml-literal-string-delim
-</span><span class="macro">parse!</span>(ml_literal_string() -&gt; String, {
-    (
-        range(ML_LITERAL_STRING_DELIM),
-        (
-            optional(newline()),
-            ml_literal_body(),
-        ).map(|t| t.<span class="number">1</span>.replace(<span class="string">&quot;\r\n&quot;</span>, <span class="string">&quot;\n&quot;</span>)),
-        <span class="comment">// Deviate from grammar by pulling mll_quotes into here so we can handle the confusion with
-        // it and the closing delim
-        </span>choice((
-            attempt((
-                bytes(<span class="string">b&quot;&#39;&#39;&quot;</span>), range(ML_LITERAL_STRING_DELIM)
-            )).map(|<span class="kw">_</span>| <span class="prelude-val">Some</span>(<span class="string">&quot;&#39;&#39;&quot;</span>)),
-            attempt((
-                bytes(<span class="string">b&quot;&#39;&quot;</span>), range(ML_LITERAL_STRING_DELIM)
-            )).map(|<span class="kw">_</span>| <span class="prelude-val">Some</span>(<span class="string">&quot;&#39;&quot;</span>)),
-            range(ML_LITERAL_STRING_DELIM).map(|<span class="kw">_</span>| <span class="prelude-val">None</span>),
-        ))
-    ).map(|(<span class="kw">_</span>, <span class="kw-2">mut </span>b, q)| {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(q) = q {
-            b.push_str(q);
-        }
-        b
-    }).message(<span class="string">&quot;While parsing a Multiline Literal String&quot;</span>)
-});
-
-<span class="comment">// ml-literal-string-delim = 3apostrophe
-</span><span class="kw">const </span>ML_LITERAL_STRING_DELIM: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;&#39;&#39;&#39;&quot;</span>;
-
-<span class="comment">// ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
-</span><span class="macro">parse!</span>(ml_literal_body() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, {
-    recognize((
-        skip_many(mll_content()),
-        skip_many(attempt((mll_quotes(), skip_many1(mll_content())))),
-        <span class="comment">// Deviate: see ml_literal_string
-        //optional(mll_quotes()),
-    </span>)).and_then(std::str::from_utf8)
-});
-
-<span class="comment">// mll-content = mll-char / newline
-</span><span class="macro">parse!</span>(mll_content() -&gt; u8, {
-    choice((
-        satisfy(is_mll_char),
-        newline().map(|<span class="kw">_</span>| <span class="string">b&#39;\n&#39;</span>)
-    ))
-});
-
-<span class="comment">// mll-char = %x09 / %x20-26 / %x28-7E / non-ascii
-</span><span class="attr">#[inline]
-</span><span class="kw">fn </span>is_mll_char(c: u8) -&gt; bool {
-    <span class="macro">matches!</span>(c, <span class="number">0x09 </span>| <span class="number">0x20</span>..=<span class="number">0x26 </span>| <span class="number">0x28</span>..=<span class="number">0x7E</span>) | is_non_ascii(c)
+</span><span class="kw">fn </span>ml_literal_string(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, Cow&lt;<span class="lifetime">&#39;_</span>, str&gt;, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    delimited(
+        (ML_LITERAL_STRING_DELIM, opt(newline)),
+        cut(ml_literal_body.map(|t| {
+            <span class="kw">if </span>t.contains(<span class="string">&quot;\r\n&quot;</span>) {
+                Cow::Owned(t.replace(<span class="string">&quot;\r\n&quot;</span>, <span class="string">&quot;\n&quot;</span>))
+            } <span class="kw">else </span>{
+                Cow::Borrowed(t)
+            }
+        })),
+        cut(ML_LITERAL_STRING_DELIM),
+    )
+    .context(Context::Expression(<span class="string">&quot;multiline literal string&quot;</span>))
+    .parse(input)
 }
 
+<span class="comment">// ml-literal-string-delim = 3apostrophe
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">const </span>ML_LITERAL_STRING_DELIM: <span class="kw-2">&amp;</span>[u8] = <span class="string">b&quot;&#39;&#39;&#39;&quot;</span>;
+
+<span class="comment">// ml-literal-body = *mll-content *( mll-quotes 1*mll-content ) [ mll-quotes ]
+</span><span class="kw">fn </span>ml_literal_body(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, <span class="kw-2">&amp;</span>str, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    (
+        many0_count(mll_content),
+        many0_count((
+            mll_quotes(none_of(APOSTROPHE).value(())),
+            many1_count(mll_content),
+        )),
+        opt(mll_quotes(tag(ML_LITERAL_STRING_DELIM).value(()))),
+    )
+        .recognize()
+        .map_res(std::str::from_utf8)
+        .parse(input)
+}
+
+<span class="comment">// mll-content = mll-char / newline
+</span><span class="kw">fn </span>mll_content(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, u8, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    alt((one_of(MLL_CHAR), newline)).parse(input)
+}
+
+<span class="comment">// mll-char = %x09 / %x20-26 / %x28-7E / non-ascii
+</span><span class="kw">const </span>MLL_CHAR: (
+    u8,
+    RangeInclusive&lt;u8&gt;,
+    RangeInclusive&lt;u8&gt;,
+    RangeInclusive&lt;u8&gt;,
+) = (<span class="number">0x9</span>, <span class="number">0x20</span>..=<span class="number">0x26</span>, <span class="number">0x28</span>..=<span class="number">0x7E</span>, NON_ASCII);
+
 <span class="comment">// mll-quotes = 1*2apostrophe
-</span><span class="macro">parse!</span>(mll_quotes() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str, {
-    choice((
-        attempt(bytes(<span class="string">b&quot;&#39;&#39;&quot;</span>)),
-        attempt(bytes(<span class="string">b&quot;&#39;&quot;</span>)),
-    )).map(|b: <span class="kw-2">&amp;</span>[u8]| {
-        <span class="kw">unsafe </span>{ from_utf8_unchecked(b, <span class="string">&quot;`bytes` out npn-ASCII&quot;</span>) }
-    })
-});
+</span><span class="kw">fn </span>mll_quotes&lt;<span class="lifetime">&#39;i</span>&gt;(
+    <span class="kw-2">mut </span>term: <span class="kw">impl </span>nom8::Parser&lt;Input&lt;<span class="lifetime">&#39;i</span>&gt;, (), ParserError&lt;<span class="lifetime">&#39;i</span>&gt;&gt;,
+) -&gt; <span class="kw">impl </span>FnMut(Input&lt;<span class="lifetime">&#39;i</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;i</span>&gt;, <span class="kw-2">&amp;</span>str, ParserError&lt;<span class="lifetime">&#39;i</span>&gt;&gt; {
+    <span class="kw">move </span>|input| {
+        <span class="kw">let </span>res = terminated(<span class="string">b&quot;&#39;&#39;&quot;</span>, peek(term.by_ref()))
+            .map(|b| <span class="kw">unsafe </span>{ from_utf8_unchecked(b, <span class="string">&quot;`bytes` out non-ASCII&quot;</span>) })
+            .parse(input);
+
+        <span class="kw">match </span>res {
+            <span class="prelude-val">Err</span>(nom8::Err::Error(<span class="kw">_</span>)) =&gt; terminated(<span class="string">b&quot;&#39;&quot;</span>, peek(term.by_ref()))
+                .map(|b| <span class="kw">unsafe </span>{ from_utf8_unchecked(b, <span class="string">&quot;`bytes` out non-ASCII&quot;</span>) })
+                .parse(input),
+            res =&gt; res,
+        }
+    }
+}
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>basic_string() {
+        <span class="kw">let </span>input =
+            <span class="string">r#&quot;&quot;I&#39;m a string. \&quot;You can quote me\&quot;. Name\tJos\u00E9\nLocation\tSF. \U0002070E&quot;&quot;#</span>;
+        <span class="kw">let </span>expected = <span class="string">&quot;I\&#39;m a string. \&quot;You can quote me\&quot;. Name\tJosé\nLocation\tSF. \u{2070E}&quot;</span>;
+        <span class="kw">let </span>parsed = string.parse(input.as_bytes()).finish();
+        <span class="macro">assert_eq!</span>(parsed.as_deref(), <span class="prelude-val">Ok</span>(expected), <span class="string">&quot;Parsing {input:?}&quot;</span>);
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>ml_basic_string() {
+        <span class="kw">let </span>cases = [
+            (
+                <span class="string">r#&quot;&quot;&quot;&quot;
+Roses are red
+Violets are blue&quot;&quot;&quot;&quot;#</span>,
+                <span class="string">r#&quot;Roses are red
+Violets are blue&quot;#</span>,
+            ),
+            (<span class="string">r#&quot;&quot;&quot;&quot; \&quot;&quot;&quot; &quot;&quot;&quot;&quot;#</span>, <span class="string">&quot; \&quot;\&quot;\&quot; &quot;</span>),
+            (<span class="string">r#&quot;&quot;&quot;&quot; \\&quot;&quot;&quot;&quot;#</span>, <span class="string">&quot; \\&quot;</span>),
+        ];
+
+        <span class="kw">for </span><span class="kw-2">&amp;</span>(input, expected) <span class="kw">in </span><span class="kw-2">&amp;</span>cases {
+            <span class="kw">let </span>parsed = string.parse(input.as_bytes()).finish();
+            <span class="macro">assert_eq!</span>(parsed.as_deref(), <span class="prelude-val">Ok</span>(expected), <span class="string">&quot;Parsing {input:?}&quot;</span>);
+        }
+
+        <span class="kw">let </span>invalid_cases = [<span class="string">r#&quot;&quot;&quot;&quot;  &quot;&quot;&quot;#</span>, <span class="string">r#&quot;&quot;&quot;&quot;  \&quot;&quot;&quot;&quot;#</span>];
+
+        <span class="kw">for </span>input <span class="kw">in </span><span class="kw-2">&amp;</span>invalid_cases {
+            <span class="kw">let </span>parsed = string.parse(input.as_bytes()).finish();
+            <span class="macro">assert!</span>(parsed.is_err());
+        }
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>ml_basic_string_escape_ws() {
+        <span class="kw">let </span>inputs = [
+            <span class="string">r#&quot;&quot;&quot;&quot;
+The quick brown \
+
+
+  fox jumps over \
+    the lazy dog.&quot;&quot;&quot;&quot;#</span>,
+            <span class="string">r#&quot;&quot;&quot;&quot;\
+       The quick brown \
+       fox jumps over \
+       the lazy dog.\
+       &quot;&quot;&quot;&quot;#</span>,
+        ];
+        <span class="kw">for </span>input <span class="kw">in </span><span class="kw-2">&amp;</span>inputs {
+            <span class="kw">let </span>expected = <span class="string">&quot;The quick brown fox jumps over the lazy dog.&quot;</span>;
+            <span class="kw">let </span>parsed = string.parse(input.as_bytes()).finish();
+            <span class="macro">assert_eq!</span>(parsed.as_deref(), <span class="prelude-val">Ok</span>(expected), <span class="string">&quot;Parsing {input:?}&quot;</span>);
+        }
+        <span class="kw">let </span>empties = [
+            <span class="string">r#&quot;&quot;&quot;&quot;\
+       &quot;&quot;&quot;&quot;#</span>,
+            <span class="string">r#&quot;&quot;&quot;&quot;
+\
+  \
+&quot;&quot;&quot;&quot;#</span>,
+        ];
+        <span class="kw">for </span>input <span class="kw">in </span><span class="kw-2">&amp;</span>empties {
+            <span class="kw">let </span>expected = <span class="string">&quot;&quot;</span>;
+            <span class="kw">let </span>parsed = string.parse(input.as_bytes()).finish();
+            <span class="macro">assert_eq!</span>(parsed.as_deref(), <span class="prelude-val">Ok</span>(expected), <span class="string">&quot;Parsing {input:?}&quot;</span>);
+        }
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>literal_string() {
+        <span class="kw">let </span>inputs = [
+            <span class="string">r#&quot;&#39;C:\Users\nodejs\templates&#39;&quot;#</span>,
+            <span class="string">r#&quot;&#39;\\ServerX\admin$\system32\&#39;&quot;#</span>,
+            <span class="string">r#&quot;&#39;Tom &quot;Dubs&quot; Preston-Werner&#39;&quot;#</span>,
+            <span class="string">r#&quot;&#39;&lt;\i\c*\s*&gt;&#39;&quot;#</span>,
+        ];
+
+        <span class="kw">for </span>input <span class="kw">in </span><span class="kw-2">&amp;</span>inputs {
+            <span class="kw">let </span>expected = <span class="kw-2">&amp;</span>input[<span class="number">1</span>..input.len() - <span class="number">1</span>];
+            <span class="kw">let </span>parsed = string.parse(input.as_bytes()).finish();
+            <span class="macro">assert_eq!</span>(parsed.as_deref(), <span class="prelude-val">Ok</span>(expected), <span class="string">&quot;Parsing {input:?}&quot;</span>);
+        }
+    }
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>ml_literal_string() {
+        <span class="kw">let </span>inputs = [
+            <span class="string">r#&quot;&#39;&#39;&#39;I [dw]on&#39;t need \d{2} apples&#39;&#39;&#39;&quot;#</span>,
+            <span class="string">r#&quot;&#39;&#39;&#39;&#39;one_quote&#39;&#39;&#39;&#39;&quot;#</span>,
+        ];
+        <span class="kw">for </span>input <span class="kw">in </span><span class="kw-2">&amp;</span>inputs {
+            <span class="kw">let </span>expected = <span class="kw-2">&amp;</span>input[<span class="number">3</span>..input.len() - <span class="number">3</span>];
+            <span class="kw">let </span>parsed = string.parse(input.as_bytes()).finish();
+            <span class="macro">assert_eq!</span>(parsed.as_deref(), <span class="prelude-val">Ok</span>(expected), <span class="string">&quot;Parsing {input:?}&quot;</span>);
+        }
+
+        <span class="kw">let </span>input = <span class="string">r#&quot;&#39;&#39;&#39;
+The first newline is
+trimmed in raw strings.
+   All other whitespace
+   is preserved.
+&#39;&#39;&#39;&quot;#</span>;
+        <span class="kw">let </span>expected = <span class="kw-2">&amp;</span>input[<span class="number">4</span>..input.len() - <span class="number">3</span>];
+        <span class="kw">let </span>parsed = string.parse(input.as_bytes()).finish();
+        <span class="macro">assert_eq!</span>(parsed.as_deref(), <span class="prelude-val">Ok</span>(expected), <span class="string">&quot;Parsing {input:?}&quot;</span>);
+    }
+}
 </code></pre></div>
 </section></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="toml_edit" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0b90256ad 2023-01-13)" data-search-js="search-181581080540673f.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-58836c674e2f7bd2.css" ></div></body></html>

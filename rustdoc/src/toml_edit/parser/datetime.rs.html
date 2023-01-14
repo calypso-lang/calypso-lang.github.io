@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/toml_edit-0.14.4/src/parser/datetime.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>datetime.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c722f88035d2892e.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-bc1b32400f872ddb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../toml_edit/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/toml_edit-0.17.1/src/parser/datetime.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>datetime.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-c722f88035d2892e.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-4743e13df3dfe8c4.css"><link rel="stylesheet" disabled href="../../../static.files/dark-0e1b889528bd466b.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-65289d5d067c7c66.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-bc1b32400f872ddb.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../toml_edit/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -207,96 +207,146 @@
 <a href="#207" id="207">207</a>
 <a href="#208" id="208">208</a>
 <a href="#209" id="209">209</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::datetime::<span class="kw-2">*</span>;
+<a href="#210" id="210">210</a>
+<a href="#211" id="211">211</a>
+<a href="#212" id="212">212</a>
+<a href="#213" id="213">213</a>
+<a href="#214" id="214">214</a>
+<a href="#215" id="215">215</a>
+<a href="#216" id="216">216</a>
+<a href="#217" id="217">217</a>
+<a href="#218" id="218">218</a>
+<a href="#219" id="219">219</a>
+<a href="#220" id="220">220</a>
+<a href="#221" id="221">221</a>
+<a href="#222" id="222">222</a>
+<a href="#223" id="223">223</a>
+<a href="#224" id="224">224</a>
+<a href="#225" id="225">225</a>
+<a href="#226" id="226">226</a>
+<a href="#227" id="227">227</a>
+<a href="#228" id="228">228</a>
+<a href="#229" id="229">229</a>
+<a href="#230" id="230">230</a>
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a>
+<a href="#234" id="234">234</a>
+<a href="#235" id="235">235</a>
+<a href="#236" id="236">236</a>
+<a href="#237" id="237">237</a>
+<a href="#238" id="238">238</a>
+<a href="#239" id="239">239</a>
+<a href="#240" id="240">240</a>
+<a href="#241" id="241">241</a>
+<a href="#242" id="242">242</a>
+<a href="#243" id="243">243</a>
+<a href="#244" id="244">244</a>
+<a href="#245" id="245">245</a>
+<a href="#246" id="246">246</a>
+<a href="#247" id="247">247</a>
+<a href="#248" id="248">248</a>
+<a href="#249" id="249">249</a>
+<a href="#250" id="250">250</a>
+<a href="#251" id="251">251</a>
+<a href="#252" id="252">252</a>
+<a href="#253" id="253">253</a>
+<a href="#254" id="254">254</a>
+<a href="#255" id="255">255</a>
+<a href="#256" id="256">256</a>
+<a href="#257" id="257">257</a>
+<a href="#258" id="258">258</a>
+<a href="#259" id="259">259</a>
+<a href="#260" id="260">260</a>
+<a href="#261" id="261">261</a>
+<a href="#262" id="262">262</a>
+<a href="#263" id="263">263</a>
+<a href="#264" id="264">264</a>
+<a href="#265" id="265">265</a>
+<a href="#266" id="266">266</a>
+<a href="#267" id="267">267</a>
+<a href="#268" id="268">268</a>
+<a href="#269" id="269">269</a>
+<a href="#270" id="270">270</a>
+</pre><pre class="rust"><code><span class="kw">use </span>std::ops::RangeInclusive;
+
 <span class="kw">use </span><span class="kw">crate</span>::parser::errors::CustomError;
+<span class="kw">use </span><span class="kw">crate</span>::parser::prelude::<span class="kw-2">*</span>;
 <span class="kw">use </span><span class="kw">crate</span>::parser::trivia::from_utf8_unchecked;
-<span class="kw">use </span>combine::parser::byte::byte;
-<span class="kw">use </span>combine::parser::range::{recognize, take_while1};
-<span class="kw">use </span>combine::stream::RangeStream;
-<span class="kw">use </span>combine::<span class="kw-2">*</span>;
+
+<span class="kw">use </span>nom8::branch::alt;
+<span class="kw">use </span>nom8::bytes::one_of;
+<span class="kw">use </span>nom8::bytes::take_while_m_n;
+<span class="kw">use </span>nom8::combinator::cut;
+<span class="kw">use </span>nom8::combinator::opt;
+<span class="kw">use </span>nom8::sequence::preceded;
+<span class="kw">use </span>toml_datetime::<span class="kw-2">*</span>;
 
 <span class="comment">// ;; Date and Time (as defined in RFC 3339)
 
 // date-time = offset-date-time / local-date-time / local-date / local-time
-// offset-date-time = full-date &quot;T&quot; full-time
-// local-date-time = full-date &quot;T&quot; partial-time
+// offset-date-time = full-date time-delim full-time
+// local-date-time = full-date time-delim partial-time
 // local-date = full-date
 // local-time = partial-time
 // full-time = partial-time time-offset
-</span><span class="macro">parse!</span>(date_time() -&gt; Datetime, {
-    <span class="macro">choice!</span>(
-        (
-            full_date(),
-            optional((
-                attempt((
-                    satisfy(is_time_delim),
-                    look_ahead(time_hour())
-                )),
-                partial_time(),
-                optional(time_offset()),
-            ))
-        )
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>date_time(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, Datetime, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    alt((
+        (full_date, opt((time_delim, partial_time, opt(time_offset))))
             .map(|(date, opt)| {
                 <span class="kw">match </span>opt {
                     <span class="comment">// Offset Date-Time
-                    </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, time, offset)) =&gt; {
-                        Datetime { date: <span class="prelude-val">Some</span>(date), time: <span class="prelude-val">Some</span>(time), offset }
-                    }
+                    </span><span class="prelude-val">Some</span>((<span class="kw">_</span>, time, offset)) =&gt; Datetime {
+                        date: <span class="prelude-val">Some</span>(date),
+                        time: <span class="prelude-val">Some</span>(time),
+                        offset,
+                    },
                     <span class="comment">// Local Date
-                    </span><span class="prelude-val">None </span>=&gt; {
-                        Datetime { date: <span class="prelude-val">Some</span>(date), time: <span class="prelude-val">None</span>, offset: <span class="prelude-val">None</span>}
+                    </span><span class="prelude-val">None </span>=&gt; Datetime {
+                        date: <span class="prelude-val">Some</span>(date),
+                        time: <span class="prelude-val">None</span>,
+                        offset: <span class="prelude-val">None</span>,
                     },
                 }
-            }),
-        <span class="comment">// Local Time
-        </span>partial_time()
-            .message(<span class="string">&quot;While parsing a Time&quot;</span>)
-            .map(|t| {
-                t.into()
             })
-    )
-        .message(<span class="string">&quot;While parsing a Date-Time&quot;</span>)
-});
+            .context(Context::Expression(<span class="string">&quot;date-time&quot;</span>)),
+        partial_time
+            .map(|t| t.into())
+            .context(Context::Expression(<span class="string">&quot;time&quot;</span>)),
+    ))
+    .parse(input)
+}
 
 <span class="comment">// full-date      = date-fullyear &quot;-&quot; date-month &quot;-&quot; date-mday
-</span><span class="macro">parse!</span>(full_date() -&gt; Date, {
-    (
-        attempt((date_fullyear(), byte(<span class="string">b&#39;-&#39;</span>))),
-        date_month(),
-        byte(<span class="string">b&#39;-&#39;</span>),
-        date_mday(),
-    ).map(|((year, <span class="kw">_</span>), month, <span class="kw">_</span>, day)| {
-        Date { year, month, day }
-    })
-});
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>full_date(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, Date, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    (date_fullyear, <span class="string">b&#39;-&#39;</span>, cut((date_month, <span class="string">b&#39;-&#39;</span>, date_mday)))
+        .map(|(year, <span class="kw">_</span>, (month, <span class="kw">_</span>, day))| Date { year, month, day })
+        .parse(input)
+}
 
 <span class="comment">// partial-time   = time-hour &quot;:&quot; time-minute &quot;:&quot; time-second [time-secfrac]
-</span><span class="macro">parse!</span>(partial_time() -&gt; Time, {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>partial_time(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, Time, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
     (
-        attempt((
-            time_hour(),
-            byte(<span class="string">b&#39;:&#39;</span>),
-        )),
-        time_minute(),
-        byte(<span class="string">b&#39;:&#39;</span>),
-        time_second(),
-        optional(attempt(time_secfrac())),
-    ).map(|((hour, <span class="kw">_</span>), minute, <span class="kw">_</span>, second, nanosecond)| {
-        Time { hour, minute, second, nanosecond: nanosecond.unwrap_or_default() }
-    })
-});
+        time_hour,
+        <span class="string">b&#39;:&#39;</span>,
+        cut((time_minute, <span class="string">b&#39;:&#39;</span>, time_second, opt(time_secfrac))),
+    )
+        .map(|(hour, <span class="kw">_</span>, (minute, <span class="kw">_</span>, second, nanosecond))| Time {
+            hour,
+            minute,
+            second,
+            nanosecond: nanosecond.unwrap_or_default(),
+        })
+        .parse(input)
+}
 
 <span class="comment">// time-offset    = &quot;Z&quot; / time-numoffset
 // time-numoffset = ( &quot;+&quot; / &quot;-&quot; ) time-hour &quot;:&quot; time-minute
-</span><span class="macro">parse!</span>(time_offset() -&gt; Offset, {
-    attempt(satisfy(|c| c == <span class="string">b&#39;Z&#39; </span>|| c == <span class="string">b&#39;z&#39;</span>)).map(|<span class="kw">_</span>| Offset::Z)
-        .or(
-            (
-                attempt(choice([byte(<span class="string">b&#39;+&#39;</span>), byte(<span class="string">b&#39;-&#39;</span>)])),
-                time_hour(),
-                byte(<span class="string">b&#39;:&#39;</span>),
-                time_minute(),
-            ).map(|(sign, hours, <span class="kw">_</span>, minutes)| {
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>time_offset(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, Offset, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    alt((
+        one_of((<span class="string">b&#39;Z&#39;</span>, <span class="string">b&#39;z&#39;</span>)).value(Offset::Z),
+        (one_of((<span class="string">b&#39;+&#39;</span>, <span class="string">b&#39;-&#39;</span>)), cut((time_hour, <span class="string">b&#39;:&#39;</span>, time_minute))).map(
+            |(sign, (hours, <span class="kw">_</span>, minutes))| {
                 <span class="kw">let </span>hours = hours <span class="kw">as </span>i8;
                 <span class="kw">let </span>hours = <span class="kw">match </span>sign {
                     <span class="string">b&#39;+&#39; </span>=&gt; hours,
@@ -304,117 +354,189 @@
                     <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;Parser prevents this&quot;</span>),
                 };
                 Offset::Custom { hours, minutes }
-            })
-        ).message(<span class="string">&quot;While parsing a Time Offset&quot;</span>)
-});
-
-<span class="comment">// date-fullyear  = 4DIGIT
-</span><span class="macro">parse!</span>(date_fullyear() -&gt; u16, {
-    signed_digits(<span class="number">4</span>).map(|d| d <span class="kw">as </span>u16)
-});
-
-<span class="comment">// date-month     = 2DIGIT  ; 01-12
-</span><span class="macro">parse!</span>(date_month() -&gt; u8, {
-    unsigned_digits(<span class="number">2</span>).map(|d| d <span class="kw">as </span>u8).and_then(|v| {
-        <span class="kw">if </span>(<span class="number">1</span>..=<span class="number">12</span>).contains(<span class="kw-2">&amp;</span>v) {
-            <span class="prelude-val">Ok</span>(v)
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(CustomError::OutOfRange)
-        }
-    })
-});
-
-<span class="comment">// date-mday      = 2DIGIT  ; 01-28, 01-29, 01-30, 01-31 based on month/year
-</span><span class="macro">parse!</span>(date_mday() -&gt; u8, {
-    unsigned_digits(<span class="number">2</span>).map(|d| d <span class="kw">as </span>u8).and_then(|v| {
-        <span class="kw">if </span>(<span class="number">1</span>..=<span class="number">31</span>).contains(<span class="kw-2">&amp;</span>v) {
-            <span class="prelude-val">Ok</span>(v)
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(CustomError::OutOfRange)
-        }
-    })
-});
-
-<span class="comment">// time-delim     = &quot;T&quot; / %x20 ; T, t, or space
-</span><span class="kw">fn </span>is_time_delim(c: u8) -&gt; bool {
-    <span class="macro">matches!</span>(c, <span class="string">b&#39;T&#39; </span>| <span class="string">b&#39;t&#39; </span>| <span class="string">b&#39; &#39;</span>)
+            },
+        ),
+    ))
+    .context(Context::Expression(<span class="string">&quot;time offset&quot;</span>))
+    .parse(input)
 }
 
+<span class="comment">// date-fullyear  = 4DIGIT
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>date_fullyear(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, u16, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    unsigned_digits::&lt;<span class="number">4</span>, <span class="number">4</span>&gt;
+        .map(|s: <span class="kw-2">&amp;</span>str| s.parse::&lt;u16&gt;().expect(<span class="string">&quot;4DIGIT should match u8&quot;</span>))
+        .parse(input)
+}
+
+<span class="comment">// date-month     = 2DIGIT  ; 01-12
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>date_month(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, u8, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    unsigned_digits::&lt;<span class="number">2</span>, <span class="number">2</span>&gt;
+        .map_res(|s: <span class="kw-2">&amp;</span>str| {
+            <span class="kw">let </span>d = s.parse::&lt;u8&gt;().expect(<span class="string">&quot;2DIGIT should match u8&quot;</span>);
+            <span class="kw">if </span>(<span class="number">1</span>..=<span class="number">12</span>).contains(<span class="kw-2">&amp;</span>d) {
+                <span class="prelude-val">Ok</span>(d)
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(CustomError::OutOfRange)
+            }
+        })
+        .parse(input)
+}
+
+<span class="comment">// date-mday      = 2DIGIT  ; 01-28, 01-29, 01-30, 01-31 based on month/year
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>date_mday(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, u8, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    unsigned_digits::&lt;<span class="number">2</span>, <span class="number">2</span>&gt;
+        .map_res(|s: <span class="kw-2">&amp;</span>str| {
+            <span class="kw">let </span>d = s.parse::&lt;u8&gt;().expect(<span class="string">&quot;2DIGIT should match u8&quot;</span>);
+            <span class="kw">if </span>(<span class="number">1</span>..=<span class="number">31</span>).contains(<span class="kw-2">&amp;</span>d) {
+                <span class="prelude-val">Ok</span>(d)
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(CustomError::OutOfRange)
+            }
+        })
+        .parse(input)
+}
+
+<span class="comment">// time-delim     = &quot;T&quot; / %x20 ; T, t, or space
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>time_delim(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, u8, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    one_of(TIME_DELIM).parse(input)
+}
+
+<span class="kw">const </span>TIME_DELIM: (u8, u8, u8) = (<span class="string">b&#39;T&#39;</span>, <span class="string">b&#39;t&#39;</span>, <span class="string">b&#39; &#39;</span>);
+
 <span class="comment">// time-hour      = 2DIGIT  ; 00-23
-</span><span class="macro">parse!</span>(time_hour() -&gt; u8, {
-    unsigned_digits(<span class="number">2</span>).map(|d| d <span class="kw">as </span>u8).and_then(|v| {
-        <span class="kw">if </span>(<span class="number">0</span>..=<span class="number">23</span>).contains(<span class="kw-2">&amp;</span>v) {
-            <span class="prelude-val">Ok</span>(v)
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(CustomError::OutOfRange)
-        }
-    })
-});
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>time_hour(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, u8, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    unsigned_digits::&lt;<span class="number">2</span>, <span class="number">2</span>&gt;
+        .map_res(|s: <span class="kw-2">&amp;</span>str| {
+            <span class="kw">let </span>d = s.parse::&lt;u8&gt;().expect(<span class="string">&quot;2DIGIT should match u8&quot;</span>);
+            <span class="kw">if </span>(<span class="number">0</span>..=<span class="number">23</span>).contains(<span class="kw-2">&amp;</span>d) {
+                <span class="prelude-val">Ok</span>(d)
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(CustomError::OutOfRange)
+            }
+        })
+        .parse(input)
+}
 
 <span class="comment">// time-minute    = 2DIGIT  ; 00-59
-</span><span class="macro">parse!</span>(time_minute() -&gt; u8, {
-    unsigned_digits(<span class="number">2</span>).map(|d| d <span class="kw">as </span>u8).and_then(|v| {
-        <span class="kw">if </span>(<span class="number">0</span>..=<span class="number">59</span>).contains(<span class="kw-2">&amp;</span>v) {
-            <span class="prelude-val">Ok</span>(v)
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(CustomError::OutOfRange)
-        }
-    })
-});
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>time_minute(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, u8, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    unsigned_digits::&lt;<span class="number">2</span>, <span class="number">2</span>&gt;
+        .map_res(|s: <span class="kw-2">&amp;</span>str| {
+            <span class="kw">let </span>d = s.parse::&lt;u8&gt;().expect(<span class="string">&quot;2DIGIT should match u8&quot;</span>);
+            <span class="kw">if </span>(<span class="number">0</span>..=<span class="number">59</span>).contains(<span class="kw-2">&amp;</span>d) {
+                <span class="prelude-val">Ok</span>(d)
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(CustomError::OutOfRange)
+            }
+        })
+        .parse(input)
+}
 
 <span class="comment">// time-second    = 2DIGIT  ; 00-58, 00-59, 00-60 based on leap second rules
-</span><span class="macro">parse!</span>(time_second() -&gt; u8, {
-    unsigned_digits(<span class="number">2</span>).map(|d| d <span class="kw">as </span>u8).and_then(|v| {
-        <span class="kw">if </span>(<span class="number">0</span>..=<span class="number">60</span>).contains(<span class="kw-2">&amp;</span>v) {
-            <span class="prelude-val">Ok</span>(v)
-        } <span class="kw">else </span>{
-            <span class="prelude-val">Err</span>(CustomError::OutOfRange)
-        }
-    })
-});
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>time_second(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, u8, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    unsigned_digits::&lt;<span class="number">2</span>, <span class="number">2</span>&gt;
+        .map_res(|s: <span class="kw-2">&amp;</span>str| {
+            <span class="kw">let </span>d = s.parse::&lt;u8&gt;().expect(<span class="string">&quot;2DIGIT should match u8&quot;</span>);
+            <span class="kw">if </span>(<span class="number">0</span>..=<span class="number">60</span>).contains(<span class="kw-2">&amp;</span>d) {
+                <span class="prelude-val">Ok</span>(d)
+            } <span class="kw">else </span>{
+                <span class="prelude-val">Err</span>(CustomError::OutOfRange)
+            }
+        })
+        .parse(input)
+}
 
 <span class="comment">// time-secfrac   = &quot;.&quot; 1*DIGIT
-</span><span class="macro">parse!</span>(time_secfrac() -&gt; u32, {
-    <span class="kw">static </span>SCALE: [u32; <span class="number">10</span>] =
-        [<span class="number">0</span>, <span class="number">100_000_000</span>, <span class="number">10_000_000</span>, <span class="number">1_000_000</span>, <span class="number">100_000</span>, <span class="number">10_000</span>, <span class="number">1_000</span>, <span class="number">100</span>, <span class="number">10</span>, <span class="number">1</span>];
-    byte(<span class="string">b&#39;.&#39;</span>).and(take_while1(|c: u8| c.is_ascii_digit())).and_then::&lt;<span class="kw">_</span>, <span class="kw">_</span>, CustomError&gt;(|(<span class="kw">_</span>, repr): (u8, <span class="kw-2">&amp;</span>[u8])| {
-        <span class="kw">let </span><span class="kw-2">mut </span>repr = <span class="kw">unsafe </span>{ from_utf8_unchecked(repr, <span class="string">&quot;`is_ascii_digit` filters out on-ASCII&quot;</span>) };
-        <span class="kw">let </span>max_digits = SCALE.len() - <span class="number">1</span>;
-        <span class="kw">if </span>max_digits &lt; repr.len() {
-            <span class="comment">// Millisecond precision is required. Further precision of fractional seconds is
-            // implementation-specific. If the value contains greater precision than the
-            // implementation can support, the additional precision must be truncated, not rounded.
-            </span>repr = <span class="kw-2">&amp;</span>repr[<span class="number">0</span>..max_digits];
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>time_secfrac(input: Input&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, u32, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    <span class="kw">static </span>SCALE: [u32; <span class="number">10</span>] = [
+        <span class="number">0</span>,
+        <span class="number">100_000_000</span>,
+        <span class="number">10_000_000</span>,
+        <span class="number">1_000_000</span>,
+        <span class="number">100_000</span>,
+        <span class="number">10_000</span>,
+        <span class="number">1_000</span>,
+        <span class="number">100</span>,
+        <span class="number">10</span>,
+        <span class="number">1</span>,
+    ];
+    <span class="kw">const </span>INF: usize = usize::MAX;
+    preceded(<span class="string">b&#39;.&#39;</span>, unsigned_digits::&lt;<span class="number">1</span>, INF&gt;)
+        .map_res(|<span class="kw-2">mut </span>repr: <span class="kw-2">&amp;</span>str| -&gt; <span class="prelude-ty">Result</span>&lt;u32, CustomError&gt; {
+            <span class="kw">let </span>max_digits = SCALE.len() - <span class="number">1</span>;
+            <span class="kw">if </span>max_digits &lt; repr.len() {
+                <span class="comment">// Millisecond precision is required. Further precision of fractional seconds is
+                // implementation-specific. If the value contains greater precision than the
+                // implementation can support, the additional precision must be truncated, not rounded.
+                </span>repr = <span class="kw-2">&amp;</span>repr[<span class="number">0</span>..max_digits];
+            }
+
+            <span class="kw">let </span>v = repr.parse::&lt;u32&gt;().map_err(|<span class="kw">_</span>| CustomError::OutOfRange)<span class="question-mark">?</span>;
+            <span class="kw">let </span>num_digits = repr.len();
+
+            <span class="comment">// scale the number accordingly.
+            </span><span class="kw">let </span>scale = SCALE.get(num_digits).ok_or(CustomError::OutOfRange)<span class="question-mark">?</span>;
+            <span class="kw">let </span>v = v.checked_mul(<span class="kw-2">*</span>scale).ok_or(CustomError::OutOfRange)<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(v)
+        })
+        .parse(input)
+}
+
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>unsigned_digits&lt;<span class="kw">const </span>MIN: usize, <span class="kw">const </span>MAX: usize&gt;(
+    input: Input&lt;<span class="lifetime">&#39;_</span>&gt;,
+) -&gt; IResult&lt;Input&lt;<span class="lifetime">&#39;_</span>&gt;, <span class="kw-2">&amp;</span>str, ParserError&lt;<span class="lifetime">&#39;_</span>&gt;&gt; {
+    take_while_m_n(MIN, MAX, DIGIT)
+        .map(|b: <span class="kw-2">&amp;</span>[u8]| <span class="kw">unsafe </span>{ from_utf8_unchecked(b, <span class="string">&quot;`is_ascii_digit` filters out on-ASCII&quot;</span>) })
+        .parse(input)
+}
+
+<span class="comment">// DIGIT = %x30-39 ; 0-9
+</span><span class="kw">const </span>DIGIT: RangeInclusive&lt;u8&gt; = <span class="string">b&#39;0&#39;</span>..=<span class="string">b&#39;9&#39;</span>;
+
+<span class="attr">#[cfg(test)]
+</span><span class="kw">mod </span>test {
+    <span class="kw">use super</span>::<span class="kw-2">*</span>;
+
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>offset_date_time() {
+        <span class="kw">let </span>inputs = [
+            <span class="string">&quot;1979-05-27T07:32:00Z&quot;</span>,
+            <span class="string">&quot;1979-05-27T00:32:00-07:00&quot;</span>,
+            <span class="string">&quot;1979-05-27T00:32:00.999999-07:00&quot;</span>,
+        ];
+        <span class="kw">for </span>input <span class="kw">in </span>inputs {
+            date_time.parse(input.as_bytes()).finish().unwrap();
         }
+    }
 
-        <span class="kw">let </span>v = repr.parse::&lt;u32&gt;().map_err(|<span class="kw">_</span>| CustomError::OutOfRange)<span class="question-mark">?</span>;
-        <span class="kw">let </span>num_digits = repr.len();
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>local_date_time() {
+        <span class="kw">let </span>inputs = [<span class="string">&quot;1979-05-27T07:32:00&quot;</span>, <span class="string">&quot;1979-05-27T00:32:00.999999&quot;</span>];
+        <span class="kw">for </span>input <span class="kw">in </span>inputs {
+            date_time.parse(input.as_bytes()).finish().unwrap();
+        }
+    }
 
-        <span class="comment">// scale the number accordingly.
-        </span><span class="kw">let </span>scale = SCALE.get(num_digits).ok_or(CustomError::OutOfRange)<span class="question-mark">?</span>;
-        <span class="kw">let </span>v = v.checked_mul(<span class="kw-2">*</span>scale).ok_or(CustomError::OutOfRange)<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(v)
-    })
-});
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>local_date() {
+        <span class="kw">let </span>inputs = [<span class="string">&quot;1979-05-27&quot;</span>, <span class="string">&quot;2017-07-20&quot;</span>];
+        <span class="kw">for </span>input <span class="kw">in </span>inputs {
+            date_time.parse(input.as_bytes()).finish().unwrap();
+        }
+    }
 
-<span class="macro">parse!</span>(signed_digits(count: usize) -&gt; i32, {
-    recognize(skip_count_min_max(
-        <span class="kw-2">*</span>count, <span class="kw-2">*</span>count,
-        satisfy(|c: u8| c.is_ascii_digit()),
-    )).and_then(|b: <span class="kw-2">&amp;</span>[u8]| {
-        <span class="kw">let </span>s = <span class="kw">unsafe </span>{ from_utf8_unchecked(b, <span class="string">&quot;`is_ascii_digit` filters out on-ASCII&quot;</span>) };
-        s.parse::&lt;i32&gt;()
-    })
-});
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>local_time() {
+        <span class="kw">let </span>inputs = [<span class="string">&quot;07:32:00&quot;</span>, <span class="string">&quot;00:32:00.999999&quot;</span>];
+        <span class="kw">for </span>input <span class="kw">in </span>inputs {
+            date_time.parse(input.as_bytes()).finish().unwrap();
+        }
+    }
 
-<span class="macro">parse!</span>(unsigned_digits(count: usize) -&gt; u32, {
-    recognize(skip_count_min_max(
-        <span class="kw-2">*</span>count, <span class="kw-2">*</span>count,
-        satisfy(|c: u8| c.is_ascii_digit()),
-    )).and_then(|b: <span class="kw-2">&amp;</span>[u8]| {
-        <span class="kw">let </span>s = <span class="kw">unsafe </span>{ from_utf8_unchecked(b, <span class="string">&quot;`is_ascii_digit` filters out on-ASCII&quot;</span>) };
-        s.parse::&lt;u32&gt;()
-    })
-});
+    <span class="attr">#[test]
+    </span><span class="kw">fn </span>time_fraction_truncated() {
+        <span class="kw">let </span>input = <span class="string">&quot;1987-07-05T17:45:00.123456789012345Z&quot;</span>;
+        date_time.parse(input.as_bytes()).finish().unwrap();
+    }
+}
 </code></pre></div>
 </section></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="toml_edit" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (0b90256ad 2023-01-13)" data-search-js="search-181581080540673f.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-58836c674e2f7bd2.css" ></div></body></html>

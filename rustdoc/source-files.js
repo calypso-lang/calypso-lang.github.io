@@ -12,7 +12,6 @@ var sourcesIndex = JSON.parse('{\
 "calypso_filety":["",[["ccff",[],["parse.rs"]]],["ccff.rs","lib.rs"]],\
 "calypso_parsing":["",[["parser",[],["grammar.rs"]],["pretty",[],["lexer.rs","mod.rs"]]],["lexer.rs","lib.rs","parser.rs"]],\
 "calypso_repl":["",[],["lib.rs"]],\
-"calypso_util":["",[],["lib.rs"]],\
 "cfg_if":["",[],["lib.rs"]],\
 "clap":["",[["builder",[],["action.rs","app_settings.rs","arg.rs","arg_group.rs","arg_predicate.rs","arg_settings.rs","command.rs","debug_asserts.rs","macros.rs","mod.rs","possible_value.rs","usage_parser.rs","value_hint.rs","value_parser.rs"]],["error",[],["context.rs","kind.rs","mod.rs"]],["output",[],["fmt.rs","help.rs","mod.rs","usage.rs"]],["parser",[["features",[],["mod.rs","suggestions.rs"]],["matches",[],["any_value.rs","arg_matches.rs","matched_arg.rs","mod.rs","value_source.rs"]]],["arg_matcher.rs","error.rs","mod.rs","parser.rs","validator.rs"]],["util",[],["color.rs","fnv.rs","graph.rs","id.rs","mod.rs","str_to_bool.rs"]]],["derive.rs","lib.rs","macros.rs","mkeymap.rs"]],\
 "clap_derive":["",[["derives",[],["args.rs","into_app.rs","mod.rs","parser.rs","subcommand.rs","value_enum.rs"]],["utils",[],["doc_comments.rs","mod.rs","spanned.rs","ty.rs"]]],["attrs.rs","dummies.rs","lib.rs","parse.rs"]],\
